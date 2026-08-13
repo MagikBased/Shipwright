@@ -58,7 +58,7 @@
     },
     "token": {
       "type": "object",
-      "required": ["id", "occurrenceId", "senseId", "surface", "lemma", "reading", "partOfSpeech", "meaning", "start", "length"],
+      "required": ["id", "occurrenceId", "senseId", "surface", "lemma", "reading", "dictionaryReading", "partOfSpeech", "meaning", "start", "length"],
       "properties": {
         "id": { "type": "string", "minLength": 1 },
         "occurrenceId": { "type": "string", "minLength": 1 },
@@ -66,6 +66,7 @@
         "surface": { "type": "string", "minLength": 1 },
         "lemma": { "type": "string", "minLength": 1 },
         "reading": { "type": "string" },
+        "dictionaryReading": { "type": "string" },
         "partOfSpeech": { "type": "string" },
         "meaning": { "type": "string" },
         "note": { "type": "string" },
@@ -75,4 +76,3 @@
     }
   }
 }
-

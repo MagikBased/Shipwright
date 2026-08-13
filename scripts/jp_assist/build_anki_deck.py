@@ -76,12 +76,13 @@ def collect_unique_words(runtime_data: dict) -> dict[tuple, dict]:
                 sense_id = token.get("senseId") or hashlib.sha256(
                     token.get("meaning", "").encode("utf-8")
                 ).hexdigest()[:16]
-                identity = (token["lemma"], token["reading"], sense_id)
+                dictionary_reading = token.get("dictionaryReading", token["reading"])
+                identity = (token["lemma"], dictionary_reading, sense_id)
                 if identity not in words:
                     words[identity] = {
                         "surface": token["surface"],
                         "lemma": token["lemma"],
-                        "reading": token["reading"],
+                        "reading": dictionary_reading,
                         "partOfSpeech": token["partOfSpeech"],
                         "meaning": token["meaning"],
                         "senseId": sense_id,
@@ -115,6 +116,8 @@ def main() -> None:
         help="Optional jp_assist_progress.json to restrict export to saved words only",
     )
     parser.add_argument("--out-dir", default=None, help="Output directory (default: scripts/jp_assist/out)")
+    parser.add_argument("--output-prefix", default="oot_jp_assist", help="Filename prefix for .apkg and .tsv")
+    parser.add_argument("--deck-name", default="OoT JP Assist", help="Deck name shown by Anki")
     args = parser.parse_args()
 
     out_dir = Path(args.out_dir) if args.out_dir else Path(__file__).parent / "out"
@@ -130,7 +133,7 @@ def main() -> None:
         words = {k: v for k, v in words.items() if f"{k[0]}|{k[1]}" in saved_ids}
         print(f"Restricting export to {len(words)} saved word(s)")
 
-    deck = genanki.Deck(2059400001, "OoT JP Assist")
+    deck = genanki.Deck(2059400001, args.deck_name)
     for (lemma, reading, sense_id), word in words.items():
         note = genanki.Note(
             model=MODEL,
@@ -146,15 +149,15 @@ def main() -> None:
                 ", ".join(sorted(word["messageIds"])),
             ],
             guid=stable_note_guid(lemma, reading, sense_id),
-            tags=["oot-jp-assist"],
+            tags=["oot-jp-assist", "defined" if word["meaning"] else "needs-definition"],
         )
         deck.add_note(note)
 
-    apkg_path = out_dir / "oot_jp_assist.apkg"
+    apkg_path = out_dir / f"{args.output_prefix}.apkg"
     genanki.Package(deck).write_to_file(str(apkg_path))
     print(f"Wrote {len(words)} note(s) to {apkg_path}")
 
-    tsv_path = out_dir / "oot_jp_assist.tsv"
+    tsv_path = out_dir / f"{args.output_prefix}.tsv"
     with open(tsv_path, "w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f, delimiter="\t")
         writer.writerow(
@@ -176,7 +179,7 @@ def main() -> None:
 
     # Frequency-ranked token coverage tiers become meaningful automatically
     # when this is run over the full extracted corpus.
-    report_path = out_dir / "coverage_report.md"
+    report_path = out_dir / f"{args.output_prefix}_coverage_report.md"
     total_occurrences = sum(w["frequency"] for w in words.values())
     with open(report_path, "w", encoding="utf-8") as f:
         f.write("# JP Assist Coverage Report\n\n")

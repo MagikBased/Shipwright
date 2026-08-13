@@ -13,6 +13,7 @@ struct StudyToken {
     std::string surface;       // as it would appear in the dialogue
     std::string lemma;         // dictionary form
     std::string reading;       // hiragana reading
+    std::string dictionaryReading; // reading of lemma; stable vocabulary identity
     std::string partOfSpeech;
     std::string meaning;       // context-appropriate English meaning
     std::string note;          // optional usage note
@@ -24,7 +25,7 @@ struct StudyToken {
     // position"). Derived rather than stored, so it can't drift out of
     // sync with the fields it's derived from.
     std::string Id() const {
-        return lemma + "|" + reading;
+        return lemma + "|" + (dictionaryReading.empty() ? reading : dictionaryReading);
     }
 };
 

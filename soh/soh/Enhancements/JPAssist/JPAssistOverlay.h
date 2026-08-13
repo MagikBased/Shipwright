@@ -9,6 +9,7 @@ namespace JPAssist {
 
 // Registers one frame-safe GuiWindow with Ship's normal GUI draw loop.
 void JPAssistOverlay_Register();
+bool JPAssistOverlay_HasJapaneseFont();
 
 // Dialogue preview is used by the non-destructive language-switch scaffold.
 // It intentionally does not mutate MessageContext; later runtime testing can

@@ -561,6 +561,10 @@ void RegisterJPAssist() {
     JPAssist::StudyRepository_LoadCorpus();
     JPAssist::StudyPersistence_Load();
     JPAssist::JPAssistOverlay_Register();
+    if (!JPAssist::JPAssistOverlay_HasJapaneseFont()) {
+        SPDLOG_WARN("[JPAssist] Shipwright's bundled Japanese font is unavailable; Japanese overlay text may render "
+                    "with missing glyphs");
+    }
     GameInteractor::Instance->RegisterGameHook<GameInteractor::OnDialogMessage>(OnDialogMessage);
     RegisterJPAssistMenu();
     Ship::Context::GetRawInstance()->GetConsole()->AddCommand(

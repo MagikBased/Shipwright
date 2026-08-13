@@ -10,6 +10,7 @@
 #include <ship/window/gui/Gui.h>
 #include <ship/window/gui/GuiWindow.h>
 
+#include "soh/OTRGlobals.h"
 #include "soh/cvar_prefixes.h"
 
 namespace JPAssist {
@@ -78,6 +79,16 @@ class JPAssistOverlayWindow final : public Ship::GuiWindow {
     }
 
     void DrawElement() override {
+        ImFont* japaneseFont = OTRGlobals::Instance != nullptr ? OTRGlobals::Instance->fontJapanese : nullptr;
+        if (japaneseFont != nullptr) {
+            ImGui::PushFont(japaneseFont);
+        }
+        const auto restoreFont = [japaneseFont]() {
+            if (japaneseFont != nullptr) {
+                ImGui::PopFont();
+            }
+        };
+
         ImGui::SetWindowFontScale(CVarGetFloat(CVAR_ENHANCEMENT("JPAssist.CardScale"), 1.0f));
         if (sState.mode == OverlayMode::Dialogue) {
             ImGui::TextColored(ImVec4(0.45f, 0.85f, 1.0f, 1.0f), "%s", sState.languageLabel.c_str());
@@ -85,11 +96,13 @@ class JPAssistOverlayWindow final : public Ship::GuiWindow {
             ImGui::PushTextWrapPos(0.0f);
             ImGui::TextUnformatted(sState.dialogueText.c_str());
             ImGui::PopTextWrapPos();
+            restoreFont();
             return;
         }
 
         if (sState.studyPage.tokens.empty()) {
             ImGui::TextUnformatted("No reviewed token data is available for this page.");
+            restoreFont();
             return;
         }
 
@@ -134,6 +147,7 @@ class JPAssistOverlayWindow final : public Ship::GuiWindow {
         ImGui::TextDisabled("%s  Seen %d time%s", sState.saved ? "Saved to study list" : "C-Right: save word",
                             sState.encounterCount, sState.encounterCount == 1 ? "" : "s");
         ImGui::TextDisabled("D-Left/Right: word   L/Z: language   R/B: close");
+        restoreFont();
     }
 };
 
@@ -148,6 +162,10 @@ void JPAssistOverlay_Register() {
     sWindow = std::make_shared<JPAssistOverlayWindow>();
     Ship::Context::GetRawInstance()->GetWindow()->GetGui()->AddGuiWindow(sWindow);
     sWindow->Show();
+}
+
+bool JPAssistOverlay_HasJapaneseFont() {
+    return OTRGlobals::Instance != nullptr && OTRGlobals::Instance->fontJapanese != nullptr;
 }
 
 void JPAssistOverlay_ShowDialogue(const std::string& languageLabel, const std::string& text) {

@@ -75,6 +75,7 @@ bool StudyRepository_LoadCorpus(const std::string& explicitPath) {
                     token.surface = tokenJson.value("surface", "");
                     token.lemma = tokenJson.value("lemma", token.surface);
                     token.reading = tokenJson.value("reading", "");
+                    token.dictionaryReading = tokenJson.value("dictionaryReading", token.reading);
                     token.partOfSpeech = tokenJson.value("partOfSpeech", "");
                     token.meaning = tokenJson.value("meaning", "");
                     token.note = tokenJson.value("note", "");
@@ -124,11 +125,11 @@ const StudyPage* StudyRepository_FindPage(uint16_t textId, int pageIndex) {
 
 const std::vector<StudyToken>& StudyRepository_GetTestTokens() {
     static const std::vector<StudyToken> tokens = {
-        { "妖精", "妖精", "ようせい", "noun", "fairy", "", 0, 2 },
-        { "樹", "樹", "き", "noun", "tree", "As in 「デクの樹」, the Great Deku Tree.", 0, 1 },
-        { "コキリ族", "コキリ族", "こきりぞく", "noun", "the Kokiri (tribe/people)", "", 0, 4 },
-        { "剣", "剣", "けん", "noun", "sword", "", 0, 1 },
-        { "盾", "盾", "たて", "noun", "shield", "", 0, 1 },
+        { "妖精", "妖精", "ようせい", "ようせい", "noun", "fairy", "", 0, 2 },
+        { "樹", "樹", "き", "き", "noun", "tree", "As in 「デクの樹」, the Great Deku Tree.", 0, 1 },
+        { "コキリ族", "コキリ族", "こきりぞく", "こきりぞく", "noun", "the Kokiri (tribe/people)", "", 0, 4 },
+        { "剣", "剣", "けん", "けん", "noun", "sword", "", 0, 1 },
+        { "盾", "盾", "たて", "たて", "noun", "shield", "", 0, 1 },
     };
     return tokens;
 }

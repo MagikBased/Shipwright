@@ -3,3 +3,4 @@ sudachidict_core
 jamdict
 jamdict-data
 genanki
+jsonschema

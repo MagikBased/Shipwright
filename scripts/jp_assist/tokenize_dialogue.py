@@ -11,15 +11,17 @@ offline, never at runtime).
 
 import argparse
 import datetime
+import functools
 import hashlib
 import json
+import re
 from pathlib import Path
 
 from message_codes import parse_english, parse_japanese
 from overrides import apply_override
 
 # Katakana -> hiragana, to match the reading convention in the design doc's
-# schema example ("あう", not "アウ"). SudachiPy's reading_form() returns
+        # schema example ("あう", not "アウ"). SudachiPy's reading_form() returns
 # katakana.
 _KATAKANA_TO_HIRAGANA = {chr(k): chr(k - 0x60) for k in range(0x30A1, 0x30F7)}
 
@@ -53,7 +55,7 @@ def english_part_of_speech(sudachi_pos: str) -> str:
 
 
 SCHEMA_VERSION = 1
-PIPELINE_VERSION = "1"
+PIPELINE_VERSION = "2"
 
 
 def sha256_hex(data: bytes) -> str:
@@ -61,7 +63,7 @@ def sha256_hex(data: bytes) -> str:
 
 
 class Tokenizer:
-    def __init__(self):
+    def __init__(self, cache_path: Path):
         from sudachipy import dictionary
 
         self._tokenizer = dictionary.Dictionary().create()
@@ -69,31 +71,44 @@ class Tokenizer:
         from jamdict import Jamdict
 
         self._jamdict = Jamdict()
+        self._cache_path = cache_path
+        try:
+            self._persistent_cache = json.loads(cache_path.read_text())
+        except (OSError, json.JSONDecodeError):
+            self._persistent_cache = {}
+
+    def save_cache(self) -> None:
+        temporary = self._cache_path.with_suffix(".json.tmp")
+        temporary.write_text(json.dumps(self._persistent_cache, ensure_ascii=False))
+        temporary.replace(self._cache_path)
 
     def tokenize_page(self, japanese_text: str, english_text: str) -> list[dict]:
         tokens = []
+        placeholder_spans = [match.span() for match in re.finditer(r"\[[^\]]+\]", japanese_text)]
         search_from = 0
         for index, morpheme in enumerate(self._tokenizer.tokenize(japanese_text)):
             surface = morpheme.surface()
             if not surface.strip():
                 continue
             pos = morpheme.part_of_speech()[0]
-            if pos in ("空白",):
+            if pos in ("空白", "補助記号", "記号"):
                 continue
 
             lemma = morpheme.dictionary_form()
             reading = katakana_to_hiragana(morpheme.reading_form())
-            sense = self._lookup_sense(lemma, reading, english_text)
-            sense = apply_override(lemma, reading, sense)
+            dictionary_reading = self._dictionary_reading(lemma) or reading
+            normalized_pos = english_part_of_speech(pos)
+            sense = self._lookup_sense(lemma, dictionary_reading, normalized_pos)
+            sense = apply_override(lemma, dictionary_reading, sense)
 
             start = japanese_text.find(surface, search_from)
             if start < 0:
                 start = search_from
             search_from = start + len(surface)
-            vocabulary_id = f"{lemma}|{reading}"
-            sense_id = hashlib.sha256(
-                f"{vocabulary_id}|{sense.get('meaning', '')}".encode("utf-8")
-            ).hexdigest()[:16]
+            if any(span_start <= start < span_end for span_start, span_end in placeholder_spans):
+                continue
+            vocabulary_id = f"{lemma}|{dictionary_reading}"
+            sense_id = sense.get("senseId", f"unresolved:{vocabulary_id}")
             tokens.append(
                 {
                     "id": vocabulary_id,
@@ -102,7 +117,8 @@ class Tokenizer:
                     "surface": surface,
                     "lemma": lemma,
                     "reading": reading,
-                    "partOfSpeech": english_part_of_speech(pos),
+                    "dictionaryReading": dictionary_reading,
+                    "partOfSpeech": normalized_pos,
                     "meaning": sense.get("meaning", ""),
                     "start": start,
                     "length": len(surface),
@@ -111,27 +127,64 @@ class Tokenizer:
             )
         return tokens
 
-    def _lookup_sense(self, lemma: str, reading: str, english_context: str) -> dict:
-        # Design doc step 7: "Select the intended sense using the English
-        # line and sentence context." This prototype does the simplest
-        # possible version of that - picking the jamdict entry whose kana
-        # reading matches, then its first sense - rather than real
-        # cross-language sense disambiguation. Getting sense selection
-        # right for ambiguous words is exactly the human-review step
-        # (step 8 / overrides.py) is meant to catch.
-        try:
-            result = self._jamdict.lookup(lemma)
-        except Exception:
-            return {"meaning": ""}
+    @functools.lru_cache(maxsize=None)
+    def _dictionary_reading(self, lemma: str) -> str:
+        return "".join(katakana_to_hiragana(item.reading_form()) for item in self._tokenizer.tokenize(lemma))
 
-        for entry in result.entries:
+    @functools.lru_cache(maxsize=None)
+    def _lookup_sense(self, lemma: str, reading: str, part_of_speech: str) -> dict:
+        # Design doc step 7: "Select the intended sense using the English
+        # line and sentence context." Rank JMdict candidates by exact reading,
+        # written form, and Sudachi part of speech. English-context
+        # disambiguation still belongs to the human-review override step.
+        cache_key = "\u001f".join((lemma, reading, part_of_speech))
+        if cache_key in self._persistent_cache:
+            return self._persistent_cache[cache_key]
+
+        entries = []
+        for query in dict.fromkeys((lemma, reading)):
+            try:
+                result = self._jamdict.lookup(query)
+            except Exception:
+                continue
+            if result.entries:
+                entries = result.entries
+                break
+
+        candidates = []
+        for entry in entries:
             kana_readings = [str(k) for k in entry.kana_forms]
-            if reading in kana_readings or not entry.kanji_forms:
-                if entry.senses:
-                    return {"meaning": str(entry.senses[0])}
-        if result.entries and result.entries[0].senses:
-            return {"meaning": str(result.entries[0].senses[0])}
-        return {"meaning": ""}
+            reading_score = 4 if reading in kana_readings else 0
+            lemma_score = 3 if any(str(k) == lemma for k in entry.kanji_forms) else 0
+            for sense_index, sense in enumerate(entry.senses):
+                pos_text = " ".join(str(value).lower() for value in sense.pos)
+                pos_score = 0
+                if part_of_speech == "particle" and "particle" in pos_text:
+                    pos_score = 8
+                elif part_of_speech == "pronoun" and "pronoun" in pos_text:
+                    pos_score = 8
+                elif part_of_speech == "adverb" and "adverb" in pos_text:
+                    pos_score = 8
+                elif part_of_speech == "suffix" and "suffix" in pos_text:
+                    pos_score = 8
+                elif part_of_speech == "auxiliary verb" and "auxiliary" in pos_text:
+                    pos_score = 8
+                elif part_of_speech == "verb" and "verb" in pos_text:
+                    pos_score = 6
+                elif part_of_speech in ("noun", "adjectival noun") and "noun" in pos_text:
+                    pos_score = 5
+                candidates.append((reading_score + lemma_score + pos_score, entry, sense_index, sense))
+
+        if candidates:
+            _, entry, sense_index, sense = max(candidates, key=lambda item: item[0])
+            selected = {
+                "meaning": "; ".join(str(gloss) for gloss in sense.gloss),
+                "senseId": f"jmdict:{entry.idseq}:{sense_index}",
+            }
+            self._persistent_cache[cache_key] = selected
+            return selected
+        self._persistent_cache[cache_key] = {"meaning": ""}
+        return self._persistent_cache[cache_key]
 
 
 def build_runtime_record(text_id: int, entry: dict, tokenizer: Tokenizer) -> dict:
@@ -191,6 +244,11 @@ def main() -> None:
     extracted_path = Path(args.extracted) if args.extracted else out_dir / "N64_NTSC_12.json"
     extracted = json.loads(extracted_path.read_text())
 
+    # The archive ends with internal font/debug/sentinel records (0xFFFC+
+    # rather than player-facing dialogue). Including the font glyph table as
+    # a sentence creates meaningless vocabulary and a replacement character.
+    extracted = {key: value for key, value in extracted.items() if value["textId"] < 0xFFFC}
+
     if args.text_ids:
         wanted = {int(t, 16) for t in args.text_ids}
         entries = {k: v for k, v in extracted.items() if v["textId"] in wanted}
@@ -198,14 +256,21 @@ def main() -> None:
         entries = extracted
 
     print(f"Tokenizing {len(entries)} message(s)...")
-    tokenizer = Tokenizer()
+    tokenizer = Tokenizer(out_dir / "dictionary_cache.json")
 
     runtime_messages = {}
-    for key, entry in entries.items():
+    for index, (key, entry) in enumerate(entries.items(), start=1):
         runtime_messages[key] = build_runtime_record(entry["textId"], entry, tokenizer)
+        if index % 100 == 0 or index == len(entries):
+            tokenizer.save_cache()
+            print(f"  {index}/{len(entries)} messages")
 
     source_digest = sha256_hex(extracted_path.read_bytes())
-    corpus_version = f"{extracted_path.stem}-{PIPELINE_VERSION}-{source_digest[:12]}"
+    pipeline_digest = sha256_hex(b"".join(
+        (Path(__file__).read_bytes(), (Path(__file__).parent / "message_codes.py").read_bytes(),
+         (Path(__file__).parent / "overrides.py").read_bytes())
+    ))
+    corpus_version = f"{extracted_path.stem}-{PIPELINE_VERSION}-{source_digest[:8]}-{pipeline_digest[:8]}"
     runtime_data = {
         "metadata": {
             "schemaVersion": SCHEMA_VERSION,

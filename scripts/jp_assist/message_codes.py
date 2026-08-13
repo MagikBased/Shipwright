@@ -134,6 +134,24 @@ _JPN_PAGE_BREAK_CODES = {MESSAGE_BOX_BREAK_JPN, MESSAGE_BOX_BREAK_DELAYED_JPN}
 _ENG_TERMINATOR_CODES = {MESSAGE_END, MESSAGE_TEXTID, MESSAGE_EVENT}
 _JPN_TERMINATOR_CODES = {MESSAGE_END_JPN, MESSAGE_TEXTID_JPN, MESSAGE_EVENT_JPN}
 
+# The original Japanese font repurposes these otherwise-unused Shift-JIS
+# values as controller glyphs (documented by textures/kanji.xml). Decoding
+# them as ordinary Shift-JIS produces misleading Greek letters.
+_JPN_CUSTOM_GLYPHS = {
+    0x839F: "[A]",
+    0x83A0: "[B]",
+    0x83A1: "[C]",
+    0x83A2: "[L]",
+    0x83A3: "[R]",
+    0x83A4: "[Z]",
+    0x83A5: "[C-Up]",
+    0x83A6: "[C-Down]",
+    0x83A7: "[C-Left]",
+    0x83A8: "[C-Right]",
+    0x83A9: "[Z-target]",
+    0x83AA: "[Control Stick]",
+}
+
 
 @dataclass
 class Page:
@@ -197,6 +215,11 @@ def parse_japanese(data: bytes) -> list[Page]:
 
     while pos < length:
         value = units[pos]
+
+        if value in _JPN_CUSTOM_GLYPHS:
+            page.text += _JPN_CUSTOM_GLYPHS[value]
+            pos += 1
+            continue
 
         if value in (MESSAGE_TWO_CHOICE_JPN, MESSAGE_THREE_CHOICE_JPN):
             page.is_choice = True
