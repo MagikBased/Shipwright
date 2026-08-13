@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://oot-jp-assist.local/runtime_data.schema.json",
+  "title": "OoT JP Assist runtime corpus",
+  "type": "object",
+  "required": ["metadata", "messages"],
+  "properties": {
+    "metadata": {
+      "type": "object",
+      "required": ["schemaVersion", "pipelineVersion", "corpusVersion", "messageCount"],
+      "properties": {
+        "schemaVersion": { "const": 1 },
+        "pipelineVersion": { "type": "string" },
+        "corpusVersion": { "type": "string", "minLength": 1 },
+        "generatedAt": { "type": "string" },
+        "messageCount": { "type": "integer", "minimum": 0 }
+      },
+      "additionalProperties": true
+    },
+    "messages": {
+      "type": "object",
+      "additionalProperties": { "$ref": "#/$defs/message" }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "message": {
+      "type": "object",
+      "required": ["schemaVersion", "source", "pages"],
+      "properties": {
+        "schemaVersion": { "const": 1 },
+        "source": {
+          "type": "object",
+          "required": ["variant", "messageId"],
+          "properties": {
+            "variant": { "type": "string" },
+            "messageId": { "type": "string", "pattern": "^0x[0-9a-fA-F]{4}$" },
+            "japaneseHash": { "type": ["string", "null"] },
+            "englishHash": { "type": ["string", "null"] }
+          }
+        },
+        "pages": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/page" }
+        }
+      }
+    },
+    "page": {
+      "type": "object",
+      "required": ["japanese", "english", "isChoice", "choiceCount", "tokens"],
+      "properties": {
+        "japanese": { "type": "string" },
+        "english": { "type": "string" },
+        "isChoice": { "type": "boolean" },
+        "choiceCount": { "type": "integer", "minimum": 0 },
+        "tokens": { "type": "array", "items": { "$ref": "#/$defs/token" } }
+      }
+    },
+    "token": {
+      "type": "object",
+      "required": ["id", "occurrenceId", "senseId", "surface", "lemma", "reading", "partOfSpeech", "meaning", "start", "length"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "occurrenceId": { "type": "string", "minLength": 1 },
+        "senseId": { "type": "string", "minLength": 1 },
+        "surface": { "type": "string", "minLength": 1 },
+        "lemma": { "type": "string", "minLength": 1 },
+        "reading": { "type": "string" },
+        "partOfSpeech": { "type": "string" },
+        "meaning": { "type": "string" },
+        "note": { "type": "string" },
+        "start": { "type": "integer", "minimum": 0 },
+        "length": { "type": "integer", "minimum": 1 }
+      }
+    }
+  }
+}
+

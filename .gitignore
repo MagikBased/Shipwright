@@ -415,8 +415,19 @@ tags
 *.otr
 *.o2r
 *.sav
+
+# Local Ship of Harkinian runtime files
+/*.appimage
+/*.AppImage
+/mods/
 shipofharkinian.ini
 shipofharkinian.json
+
+# JP Assist corpus pipeline - locally extracted/generated dialogue data.
+# Must never be committed: it's derived from the user's own legally
+# generated oot.o2r and reproduces copyrighted game text.
+/scripts/jp_assist/out/
+/jp_assist_progress.json
 imgui.ini
 timesplitdata.json
 
