@@ -2,6 +2,7 @@
 #include "JPAssistOverlayLayout.h"
 
 #include <algorithm>
+#include <cfloat>
 #include <memory>
 #include <mutex>
 
@@ -150,9 +151,9 @@ class JPAssistOverlayWindow final : public Ship::GuiWindow {
         ImGui::BeginChild("JPAssistStudyContent", ImVec2(0.0f, 0.0f), false);
         if (ImGui::BeginTable("JPAssistStudyColumns", 3,
                               ImGuiTableFlags_SizingStretchProp | ImGuiTableFlags_BordersInnerV)) {
-            ImGui::TableSetupColumn("English", ImGuiTableColumnFlags_WidthStretch, 0.85f);
-            ImGui::TableSetupColumn("Word", ImGuiTableColumnFlags_WidthStretch, 0.45f);
-            ImGui::TableSetupColumn("Definition", ImGuiTableColumnFlags_WidthStretch, 0.90f);
+            ImGui::TableSetupColumn("English", ImGuiTableColumnFlags_WidthStretch, 0.80f);
+            ImGui::TableSetupColumn("Word", ImGuiTableColumnFlags_WidthStretch, 0.40f);
+            ImGui::TableSetupColumn("Definition", ImGuiTableColumnFlags_WidthStretch, 1.00f);
             ImGui::TableNextRow();
             ImGui::TableSetColumnIndex(0);
             const float englishColumnLeft = ImGui::GetCursorScreenPos().x;
@@ -212,7 +213,7 @@ class JPAssistOverlayWindow final : public Ship::GuiWindow {
         const bool showFurigana = !token.reading.empty() && token.reading != token.surface;
 
         const ImVec2 baseSurfaceSize = ImGui::CalcTextSize(token.surface.c_str());
-        float surfaceScale = 1.75f;
+        float surfaceScale = 2.15f;
         if (baseSurfaceSize.x > 0.0f) {
             surfaceScale = std::min(surfaceScale, usableWidth / baseSurfaceSize.x);
         }
@@ -220,15 +221,9 @@ class JPAssistOverlayWindow final : public Ship::GuiWindow {
         const float surfaceFontSize = baseFontSize * surfaceScale;
         const ImVec2 surfaceSize(baseSurfaceSize.x * surfaceScale, baseSurfaceSize.y * surfaceScale);
 
-        float readingScale = 0.72f;
         ImVec2 readingSize(0.0f, 0.0f);
         if (showFurigana) {
-            const ImVec2 baseReadingSize = ImGui::CalcTextSize(token.reading.c_str());
-            if (baseReadingSize.x > 0.0f) {
-                readingScale = std::min(readingScale, usableWidth / baseReadingSize.x);
-            }
-            readingScale = std::max(readingScale, 0.55f);
-            readingSize = ImVec2(baseReadingSize.x * readingScale, baseReadingSize.y * readingScale);
+            readingSize = font->CalcTextSizeA(baseFontSize, FLT_MAX, usableWidth, token.reading.c_str());
         }
 
         const float furiganaGap = showFurigana ? 2.0f * mFrameScale : 0.0f;
@@ -238,9 +233,9 @@ class JPAssistOverlayWindow final : public Ship::GuiWindow {
 
         float surfaceY = y;
         if (showFurigana) {
-            const float readingX = start.x + (available.x - readingSize.x) * 0.5f;
-            drawList->AddText(font, baseFontSize * readingScale, ImVec2(readingX, y),
-                              ImGui::GetColorU32(ImGuiCol_TextDisabled), token.reading.c_str());
+            const float readingX = start.x + horizontalPadding + (usableWidth - readingSize.x) * 0.5f;
+            drawList->AddText(font, baseFontSize, ImVec2(readingX, y), ImGui::GetColorU32(ImGuiCol_TextDisabled),
+                              token.reading.c_str(), nullptr, usableWidth);
             surfaceY += readingSize.y + furiganaGap;
         }
 
