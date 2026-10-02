@@ -52,13 +52,14 @@
     {
       "id": "controller_glyph_persistence",
       "label": "Controller glyph persistence",
-      "description": "Regression for the controller-glyph history crash using ordinary dialogue; saving the English A-button glyph must produce valid UTF-8.",
+      "description": "Terminal persistence regression for the English A-button glyph; this special two-page message is not driven through the controller matrix.",
       "progressionProfile": "debug_child",
       "entrance": "0x00BB",
       "age": "child",
       "time": "day",
       "textId": "0x1004",
       "language": "english",
+      "validateControls": false,
       "expected": { "pages": 2, "tokens": 8, "choiceCount": 0 }
     }
   ]

@@ -79,6 +79,9 @@ bool sFrozenChoiceValid = false;
 uint8_t sFrozenChoiceIndex = 0;
 uint16_t sFrozenChoiceTextId = 0xFFFF;
 int sFrozenChoicePageIndex = -1;
+uint16_t sQueuedTestButtons = 0;
+int8_t sQueuedTestStickY = 0;
+bool sQueuedTestHasStickY = false;
 
 bool sRomCompatibilityChecked = false;
 
@@ -514,6 +517,20 @@ void OnDialogMessage() {
 
     Input* input = &play->state.input[0];
 
+    if (sQueuedTestButtons != 0 || sQueuedTestHasStickY) {
+        // Synthetic tests model a one-frame edge, not a held controller
+        // state. Keeping these out of `cur` also prevents unrelated global
+        // button-chord shortcuts from observing an impossible held chord as
+        // the suite advances through L, Z, and R checks.
+        input->press.button |= sQueuedTestButtons;
+        if (sQueuedTestHasStickY) {
+            input->rel.stick_y = sQueuedTestStickY;
+        }
+        sQueuedTestButtons = 0;
+        sQueuedTestStickY = 0;
+        sQueuedTestHasStickY = false;
+    }
+
     // Study Mode's own input handling (R to enter/exit, D-pad to navigate)
     // and, while active, consuming A/B/C-up so the native textbox can't
     // advance underneath it. Must run before the L/Z check below reads
@@ -652,6 +669,14 @@ RuntimeStatus JPAssist_GetRuntimeStatus() {
         status.choiceIndex = gPlayState->msgCtx.choiceIndex;
     }
     return status;
+}
+
+void JPAssist_QueueTestInput(uint16_t buttons, int8_t stickY, bool hasStickY) {
+    sQueuedTestButtons |= buttons;
+    if (hasStickY) {
+        sQueuedTestStickY = stickY;
+        sQueuedTestHasStickY = true;
+    }
 }
 
 } // namespace JPAssist

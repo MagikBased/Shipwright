@@ -23,4 +23,9 @@ struct RuntimeStatus {
 
 RuntimeStatus JPAssist_GetRuntimeStatus();
 
+// Test Lab seam: queues controller state for the next dialogue update. The
+// manager applies it to the real Input object immediately before running the
+// same production handlers used by physical controllers.
+void JPAssist_QueueTestInput(uint16_t buttons, int8_t stickY = 0, bool hasStickY = false);
+
 } // namespace JPAssist

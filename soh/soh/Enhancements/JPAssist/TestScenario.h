@@ -33,6 +33,7 @@ struct TestScenario {
     std::string time = "day";
     uint16_t textId = 0;
     uint8_t language = 0;
+    bool validateControls = true;
     TestPosition position;
     TestExpectation expected;
 };

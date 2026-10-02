@@ -14,12 +14,21 @@ if [[ ! -x "$app_dir/soh.elf" ]]; then
     exit 2
 fi
 
+# The manifest is source data rather than a compiled asset. Keep the app copy
+# in sync so a smoke run always exercises the scenarios from this checkout.
+mkdir -p -- "$app_dir/jp_assist"
+cp -- "$script_dir/test_scenarios.json" "$app_dir/jp_assist/test_scenarios.json"
+
 echo "JP Assist smoke runner: launching $app_dir/soh.elf"
 echo "The game window will close automatically when the suite finishes."
 
+# Never display a previous run's lastSuite when this process fails before it
+# can write a new summary.
+rm -f -- "$report"
+
 cd -- "$app_dir"
 set +e
-timeout --foreground "${timeout_seconds}s" env JPASSIST_AUTORUN_SMOKE=1 ./soh.elf >"$console_log" 2>&1
+timeout --foreground "${timeout_seconds}s" env JPASSIST_AUTORUN_SMOKE=1 SHIP_DISABLE_CRASH_DIALOG=1 ./soh.elf >"$console_log" 2>&1
 status=$?
 set -e
 

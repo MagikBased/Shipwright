@@ -12,9 +12,9 @@ not create or modify a normal save. Start from any loaded scene, then open
 2. Pick a scenario and choose **Load scenario** for inspection, **Run smoke
    check** for one automated check, or **Run all smoke checks** for the full
    sequential suite.
-3. Exercise L or Z for the language toggle and R for Study Mode manually. On
-   choice pages, the live status must change from `selection native` to
-   `selection frozen` while Study Mode is open.
+3. Smoke checks inject L and Z independently, enter Study Mode with R, navigate
+   with D-Right, exit with B, and verify vertical choice input is consumed.
+   Use **Load scenario** afterward for physical-controller and visual checks.
 4. Review `jp_assist_smoke_results.json` in the application directory for the
    last result per scenario.
 
@@ -88,12 +88,14 @@ The first configure may download GoogleTest if it is not installed locally.
 ## Automation boundary
 
 Smoke checks cover scene transition, message dispatch, JP Assist observation,
-corpus lookup, expected page/token/choice metadata, and the controller-glyph
-persistence regression. Controller bindings, input consumption, text layout,
-Japanese glyph rendering, and visual overlap still require an in-game manual
-pass. The Test Lab's live counters make L/Z toggles, Study Mode entries,
-D-Left/D-Right navigation, and C-Right save toggles directly observable;
-D-Up/D-Down scrolls long Study Mode content while the footer remains fixed.
+corpus lookup, expected page/token/choice metadata, L/Z alias behavior, R/B
+Study Mode lifecycle, D-Right navigation, vertical input consumption, choice
+freezing, and the controller-glyph persistence regression. Physical controller
+mapping and ergonomics, C-Right save toggling, D-Up/D-Down scrolling, text
+layout, Japanese glyph rendering, and visual overlap still require an in-game
+manual pass. The controller-glyph case is intentionally persistence-only and
+terminal because its special two-page native message is unsafe to drive as a
+standalone interactive textbox.
 
 ## Manual controller and presentation matrix
 

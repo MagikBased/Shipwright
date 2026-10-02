@@ -27,8 +27,9 @@ boundary so deferred testing can start from a known point.
 - One-command local builds, checksummed staging, atomic corpus installation,
   and automated Anki package/GUID validation.
 - A temporary-save Test Lab with named progression profiles, arbitrary entrance
-  and message controls, manifest-backed scenarios, smoke result reporting, and
-  engine-independent unit tests. See `JP_ASSIST_TESTING.md`.
+  and message controls, manifest-backed scenarios, automated controller/focus
+  smoke checks, result reporting, and engine-independent unit tests. See
+  `JP_ASSIST_TESTING.md`.
 
 ## Latest local corpus build
 
@@ -52,8 +53,8 @@ No gameplay claims should be made until these are exercised in-game:
 
 1. Dialogue lifecycle: open, close, page transitions, text-ID jumps, cutscenes,
    choices, shops, ocarina prompts, and rapidly toggling near transitions.
-2. Controls: L-only and Z-only controllers, both aliases enabled, R focus,
-   D-pad/C-Right consumption, remapping, and conflicts with enhancements.
+2. Controls: physical L-only and Z-only controllers, C-Right saving,
+   D-Up/D-Down scrolling, remapping, ergonomics, and enhancement conflicts.
 3. Presentation: resolutions, UI scaling, long sentences, long definitions,
    visual verification of the bundled Japanese font, accessibility, and labels.
 4. Corpus: every message/page aligns across languages; control glyphs decode;

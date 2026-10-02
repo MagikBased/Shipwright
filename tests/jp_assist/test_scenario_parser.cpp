@@ -21,6 +21,7 @@ TEST(TestScenarioParser, AcceptsHexAndPosition) {
     EXPECT_TRUE(scenarios[0].position.enabled);
     EXPECT_EQ(scenarios[0].position.yaw, 0x4000);
     EXPECT_EQ(scenarios[0].expected.pages, 2);
+    EXPECT_TRUE(scenarios[0].validateControls);
 }
 
 TEST(TestScenarioParser, RejectsMissingScenarioArray) {

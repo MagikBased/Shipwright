@@ -42,13 +42,37 @@ namespace {
 
 enum class SmokeStage { Idle, WaitingForScene, WaitingForMessage, Loaded, Passed, Failed };
 
+enum class SmokeControlStep {
+    None,
+    PressL,
+    AwaitL,
+    PressZ,
+    AwaitZ,
+    PressEnsureJapanese,
+    AwaitEnsureJapanese,
+    PressStudy,
+    AwaitStudy,
+    PressNavigate,
+    AwaitNavigate,
+    WaitForChoice,
+    PressChoiceDeflection,
+    AwaitChoiceDeflection,
+    PressExit,
+    AwaitExit,
+};
+
 struct SmokeState {
     SmokeStage stage = SmokeStage::Idle;
     std::string scenarioId;
     std::string detail = "Not run";
     int framesRemaining = 0;
-    uint64_t startedAtToggleCount = 0;
     uint64_t startedAtStudyCount = 0;
+    uint64_t startedAtNavigationCount = 0;
+    uint64_t expectedToggleCount = 0;
+    uint8_t expectedLanguage = LANGUAGE_ENG;
+    uint8_t frozenChoiceIndex = 0;
+    SmokeControlStep controlStep = SmokeControlStep::None;
+    std::string corpusDetail;
     bool validate = false;
 };
 
@@ -75,6 +99,70 @@ bool sSceneInitializedAfterWarp = false;
 int sPostSceneDelay = 0;
 bool sAutoRunRequested = false;
 bool sAutoRunStarted = false;
+
+void InjectButton(uint16_t button) {
+    JPAssist_QueueTestInput(button);
+}
+
+void InjectLanguageToggle(uint16_t button, SmokeControlStep awaitStep) {
+    SPDLOG_INFO("[JPAssist Test Lab] Injecting language button {:#06x}", button);
+    InjectButton(button);
+    sSmoke.expectedToggleCount++;
+    sSmoke.expectedLanguage = sSmoke.expectedLanguage == LANGUAGE_JPN ? LANGUAGE_ENG : LANGUAGE_JPN;
+    sSmoke.controlStep = awaitStep;
+    sSmoke.framesRemaining = 30;
+}
+
+// This hook is registered before JPAssistManager's OnDialogMessage hook, so
+// synthetic presses enter the same shared Input object immediately before the
+// production handler reads and consumes them. OnGameFrameUpdate is too late:
+// it runs at the end of the frame, after Message_Update.
+void InjectSmokeControl() {
+    if (!sSmoke.validate || gPlayState == nullptr || sSmoke.stage != SmokeStage::WaitingForMessage ||
+        !gPlayState->state.running || gPlayState->msgCtx.textId != sPendingScenario.textId) {
+        return;
+    }
+
+    switch (sSmoke.controlStep) {
+        case SmokeControlStep::PressL:
+            InjectLanguageToggle(BTN_L, SmokeControlStep::AwaitL);
+            break;
+        case SmokeControlStep::PressZ:
+            InjectLanguageToggle(BTN_Z, SmokeControlStep::AwaitZ);
+            break;
+        case SmokeControlStep::PressEnsureJapanese:
+            InjectLanguageToggle(BTN_L, SmokeControlStep::AwaitEnsureJapanese);
+            break;
+        case SmokeControlStep::PressStudy:
+            SPDLOG_INFO("[JPAssist Test Lab] Injecting Study Mode R");
+            InjectButton(BTN_R);
+            sSmoke.controlStep = SmokeControlStep::AwaitStudy;
+            sSmoke.framesRemaining = 30;
+            break;
+        case SmokeControlStep::PressNavigate:
+            SPDLOG_INFO("[JPAssist Test Lab] Injecting Study navigation D-Right");
+            InjectButton(BTN_DRIGHT);
+            sSmoke.controlStep = SmokeControlStep::AwaitNavigate;
+            sSmoke.framesRemaining = 30;
+            break;
+        case SmokeControlStep::PressChoiceDeflection: {
+            SPDLOG_INFO("[JPAssist Test Lab] Injecting choice deflection (analog down + D-down)");
+            sSmoke.frozenChoiceIndex = gPlayState->msgCtx.choiceIndex;
+            JPAssist_QueueTestInput(BTN_DDOWN, -80, true);
+            sSmoke.controlStep = SmokeControlStep::AwaitChoiceDeflection;
+            sSmoke.framesRemaining = 30;
+            break;
+        }
+        case SmokeControlStep::PressExit:
+            SPDLOG_INFO("[JPAssist Test Lab] Injecting Study exit B");
+            InjectButton(BTN_B);
+            sSmoke.controlStep = SmokeControlStep::AwaitExit;
+            sSmoke.framesRemaining = 30;
+            break;
+        default:
+            break;
+    }
+}
 
 bool IsTemporarySession() {
     return gPlayState != nullptr && gSaveContext.fileNum == 0xFF;
@@ -105,7 +193,7 @@ bool ApplyProgressionProfile(const std::string& profile, std::string& error) {
     }
 
     // Reinitialize before every profile so scenarios are deterministic and
-    // cannot inherit event flags from a previously loaded profile.
+    // cannot inherit equipment or event flags from the previous case.
     Sram_InitDebugSave();
     gSaveContext.fileNum = 0xFF;
     gSaveContext.gameMode = GAMEMODE_NORMAL;
@@ -147,7 +235,8 @@ bool WarpTo(const TestScenario& scenario, std::string& error) {
         return false;
     }
 
-    gSaveContext.linkAge = scenario.age == "adult" ? LINK_AGE_ADULT : LINK_AGE_CHILD;
+    const bool adult = scenario.age == "adult";
+    gSaveContext.linkAge = adult ? LINK_AGE_ADULT : LINK_AGE_CHILD;
     gSaveContext.nightFlag = scenario.time == "night";
     gSaveContext.skyboxTime = gSaveContext.dayTime = scenario.time == "night" ? 0xC000 : 0x8000;
     gPlayState->nextEntranceIndex = scenario.entrance;
@@ -236,6 +325,8 @@ void FinishSuiteSession(bool passed) {
     }
 }
 
+void FinishScenario(const TestScenario& scenario, bool passed, const std::string& detail);
+
 bool ValidateScenario(const TestScenario& scenario, std::string& detail) {
     const RuntimeStatus runtime = JPAssist_GetRuntimeStatus();
     if (runtime.textId != scenario.textId) {
@@ -266,6 +357,126 @@ bool ValidateScenario(const TestScenario& scenario, std::string& detail) {
     return true;
 }
 
+void StartControlValidation(const std::string& corpusDetail) {
+    const RuntimeStatus runtime = JPAssist_GetRuntimeStatus();
+    sSmoke.corpusDetail = corpusDetail;
+    sSmoke.expectedToggleCount = runtime.languageToggleCount;
+    sSmoke.expectedLanguage = runtime.requestedLanguage;
+    sSmoke.startedAtStudyCount = runtime.studyEnterCount;
+    sSmoke.startedAtNavigationCount = runtime.studyNavigationCount;
+    sSmoke.controlStep = SmokeControlStep::PressL;
+    sSmoke.framesRemaining = 30;
+    sSmoke.detail = "Corpus passed; testing L alias";
+    SPDLOG_INFO("[JPAssist Test Lab] Starting control smoke for {} at language {}, toggle count {}",
+                sPendingScenario.id, runtime.requestedLanguage, runtime.languageToggleCount);
+}
+
+bool ControlTimedOut(const TestScenario& scenario, const std::string& expectation) {
+    if (--sSmoke.framesRemaining > 0) {
+        return false;
+    }
+    FinishScenario(scenario, false, "Control smoke timed out: " + expectation);
+    return true;
+}
+
+void FinishControlValidation(const TestScenario& scenario) {
+    FinishScenario(scenario, true,
+                   sSmoke.corpusDetail + "; controls PASS: L/Z aliases, Study enter/exit, focus consumption" +
+                       (StudyRepository_FindPage(scenario.textId, 0)->tokens.size() > 1 ? ", token navigation" : "") +
+                       (StudyRepository_FindPage(scenario.textId, 0)->isChoice ? ", choice freeze" : ""));
+}
+
+void UpdateControlValidation(const TestScenario& scenario) {
+    const RuntimeStatus runtime = JPAssist_GetRuntimeStatus();
+    switch (sSmoke.controlStep) {
+        case SmokeControlStep::AwaitL:
+            if (runtime.languageToggleCount >= sSmoke.expectedToggleCount &&
+                runtime.requestedLanguage == sSmoke.expectedLanguage) {
+                sSmoke.controlStep = SmokeControlStep::PressZ;
+                sSmoke.detail = "L alias passed; testing Z alias";
+            } else {
+                ControlTimedOut(scenario, "L did not toggle language");
+            }
+            break;
+        case SmokeControlStep::AwaitZ:
+            if (runtime.languageToggleCount >= sSmoke.expectedToggleCount &&
+                runtime.requestedLanguage == sSmoke.expectedLanguage) {
+                sSmoke.controlStep = runtime.requestedLanguage == LANGUAGE_JPN
+                                         ? SmokeControlStep::PressStudy
+                                         : SmokeControlStep::PressEnsureJapanese;
+                sSmoke.detail = "L/Z aliases passed; entering Study Mode";
+            } else {
+                ControlTimedOut(scenario, "Z did not toggle language");
+            }
+            break;
+        case SmokeControlStep::AwaitEnsureJapanese:
+            if (runtime.languageToggleCount >= sSmoke.expectedToggleCount &&
+                runtime.requestedLanguage == LANGUAGE_JPN) {
+                sSmoke.controlStep = SmokeControlStep::PressStudy;
+            } else {
+                ControlTimedOut(scenario, "could not select Japanese before Study Mode");
+            }
+            break;
+        case SmokeControlStep::AwaitStudy:
+            if (runtime.studyModeActive && runtime.studyEnterCount > sSmoke.startedAtStudyCount) {
+                if (runtime.currentPageTokenCount > 1) {
+                    sSmoke.controlStep = SmokeControlStep::PressNavigate;
+                    sSmoke.detail = "Study entry passed; testing token navigation";
+                } else if (runtime.currentPageIsChoice) {
+                    sSmoke.controlStep = SmokeControlStep::WaitForChoice;
+                    sSmoke.framesRemaining = 360;
+                } else {
+                    sSmoke.controlStep = SmokeControlStep::PressExit;
+                }
+            } else {
+                ControlTimedOut(scenario, "R did not enter Study Mode");
+            }
+            break;
+        case SmokeControlStep::AwaitNavigate:
+            if (runtime.selectedTokenIndex == 1 &&
+                runtime.studyNavigationCount > sSmoke.startedAtNavigationCount) {
+                if (runtime.currentPageIsChoice) {
+                    sSmoke.controlStep = SmokeControlStep::WaitForChoice;
+                    sSmoke.framesRemaining = 360;
+                    sSmoke.detail = "Navigation passed; waiting for native choice state";
+                } else {
+                    sSmoke.controlStep = SmokeControlStep::PressExit;
+                }
+            } else {
+                ControlTimedOut(scenario, "D-Right did not select the next token");
+            }
+            break;
+        case SmokeControlStep::WaitForChoice:
+            if (gPlayState->msgCtx.msgMode == MSGMODE_TEXT_DONE && runtime.choiceSelectionFrozen) {
+                sSmoke.controlStep = SmokeControlStep::PressChoiceDeflection;
+                sSmoke.detail = "Choice ready; testing analog/D-pad focus consumption";
+            } else {
+                ControlTimedOut(scenario, "choice page did not reach a frozen TEXT_DONE state");
+            }
+            break;
+        case SmokeControlStep::AwaitChoiceDeflection:
+            if (runtime.choiceSelectionFrozen && runtime.choiceIndex == sSmoke.frozenChoiceIndex &&
+                gPlayState->state.input[0].rel.stick_y == 0 &&
+                !CHECK_BTN_ALL(gPlayState->state.input[0].press.button, BTN_DDOWN)) {
+                sSmoke.controlStep = SmokeControlStep::PressExit;
+                sSmoke.detail = "Choice focus passed; exiting Study Mode";
+            } else {
+                ControlTimedOut(scenario, "choice moved or vertical input leaked through Study focus");
+            }
+            break;
+        case SmokeControlStep::AwaitExit:
+            if (!runtime.studyModeActive) {
+                sSmoke.controlStep = SmokeControlStep::None;
+                FinishControlValidation(scenario);
+            } else {
+                ControlTimedOut(scenario, "B did not exit Study Mode");
+            }
+            break;
+        default:
+            break;
+    }
+}
+
 bool BeginScenario(const TestScenario& scenario, bool smoke, std::string& error) {
     if (!IsTemporarySession() && !StartTemporarySession(error)) {
         return false;
@@ -282,8 +493,9 @@ bool BeginScenario(const TestScenario& scenario, bool smoke, std::string& error)
     sSmoke.framesRemaining = smoke ? 300 : 120;
     sSmoke.detail = smoke ? "Waiting for scene initialization" : "Warping; message will open after scene initialization";
     const RuntimeStatus runtime = JPAssist_GetRuntimeStatus();
-    sSmoke.startedAtToggleCount = runtime.languageToggleCount;
     sSmoke.startedAtStudyCount = runtime.studyEnterCount;
+    sSmoke.startedAtNavigationCount = runtime.studyNavigationCount;
+    sSmoke.controlStep = SmokeControlStep::None;
     return true;
 }
 
@@ -299,6 +511,15 @@ void FinishScenario(const TestScenario& scenario, bool passed, const std::string
         } else {
             sSuite.failed++;
             sSuite.failedScenarioIds.push_back(scenario.id);
+        }
+        if (sSuite.nextScenario >= TestScenario_GetAll().size()) {
+            sSuite.active = false;
+            const bool suitePassed = sSuite.failed == 0;
+            sSmoke.stage = suitePassed ? SmokeStage::Passed : SmokeStage::Failed;
+            sSmoke.detail = fmt::format("Suite complete: {} passed, {} failed", sSuite.passed, sSuite.failed);
+            WriteSuiteSummary();
+            FinishSuiteSession(suitePassed);
+            return;
         }
         // Injected messages must finish their normal close path before another
         // scene transition. Warping with an active message can leave animation
@@ -381,15 +602,22 @@ void UpdateSmoke() {
         return;
     }
     const TestScenario* scenario = &sPendingScenario;
-    if (!sSceneInitializedAfterWarp || gPlayState == nullptr || GET_PLAYER(gPlayState) == nullptr) {
+    if (!sSceneInitializedAfterWarp || gPlayState == nullptr || !gPlayState->state.running ||
+        GET_PLAYER(gPlayState) == nullptr) {
         if (--sSmoke.framesRemaining <= 0) {
             FinishScenario(*scenario, false, "Timed out waiting for an active scene/player");
         }
         return;
     }
 
+    if (sSmoke.controlStep != SmokeControlStep::None) {
+        UpdateControlValidation(*scenario);
+        return;
+    }
+
     if (sSmoke.stage == SmokeStage::WaitingForScene) {
-        // Give actors and the message context a few frames to settle after OnSceneInit.
+        // Give actors and the message context a few frames to settle after the
+        // incoming transition has fully completed.
         if (sPostSceneDelay-- > 0) {
             return;
         }
@@ -407,8 +635,13 @@ void UpdateSmoke() {
             sSmoke.detail = fmt::format("Scenario ready: text {:#06x}", scenario->textId);
             return;
         }
-        const bool passed = ValidateScenario(*scenario, detail);
-        FinishScenario(*scenario, passed, detail);
+        if (!ValidateScenario(*scenario, detail)) {
+            FinishScenario(*scenario, false, detail);
+        } else if (!scenario->validateControls) {
+            FinishScenario(*scenario, true, detail + "; persistence-only scenario (controls skipped)");
+        } else {
+            StartControlValidation(detail);
+        }
     } else if (--sSmoke.framesRemaining <= 0) {
         FinishScenario(*scenario, false, "Timed out waiting for JP Assist to observe the requested message");
     }
@@ -561,7 +794,7 @@ class TestLabWindow final : public Ship::GuiWindow {
                     static_cast<unsigned long long>(runtime.studyEnterCount),
                     static_cast<unsigned long long>(runtime.studyNavigationCount),
                     static_cast<unsigned long long>(runtime.saveToggleCount));
-        ImGui::TextDisabled("Automated smoke verifies warp -> message -> corpus. L/Z, R, layout, and glyph appearance remain manual.");
+        ImGui::TextDisabled("Smoke verifies warp, corpus, L/Z, R, navigation, focus consumption, and choice freeze.");
     }
 };
 
@@ -707,11 +940,12 @@ void JPAssistTestLab_Register() {
     }
     sWindow = std::make_shared<TestLabWindow>(CVAR_WINDOW("JPAssistTestLab"), "JP Assist Test Lab", ImVec2(620, 680));
     Ship::Context::GetRawInstance()->GetWindow()->GetGui()->AddGuiWindow(sWindow);
+    GameInteractor::Instance->RegisterGameHook<GameInteractor::OnDialogMessage>(InjectSmokeControl);
     GameInteractor::Instance->RegisterGameHook<GameInteractor::OnGameFrameUpdate>(UpdateSmoke);
-    GameInteractor::Instance->RegisterGameHook<GameInteractor::OnSceneInit>([](int16_t) {
+    GameInteractor::Instance->RegisterGameHook<GameInteractor::OnTransitionEnd>([](int16_t) {
         if (sSmoke.stage == SmokeStage::WaitingForScene) {
             sSceneInitializedAfterWarp = true;
-            sPostSceneDelay = 15;
+            sPostSceneDelay = 3;
         }
     });
     auto console = Ship::Context::GetRawInstance()->GetConsole();

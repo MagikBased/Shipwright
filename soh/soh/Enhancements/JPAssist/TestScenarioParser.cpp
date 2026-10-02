@@ -47,6 +47,7 @@ std::vector<TestScenario> TestScenario_ParseManifest(const nlohmann::json& root)
         scenario.time = entry.value("time", "day");
         scenario.textId = static_cast<uint16_t>(ParseInteger(entry.at("textId")));
         scenario.language = ParseLanguage(entry.value("language", "japanese"));
+        scenario.validateControls = entry.value("validateControls", true);
 
         if (entry.contains("position")) {
             const auto& position = entry["position"];
