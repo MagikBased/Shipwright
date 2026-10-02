@@ -1092,7 +1092,7 @@ static void Message_DrawJPAssistNativeHighlight(PlayState* play, Gfx** gfxP) {
                     Message_DrawJPAssistGlyphGlow(play, gfxP, x, y, glyphSize);
                 }
                 x += Message_GetJpnGlyphAdvance(character);
-                normalizedIndex++;
+                normalizedIndex += JPAssist_GetNormalizedGlyphLength(character);
                 break;
         }
     }

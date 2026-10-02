@@ -12,6 +12,34 @@ typedef struct JPAssistNativeHighlight {
     uint32_t length;
 } JPAssistNativeHighlight;
 
+// Controller icons occupy one native textbox glyph but are expanded to
+// readable ASCII markers in the normalized corpus. Return that marker length
+// so native rendering can remain in the same coordinate space as token spans.
+static inline uint32_t JPAssist_GetNormalizedGlyphLength(uint16_t character) {
+    switch (character) {
+        case 0x839F: // [A]
+        case 0x83A0: // [B]
+        case 0x83A1: // [C]
+        case 0x83A2: // [L]
+        case 0x83A3: // [R]
+        case 0x83A4: // [Z]
+            return 3;
+        case 0x83A5: // [C-Up]
+            return 6;
+        case 0x83A6: // [C-Down]
+        case 0x83A7: // [C-Left]
+            return 8;
+        case 0x83A8: // [C-Right]
+            return 9;
+        case 0x83A9: // [Z-target]
+            return 10;
+        case 0x83AA: // [Control Stick]
+            return 15;
+        default:
+            return 1;
+    }
+}
+
 // C-compatible render bridge. The native message renderer asks only for the
 // selected normalized-text span; it remains independent of corpus and study
 // state implementation details.

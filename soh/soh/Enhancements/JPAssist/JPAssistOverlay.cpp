@@ -37,9 +37,18 @@ OverlayState sState;
 std::mutex sStateMutex;
 
 constexpr const char* kDPadGlyph = "JPAssist.DialogueGlyph.DPad";
-constexpr const char* kCRightGlyph = "JPAssist.DialogueGlyph.CRight";
 constexpr const char* kAGlyph = "JPAssist.DialogueGlyph.A";
+constexpr const char* kBGlyph = "JPAssist.DialogueGlyph.B";
+constexpr const char* kCGlyph = "JPAssist.DialogueGlyph.C";
+constexpr const char* kLGlyph = "JPAssist.DialogueGlyph.L";
 constexpr const char* kRGlyph = "JPAssist.DialogueGlyph.R";
+constexpr const char* kZGlyph = "JPAssist.DialogueGlyph.Z";
+constexpr const char* kCUpGlyph = "JPAssist.DialogueGlyph.CUp";
+constexpr const char* kCDownGlyph = "JPAssist.DialogueGlyph.CDown";
+constexpr const char* kCLeftGlyph = "JPAssist.DialogueGlyph.CLeft";
+constexpr const char* kCRightGlyph = "JPAssist.DialogueGlyph.CRight";
+constexpr const char* kZTargetGlyph = "JPAssist.DialogueGlyph.ZTarget";
+constexpr const char* kControlStickGlyph = "JPAssist.DialogueGlyph.ControlStick";
 
 class JPAssistOverlayWindow final : public Ship::GuiWindow {
   public:
@@ -63,9 +72,18 @@ class JPAssistOverlayWindow final : public Ship::GuiWindow {
         // D-pad character, so use Shipwright's native HUD D-pad art for this
         // one control instead of trying to load an absent resource.
         LoadGlyph(kDPadGlyph, gDPadTex, ImVec4(0.86f, 0.88f, 0.92f, 1.0f));
-        LoadGlyph(kCRightGlyph, gMsgKanji83A8ButtonCRightTex, ImVec4(1.0f, 0.82f, 0.22f, 1.0f));
         LoadGlyph(kAGlyph, gMsgKanji839FButtonATex, ImVec4(0.35f, 0.72f, 1.0f, 1.0f));
+        LoadGlyph(kBGlyph, gMsgKanji83A0ButtonBTex, ImVec4(0.35f, 0.90f, 0.42f, 1.0f));
+        LoadGlyph(kCGlyph, gMsgKanji83A1ButtonCTex, ImVec4(1.0f, 0.82f, 0.22f, 1.0f));
+        LoadGlyph(kLGlyph, gMsgKanji83A2ButtonLTex, ImVec4(0.86f, 0.88f, 0.92f, 1.0f));
         LoadGlyph(kRGlyph, gMsgKanji83A3ButtonRTex, ImVec4(0.86f, 0.88f, 0.92f, 1.0f));
+        LoadGlyph(kZGlyph, gMsgKanji83A4ButtonZTex, ImVec4(0.86f, 0.88f, 0.92f, 1.0f));
+        LoadGlyph(kCUpGlyph, gMsgKanji83A5ButtonCUpTex, ImVec4(1.0f, 0.82f, 0.22f, 1.0f));
+        LoadGlyph(kCDownGlyph, gMsgKanji83A6ButtonCDownTex, ImVec4(1.0f, 0.82f, 0.22f, 1.0f));
+        LoadGlyph(kCLeftGlyph, gMsgKanji83A7ButtonCLeftTex, ImVec4(1.0f, 0.82f, 0.22f, 1.0f));
+        LoadGlyph(kCRightGlyph, gMsgKanji83A8ButtonCRightTex, ImVec4(1.0f, 0.82f, 0.22f, 1.0f));
+        LoadGlyph(kZTargetGlyph, gMsgKanji83A9ZTargetSignTex, ImVec4(0.45f, 0.68f, 1.0f, 1.0f));
+        LoadGlyph(kControlStickGlyph, gMsgKanji83AAControlStickTex, ImVec4(0.86f, 0.88f, 0.92f, 1.0f));
     }
     void UpdateElement() override {
     }
@@ -138,11 +156,9 @@ class JPAssistOverlayWindow final : public Ship::GuiWindow {
             ImGui::TableSetColumnIndex(0);
             const float englishColumnLeft = ImGui::GetCursorScreenPos().x;
             const float englishColumnRight = englishColumnLeft + ImGui::GetContentRegionAvail().x;
-            ImGui::PushTextWrapPos(0.0f);
-            ImGui::TextUnformatted(mFrameState.studyPage.english.empty() ? "Translation unavailable"
-                                                                         : mFrameState.studyPage.english.c_str());
-            ImGui::PopTextWrapPos();
-            const float englishTextBottom = ImGui::GetItemRectMax().y;
+            const float englishTextBottom = DrawEnglishText(
+                mFrameState.studyPage.english.empty() ? "Translation unavailable" : mFrameState.studyPage.english,
+                englishColumnRight - englishColumnLeft);
 
             ImGui::TableSetColumnIndex(1);
             const float headerRight = ImGui::GetCursorScreenPos().x + ImGui::GetContentRegionAvail().x;
@@ -192,6 +208,106 @@ class JPAssistOverlayWindow final : public Ship::GuiWindow {
         if (!mFast3dGui->HasTextureByName(cacheName)) {
             mFast3dGui->LoadGuiTexture(cacheName, resourcePath, "", tint);
         }
+    }
+
+    float DrawEnglishText(const std::string& text, float availableWidth) const {
+        struct GlyphMarker {
+            const char* marker;
+            const char* texture;
+        };
+        // Put the longer C-button names before the generic [C] marker.
+        constexpr GlyphMarker markers[] = {
+            { "[Control Stick]", kControlStickGlyph },
+            { "[C-Right]", kCRightGlyph },
+            { "[C-Down]", kCDownGlyph },
+            { "[C-Left]", kCLeftGlyph },
+            { "[Z-target]", kZTargetGlyph },
+            { "[C-Up]", kCUpGlyph },
+            { "[A]", kAGlyph },
+            { "[B]", kBGlyph },
+            { "[C]", kCGlyph },
+            { "[L]", kLGlyph },
+            { "[R]", kRGlyph },
+            { "[Z]", kZGlyph },
+        };
+
+        const ImVec2 start = ImGui::GetCursorScreenPos();
+        const float right = start.x + std::max(availableWidth, 1.0f);
+        const float glyphSize = 16.0f * mFrameScale;
+        const float lineHeight = std::max(ImGui::GetTextLineHeight(), glyphSize);
+        const ImU32 textColor = ImGui::GetColorU32(ImGuiCol_Text);
+        ImDrawList* drawList = ImGui::GetWindowDrawList();
+        float x = start.x;
+        float y = start.y;
+
+        const auto nextLine = [&]() {
+            x = start.x;
+            y += lineHeight;
+        };
+        const auto findMarker = [&](size_t offset) -> const GlyphMarker* {
+            for (const GlyphMarker& marker : markers) {
+                const size_t length = std::char_traits<char>::length(marker.marker);
+                if (text.compare(offset, length, marker.marker) == 0) {
+                    return &marker;
+                }
+            }
+            return nullptr;
+        };
+
+        for (size_t offset = 0; offset < text.size();) {
+            if (text[offset] == '\n') {
+                nextLine();
+                ++offset;
+                continue;
+            }
+
+            if (text[offset] == ' ' || text[offset] == '\t') {
+                const float spaceWidth = ImGui::CalcTextSize(text[offset] == '\t' ? "    " : " ").x;
+                if (x + spaceWidth > right && x > start.x) {
+                    nextLine();
+                } else {
+                    x += spaceWidth;
+                }
+                ++offset;
+                continue;
+            }
+
+            if (const GlyphMarker* marker = findMarker(offset); marker != nullptr) {
+                if (x + glyphSize > right && x > start.x) {
+                    nextLine();
+                }
+                ImTextureID texture =
+                    mFast3dGui != nullptr ? mFast3dGui->GetTextureByName(marker->texture) : nullptr;
+                if (texture != nullptr) {
+                    const float glyphY = y + (lineHeight - glyphSize) * 0.5f;
+                    drawList->AddImage(texture, ImVec2(x, glyphY), ImVec2(x + glyphSize, glyphY + glyphSize));
+                    x += glyphSize;
+                } else {
+                    drawList->AddText(ImVec2(x, y), textColor, marker->marker);
+                    x += ImGui::CalcTextSize(marker->marker).x;
+                }
+                offset += std::char_traits<char>::length(marker->marker);
+                continue;
+            }
+
+            size_t end = offset + 1;
+            while (end < text.size() && text[end] != '\n' && text[end] != ' ' && text[end] != '\t' &&
+                   findMarker(end) == nullptr) {
+                ++end;
+            }
+            const char* wordBegin = text.data() + offset;
+            const char* wordEnd = text.data() + end;
+            const float wordWidth = ImGui::CalcTextSize(wordBegin, wordEnd).x;
+            if (x + wordWidth > right && x > start.x) {
+                nextLine();
+            }
+            drawList->AddText(ImVec2(x, y), textColor, wordBegin, wordEnd);
+            x += wordWidth;
+            offset = end;
+        }
+
+        ImGui::Dummy(ImVec2(availableWidth, lineHeight + y - start.y));
+        return ImGui::GetItemRectMax().y;
     }
 
     void DrawControlHints(float left, float right, float textBottom) const {

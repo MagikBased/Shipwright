@@ -14,6 +14,7 @@ endif()
 add_executable(jpassist_tests
     test_dialogue_presentation.cpp
     test_message_parser.cpp
+    test_native_highlight.cpp
     test_native_page_tracker.cpp
     test_overlay_layout.cpp
     test_scenario_parser.cpp
