@@ -38,6 +38,18 @@
       "expected": { "pages": 1, "tokens": 6, "choiceCount": 2 }
     },
     {
+      "id": "kokiri_mido_pages",
+      "label": "Kokiri — Mido follow-up pages",
+      "description": "Two distinct Japanese pages used to verify native A advancement and live Study card synchronization.",
+      "progressionProfile": "debug_child",
+      "entrance": "0x00BB",
+      "age": "child",
+      "time": "day",
+      "textId": "0x1031",
+      "language": "japanese",
+      "expected": { "pages": 2, "tokens": 1, "choiceCount": 0 }
+    },
+    {
       "id": "adult_kakariko",
       "label": "Adult Kakariko corpus check",
       "description": "Adult/time/progression setup plus a regular corpus-backed message.",

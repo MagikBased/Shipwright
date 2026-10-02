@@ -56,6 +56,8 @@ enum class SmokeControlStep {
     AwaitScrollDown,
     PressScrollUp,
     AwaitScrollUp,
+    PressAdvance,
+    AwaitAdvance,
     WaitForChoice,
     PressChoiceDeflection,
     AwaitChoiceDeflection,
@@ -73,6 +75,8 @@ struct SmokeState {
     uint64_t expectedSaveToggleCount = 0;
     uint64_t expectedScrollCount = 0;
     uint8_t frozenChoiceIndex = 0;
+    int initialPageIndex = 0;
+    int advancePressCount = 0;
     bool initiallySaved = false;
     SmokeControlStep controlStep = SmokeControlStep::None;
     std::string corpusDetail;
@@ -157,6 +161,13 @@ void InjectSmokeControl() {
             sSmoke.expectedScrollCount++;
             sSmoke.controlStep = SmokeControlStep::AwaitScrollUp;
             sSmoke.framesRemaining = 30;
+            break;
+        case SmokeControlStep::PressAdvance:
+            SPDLOG_INFO("[JPAssist Test Lab] Injecting native dialogue advance A (attempt {})",
+                        sSmoke.advancePressCount + 1);
+            InjectButton(BTN_A);
+            sSmoke.advancePressCount++;
+            sSmoke.controlStep = SmokeControlStep::AwaitAdvance;
             break;
         case SmokeControlStep::PressChoiceDeflection: {
             SPDLOG_INFO("[JPAssist Test Lab] Injecting choice deflection (analog down + D-down)");
@@ -375,6 +386,8 @@ void StartControlValidation(const std::string& corpusDetail) {
     sSmoke.corpusDetail = corpusDetail;
     sSmoke.startedAtStudyCount = runtime.studyEnterCount;
     sSmoke.startedAtNavigationCount = runtime.studyNavigationCount;
+    sSmoke.initialPageIndex = runtime.pageIndex;
+    sSmoke.advancePressCount = 0;
     sSmoke.controlStep = SmokeControlStep::PressStudy;
     sSmoke.framesRemaining = 30;
     sSmoke.detail = "Corpus passed; entering Study Mode";
@@ -389,11 +402,18 @@ bool ControlTimedOut(const TestScenario& scenario, const std::string& expectatio
     return true;
 }
 
+bool ShouldValidateNativeAdvance(const TestScenario& scenario) {
+    const StudyPage* firstPage = StudyRepository_FindPage(scenario.textId, 0);
+    const StudyPage* secondPage = StudyRepository_FindPage(scenario.textId, 1);
+    return firstPage != nullptr && secondPage != nullptr && firstPage->japanese != secondPage->japanese;
+}
+
 void FinishControlValidation(const TestScenario& scenario) {
     FinishScenario(scenario, true,
                    sSmoke.corpusDetail +
                        "; controls PASS: R Study enter/exit, save/restore, D-pad scroll, focus consumption" +
                        (StudyRepository_FindPage(scenario.textId, 0)->tokens.size() > 1 ? ", token navigation" : "") +
+                       (ShouldValidateNativeAdvance(scenario) ? ", native advancement while studying" : "") +
                        (StudyRepository_FindPage(scenario.textId, 0)->isChoice ? ", choice freeze" : ""));
 }
 
@@ -472,12 +492,36 @@ void UpdateControlValidation(const TestScenario& scenario) {
                     sSmoke.controlStep = SmokeControlStep::WaitForChoice;
                     sSmoke.framesRemaining = 360;
                     sSmoke.detail = "Study interactions passed; waiting for native choice state";
+                } else if (ShouldValidateNativeAdvance(scenario)) {
+                    sSmoke.controlStep = SmokeControlStep::PressAdvance;
+                    sSmoke.framesRemaining = 60;
+                    sSmoke.detail = "Study interactions passed; testing native A advancement";
                 } else {
                     sSmoke.controlStep = SmokeControlStep::PressExit;
                     sSmoke.detail = "Study interactions passed; exiting Study Mode";
                 }
             } else {
                 ControlTimedOut(scenario, "D-Up did not scroll or leaked through Study focus");
+            }
+            break;
+        case SmokeControlStep::AwaitAdvance:
+            if (runtime.pageIndex > sSmoke.initialPageIndex) {
+                if (runtime.studyModeActive && runtime.selectedTokenIndex == 0) {
+                    sSmoke.controlStep = SmokeControlStep::PressExit;
+                    sSmoke.detail = "Native A advancement passed; Study Mode followed the new page";
+                } else {
+                    FinishScenario(scenario, false,
+                                   "Native page advanced, but Study Mode closed or token selection did not reset");
+                }
+            } else if (sSmoke.advancePressCount < 6 && sSmoke.framesRemaining < 60 &&
+                       sSmoke.framesRemaining % 10 == 0) {
+                // A does not skip every native typewriter state. Retry at a
+                // human-scale cadence until the page reaches AWAIT_NEXT;
+                // the strict cap and timeout still catch swallowed input.
+                sSmoke.framesRemaining--;
+                sSmoke.controlStep = SmokeControlStep::PressAdvance;
+            } else {
+                ControlTimedOut(scenario, "A did not advance the native page while Study Mode remained open");
             }
             break;
         case SmokeControlStep::WaitForChoice:

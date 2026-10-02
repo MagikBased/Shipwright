@@ -6,15 +6,15 @@ boundary so deferred testing can start from a known point.
 ## Scaffolded vertical slice
 
 - Read-only access to both Ship of Harkinian dialogue tables.
-- L and Z as interchangeable aliases for one language-toggle action.
-- Corpus-backed Japanese and English page display without changing the save's
-  global language or mutating the active message context.
+- Native Japanese dialogue plus a corpus-backed English reference inside the
+  combined Study card, without changing the save's global language or mutating
+  the active message context.
 - R enters Study Mode on any Japanese page with token data. Choice selection
   is frozen while the study panel owns focus, including analog-stick input.
 - D-Left/D-Right select occurrences; D-Up/D-Down scroll long cards; C-Right
-  saves a vocabulary item; R or B closes the panel. Native dialogue advance
-  inputs are consumed while focused.
-- Frame-safe ImGui dialogue overlay and Anki-style study card.
+  saves a vocabulary item; R or B closes the panel. A and C-Up continue native
+  dialogue while the card follows page and chained text-ID changes.
+- Frame-safe, bottom-centered ImGui English-reference and vocabulary card.
 - Japanese overlay text uses Shipwright's bundled Noto Sans Japanese font and
   logs a graceful fallback warning if the asset is unavailable.
 - Separate JSON progress for saved words, encounter counts, timestamps, and a

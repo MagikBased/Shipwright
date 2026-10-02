@@ -12,8 +12,8 @@ not create or modify a normal save. Start from any loaded scene, then open
 2. Pick a scenario and choose **Load scenario** for inspection, **Run smoke
    check** for one automated check, or **Run all smoke checks** for the full
    sequential suite.
-3. Smoke checks inject L and Z independently, enter Study Mode with R, navigate
-   with D-Right, exit with B, and verify vertical choice input is consumed.
+3. Smoke checks enter Study Mode with R, navigate with D-Right, exercise saving
+   and scrolling, exit with B, and verify vertical choice input is consumed.
    Use **Load scenario** afterward for physical-controller and visual checks.
 4. Review `jp_assist_smoke_results.json` in the application directory for the
    last result per scenario.
@@ -106,15 +106,14 @@ full suite, so the temporary scene remains available for inspection.
 
 | Check | Scenario | Action | Pass condition |
 |---|---|---|---|
-| L alias | `saria_first_greeting` | Disable Z alias; press L twice | JP/EN changes twice; dialogue does not advance |
-| Z alias | `saria_first_greeting` | Disable L alias; press Z twice | JP/EN changes twice; targeting/gameplay state does not change |
-| Study focus | `mido_house_sign` | R, D-Right, D-Left, C-Right, B | Counters increment; textbox remains on the same page; saved state updates |
+| Study focus | `mido_house_sign` | R, D-Right, D-Left, C-Right, B | Counters increment; Study-owned inputs do not alter native choices; saved state updates |
+| Advance while studying | Any multi-page message | Press R, then advance with A and C-Up | Native dialogue advances, Study Mode remains open, the English line updates, and token selection resets to the first token |
 | Native highlight | `adult_kakariko` | R, then move through tokens with D-Left/D-Right | Blue backlight follows the complete selected word in the original Japanese textbox without covering its glyphs |
-| Long card | `adult_kakariko` | R, then D-Up/D-Down | Body scrolls; header/footer remain visible; text stays inside the card |
+| Long card | `adult_kakariko` | R, then D-Up/D-Down | Long definitions and notes scroll; text stays inside the compact card |
 | Choice focus | `know_it_all_choice` | Select the second answer, press R, then move stick and D-pad vertically | Choice index remains unchanged and status says `selection frozen`; after R/B closes Study Mode, native choice movement resumes |
 | History | Any three scenarios | Open **Dialogue History** and search Japanese, English, then `0x103e` | Newest-first entries filter correctly and both languages wrap without clipping |
-| Scaling | `adult_kakariko` | Check 720p, 1080p, ultrawide; card scales 0.70/1.00/1.50 | No overlap hides the selected word, definition, or fixed controls |
-| Lifecycle | Any multi-page message | Toggle rapidly near page changes, text-ID jumps, and close | No stale card, input leak, hang, or crash |
+| Scaling | `adult_kakariko` | Check 720p, 1080p, ultrawide; card scales 0.70/1.00/1.50 | No overlap hides the selected word or definition |
+| Lifecycle | Any multi-page message | Advance rapidly near page changes, text-ID jumps, and close | No stale card, input leak, hang, or crash |
 
 Ocarina prompts, shops, and actor-scripted cutscenes must be reached through
 normal gameplay rather than injected as standalone messages. Record the game

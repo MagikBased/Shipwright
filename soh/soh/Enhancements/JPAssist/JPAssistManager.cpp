@@ -267,13 +267,15 @@ void HandleStudyModeInput(PlayState* play, MessageContext* msgCtx, Input* input)
         }
     }
 
-    // Consume the native advance/close inputs so the conversation can't
-    // progress while the study panel has focus (design doc 5). B is also
-    // our own exit binding above, but it returns before reaching here, so
-    // clearing it too is just defensive - Message_ShouldAdvance's
-    // SkipText-cvar branch reads cur.button for B, not just press.button.
-    input->press.button &= ~(BTN_A | BTN_B | BTN_CUP | BTN_R | BTN_DUP | BTN_DDOWN | BTN_DLEFT | BTN_DRIGHT | BTN_CRIGHT);
-    input->cur.button &= ~(BTN_A | BTN_B | BTN_CUP | BTN_R | BTN_DUP | BTN_DDOWN | BTN_DLEFT | BTN_DRIGHT | BTN_CRIGHT);
+    // Consume only Study Mode's own controls. A and C-Up deliberately remain
+    // untouched so Message_ShouldAdvance can reveal/advance the native text
+    // while the card stays open and follows the newly decoded page. B is our
+    // close binding above; keeping it in this defensive mask also covers the
+    // SkipText branch, which reads cur.button rather than only press.button.
+    constexpr uint16_t studyOwnedButtons =
+        BTN_B | BTN_R | BTN_DUP | BTN_DDOWN | BTN_DLEFT | BTN_DRIGHT | BTN_CRIGHT;
+    input->press.button &= ~studyOwnedButtons;
+    input->cur.button &= ~studyOwnedButtons;
 
     DrawStudyCard();
 }
@@ -336,20 +338,24 @@ void OnDialogMessage() {
         sTrackedTextId = msgCtx->textId;
         sCurrentPageIndex = 0;
         sNativePageTracker.Reset();
-        // "A newly opened message resets token selection to the first
-        // content word" / "Closing a textbox always closes Study Mode"
-        // (design doc 5) - a TEXTID jump is as much "a newly opened
-        // message" as a fresh conversation is, so exit here too rather
-        // than leaving Study Mode attached to whatever the jump landed on.
-        ExitStudyMode();
-        // Clearing the tracking flag alone doesn't touch whatever toast is
-        // still on screen: TextDrawNotification entries fade out on their
-        // own timer regardless, so a jump mid-toggle left the *previous*
-        // message's overlay text visibly lingering into the new one until
-        // some later event happened to clear it - live-tested as "shows a
-        // stale message before correcting itself."
+        // A TEXTID jump is part of the active conversation, so preserve an
+        // open Study card and retarget it to the new message's first page.
+        // A genuinely separate conversation has already passed through the
+        // closing state below, which exits Study Mode.
         GetOverlay()->ClearNotifications();
-        JPAssist::JPAssistOverlay_Hide();
+        if (sStudyModeActive) {
+            sSelectedTokenIndex = 0;
+            sFrozenChoiceValid = false;
+            const JPAssist::StudyPage* page = CurrentStudyPage();
+            if (page != nullptr && !page->tokens.empty()) {
+                RecordTokenEncounter(0);
+                DrawStudyCard();
+            } else {
+                ExitStudyMode();
+            }
+        } else {
+            JPAssist::JPAssistOverlay_Hide();
+        }
         RecordHistoryForOpenedMessage(sTrackedTextId);
         SPDLOG_INFO("[JPAssist] Dialogue opened: textId {:#x}", sTrackedTextId);
     }
@@ -400,9 +406,9 @@ void OnDialogMessage() {
         sQueuedTestHasStickY = false;
     }
 
-    // Study Mode owns R, navigation, save, and close input while active and
-    // consumes native advance controls so the conversation cannot progress
-    // underneath the card.
+    // Study Mode owns R/B, navigation, and save input while active. Native A
+    // and C-Up advancement remains available, and page tracking above keeps
+    // the card synchronized with the resulting dialogue.
     HandleStudyModeInput(play, msgCtx, input);
 }
 

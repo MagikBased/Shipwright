@@ -80,7 +80,7 @@ The native dialogue remains Japanese. The English reference is presented only in
 
 ### 4.3 Study Mode
 
-Study Mode pauses dialogue advancement and consumes its own controller input. The game world may continue rendering, but gameplay inputs must not leak through.
+Study Mode keeps the vocabulary card open while dialogue continues. It consumes only its own controller inputs; A and C-Up still reveal or advance native text, and the card follows the newly decoded page.
 
 Suggested controls:
 
@@ -88,7 +88,7 @@ Suggested controls:
 |---|---|
 | D-pad Left / Right | Select previous or next token |
 | D-pad Up / Down | Move between dictionary senses or card sections |
-| A | Reveal or expand the definition |
+| A or C-Up | Reveal or advance native dialogue while keeping the card open |
 | B | Close the card, then exit Study Mode |
 | C-Right | Add or remove the word from the study list |
 | R | Exit Study Mode |
@@ -151,9 +151,9 @@ Important state rules:
 - Study Mode is only available when Japanese text and token data are available.
 - Choice selection is frozen while the study panel has focus.
 - A newly opened message resets token selection to the first content word.
-- A page change resets selection to the first token on that page.
+- A page or chained text-ID change keeps Study Mode open, updates the English line and definition, and resets selection to the first token.
 - Closing a textbox always closes Study Mode.
-- Cutscenes must remain paused or otherwise protected from advancing while the user studies.
+- Study navigation and save inputs must not leak into native choice or gameplay controls.
 
 ## 6. Technical design
 
@@ -567,9 +567,9 @@ Built as an extension of the Milestone 1 spike (`JPAssistManager.cpp` plus a new
 - R enters/exits Study Mode, gated on the native display language being Japanese and the current page not being a choice page (reusing D-pad for token navigation on a choice page would fight the native choice-selection input, so Study Mode simply isn't offered there for this prototype).
 - Entering/exiting, and the D-pad token navigation, reuse the existing `GameInteractor::OnDialogMessage` per-frame hook from Milestone 1 - no new hooks needed.
 - The card is a hard-coded `StudyRepository` token list (ordinary vocabulary words, not extracted dialogue - see section 7.4), redrawn every frame from current state via `GameOverlay::TextDrawNotification` with a very short duration, rather than only on discrete navigation events. This was a deliberate change from Milestone 1's event-triggered reposting, which went stale under a game-logic/render-thread race; continuous per-frame redraw sidesteps that class of bug rather than trying to catch every triggering event correctly.
-- Native dialogue advancement is blocked while Study Mode has focus by clearing `BTN_A`/`BTN_B`/`BTN_CUP` from `play->state.input[0]` before `Message_Update`'s mode switch reads them later in the same frame - the same input-consumption pattern `soh/soh/Enhancements/Items/ArrowCycle.cpp` uses to suppress shield input while cycling arrows, not a new mechanism.
+- Historical spike: native dialogue advancement was initially blocked while Study Mode had focus. The current behavior consumes only Study-owned inputs and deliberately passes A/C-Up through so the card can remain open across page and chained text-ID changes.
 - Historical spike: Study Mode initially supported L/Z language toggling. The current combined card shows English alongside the vocabulary entry, so that extra state and input path are no longer needed.
-- Live-tested: entering/exiting via R across several conversations and dialogue jumps correctly force-exiting it, without crashing or letting a native advance through.
+- Live-tested: entering/exiting via R across several conversations; the current implementation keeps the card synchronized across native page and dialogue jumps.
 
 **Known limitation:** the hard-coded Japanese surface/reading strings render as `?`/tofu in the card, because nothing in this path has loaded a CJK-capable font into ImGui's font atlas - only the native N64 renderer has real kanji textures. This is the same underlying gap as Milestone 1's undecoded Japanese overlay text, not a new problem; a real font/kanji-atlas solution is out of scope until Milestone 3's corpus and font work exists.
 
@@ -624,7 +624,7 @@ Built as `scripts/jp_assist/{extract_dialogue,message_codes,tokenize_dialogue,ov
 - Settings moved from a hardcoded-on spike to a real CVar-backed menu (`Enhancements > JP Assist` in the SoH settings UI). The current menu keeps the master enable, card scale, and opacity controls; the prototype's L/Z alias settings were removed with the ordinary translation overlay. Wiring this in required declaring `SohGui::mSohMenu` as an `extern` *inside* `namespace SohGui` (not just qualified with `SohGui::` at global scope) - the two forms produce different mangled symbols, so the global-scope form linked but never resolved to the real definition. `WidgetPath`/`SECTION_COLUMN_1`, by contrast, are global-namespace types despite living in a `SohGui`-adjacent header, so they must *not* be qualified.
 - Dialogue history is a bounded (20-entry), oldest-trimmed `std::vector<HistoryEntry>` recorded whenever a new message opens, persisted alongside the existing saved-token/encounter-count data in `jp_assist_progress.json` under a new `messageHistory` array, and readable through both the `jpassist_history` console command and a newest-first searchable GUI. The GUI filters Japanese, English, and hexadecimal text IDs. Reused the exact "bind `.value()` to a named variable before iterating" pattern from the Milestone 4 UB fix rather than re-risking the same dangling-reference bug on the new array.
 - Stress-tested the extended `StudyPersistence_Load()` against 14 malformed-JSON cases (empty file, truncated JSON, wrong types at every field, non-UTF8 garbage, deeply nested garbage, etc.) via a standalone repro compiled against the exact parsing logic - all handled without crashing, consistent with design doc 14's "a malformed progress file must never prevent the game from starting."
-- Accessibility review against section 12: confirmed by code inspection that `tts.cpp`'s dialogue-narration hook reads only `msgCtx` state fields, never button-press bits, so Study Mode's `BTN_A`/`BTN_B`/`BTN_CUP` input-consumption cannot suppress narration; its D-pad reads live in an unrelated pause-menu-narration path. No color-only signaling or simultaneous-press requirement was introduced.
+- Accessibility review against section 12: confirmed by code inspection that `tts.cpp`'s dialogue-narration hook reads only `msgCtx` state fields. Study Mode leaves A/C-Up native advancement intact and introduces no color-only signaling or simultaneous-press requirement.
 - Added a lightweight ROM/version compatibility guard (`CheckRomCompatibilityOnce()`, run once on the first real dialogue) that looks up a small set of known test text IDs (Saria's first greeting, Mido's House sign, the Know-It-All Brothers choice) in both language tables and logs a warning naming which table is missing data if any aren't found - a cheap signal that a different ROM/`oot.o2r` than the N64 NTSC 1.2 this spike was built against may not match JP Assist's recorded dialogues. Live-verified in-game: triggering Saria's greeting (text ID `0x1001`) via the Dev Tools Message Viewer produced `"[JPAssist] Compatibility check: all known test dialogues found in both language tables (N64 NTSC 1.2 expected)."`, and the same trigger round-tripped through to `jp_assist_progress.json`'s `messageHistory` array, closing out the one live-verification gap left over from Milestone 4's history work.
 - Along the way, hit and worked around a **pre-existing, unrelated SoH bug**: the Dev Tools Message Viewer's `Display Message` handler (`MessageViewer.cpp`) calls `std::stoi` on the Text ID field with no empty-string guard, so clicking the button with an empty field throws `std::invalid_argument` and terminates the process. Not a JP Assist bug (confirmed via `grep` - the only `stoi` call in that file, unrelated to any JPAssist code path) and out of scope for this mod, but worth a heads-up since it's easy to hit while testing.
 
@@ -667,13 +667,11 @@ Built as `scripts/jp_assist/{extract_dialogue,message_codes,tokenize_dialogue,ov
 
 ## 17. Recommended initial decisions
 
-- Accept both L and Z as interchangeable Language Toggle aliases.
 - Use R to enter or exit Study Mode.
-- Never require an L+Z chord.
 - Keep bindings configurable from the start.
-- Freeze dialogue and cutscene progression in Study Mode.
+- Allow A/C-Up dialogue progression while Study Mode remains open and synchronized.
 - Show concise definitions immediately; make quiz reveal optional.
 - Navigate content words and meaningful expressions by default, with particles available through a setting.
 - Generate the corpus locally from the user's N64 NTSC 1.2 archive first.
 - Implement saved-word export before live Anki synchronization.
-- Treat language switching as the first technical spike because it determines the presentation architecture for the rest of the mod.
+- Keep the presentation adapter boundary reusable even though SoH exposes only the combined Study card.
