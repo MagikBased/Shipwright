@@ -243,10 +243,11 @@ class JPAssistOverlayWindow final : public Ship::GuiWindow {
         drawList->AddText(font, surfaceFontSize, ImVec2(surfaceX, surfaceY),
                           ImGui::GetColorU32(ImVec4(1.0f, 0.82f, 0.25f, 1.0f)), token.surface.c_str());
 
-        // Advance the table cell even though the custom-size text was drawn
-        // directly. The word stays vertically centered without dictating the
-        // height or scroll behavior of the definition column.
-        ImGui::Dummy(ImVec2(available.x, std::max(available.y, contentHeight)));
+        // Advance by the content's real height even though the custom-size
+        // text was drawn directly. Reserving the full remaining child height
+        // here makes the table's own padding create a small, false overflow
+        // and an otherwise-useless scrollbar.
+        ImGui::Dummy(ImVec2(available.x, contentHeight));
     }
 
     float DrawEnglishText(const std::string& text, float availableWidth) const {
