@@ -429,6 +429,7 @@ shipofharkinian.json
 /scripts/jp_assist/out/
 /jp_assist_progress.json
 /jp_assist_smoke_results.json
+/services/learning_platform/var/
 imgui.ini
 timesplitdata.json
 

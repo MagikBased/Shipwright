@@ -93,3 +93,13 @@ decode into the live `MessageContext`.
 
 Waiting for a second adapter before extracting a separate library avoids freezing OoT-specific assumptions into a
 supposedly universal API.
+
+## Optional account platform
+
+The account-backed, cross-game progress service is a separate optional layer;
+mods and the portable learning core must continue to work offline without it.
+Its privacy boundary, device-pairing flow, content-neutral event contract, and
+local Anki handoff are defined in
+[`LEARNING_PLATFORM_MVP.md`](LEARNING_PLATFORM_MVP.md). Keeping extracted
+dialogue local allows different game adapters to share learning statistics
+without making the service a repository for copyrighted game scripts.

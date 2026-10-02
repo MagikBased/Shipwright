@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>JP Assist Learning</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <script src="/static/app.js" defer></script>
+  </head>
+  <body>
+    <header>
+      <div>
+        <span class="eyebrow">JP ASSIST</span>
+        <h1>Turn game dialogue into lasting Japanese.</h1>
+        <p class="lede">Connect compatible game mods, follow the words you encounter, and carry saved vocabulary into Anki.</p>
+      </div>
+      <button id="logout" class="quiet hidden" type="button">Sign out</button>
+    </header>
+
+    <main>
+      <section id="auth" class="auth-grid">
+        <form id="login-form" class="panel">
+          <h2>Welcome back</h2>
+          <label>Email<input name="email" type="email" autocomplete="email" required></label>
+          <label>Password<input name="password" type="password" autocomplete="current-password" required></label>
+          <button type="submit">Sign in</button>
+        </form>
+        <form id="register-form" class="panel">
+          <h2>Create an account</h2>
+          <label>Display name<input name="displayName" maxlength="80" required></label>
+          <label>Email<input name="email" type="email" autocomplete="email" required></label>
+          <label>Password<input name="password" type="password" minlength="10" autocomplete="new-password" required></label>
+          <button type="submit">Create account</button>
+        </form>
+      </section>
+
+      <section id="dashboard" class="hidden">
+        <div class="section-heading">
+          <div><span class="eyebrow">YOUR PROGRESS</span><h2 id="greeting">Learning overview</h2></div>
+          <button id="download-manifest" class="quiet" type="button">Download saved words</button>
+        </div>
+        <div id="stats" class="stats"></div>
+
+        <div class="dashboard-grid">
+          <form id="pair-form" class="panel">
+            <span class="eyebrow">CONNECT A MOD</span>
+            <h2>Approve a device</h2>
+            <p>Enter the code displayed by your game. The mod receives a revocable device token, never your password.</p>
+            <label>Pairing code<input name="userCode" placeholder="ABCD-2345" maxlength="9" required></label>
+            <button type="submit">Approve device</button>
+          </form>
+
+          <div class="panel">
+            <span class="eyebrow">ACCOUNT ACCESS</span>
+            <h2>Connected devices</h2>
+            <div id="devices" class="device-list"><p class="muted">No connected mods yet.</p></div>
+          </div>
+
+          <div class="panel words-panel">
+            <span class="eyebrow">RECENT VOCABULARY</span>
+            <h2>Words from play</h2>
+            <div id="words" class="word-list"><p class="muted">No synchronized words yet.</p></div>
+          </div>
+        </div>
+      </section>
+
+      <p id="notice" role="status" aria-live="polite"></p>
+    </main>
+  </body>
+</html>
