@@ -48,110 +48,15 @@ extern std::shared_ptr<SohMenu> mSohMenu;
 
 namespace {
 
-class SohDialoguePresentationHost final : public DialogueStudy::PresentationHost {
-  public:
-    DialogueStudy::PresentationCapabilities GetCapabilities() const override {
-        // SoH currently has a safe ImGui presentation path. Its native
-        // decoder changes MessageContext state, so native replacement stays
-        // disabled until a non-mutating host hook exists.
-        return {
-            .nativeTextReplacement = false,
-            .attachedPanel = true,
-            .dialogueAnchor = false,
-            .controllerGlyphs = false,
-        };
-    }
-
-    bool ShowNativeReplacement(std::string_view, std::string_view) override {
-        return false;
-    }
-
-    void ShowAttachedTranslation(std::string_view languageTag, std::string_view text) override {
-        JPAssist::JPAssistOverlay_ShowDialogue(std::string(languageTag), std::string(text));
-    }
-
-    void RestoreNativeDialogue() override {
-        // The current adapter never mutates native dialogue.
-    }
-
-    void HideDialoguePresentation() override {
-        JPAssist::JPAssistOverlay_Hide();
-    }
-};
-
-SohDialoguePresentationHost sPresentationHost;
-bool sNativeFallbackReported = false;
-
-DialogueStudy::DialogueDisplayMode GetDialogueDisplayMode() {
-    const int32_t configured = CVarGetInteger(CVAR_ENHANCEMENT("JPAssist.DialogueDisplayMode"),
-                                               static_cast<int32_t>(
-                                                   DialogueStudy::DialogueDisplayMode::AttachedTranslation));
-    switch (configured) {
-        case static_cast<int32_t>(DialogueStudy::DialogueDisplayMode::NativeSwap):
-            return DialogueStudy::DialogueDisplayMode::NativeSwap;
-        case static_cast<int32_t>(DialogueStudy::DialogueDisplayMode::JapaneseOnly):
-            return DialogueStudy::DialogueDisplayMode::JapaneseOnly;
-        case static_cast<int32_t>(DialogueStudy::DialogueDisplayMode::AttachedTranslation):
-        default:
-            return DialogueStudy::DialogueDisplayMode::AttachedTranslation;
-    }
-}
-
-DialogueStudy::PresentationPlan GetDialoguePresentationPlan() {
-    return DialogueStudy::ResolvePresentationPlan(GetDialogueDisplayMode(), sPresentationHost.GetCapabilities());
-}
-
-void HideDialoguePresentation() {
-    sPresentationHost.RestoreNativeDialogue();
-    sPresentationHost.HideDialoguePresentation();
-}
-
-void PresentAlternateDialogue(std::string_view languageTag, std::string_view text) {
-    const DialogueStudy::PresentationPlan plan = GetDialoguePresentationPlan();
-    if (plan.usedFallback && !sNativeFallbackReported) {
-        SPDLOG_WARN("[JPAssist] Native Swap is not supported by the SoH presentation adapter yet; using the attached "
-                    "translation panel");
-        sNativeFallbackReported = true;
-    } else if (!plan.usedFallback) {
-        sNativeFallbackReported = false;
-    }
-
-    switch (plan.surface) {
-        case DialogueStudy::DialogueSurface::NativeTextbox:
-            if (!sPresentationHost.ShowNativeReplacement(languageTag, text)) {
-                sPresentationHost.ShowAttachedTranslation(languageTag, text);
-            }
-            break;
-        case DialogueStudy::DialogueSurface::AttachedPanel:
-            sPresentationHost.ShowAttachedTranslation(languageTag, text);
-            break;
-        case DialogueStudy::DialogueSurface::Hidden:
-        default:
-            HideDialoguePresentation();
-            break;
-    }
-}
-
-// Independent from gSaveContext.language (design doc section 4.2: display
-// language must not leak into the player's menu-language setting). Starts
-// following the save file's language until the player presses L/Z.
-uint8_t sRequestedLanguage = LANGUAGE_ENG;
-bool sRequestedLanguageInitialized = false;
-
 // Dialogue tracking, reset whenever a new message opens.
 uint16_t sTrackedTextId = 0xFFFF;
 uint8_t sLastMsgMode = MSGMODE_NONE;
 int sCurrentPageIndex = 0;
 JPAssist::NativePageTracker sNativePageTracker;
 
-// True while the overlay should keep reposting the alternate language as the
-// player pages through - cleared on toggle-back or dialogue close.
-bool sShowingAlternateLanguage = false;
-
 // Study Mode selection is an occurrence index within the current corpus page.
 bool sStudyModeActive = false;
 int sSelectedTokenIndex = 0;
-uint64_t sLanguageToggleCount = 0;
 uint64_t sStudyEnterCount = 0;
 uint64_t sStudyNavigationCount = 0;
 uint64_t sStudyScrollCount = 0;
@@ -267,7 +172,7 @@ void DrawStudyCard() {
     // field list).
     bool saved = JPAssist::StudyPersistence_IsSaved(token.Id());
     int encounters = JPAssist::StudyPersistence_GetEncounterCount(token.Id());
-    JPAssist::JPAssistOverlay_ShowStudy(*page, index, saved, encounters, sRequestedLanguage == LANGUAGE_ENG);
+    JPAssist::JPAssistOverlay_ShowStudy(*page, index, saved, encounters);
 }
 
 // Handles Study Mode's own input and, while active, consumes the buttons
@@ -287,7 +192,7 @@ void HandleStudyModeInput(PlayState* play, MessageContext* msgCtx, Input* input)
         // choice pages the highlighted answer is captured below and frozen
         // while the study panel owns the D-pad/analog focus.
         const JPAssist::StudyPage* page = CurrentStudyPage();
-        if (rPressed && sRequestedLanguage == LANGUAGE_JPN && page != nullptr && !page->tokens.empty()) {
+        if (rPressed && page != nullptr && !page->tokens.empty()) {
             sStudyModeActive = true;
             sStudyEnterCount++;
             sSelectedTokenIndex = 0;
@@ -378,104 +283,6 @@ void HandleStudyModeInput(PlayState* play, MessageContext* msgCtx, Input* input)
     DrawStudyCard();
 }
 
-// Displays the normalized corpus page without mutating MessageContext. The
-// native table parser remains an English-only fallback while a local corpus
-// is absent or incomplete.
-void PostAlternateLanguagePage(uint16_t textId, uint8_t language) {
-    GetOverlay()->ClearNotifications();
-
-    if (GetDialoguePresentationPlan().surface == DialogueStudy::DialogueSurface::Hidden) {
-        HideDialoguePresentation();
-        return;
-    }
-
-    if (const JPAssist::StudyPage* page = JPAssist::StudyRepository_FindPage(textId, sCurrentPageIndex);
-        page != nullptr) {
-        const std::string& text = language == LANGUAGE_JPN ? page->japanese : page->english;
-        if (!text.empty()) {
-            PresentAlternateDialogue(language == LANGUAGE_JPN ? "JP" : "EN", text);
-            return;
-        }
-    }
-
-    const char* segment = nullptr;
-    uint32_t length = 0;
-
-    if (!JPAssist::DialogueRepository_Find(textId, language, &segment, &length)) {
-        SPDLOG_INFO("[JPAssist] textId {:#x}: no entry in the {} table (design doc 4.1: keep current text, "
-                    "surface \"Translation unavailable\")",
-                    textId, (language == LANGUAGE_JPN) ? "Japanese" : "English");
-        GetOverlay()->TextDrawNotification(3.0f, true, "Translation unavailable");
-        HideDialoguePresentation();
-        return;
-    }
-
-    JPAssist::DialogueStructure structure = JPAssist::MessageParser_Parse(segment, length, language);
-    SPDLOG_INFO("[JPAssist] textId {:#x} in {}: {} page(s)", textId, (language == LANGUAGE_JPN) ? "Japanese" : "English",
-                structure.pages.size());
-    for (size_t i = 0; i < structure.pages.size(); i++) {
-        const auto& page = structure.pages[i];
-        if (page.isChoice) {
-            SPDLOG_INFO("[JPAssist]   page {}: {}-choice", i, page.choiceCount);
-        } else if (!page.englishText.empty()) {
-            SPDLOG_INFO("[JPAssist]   page {}: \"{}\"", i, page.englishText);
-        } else {
-            SPDLOG_INFO("[JPAssist]   page {}", i);
-        }
-    }
-
-    if (structure.pages.empty()) {
-        return;
-    }
-    int clampedPage = std::min(sCurrentPageIndex, static_cast<int>(structure.pages.size()) - 1);
-    const auto& page = structure.pages[clampedPage];
-
-    if (language == LANGUAGE_JPN) {
-        HideDialoguePresentation();
-        GetOverlay()->TextDrawNotification(4.0f, true, "%s",
-                                           page.isChoice ? "(choice - text not yet decoded)"
-                                                         : "(Japanese text not yet decoded)");
-    } else if (page.isChoice) {
-        HideDialoguePresentation();
-        GetOverlay()->TextDrawNotification(4.0f, true, "(choice)");
-    } else if (!page.englishText.empty()) {
-        PresentAlternateDialogue("EN", page.englishText);
-    }
-}
-
-void HandleLanguageTogglePress(PlayState* play) {
-    MessageContext* msgCtx = &play->msgCtx;
-
-    if (!sStudyModeActive && !DialogueStudy::AllowsOrdinaryDialogueToggle(GetDialogueDisplayMode())) {
-        GetOverlay()->TextDrawNotification(2.5f, true, "English reference is available in Study Mode");
-        return;
-    }
-
-    sRequestedLanguage = (sRequestedLanguage == LANGUAGE_JPN) ? LANGUAGE_ENG : LANGUAGE_JPN;
-    sLanguageToggleCount++;
-    SPDLOG_INFO("[JPAssist] Language Toggle pressed - now showing {} (textId {:#x}, page {})",
-                (sRequestedLanguage == LANGUAGE_JPN) ? "Japanese" : "English", msgCtx->textId, sCurrentPageIndex);
-
-    if (sRequestedLanguage == gSaveContext.language) {
-        // Toggled back to whatever's natively rendering - nothing to post,
-        // the real textbox already shows the right thing.
-        sShowingAlternateLanguage = false;
-        if (sStudyModeActive) {
-            DrawStudyCard();
-        } else {
-            HideDialoguePresentation();
-        }
-        return;
-    }
-
-    sShowingAlternateLanguage = true;
-    if (sStudyModeActive) {
-        DrawStudyCard();
-    } else {
-        PostAlternateLanguagePage(msgCtx->textId, sRequestedLanguage);
-    }
-}
-
 // Design doc section 9 / section 11's "dialogue history": records page 0's
 // English text for whatever textId just opened. Prefer the normalized corpus,
 // which retains choice text; use the raw-table parser only as a fallback.
@@ -521,21 +328,6 @@ void OnDialogMessage() {
     PlayState* play = gPlayState;
     MessageContext* msgCtx = &play->msgCtx;
 
-    if (!sRequestedLanguageInitialized) {
-        sRequestedLanguage = gSaveContext.language;
-        sRequestedLanguageInitialized = true;
-    }
-
-    // Japanese Only is a study-first mode: ordinary dialogue stays on the
-    // source language and L/Z is reserved for switching the sentence inside
-    // Study Mode. Reset any English selection left over from another mode so
-    // changing this preference cannot accidentally lock R entry.
-    if (!sStudyModeActive && GetDialogueDisplayMode() == DialogueStudy::DialogueDisplayMode::JapaneseOnly) {
-        sRequestedLanguage = LANGUAGE_JPN;
-        sShowingAlternateLanguage = false;
-        HideDialoguePresentation();
-    }
-
     uint8_t msgMode = msgCtx->msgMode;
 
     if (msgCtx->textId != sTrackedTextId) {
@@ -549,7 +341,6 @@ void OnDialogMessage() {
         sTrackedTextId = msgCtx->textId;
         sCurrentPageIndex = 0;
         sNativePageTracker.Reset();
-        sShowingAlternateLanguage = false;
         // "A newly opened message resets token selection to the first
         // content word" / "Closing a textbox always closes Study Mode"
         // (design doc 5) - a TEXTID jump is as much "a newly opened
@@ -582,9 +373,6 @@ void OnDialogMessage() {
         sNativePageTracker.Observe(JPAssist_GetNativeTextBoxNumber(), observedPageIndex)) {
         sCurrentPageIndex = observedPageIndex;
         SPDLOG_INFO("[JPAssist] Page changed: textId {:#x}, now page {}", sTrackedTextId, sCurrentPageIndex);
-        if (sShowingAlternateLanguage) {
-            PostAlternateLanguagePage(sTrackedTextId, sRequestedLanguage);
-        }
         if (sStudyModeActive) {
             sSelectedTokenIndex = 0;
             RecordTokenEncounter(0);
@@ -595,7 +383,6 @@ void OnDialogMessage() {
         SPDLOG_INFO("[JPAssist] Dialogue closed: textId {:#x}", sTrackedTextId);
         sTrackedTextId = 0xFFFF;
         sNativePageTracker.Reset();
-        sShowingAlternateLanguage = false;
         ExitStudyMode();
         GetOverlay()->ClearNotifications();
         JPAssist::JPAssistOverlay_Hide();
@@ -608,8 +395,7 @@ void OnDialogMessage() {
     if (sQueuedTestButtons != 0 || sQueuedTestHasStickY) {
         // Synthetic tests model a one-frame edge, not a held controller
         // state. Keeping these out of `cur` also prevents unrelated global
-        // button-chord shortcuts from observing an impossible held chord as
-        // the suite advances through L, Z, and R checks.
+        // button-chord shortcuts from observing an impossible held chord.
         input->press.button |= sQueuedTestButtons;
         if (sQueuedTestHasStickY) {
             input->rel.stick_y = sQueuedTestStickY;
@@ -619,36 +405,14 @@ void OnDialogMessage() {
         sQueuedTestHasStickY = false;
     }
 
-    // Study Mode's own input handling (R to enter/exit, D-pad to navigate)
-    // and, while active, consuming A/B/C-up so the native textbox can't
-    // advance underneath it. Must run before the L/Z check below reads
-    // input, but L/Z itself is intentionally not gated on Study Mode being
-    // active or inactive - design doc 4.3's Study Mode control table has
-    // its own "L or Z: toggle the Japanese/English sentence without
-    // leaving Study Mode" row, so the existing toggle handling already
-    // does the right thing unmodified.
+    // Study Mode owns R, navigation, save, and close input while active and
+    // consumes native advance controls so the conversation cannot progress
+    // underneath the card.
     HandleStudyModeInput(play, msgCtx, input);
-
-    // Language input is only intercepted while dialogue is active (design
-    // doc 4.1) - guaranteed here for free, since GameInteractor::OnDialogMessage
-    // only fires while msgCtx->msgLength != 0 (z_message_PAL.c:4436).
-    // "L and Z are interchangeable aliases... Individual aliases may still
-    // be disabled in settings if another enhancement creates a conflict"
-    // (design doc 4.1) - each gated by its own CVar rather than an
-    // all-or-nothing toggle.
-    bool lPressed = CVarGetInteger(CVAR_ENHANCEMENT("JPAssist.EnableLAlias"), 1) &&
-                    CHECK_BTN_ALL(input->press.button, BTN_L);
-    bool zPressed = CVarGetInteger(CVAR_ENHANCEMENT("JPAssist.EnableZAlias"), 1) &&
-                    CHECK_BTN_ALL(input->press.button, BTN_Z);
-    if (lPressed || zPressed) {
-        HandleLanguageTogglePress(play);
-    }
 }
 
-// Design doc section 10's settings list, as far as this spike implements
-// it: master enable + the two alias toggles (Study Mode's own bindings
-// aren't rebindable yet - that needs the input-editor integration real
-// button remapping uses, out of scope here). Mirrors the pattern
+// Study Mode's bindings aren't rebindable yet; that needs the input-editor
+// integration real button remapping uses. Mirrors the pattern
 // soh/soh/Enhancements/Presets/Presets.cpp:494 and several other
 // independent enhancements use to add their own sidebar without touching
 // soh/soh/SohGui/SohMenuEnhancements.cpp.
@@ -659,32 +423,8 @@ void RegisterJPAssistMenu() {
     SohGui::mSohMenu->AddWidget(path, "Enable JP Assist", WIDGET_CVAR_CHECKBOX)
         .CVar(CVAR_ENHANCEMENT("JPAssist.Enabled"))
         .Options(UIWidgets::CheckboxOptions().DefaultValue(true).Tooltip(
-            "Master toggle for the JP Assist language-learning tools (L/Z language toggle, Study Mode). "
+            "Master toggle for the R-button Study Mode language-learning tools. "
             "Disabling this leaves the game exactly as if the mod weren't installed."));
-    SohGui::mSohMenu->AddWidget(path, "Dialogue display", WIDGET_CVAR_COMBOBOX)
-        .CVar(CVAR_ENHANCEMENT("JPAssist.DialogueDisplayMode"))
-        .Options(UIWidgets::ComboboxOptions()
-                     .ComboMap({
-                         { static_cast<int32_t>(DialogueStudy::DialogueDisplayMode::NativeSwap),
-                           "Native swap (adapter preview)" },
-                         { static_cast<int32_t>(DialogueStudy::DialogueDisplayMode::AttachedTranslation),
-                           "Attached translation" },
-                         { static_cast<int32_t>(DialogueStudy::DialogueDisplayMode::JapaneseOnly),
-                           "Japanese only (English in Study Mode)" },
-                     })
-                     .DefaultIndex(static_cast<uint32_t>(DialogueStudy::DialogueDisplayMode::AttachedTranslation))
-                     .Tooltip("Choose how English reference text appears. Native Swap currently falls back to the "
-                              "attached panel until the SoH adapter has a safe native-text replacement hook."));
-    SohGui::mSohMenu->AddWidget(path, "Enable L as a Language Toggle alias", WIDGET_CVAR_CHECKBOX)
-        .CVar(CVAR_ENHANCEMENT("JPAssist.EnableLAlias"))
-        .Options(UIWidgets::CheckboxOptions().DefaultValue(true).Tooltip(
-            "L and Z are interchangeable aliases for the Language Toggle action. Disable one if it conflicts "
-            "with another enhancement."));
-    SohGui::mSohMenu->AddWidget(path, "Enable Z as a Language Toggle alias", WIDGET_CVAR_CHECKBOX)
-        .CVar(CVAR_ENHANCEMENT("JPAssist.EnableZAlias"))
-        .Options(UIWidgets::CheckboxOptions().DefaultValue(true).Tooltip(
-            "L and Z are interchangeable aliases for the Language Toggle action. Disable one if it conflicts "
-            "with another enhancement."));
     SohGui::mSohMenu->AddWidget(path, "Study card scale: %.2f", WIDGET_CVAR_SLIDER_FLOAT)
         .CVar(CVAR_ENHANCEMENT("JPAssist.CardScale"))
         .Options(UIWidgets::FloatSliderOptions().Min(0.70f).Max(1.50f).Step(0.05f).DefaultValue(1.0f).Format("%.2f"));
@@ -739,7 +479,7 @@ void RegisterJPAssist() {
     RegisterJPAssistMenu();
     Ship::Context::GetRawInstance()->GetConsole()->AddCommand(
         "jpassist_history", { JPAssistHistoryCommand, "Lists JP Assist's recent dialogue history." });
-    SPDLOG_INFO("[JPAssist] Registered (corpus={}, L/Z toggle, Study Mode, persistence, Anki export data)",
+    SPDLOG_INFO("[JPAssist] Registered (corpus={}, R Study Mode, persistence, Anki export data)",
                 JPAssist::StudyRepository_IsCorpusLoaded() ? JPAssist::StudyRepository_GetCorpusVersion()
                                                            : "unavailable");
 }
@@ -771,16 +511,15 @@ RuntimeStatus JPAssist_GetRuntimeStatus() {
     RuntimeStatus status;
     status.textId = sTrackedTextId;
     status.pageIndex = sCurrentPageIndex;
-    status.requestedLanguage = sRequestedLanguage;
-    status.alternateLanguageVisible = sShowingAlternateLanguage;
+    status.requestedLanguage = LANGUAGE_JPN;
+    status.alternateLanguageVisible = false;
     status.studyModeActive = sStudyModeActive;
     status.choiceSelectionFrozen = sStudyModeActive && sFrozenChoiceValid;
     status.selectedTokenIndex = sSelectedTokenIndex;
-    status.displayMode = GetDialogueDisplayMode();
-    const DialogueStudy::PresentationPlan presentationPlan = GetDialoguePresentationPlan();
-    status.dialogueSurface = presentationPlan.surface;
-    status.displayModeFallback = presentationPlan.usedFallback;
-    status.languageToggleCount = sLanguageToggleCount;
+    status.displayMode = DialogueStudy::DialogueDisplayMode::JapaneseOnly;
+    status.dialogueSurface = DialogueStudy::DialogueSurface::Hidden;
+    status.displayModeFallback = false;
+    status.languageToggleCount = 0;
     status.studyEnterCount = sStudyEnterCount;
     status.studyNavigationCount = sStudyNavigationCount;
     status.studyScrollCount = sStudyScrollCount;

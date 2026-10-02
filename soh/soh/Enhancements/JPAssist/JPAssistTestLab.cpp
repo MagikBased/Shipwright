@@ -44,12 +44,6 @@ enum class SmokeStage { Idle, WaitingForScene, WaitingForMessage, Loaded, Passed
 
 enum class SmokeControlStep {
     None,
-    PressL,
-    AwaitL,
-    PressZ,
-    AwaitZ,
-    PressEnsureJapanese,
-    AwaitEnsureJapanese,
     PressStudy,
     AwaitStudy,
     PressNavigate,
@@ -78,8 +72,6 @@ struct SmokeState {
     uint64_t startedAtNavigationCount = 0;
     uint64_t expectedSaveToggleCount = 0;
     uint64_t expectedScrollCount = 0;
-    uint64_t expectedToggleCount = 0;
-    uint8_t expectedLanguage = LANGUAGE_ENG;
     uint8_t frozenChoiceIndex = 0;
     bool initiallySaved = false;
     SmokeControlStep controlStep = SmokeControlStep::None;
@@ -115,15 +107,6 @@ void InjectButton(uint16_t button) {
     JPAssist_QueueTestInput(button);
 }
 
-void InjectLanguageToggle(uint16_t button, SmokeControlStep awaitStep) {
-    SPDLOG_INFO("[JPAssist Test Lab] Injecting language button {:#06x}", button);
-    InjectButton(button);
-    sSmoke.expectedToggleCount++;
-    sSmoke.expectedLanguage = sSmoke.expectedLanguage == LANGUAGE_JPN ? LANGUAGE_ENG : LANGUAGE_JPN;
-    sSmoke.controlStep = awaitStep;
-    sSmoke.framesRemaining = 30;
-}
-
 // This hook is registered before JPAssistManager's OnDialogMessage hook, so
 // synthetic presses enter the same shared Input object immediately before the
 // production handler reads and consumes them. OnGameFrameUpdate is too late:
@@ -135,15 +118,6 @@ void InjectSmokeControl() {
     }
 
     switch (sSmoke.controlStep) {
-        case SmokeControlStep::PressL:
-            InjectLanguageToggle(BTN_L, SmokeControlStep::AwaitL);
-            break;
-        case SmokeControlStep::PressZ:
-            InjectLanguageToggle(BTN_Z, SmokeControlStep::AwaitZ);
-            break;
-        case SmokeControlStep::PressEnsureJapanese:
-            InjectLanguageToggle(BTN_L, SmokeControlStep::AwaitEnsureJapanese);
-            break;
         case SmokeControlStep::PressStudy:
             SPDLOG_INFO("[JPAssist Test Lab] Injecting Study Mode R");
             InjectButton(BTN_R);
@@ -399,15 +373,12 @@ bool ValidateScenario(const TestScenario& scenario, std::string& detail) {
 void StartControlValidation(const std::string& corpusDetail) {
     const RuntimeStatus runtime = JPAssist_GetRuntimeStatus();
     sSmoke.corpusDetail = corpusDetail;
-    sSmoke.expectedToggleCount = runtime.languageToggleCount;
-    sSmoke.expectedLanguage = runtime.requestedLanguage;
     sSmoke.startedAtStudyCount = runtime.studyEnterCount;
     sSmoke.startedAtNavigationCount = runtime.studyNavigationCount;
-    sSmoke.controlStep = SmokeControlStep::PressL;
+    sSmoke.controlStep = SmokeControlStep::PressStudy;
     sSmoke.framesRemaining = 30;
-    sSmoke.detail = "Corpus passed; testing L alias";
-    SPDLOG_INFO("[JPAssist Test Lab] Starting control smoke for {} at language {}, toggle count {}",
-                sPendingScenario.id, runtime.requestedLanguage, runtime.languageToggleCount);
+    sSmoke.detail = "Corpus passed; entering Study Mode";
+    SPDLOG_INFO("[JPAssist Test Lab] Starting R-button Study Mode smoke for {}", sPendingScenario.id);
 }
 
 bool ControlTimedOut(const TestScenario& scenario, const std::string& expectation) {
@@ -421,7 +392,7 @@ bool ControlTimedOut(const TestScenario& scenario, const std::string& expectatio
 void FinishControlValidation(const TestScenario& scenario) {
     FinishScenario(scenario, true,
                    sSmoke.corpusDetail +
-                       "; controls PASS: L/Z aliases, Study enter/exit, save/restore, D-pad scroll, focus consumption" +
+                       "; controls PASS: R Study enter/exit, save/restore, D-pad scroll, focus consumption" +
                        (StudyRepository_FindPage(scenario.textId, 0)->tokens.size() > 1 ? ", token navigation" : "") +
                        (StudyRepository_FindPage(scenario.textId, 0)->isChoice ? ", choice freeze" : ""));
 }
@@ -447,34 +418,6 @@ void StartStudyInteractionValidation(const RuntimeStatus& runtime, const std::st
 void UpdateControlValidation(const TestScenario& scenario) {
     const RuntimeStatus runtime = JPAssist_GetRuntimeStatus();
     switch (sSmoke.controlStep) {
-        case SmokeControlStep::AwaitL:
-            if (runtime.languageToggleCount >= sSmoke.expectedToggleCount &&
-                runtime.requestedLanguage == sSmoke.expectedLanguage) {
-                sSmoke.controlStep = SmokeControlStep::PressZ;
-                sSmoke.detail = "L alias passed; testing Z alias";
-            } else {
-                ControlTimedOut(scenario, "L did not toggle language");
-            }
-            break;
-        case SmokeControlStep::AwaitZ:
-            if (runtime.languageToggleCount >= sSmoke.expectedToggleCount &&
-                runtime.requestedLanguage == sSmoke.expectedLanguage) {
-                sSmoke.controlStep = runtime.requestedLanguage == LANGUAGE_JPN
-                                         ? SmokeControlStep::PressStudy
-                                         : SmokeControlStep::PressEnsureJapanese;
-                sSmoke.detail = "L/Z aliases passed; entering Study Mode";
-            } else {
-                ControlTimedOut(scenario, "Z did not toggle language");
-            }
-            break;
-        case SmokeControlStep::AwaitEnsureJapanese:
-            if (runtime.languageToggleCount >= sSmoke.expectedToggleCount &&
-                runtime.requestedLanguage == LANGUAGE_JPN) {
-                sSmoke.controlStep = SmokeControlStep::PressStudy;
-            } else {
-                ControlTimedOut(scenario, "could not select Japanese before Study Mode");
-            }
-            break;
         case SmokeControlStep::AwaitStudy:
             if (runtime.studyModeActive && runtime.studyEnterCount > sSmoke.startedAtStudyCount) {
                 if (runtime.currentPageTokenCount > 1) {
@@ -900,18 +843,17 @@ class TestLabWindow final : public Ship::GuiWindow {
                     gSaveContext.entranceIndex);
         ImGui::Text("Text %#06x  page %d  tokens %d", runtime.textId, runtime.pageIndex,
                     runtime.currentPageTokenCount);
-        ImGui::Text("Language %s  Study %s  token %d", runtime.requestedLanguage == LANGUAGE_JPN ? "JP" : "EN",
-                    runtime.studyModeActive ? "active" : "closed", runtime.selectedTokenIndex);
+        ImGui::Text("Study %s  token %d", runtime.studyModeActive ? "active" : "closed",
+                    runtime.selectedTokenIndex);
         ImGui::Text("Display %s -> %s%s", DisplayModeLabel(runtime.displayMode),
                     DialogueSurfaceLabel(runtime.dialogueSurface), runtime.displayModeFallback ? " (fallback)" : "");
         ImGui::Text("Choice page %s  choice %u  selection %s", runtime.currentPageIsChoice ? "yes" : "no",
                     runtime.choiceIndex, runtime.choiceSelectionFrozen ? "frozen" : "native");
-        ImGui::Text("Observed controls: language %llu, Study %llu, navigation %llu, saves %llu",
-                    static_cast<unsigned long long>(runtime.languageToggleCount),
+        ImGui::Text("Observed controls: Study %llu, navigation %llu, saves %llu",
                     static_cast<unsigned long long>(runtime.studyEnterCount),
                     static_cast<unsigned long long>(runtime.studyNavigationCount),
                     static_cast<unsigned long long>(runtime.saveToggleCount));
-        ImGui::TextDisabled("Smoke verifies warp, corpus, L/Z, R, navigation, focus consumption, and choice freeze.");
+        ImGui::TextDisabled("Smoke verifies warp, corpus, R, navigation, focus consumption, and choice freeze.");
     }
 };
 

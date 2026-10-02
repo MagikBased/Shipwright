@@ -13,10 +13,10 @@ matrix, see [JP_ASSIST_DEVELOPMENT.md](JP_ASSIST_DEVELOPMENT.md).
 
 OoT JP Assist is an in-game Japanese learning aid for Ship of Harkinian. It lets a player:
 
-1. Switch the active dialogue between the original Japanese and English text.
-2. Pause dialogue in a study mode.
+1. Keep the original Japanese dialogue as the primary game UI.
+2. Pause dialogue in a study mode entered with R.
 3. Navigate Japanese dialogue word by word.
-4. Open a side panel with a context-appropriate dictionary card.
+4. View the official English line and a context-appropriate dictionary card together.
 5. Save encountered words to a personal study list.
 6. Generate an Anki deck covering the vocabulary needed to understand Ocarina of Time.
 
@@ -25,7 +25,7 @@ The mod should preserve the feel and pacing of the original game. Help is availa
 ## 2. Goals
 
 - Make Japanese dialogue approachable without requiring an external dictionary.
-- Make language switching fast enough to use during normal play.
+- Make English reference text available with one button during normal play.
 - Keep Japanese as the primary learning surface rather than replacing it with English.
 - Provide definitions selected for the word's meaning in the current sentence.
 - Preserve dialogue state when changing display language.
@@ -55,22 +55,17 @@ Recommended default controls:
 
 | Input | Action |
 |---|---|
-| N64 L or N64 Z | Toggle Japanese / English |
-| N64 R | Enter or exit Study Mode while Japanese is displayed |
+| N64 R | Enter or exit Study Mode |
 
-L and Z are interchangeable aliases for the same Language Toggle action. A player can use whichever is comfortable without changing a setting, and JP Assist never requires an L+Z chord. Individual aliases may still be disabled in settings if another enhancement creates a conflict.
-
-Shipwright's standard message input uses A, B, and C-Up to advance text and the stick or D-pad for choices. Its normal message code does not assign a dialogue action to L, Z, or R. JP Assist should nevertheless capture these buttons only during ordinary textbox states. It must not intercept them during ocarina input, the pause menu, developer message tools, or other non-dialogue interfaces.
-
-A short on-screen indicator should confirm the result after each press, for example `日本語` or `English`. This makes a toggle predictable even if the player returns to a dialogue after some time away.
+Shipwright's standard message input uses A, B, and C-Up to advance text and the stick or D-pad for choices. Its normal message code does not assign a dialogue action to R. JP Assist captures R only while dialogue is active and must not intercept it during ocarina input, the pause menu, or other non-dialogue interfaces.
 
 All bindings must be configurable. JP Assist should use Ship of Harkinian's abstract controller inputs rather than raw keyboard or SDL scancodes.
 
 When no equivalent message exists in the selected language, the mod should keep the current text visible and briefly display a non-intrusive “Translation unavailable” indicator.
 
-### 4.2 Language-switch behavior
+### 4.2 English reference behavior
 
-Switching languages should preserve:
+Opening Study Mode should preserve:
 
 - Message ID.
 - Current page where practical.
@@ -81,7 +76,7 @@ Switching languages should preserve:
 
 Japanese and English messages do not always use identical page breaks. The first implementation may map pages by page index and clamp to the last available page. The corpus can later include explicit page-alignment metadata for exceptions.
 
-The display language should be independent from the user's normal Ship of Harkinian menu language. Closing the dialogue should not unexpectedly change menus or future non-dialogue UI.
+The native dialogue remains Japanese. The English reference is presented only inside Study Mode and never changes Ship of Harkinian's global language setting.
 
 ### 4.3 Study Mode
 
@@ -97,7 +92,6 @@ Suggested controls:
 | B | Close the card, then exit Study Mode |
 | C-Right | Add or remove the word from the study list |
 | R | Exit Study Mode |
-| L or Z | Toggle the Japanese / English sentence without leaving Study Mode |
 
 The selected Japanese token is highlighted directly behind its native textbox
 glyphs. A C-compatible render bridge exposes only the selected normalized-text
@@ -105,14 +99,13 @@ span; the Japanese glyph pass maps that span onto its existing positions and
 draws the backlight before drawing the original characters. This avoids
 re-decoding or mutating live dialogue state.
 
-The side card should contain:
+The wide bottom card should contain:
 
 - Surface form as it appears in the dialogue.
 - Dictionary form.
 - Reading.
 - Part of speech.
 - Context-appropriate English meaning.
-- The Japanese sentence or current page.
 - The official English line as a reference translation.
 - Optional usage note.
 - Encounter count and saved/known status.
@@ -128,13 +121,12 @@ Recommended desktop layout:
 │                                                                      │
 │                       Original game scene                            │
 │                                                                      │
-│  ┌──────────── Study sentence / token strip ────────────┐ ┌────────┐ │
-│  │ こんな ところで [会う] なんて…                      │ │ 会う   │ │
-│  │                                                      │ │ あう   │ │
-│  └──────────────────────────────────────────────────────┘ │ to meet│ │
-│                                                          │ Verb   │ │
-│             Original OoT dialogue box                    │ [Save] │ │
-│                                                          └────────┘ │
+│             Original OoT dialogue box with [会う] highlighted       │
+│  ┌────────────────────────────────────────────────────────────────┐ │
+│  │ ENGLISH                         │ 会う [あう]                    │ │
+│  │ I never expected to meet you…  │ verb · to meet                 │ │
+│  │                                │ C-Right: save · Seen 3 times   │ │
+│  └────────────────────────────────────────────────────────────────┘ │
 └──────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -146,8 +138,7 @@ The card panel should scale with the viewport, respect safe areas, and remain re
 NoDialogue
     │ textbox opens
     ▼
-DialogueJapanese ◄──── L or Z ────► DialogueEnglish
-    │
+DialogueJapanese
     │ R
     ▼
 StudyTokenSelect ◄──────────────► StudyCardOpen
@@ -159,7 +150,6 @@ StudyTokenSelect ◄──────────────► StudyCardOpen
 
 Important state rules:
 
-- Language input is only intercepted while dialogue is active.
 - Study Mode is only available when Japanese text and token data are available.
 - Choice selection is frozen while the study panel has focus.
 - A newly opened message resets token selection to the first content word.
@@ -291,7 +281,7 @@ What was built and live-verified against the recorded test dialogues (multi-page
 - `DialogueRepository` — a read-only lookup into the vanilla JPN/NES message tables that never touches `msgCtx`/`font`, unlike `Message_FindMessage`/`Message_FindMessageJPN` and the debug `MessageViewer` path, which write into the live font buffer as a side effect of "finding" a message.
 - `MessageParser` — a non-mutating control-code walker that splits a message into pages and flags choice pages for both languages. It only decodes plain text for English; Japanese glyph codes are not translated to displayable text yet (that needs the kanji font/atlas work, which belongs to Milestone 3's corpus pipeline, not this spike).
 - `JPAssistManager` — registers on the existing `GameInteractor::OnDialogMessage` and detects dialogue open/page-advance/close by diffing `msgMode`/`textId` across frames. No changes to core `z_message_PAL.c` were needed; both required hooks already existed.
-- The L/Z toggle posts the alternate language's current page through `Ship::GameOverlay::TextDrawNotification` (the same frame-safe mechanism `savestates.cpp` uses), not a hand-rolled `ImGui::Begin`/`End` on `GameInteractor::OnPlayDrawEnd` — that was tried first and crashed live (`ImGui::Begin: Assertion g.WithinFrameScope failed`), because that hook doesn't reliably run inside ImGui's frame scope.
+- Historical spike: the original L/Z prototype posted alternate-language pages through `Ship::GameOverlay::TextDrawNotification`. That path established the frame-safe rendering requirement but was superseded by the combined R-button Study card.
 
 Bugs found and fixed during live testing (all in `JPAssistManager.cpp`/`MessageParser.cpp`):
 
@@ -488,15 +478,11 @@ Writes should be atomic: write a temporary file, flush it, then replace the prio
 Add a JP Assist section to the Enhancements menu:
 
 - Enable JP Assist.
-- Dialogue display: Native Swap, Attached Translation, or Japanese Only.
-- Default dialogue language.
-- Enable L as a Language Toggle alias.
-- Enable Z as a Language Toggle alias.
 - Enter-study binding (N64 R by default).
 - Add-to-study-list binding (C-Right by default).
 - Definition reveal mode.
 - Show reading.
-- Show English reference.
+- Show English reference (on by default; required by the current combined card).
 - Card scale and opacity.
 - Pause cutscenes in Study Mode.
 - Hide particles from token navigation.
@@ -584,8 +570,8 @@ Built as an extension of the Milestone 1 spike (`JPAssistManager.cpp` plus a new
 - Entering/exiting, and the D-pad token navigation, reuse the existing `GameInteractor::OnDialogMessage` per-frame hook from Milestone 1 - no new hooks needed.
 - The card is a hard-coded `StudyRepository` token list (ordinary vocabulary words, not extracted dialogue - see section 7.4), redrawn every frame from current state via `GameOverlay::TextDrawNotification` with a very short duration, rather than only on discrete navigation events. This was a deliberate change from Milestone 1's event-triggered reposting, which went stale under a game-logic/render-thread race; continuous per-frame redraw sidesteps that class of bug rather than trying to catch every triggering event correctly.
 - Native dialogue advancement is blocked while Study Mode has focus by clearing `BTN_A`/`BTN_B`/`BTN_CUP` from `play->state.input[0]` before `Message_Update`'s mode switch reads them later in the same frame - the same input-consumption pattern `soh/soh/Enhancements/Items/ArrowCycle.cpp` uses to suppress shield input while cycling arrows, not a new mechanism.
-- L/Z continues to toggle the display language without leaving Study Mode, matching the design doc's control table - this worked without any special-casing, since the toggle handler was already independent of Study Mode state.
-- Live-tested: entering/exiting via R across several conversations, toggling L/Z repeatedly while Study Mode was active, and dialogue jumps correctly force-exiting it - all without crashing or letting a native advance through.
+- Historical spike: Study Mode initially supported L/Z language toggling. The current combined card shows English alongside the vocabulary entry, so that extra state and input path are no longer needed.
+- Live-tested: entering/exiting via R across several conversations and dialogue jumps correctly force-exiting it, without crashing or letting a native advance through.
 
 **Known limitation:** the hard-coded Japanese surface/reading strings render as `?`/tofu in the card, because nothing in this path has loaded a CJK-capable font into ImGui's font atlas - only the native N64 renderer has real kanji textures. This is the same underlying gap as Milestone 1's undecoded Japanese overlay text, not a new problem; a real font/kanji-atlas solution is out of scope until Milestone 3's corpus and font work exists.
 
@@ -637,17 +623,17 @@ Built as `scripts/jp_assist/{extract_dialogue,message_codes,tokenize_dialogue,ov
 
 #### Milestone 5 spike findings
 
-- Settings moved from a hardcoded-on spike to a real CVar-backed menu (`Enhancements > JP Assist` in the SoH settings UI): a master `JPAssist.Enabled` toggle plus independently-toggleable `JPAssist.EnableLAlias`/`JPAssist.EnableZAlias` checkboxes, all defaulting to on so existing behavior is unchanged for players who never open the menu. Wiring this in required declaring `SohGui::mSohMenu` as an `extern` *inside* `namespace SohGui` (not just qualified with `SohGui::` at global scope) - the two forms produce different mangled symbols, so the global-scope form linked but never resolved to the real definition. `WidgetPath`/`SECTION_COLUMN_1`, by contrast, are global-namespace types despite living in a `SohGui`-adjacent header, so they must *not* be qualified.
+- Settings moved from a hardcoded-on spike to a real CVar-backed menu (`Enhancements > JP Assist` in the SoH settings UI). The current menu keeps the master enable, card scale, and opacity controls; the prototype's L/Z alias settings were removed with the ordinary translation overlay. Wiring this in required declaring `SohGui::mSohMenu` as an `extern` *inside* `namespace SohGui` (not just qualified with `SohGui::` at global scope) - the two forms produce different mangled symbols, so the global-scope form linked but never resolved to the real definition. `WidgetPath`/`SECTION_COLUMN_1`, by contrast, are global-namespace types despite living in a `SohGui`-adjacent header, so they must *not* be qualified.
 - Dialogue history is a bounded (20-entry), oldest-trimmed `std::vector<HistoryEntry>` recorded whenever a new message opens, persisted alongside the existing saved-token/encounter-count data in `jp_assist_progress.json` under a new `messageHistory` array, and readable through both the `jpassist_history` console command and a newest-first searchable GUI. The GUI filters Japanese, English, and hexadecimal text IDs. Reused the exact "bind `.value()` to a named variable before iterating" pattern from the Milestone 4 UB fix rather than re-risking the same dangling-reference bug on the new array.
 - Stress-tested the extended `StudyPersistence_Load()` against 14 malformed-JSON cases (empty file, truncated JSON, wrong types at every field, non-UTF8 garbage, deeply nested garbage, etc.) via a standalone repro compiled against the exact parsing logic - all handled without crashing, consistent with design doc 14's "a malformed progress file must never prevent the game from starting."
-- Accessibility review against section 12: confirmed by code inspection that `tts.cpp`'s dialogue-narration hook reads only `msgCtx` state fields, never button-press bits, so Study Mode's `BTN_A`/`BTN_B`/`BTN_CUP` input-consumption cannot suppress narration; its D-pad reads live in an unrelated pause-menu-narration path. No color-only signaling was introduced (language state is conveyed through textbox content/position, not color alone), no simultaneous-press requirements exist, and button-hint behavior already reflects the configured L/Z alias CVars from the settings menu above.
+- Accessibility review against section 12: confirmed by code inspection that `tts.cpp`'s dialogue-narration hook reads only `msgCtx` state fields, never button-press bits, so Study Mode's `BTN_A`/`BTN_B`/`BTN_CUP` input-consumption cannot suppress narration; its D-pad reads live in an unrelated pause-menu-narration path. No color-only signaling or simultaneous-press requirement was introduced.
 - Added a lightweight ROM/version compatibility guard (`CheckRomCompatibilityOnce()`, run once on the first real dialogue) that looks up a small set of known test text IDs (Saria's first greeting, Mido's House sign, the Know-It-All Brothers choice) in both language tables and logs a warning naming which table is missing data if any aren't found - a cheap signal that a different ROM/`oot.o2r` than the N64 NTSC 1.2 this spike was built against may not match JP Assist's recorded dialogues. Live-verified in-game: triggering Saria's greeting (text ID `0x1001`) via the Dev Tools Message Viewer produced `"[JPAssist] Compatibility check: all known test dialogues found in both language tables (N64 NTSC 1.2 expected)."`, and the same trigger round-tripped through to `jp_assist_progress.json`'s `messageHistory` array, closing out the one live-verification gap left over from Milestone 4's history work.
 - Along the way, hit and worked around a **pre-existing, unrelated SoH bug**: the Dev Tools Message Viewer's `Display Message` handler (`MessageViewer.cpp`) calls `std::stoi` on the Text ID field with no empty-string guard, so clicking the button with an empty field throws `std::invalid_argument` and terminates the process. Not a JP Assist bug (confirmed via `grep` - the only `stoi` call in that file, unrelated to any JPAssist code path) and out of scope for this mod, but worth a heads-up since it's easy to hit while testing.
 
 ## 14. Acceptance criteria for the first usable release
 
-- The player can toggle Japanese and English during ordinary dialogue with either L or Z.
-- Switching does not restart conversation scripts or alter choices.
+- Ordinary dialogue remains in Japanese and no secondary overlay appears until requested.
+- Pressing R opens one combined English-reference and vocabulary card without restarting dialogue or altering choices.
 - Study Mode can be entered from Japanese dialogue and safely exited.
 - Every selectable token in the supported corpus has a reading and concise contextual meaning.
 - The selected token is visually unambiguous.

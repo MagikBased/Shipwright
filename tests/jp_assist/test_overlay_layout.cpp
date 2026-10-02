@@ -21,31 +21,30 @@ TEST(JPAssistOverlayLayout, RemainsInsideRepresentativeViewports) {
 
     for (const Resolution resolution : resolutions) {
         for (const float scale : scales) {
-            for (const bool studyMode : { false, true }) {
-                const JPAssist::OverlayLayout layout = JPAssist::JPAssistOverlay_ComputeLayout(
-                    0.0f, 0.0f, resolution.width, resolution.height, scale, studyMode);
-                EXPECT_GT(layout.width, 0.0f);
-                EXPECT_GT(layout.height, 0.0f);
-                EXPECT_GE(layout.x, 0.0f);
-                EXPECT_GE(layout.y, 0.0f);
-                EXPECT_LE(layout.x + layout.width, resolution.width);
-                EXPECT_LE(layout.y + layout.height, resolution.height);
-            }
+            const JPAssist::OverlayLayout layout =
+                JPAssist::JPAssistOverlay_ComputeLayout(0.0f, 0.0f, resolution.width, resolution.height, scale);
+            EXPECT_GT(layout.width, 0.0f);
+            EXPECT_GT(layout.height, 0.0f);
+            EXPECT_GE(layout.x, 0.0f);
+            EXPECT_GE(layout.y, 0.0f);
+            EXPECT_LE(layout.x + layout.width, resolution.width);
+            EXPECT_LE(layout.y + layout.height, resolution.height);
         }
     }
 }
 
-TEST(JPAssistOverlayLayout, ClampsLargeStudyCardAt720p) {
+TEST(JPAssistOverlayLayout, KeepsWideStudyCardBottomCenteredAt720p) {
     const JPAssist::OverlayLayout layout =
-        JPAssist::JPAssistOverlay_ComputeLayout(0.0f, 0.0f, 1280.0f, 720.0f, 1.5f, true);
+        JPAssist::JPAssistOverlay_ComputeLayout(0.0f, 0.0f, 1280.0f, 720.0f, 1.5f);
 
-    EXPECT_LT(layout.height, 460.0f * 1.5f);
+    EXPECT_LE(layout.height, 230.0f * 1.5f);
+    EXPECT_FLOAT_EQ(layout.x, (1280.0f - layout.width) * 0.5f);
     EXPECT_LE(layout.y + layout.height, 720.0f);
 }
 
 TEST(JPAssistOverlayLayout, HonorsOffsetWorkAreaAndSanitizesScale) {
     const JPAssist::OverlayLayout layout =
-        JPAssist::JPAssistOverlay_ComputeLayout(100.0f, 50.0f, 800.0f, 600.0f, NAN, false);
+        JPAssist::JPAssistOverlay_ComputeLayout(100.0f, 50.0f, 800.0f, 600.0f, NAN);
 
     EXPECT_GE(layout.x, 100.0f);
     EXPECT_GE(layout.y, 50.0f);
@@ -56,7 +55,7 @@ TEST(JPAssistOverlayLayout, HonorsOffsetWorkAreaAndSanitizesScale) {
 
 TEST(JPAssistOverlayLayout, HandlesMinimalWorkArea) {
     const JPAssist::OverlayLayout layout =
-        JPAssist::JPAssistOverlay_ComputeLayout(10.0f, 20.0f, 1.0f, 1.0f, 1.5f, true);
+        JPAssist::JPAssistOverlay_ComputeLayout(10.0f, 20.0f, 1.0f, 1.0f, 1.5f);
 
     EXPECT_GE(layout.x, 10.0f);
     EXPECT_GE(layout.y, 20.0f);

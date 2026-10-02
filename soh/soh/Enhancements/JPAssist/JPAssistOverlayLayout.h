@@ -14,7 +14,7 @@ struct OverlayLayout {
 };
 
 inline OverlayLayout JPAssistOverlay_ComputeLayout(float workX, float workY, float workWidth, float workHeight,
-                                                    float requestedScale, bool studyMode) {
+                                                    float requestedScale) {
     const float scale = std::isfinite(requestedScale) ? std::clamp(requestedScale, 0.7f, 1.5f) : 1.0f;
     const float safeWidth = std::max(workWidth, 1.0f);
     const float safeHeight = std::max(workHeight, 1.0f);
@@ -22,14 +22,15 @@ inline OverlayLayout JPAssistOverlay_ComputeLayout(float workX, float workY, flo
     const float margin = std::min(24.0f * scale, maxMargin);
     const float availableWidth = std::max(safeWidth - margin * 2.0f, 1.0f);
     const float availableHeight = std::max(safeHeight - margin * 2.0f, 1.0f);
-    // The dialogue panel follows the native textbox's broad horizontal
-    // silhouette; Study Mode remains a compact side card.
-    const float width = std::min((studyMode ? 420.0f : 960.0f) * scale, availableWidth);
-    const float height = std::min((studyMode ? 460.0f : 120.0f) * scale, availableHeight);
+    // Study Mode follows the native textbox's broad horizontal silhouette.
+    // Its two-column content keeps the English reference and word card
+    // readable without covering a large portion of the playfield.
+    const float width = std::min(1040.0f * scale, availableWidth);
+    const float height = std::min(230.0f * scale, availableHeight);
 
     return {
-        studyMode ? workX + safeWidth - width - margin : workX + (safeWidth - width) * 0.5f,
-        studyMode ? workY + margin : workY + safeHeight - height - margin,
+        workX + (safeWidth - width) * 0.5f,
+        workY + safeHeight - height - margin,
         width,
         height,
         scale,

@@ -21,7 +21,7 @@ internals.
 |---|---|---|
 | Native Swap | The adapter replaces the visible native page without restarting dialogue | Either language can be shown |
 | Attached Translation | A secondary panel is anchored to the native dialogue UI | Either language can be shown |
-| Japanese Only | Native Japanese remains unobstructed; English toggles are ignored outside study | English remains available |
+| Japanese Only | Native Japanese remains unobstructed; no secondary panel appears | English remains available in the combined study card |
 
 Capabilities are negotiated at runtime. A host that cannot safely replace native text falls back from Native Swap to
 Attached Translation and reports that fallback. It must never mutate fragile dialogue state merely to claim support.
@@ -66,9 +66,8 @@ stable. Portable code should not assume an N64 text ID, Shipwright `MessageConte
 
 ## SoH implementation status
 
-- Attached Translation: implemented through the frame-safe overlay.
-- Japanese Only: implemented; English reference remains available inside Study Mode.
-- Native Swap: selectable as an adapter preview and capability-falls back to Attached Translation.
+- Japanese Only: the active SoH presentation; English reference is combined with the vocabulary card inside Study Mode.
+- Attached Translation and Native Swap: retained in the portable capability contract for future game adapters, but not exposed by the current SoH UI.
 - Dialogue anchor and controller glyph capabilities: not implemented yet.
 
 SoH's existing decode functions reset timers and message modes, so calling them to redraw the active conversation is not

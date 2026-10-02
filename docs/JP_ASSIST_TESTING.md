@@ -88,8 +88,8 @@ The first configure may download GoogleTest if it is not installed locally.
 ## Automation boundary
 
 Smoke checks cover scene transition, message dispatch, JP Assist observation,
-corpus lookup, expected page/token/choice metadata, L/Z alias behavior, R/B
-Study Mode lifecycle, D-Right navigation, C-Right save/restore, D-Up/D-Down
+corpus lookup, expected page/token/choice metadata, R/B Study Mode lifecycle,
+D-Right navigation, C-Right save/restore, D-Up/D-Down
 scroll dispatch and input consumption, choice freezing, and the
 controller-glyph persistence regression. Unit tests also verify that dialogue
 and Study cards remain within 720p, 1080p, and ultrawide work areas at all
