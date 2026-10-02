@@ -39,9 +39,8 @@ void StudyPersistence_RecordEncounter(const std::string& tokenId);
 int StudyPersistence_GetEncounterCount(const std::string& tokenId);
 
 // Design doc section 9's "message history" field / section 11's "keep a
-// short, searchable history of recently seen lines" (searchable is out of
-// scope for this spike - this is just the bounded recent-history data
-// layer). Appends and trims to the most recent kMaxHistoryEntries; does not
+// short, searchable history of recently seen lines". Appends and trims to
+// the most recent kMaxHistoryEntries; does not
 // write to disk itself, same batching reasoning as encounter counts.
 void StudyPersistence_RecordHistoryEntry(uint16_t textId, const std::string& englishText);
 const std::vector<HistoryEntry>& StudyPersistence_GetHistory();

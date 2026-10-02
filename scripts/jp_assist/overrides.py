@@ -4,9 +4,8 @@ Zelda terminology, and archaic/compound forms (docs/JP_ASSIST_DESIGN.md
 section 7.2 step 8). Keyed by (lemma, reading) so the override is specific
 to the actual word sense encountered, not just the surface string.
 
-This is a hand-authored starter set covering terms in the recorded test
-dialogues (docs/JP_ASSIST_DESIGN.md Milestone 0) - not a complete
-Zelda-terminology glossary.
+This is a hand-authored review layer covering game terminology plus frequent
+stylized speech that general dictionaries do not represent well.
 """
 
 OVERRIDES: dict[tuple[str, str], dict] = {
@@ -101,6 +100,55 @@ OVERRIDES: dict[tuple[str, str], dict] = {
     ("できる", "できる"): {"meaning": "can; to be able to; to come into existence", "note": "Common verb."},
     ("みる", "みる"): {"meaning": "to see/look; to try doing", "note": "Exact role depends on context; often written 見る."},
     ("つ", "つ"): {"meaning": "counter for objects; one/two/etc.", "note": "Common counting suffix in native Japanese numbers."},
+    # Frequent colloquial spellings, character voices, and sound effects.
+    # These entries are intentionally exact lemma+reading matches: they improve
+    # the deck without changing ordinary words that happen to share a surface.
+    ("ボーヤ", "ぼーや"): {"meaning": "boy; kid", "note": "Casual address, usually to Link."},
+    ("ぼーや", "ぼーや"): {"meaning": "boy; kid", "note": "Casual address, usually to Link."},
+    ("ボーズ", "ぼーず"): {"meaning": "boy; son; kid", "note": "Colloquial form of 坊主."},
+    ("でしゅ", "でしゅ"): {"meaning": "childish pronunciation of です (to be)", "note": "Character speech pattern."},
+    ("のぉ", "のぉ"): {"meaning": "sentence-ending のう; you see; isn't it", "note": "Old-person/archaic speech."},
+    ("どっ", "どっ"): {"meaning": "where (contracted start of どっか/どこ)", "note": "Colloquial contraction."},
+    ("ムニャ", "むにゃ"): {"meaning": "mumble; sleepy murmuring", "note": "Sleep sound effect."},
+    ("おぉ", "おぉ"): {"meaning": "oh!; ooh!", "note": "Interjection."},
+    ("どー", "どー"): {"meaning": "how; in what way (elongated どう)", "note": "Colloquial spelling."},
+    ("ッピー", "っぴー"): {"meaning": "Deku Scrub sentence-ending speech quirk", "note": "Character speech pattern."},
+    ("ハッハッハ", "はっはっは"): {"meaning": "ha ha ha", "note": "Laughter."},
+    ("ハッハッハッハッハ", "はっはっはっはっは"): {"meaning": "ha ha ha ha ha", "note": "Laughter."},
+    ("ヒヒッ", "ひひっ"): {"meaning": "hee hee", "note": "Mischievous laughter."},
+    ("ヘヘヘ", "へへへ"): {"meaning": "hee hee hee", "note": "Laughter."},
+    ("クスス", "くすす"): {"meaning": "tee hee; suppressed giggle", "note": "Laughter."},
+    ("フフッ", "ふふっ"): {"meaning": "heh heh; soft laugh", "note": "Laughter."},
+    ("ウフ", "うふ"): {"meaning": "tee hee; soft laugh", "note": "Laughter."},
+    ("ヒッヒッヒ", "ひっひっひ"): {"meaning": "heh heh heh", "note": "Laughter."},
+    ("だ〜", "だー"): {"meaning": "elongated form of だ (to be)", "note": "Stylized speech."},
+    ("キョーダイ", "きょーだい"): {"meaning": "brother; sworn brother", "note": "Stylized spelling of 兄弟."},
+    ("フォッ", "ふぉっ"): {"meaning": "hoo; ho", "note": "Owl-like laugh/call."},
+    ("フォ", "ふぉ"): {"meaning": "hoo; ho", "note": "Owl-like laugh/call."},
+    ("ホホォ", "ほほぉ"): {"meaning": "hoo hoo", "note": "Owl call."},
+    ("ホホーゥ", "ほほーぅ"): {"meaning": "hoo-hoot", "note": "Owl call."},
+    ("幼し", "おさなし"): {"meaning": "young; childish", "note": "Classical/archaic form used in an inscription."},
+    ("っと", "っと"): {"meaning": "quotative or emphatic ending", "note": "Colloquial particle; role depends on context."},
+    ("そー", "そー"): {"meaning": "so; that way (elongated そう)", "note": "Colloquial spelling."},
+    ("でぇ", "でぇ"): {"meaning": "elongated particle/ending", "note": "Stylized speech; exact role depends on context."},
+    ("ベイベー", "べいべー"): {"meaning": "baby", "note": "English loanword used as a casual address."},
+    ("ベイベ", "べいべ"): {"meaning": "baby", "note": "English loanword used as a casual address."},
+    ("ビッグポウ", "びっぐぽう"): {"meaning": "Big Poe", "note": "Enemy/soul name."},
+    ("盗賊団", "とうぞくだん"): {"meaning": "band of thieves; thieves' gang"},
+    ("おおっ", "おおっ"): {"meaning": "oh!; whoa!", "note": "Interjection."},
+    ("タロン", "たろん"): {"meaning": "Talon", "note": "Character name."},
+    ("邪竜", "じゃりゅう"): {"meaning": "evil dragon", "note": "Refers to Volvagia."},
+    ("ガエル", "がえる"): {"meaning": "frog", "note": "Voiced compound form of カエル."},
+    ("的当て", "まとあて"): {"meaning": "target shooting; shooting gallery"},
+    ("てめぇ", "てめぇ"): {"meaning": "you (rough/hostile)", "note": "Emphatic colloquial form of てめえ."},
+    ("さっさと", "さっさと"): {"meaning": "quickly; promptly; without delay"},
+    ("リチャード", "りちゃーど"): {"meaning": "Richard", "note": "Name of the woman's pet dog."},
+    ("ローバ", "ろーば"): {"meaning": "old woman; hag", "note": "Stylized spelling of 老婆."},
+    ("ケポラ", "けぽら"): {"meaning": "Kaepora", "note": "First half of Kaepora Gaebora's name."},
+    ("ゲボラ", "げぼら"): {"meaning": "Gaebora", "note": "Second half of Kaepora Gaebora's name."},
+    ("オババ", "おばば"): {"meaning": "granny; old woman", "note": "Familiar character title."},
+    ("ボムチュウボウリング", "ぼむちゅうぼうりんぐ"): {"meaning": "Bombchu Bowling", "note": "Minigame name."},
+    ("タネブクロ", "たねぶくろ"): {"meaning": "seed bag; bullet bag", "note": "Item name, stylized in katakana."},
 }
 
 

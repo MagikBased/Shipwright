@@ -10,6 +10,9 @@ struct RuntimeStatus {
     uint8_t requestedLanguage = 0;
     bool alternateLanguageVisible = false;
     bool studyModeActive = false;
+    bool currentPageIsChoice = false;
+    bool choiceSelectionFrozen = false;
+    uint8_t choiceIndex = 0;
     int selectedTokenIndex = 0;
     int currentPageTokenCount = 0;
     uint64_t languageToggleCount = 0;

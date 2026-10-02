@@ -62,6 +62,15 @@ def sha256_hex(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
+def is_internal_message_id_echo(text_id: int, japanese_text: str, english_text: str) -> bool:
+    """Detect archive/debug records whose entire contents are their own ID."""
+    fullwidth = str.maketrans("０１２３４５６７８９ＡＢＣＤＥＦａｂｃｄｅｆ", "0123456789ABCDEFabcdef")
+    japanese_id = japanese_text.strip().translate(fullwidth).lower()
+    english_id = english_text.strip().lower()
+    expected = f"{text_id:04x}"
+    return japanese_id == expected and english_id == expected
+
+
 class Tokenizer:
     def __init__(self, cache_path: Path):
         from sudachipy import dictionary
@@ -187,7 +196,7 @@ class Tokenizer:
         return self._persistent_cache[cache_key]
 
 
-def build_runtime_record(text_id: int, entry: dict, tokenizer: Tokenizer) -> dict:
+def build_runtime_record(text_id: int, entry: dict, tokenizer: Tokenizer) -> dict | None:
     jpn_raw = bytes.fromhex(entry["japanese"]["raw"]) if entry.get("japanese") else b""
     eng_raw = bytes.fromhex(entry["english"]["raw"]) if entry.get("english") else b""
 
@@ -205,15 +214,25 @@ def build_runtime_record(text_id: int, entry: dict, tokenizer: Tokenizer) -> dic
         jpn_text = jpn_page.text if jpn_page else ""
         eng_text = eng_page.text if eng_page else ""
 
+        internal_id_echo = is_internal_message_id_echo(text_id, jpn_text, eng_text)
         pages.append(
             {
                 "japanese": jpn_text,
                 "english": eng_text,
                 "isChoice": bool(jpn_page and jpn_page.is_choice) or bool(eng_page and eng_page.is_choice),
                 "choiceCount": (jpn_page.choice_count if jpn_page else 0) or (eng_page.choice_count if eng_page else 0),
-                "tokens": tokenizer.tokenize_page(jpn_text, eng_text) if jpn_text.strip() else [],
+                "tokens": tokenizer.tokenize_page(jpn_text, eng_text)
+                if jpn_text.strip() and not internal_id_echo
+                else [],
             }
         )
+
+    # Some message-table slots are internal labels rather than dialogue: both
+    # languages contain only the slot's own four-digit hexadecimal ID. Keep
+    # them out of the runtime corpus/deck entirely so validation and coverage
+    # represent text a player can actually study.
+    if pages and all(is_internal_message_id_echo(text_id, page["japanese"], page["english"]) for page in pages):
+        return None
 
     return {
         "schemaVersion": 1,
@@ -260,7 +279,9 @@ def main() -> None:
 
     runtime_messages = {}
     for index, (key, entry) in enumerate(entries.items(), start=1):
-        runtime_messages[key] = build_runtime_record(entry["textId"], entry, tokenizer)
+        record = build_runtime_record(entry["textId"], entry, tokenizer)
+        if record is not None:
+            runtime_messages[key] = record
         if index % 100 == 0 or index == len(entries):
             tokenizer.save_cache()
             print(f"  {index}/{len(entries)} messages")

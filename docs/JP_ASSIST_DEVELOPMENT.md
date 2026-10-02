@@ -9,7 +9,8 @@ boundary so deferred testing can start from a known point.
 - L and Z as interchangeable aliases for one language-toggle action.
 - Corpus-backed Japanese and English page display without changing the save's
   global language or mutating the active message context.
-- R enters Study Mode on a Japanese, non-choice page with token data.
+- R enters Study Mode on any Japanese page with token data. Choice selection
+  is frozen while the study panel owns focus, including analog-stick input.
 - D-Left/D-Right select occurrences; D-Up/D-Down scroll long cards; C-Right
   saves a vocabulary item; R or B closes the panel. Native dialogue advance
   inputs are consumed while focused.
@@ -18,6 +19,8 @@ boundary so deferred testing can start from a known point.
   logs a graceful fallback warning if the asset is unavailable.
 - Separate JSON progress for saved words, encounter counts, timestamps, and a
   bounded dialogue history, stamped with the active corpus version.
+- Searchable newest-first dialogue-history window with Japanese, English,
+  timestamp, and text-ID filtering.
 - Local extraction, parsing, Sudachi tokenization, JMdict lookup/override,
   validation, coverage reporting, and `.apkg`/TSV generation tools.
 - Runtime JSON Schema and generated/copyrighted-data ignore rules.
@@ -29,16 +32,17 @@ boundary so deferred testing can start from a known point.
 
 ## Latest local corpus build
 
-Generated from the user's N64 NTSC 1.2 archive on 2026-08-12. These ignored
+Generated from the user's N64 NTSC 1.2 archive on 2026-10-02. These ignored
 local artifacts are not distributable game data.
 
-- 2,116 player-facing message records and 3,501 normalized pages.
-- 40,488 token occurrences and 4,224 dictionary-form vocabulary identities.
+- 2,035 player-facing message records and 3,420 normalized pages; 81
+  archive-internal message-ID echo records are excluded.
+- 40,351 token occurrences and 4,168 dictionary-form vocabulary identities.
 - Zero structural/schema/offset errors.
-- 39,558 token occurrences have definitions (97.70%).
-- 450 unique unresolved definitions are listed in `out/review_queue.tsv` and
+- 39,828 token occurrences have definitions (98.70%).
+- 352 unique unresolved definitions are listed in `out/review_queue.tsv` and
   tagged `needs-definition` in the generated Anki deck.
-- Full deck: 4,303 sense-specific notes; regenerated GUID set verified stable.
+- Full deck: 4,247 sense-specific notes; package validation confirms unique GUIDs.
 - Saved-word deck: generated from the actual local progress file (one note at
   the time of this build).
 
@@ -62,14 +66,11 @@ No gameplay claims should be made until these are exercised in-game:
 - The overlay mirrors alternate text instead of replacing glyphs inside the
   native textbox. This is safer scaffolding, but native-layout integration is
   still a future milestone.
-- Choice pages cannot enter Study Mode yet. Supporting them needs an explicit
-  focus model that freezes native choice selection.
 - Dictionary sense selection is heuristic and requires human review through
-  `scripts/jp_assist/overrides.py`; the generated review queue tracks the
-  remaining 450 unresolved definitions.
+  `scripts/jp_assist/overrides.py`; the generated review queue tracks remaining
+  unresolved definitions.
 - Runtime source-hash verification is represented in the corpus but not yet
   compared against raw message-entry hashes exposed by the game.
-- History has a console command (`jpassist_history`) but no searchable UI.
 - The full-game vocabulary deck is generated locally; it is not committed or
   distributed because the corpus contains copyrighted dialogue.
 

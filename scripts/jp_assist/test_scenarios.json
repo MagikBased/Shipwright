@@ -28,7 +28,7 @@
     {
       "id": "know_it_all_choice",
       "label": "Know-It-All Brothers — choice",
-      "description": "Choice dialogue; Study Mode should remain unavailable while native choice input is active.",
+      "description": "Choice dialogue; Study Mode should freeze the highlighted native choice while its panel has focus.",
       "progressionProfile": "debug_child",
       "entrance": "0x00C9",
       "age": "child",

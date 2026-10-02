@@ -554,6 +554,8 @@ class TestLabWindow final : public Ship::GuiWindow {
                     runtime.currentPageTokenCount);
         ImGui::Text("Language %s  Study %s  token %d", runtime.requestedLanguage == LANGUAGE_JPN ? "JP" : "EN",
                     runtime.studyModeActive ? "active" : "closed", runtime.selectedTokenIndex);
+        ImGui::Text("Choice page %s  choice %u  selection %s", runtime.currentPageIsChoice ? "yes" : "no",
+                    runtime.choiceIndex, runtime.choiceSelectionFrozen ? "frozen" : "native");
         ImGui::Text("Observed controls: language %llu, Study %llu, navigation %llu, saves %llu",
                     static_cast<unsigned long long>(runtime.languageToggleCount),
                     static_cast<unsigned long long>(runtime.studyEnterCount),

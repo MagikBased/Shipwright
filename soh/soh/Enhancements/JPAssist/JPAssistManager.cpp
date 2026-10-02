@@ -4,6 +4,7 @@
 #include <spdlog/spdlog.h>
 
 #include "DialogueRepository.h"
+#include "JPAssistHistory.h"
 #include "JPAssistOverlay.h"
 #include "JPAssistTestLab.h"
 #include "MessageParser.h"
@@ -74,6 +75,10 @@ uint64_t sLanguageToggleCount = 0;
 uint64_t sStudyEnterCount = 0;
 uint64_t sStudyNavigationCount = 0;
 uint64_t sSaveToggleCount = 0;
+bool sFrozenChoiceValid = false;
+uint8_t sFrozenChoiceIndex = 0;
+uint16_t sFrozenChoiceTextId = 0xFFFF;
+int sFrozenChoicePageIndex = -1;
 
 bool sRomCompatibilityChecked = false;
 
@@ -127,6 +132,7 @@ void ExitStudyMode() {
         return;
     }
     sStudyModeActive = false;
+    sFrozenChoiceValid = false;
     JPAssist::JPAssistOverlay_Hide();
     // Flush encounter counts accumulated while navigating (design doc
     // section 9). Saved-word toggles (C-Right) already save immediately
@@ -193,20 +199,23 @@ void HandleStudyModeInput(PlayState* play, MessageContext* msgCtx, Input* input)
     bool rPressed = CHECK_BTN_ALL(input->press.button, BTN_R);
 
     if (!sStudyModeActive) {
-        // Design doc 5: "Study Mode is only available when Japanese text
-        // and token data are available." Also require a non-choice page: choice
-        // textboxes already use the stick/D-pad for selection, and
-        // reusing D-pad for token navigation on the same page would
-        // conflict with that control (docs/JP_ASSIST_DESIGN.md 5: "Choice
-        // selection is frozen while the study panel has focus" - simplest
-        // way to guarantee that for this prototype is to not allow Study
-        // Mode to open on a choice page in the first place).
+        // Study Mode is available whenever Japanese token data exists. On
+        // choice pages the highlighted answer is captured below and frozen
+        // while the study panel owns the D-pad/analog focus.
         const JPAssist::StudyPage* page = CurrentStudyPage();
-        if (rPressed && sRequestedLanguage == LANGUAGE_JPN && msgCtx->choiceNum == 0 && page != nullptr &&
-            !page->tokens.empty()) {
+        if (rPressed && sRequestedLanguage == LANGUAGE_JPN && page != nullptr && !page->tokens.empty()) {
             sStudyModeActive = true;
             sStudyEnterCount++;
             sSelectedTokenIndex = 0;
+            if (page->isChoice) {
+                sFrozenChoiceValid = true;
+                sFrozenChoiceIndex = msgCtx->choiceIndex;
+                sFrozenChoiceTextId = sTrackedTextId;
+                sFrozenChoicePageIndex = sCurrentPageIndex;
+                input->rel.stick_y = 0;
+                input->press.button &= ~(BTN_DUP | BTN_DDOWN);
+                input->cur.button &= ~(BTN_DUP | BTN_DDOWN);
+            }
             RecordTokenEncounter(sSelectedTokenIndex);
             input->press.button &= ~BTN_R;
             input->cur.button &= ~BTN_R;
@@ -224,6 +233,20 @@ void HandleStudyModeInput(PlayState* play, MessageContext* msgCtx, Input* input)
     }
 
     const JPAssist::StudyPage* page = CurrentStudyPage();
+    if (page != nullptr && page->isChoice) {
+        if (!sFrozenChoiceValid || sFrozenChoiceTextId != sTrackedTextId ||
+            sFrozenChoicePageIndex != sCurrentPageIndex) {
+            sFrozenChoiceValid = true;
+            sFrozenChoiceIndex = msgCtx->choiceIndex;
+            sFrozenChoiceTextId = sTrackedTextId;
+            sFrozenChoicePageIndex = sCurrentPageIndex;
+        }
+        // Message_HandleChoiceSelection runs later in Message_Update and
+        // reads rel.stick_y plus D-up/down. Neutralize both, and restore the
+        // captured index defensively in case another hook changed it.
+        msgCtx->choiceIndex = sFrozenChoiceIndex;
+        input->rel.stick_y = 0;
+    }
     if (page != nullptr && !page->tokens.empty()) {
         const auto& tokens = page->tokens;
         int previousIndex = sSelectedTokenIndex;
@@ -358,21 +381,25 @@ void HandleLanguageTogglePress(PlayState* play) {
 }
 
 // Design doc section 9 / section 11's "dialogue history": records page 0's
-// English text for whatever textId just opened. Reuses the same read-only
-// DialogueRepository+MessageParser lookup PostAlternateLanguagePage uses -
-// no live msgCtx/font access, same as everywhere else in this file.
+// English text for whatever textId just opened. Prefer the normalized corpus,
+// which retains choice text; use the raw-table parser only as a fallback.
 void RecordHistoryForOpenedMessage(uint16_t textId) {
-    const char* segment = nullptr;
-    uint32_t length = 0;
-    if (!JPAssist::DialogueRepository_Find(textId, LANGUAGE_ENG, &segment, &length)) {
-        return;
+    std::string text;
+    if (const JPAssist::StudyPage* page = JPAssist::StudyRepository_FindPage(textId, 0);
+        page != nullptr && !page->english.empty()) {
+        text = page->english;
+    } else {
+        const char* segment = nullptr;
+        uint32_t length = 0;
+        if (!JPAssist::DialogueRepository_Find(textId, LANGUAGE_ENG, &segment, &length)) {
+            return;
+        }
+        JPAssist::DialogueStructure structure = JPAssist::MessageParser_Parse(segment, length, LANGUAGE_ENG);
+        if (structure.pages.empty()) {
+            return;
+        }
+        text = structure.pages[0].englishText;
     }
-    JPAssist::DialogueStructure structure = JPAssist::MessageParser_Parse(segment, length, LANGUAGE_ENG);
-    if (structure.pages.empty()) {
-        return;
-    }
-    const auto& page = structure.pages[0];
-    std::string text = page.isChoice ? "(choice)" : page.englishText;
     JPAssist::StudyPersistence_RecordHistoryEntry(textId, text);
     // Saved immediately rather than batched: dialogue opens are already
     // infrequent (nowhere near once-per-frame or once-per-page-flip), so
@@ -551,14 +578,15 @@ void RegisterJPAssistMenu() {
         .HideInSearch(true)
         .Options(UIWidgets::WindowButtonOptions().Tooltip(
             "Open developer scenarios, temporary progression profiles, live diagnostics, and smoke checks."));
+    SohGui::mSohMenu->AddWidget(path, "Open Dialogue History", WIDGET_WINDOW_BUTTON)
+        .CVar(CVAR_WINDOW("JPAssistHistory"))
+        .WindowName("JP Assist Dialogue History")
+        .Options(UIWidgets::WindowButtonOptions().Tooltip(
+            "Browse and search the 20 most recently opened Japanese and English dialogue lines."));
 }
 
-// "Keep a short... history of recently seen lines" (design doc section 11)
-// needs *some* way for the player to actually see it. There's no menu
-// screen for JP Assist to host a scrollable history view yet, so this
-// reuses the engine's existing debug console (soh/soh/Enhancements/
-// debugconsole.cpp's CMD_REGISTER pattern) rather than building new UI just
-// for this - a real in-game history browser is future work, not this spike.
+// Console companion to the searchable GUI history browser. Keeping this
+// command is useful for diagnostics and text-only test sessions.
 int32_t JPAssistHistoryCommand(std::shared_ptr<Ship::Console> console, std::vector<std::string> args,
                                std::string* output) {
     const auto& history = JPAssist::StudyPersistence_GetHistory();
@@ -582,6 +610,7 @@ void RegisterJPAssist() {
     JPAssist::StudyRepository_LoadCorpus();
     JPAssist::StudyPersistence_Load();
     JPAssist::JPAssistOverlay_Register();
+    JPAssist::JPAssistHistory_Register();
     JPAssist::JPAssistTestLab_Register();
     if (!JPAssist::JPAssistOverlay_HasJapaneseFont()) {
         SPDLOG_WARN("[JPAssist] Shipwright's bundled Japanese font is unavailable; Japanese overlay text may render "
@@ -609,6 +638,7 @@ RuntimeStatus JPAssist_GetRuntimeStatus() {
     status.requestedLanguage = sRequestedLanguage;
     status.alternateLanguageVisible = sShowingAlternateLanguage;
     status.studyModeActive = sStudyModeActive;
+    status.choiceSelectionFrozen = sStudyModeActive && sFrozenChoiceValid;
     status.selectedTokenIndex = sSelectedTokenIndex;
     status.languageToggleCount = sLanguageToggleCount;
     status.studyEnterCount = sStudyEnterCount;
@@ -616,6 +646,10 @@ RuntimeStatus JPAssist_GetRuntimeStatus() {
     status.saveToggleCount = sSaveToggleCount;
     if (const StudyPage* page = CurrentStudyPage(); page != nullptr) {
         status.currentPageTokenCount = static_cast<int>(page->tokens.size());
+        status.currentPageIsChoice = page->isChoice;
+    }
+    if (gPlayState != nullptr) {
+        status.choiceIndex = gPlayState->msgCtx.choiceIndex;
     }
     return status;
 }
