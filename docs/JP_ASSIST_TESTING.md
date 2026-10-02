@@ -16,6 +16,10 @@ not create or modify a normal save. Start from any loaded scene, then open
 4. Review `jp_assist_smoke_results.json` in the application directory for the
    last result per scenario.
 
+The full suite owns a disposable debug session and returns to File Select when
+it finishes. Do not use it as a starting point for normal play; use **Load
+scenario** or a normal save for interactive testing afterward.
+
 Scenario definitions live in `scripts/jp_assist/test_scenarios.json`. Entrance,
 text, yaw, and console numeric arguments accept decimal or `0x`-prefixed values.
 Expected page/token/choice counts deliberately make corpus drift visible.
@@ -26,6 +30,22 @@ Progression profiles are isolated to the temporary session:
 - `post_deku_tree`
 - `adult_all_access`
 - `endgame`
+
+## One-command smoke run
+
+After building `build-cmake/soh/soh.elf`, run the complete suite without menu
+navigation or mouse automation:
+
+```bash
+./scripts/jp_assist/run_smoke_suite.sh
+```
+
+The game starts in an automated temporary session, writes
+`build-cmake/soh/jp_assist_smoke_results.json`, prints `lastSuite`, and exits
+with status 0 on success or nonzero on failure. It still requires a graphical
+session because Shipwright initializes its normal SDL/OpenGL window. Override
+the executable directory with `JPASSIST_APP_DIR` and the 120-second timeout
+with `JPASSIST_SMOKE_TIMEOUT` when needed.
 
 ## Console commands
 

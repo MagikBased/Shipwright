@@ -1,6 +1,7 @@
 #include "JPAssistTestLab.h"
 
 #include <algorithm>
+#include <cstdlib>
 #include <filesystem>
 #include <fstream>
 #include <memory>
@@ -72,6 +73,8 @@ constexpr const char* kProgressionProfiles[] = { "debug_child", "post_deku_tree"
 std::shared_ptr<Ship::GuiWindow> sWindow;
 bool sSceneInitializedAfterWarp = false;
 int sPostSceneDelay = 0;
+bool sAutoRunRequested = false;
+bool sAutoRunStarted = false;
 
 bool IsTemporarySession() {
     return gPlayState != nullptr && gSaveContext.fileNum == 0xFF;
@@ -211,6 +214,28 @@ void WriteSuiteSummary() {
     output << root.dump(2, ' ', false, nlohmann::json::error_handler_t::replace) << '\n';
 }
 
+void FinishSuiteSession(bool passed) {
+    if (sAutoRunRequested) {
+        SPDLOG_INFO("[JPAssist Test Lab] Automated suite complete: {}", passed ? "PASS" : "FAIL");
+        Ship::Context::GetRawInstance()->GetLogger()->flush();
+        // This runs inside the game-frame callback. Avoid invoking global C++
+        // destructors while Shipwright's engine objects and worker threads are
+        // still live; the dedicated automation process has nothing else to
+        // preserve after the report and log are flushed.
+        std::_Exit(passed ? EXIT_SUCCESS : EXIT_FAILURE);
+    }
+
+    // A full suite repeatedly replaces the debug save and forces scene
+    // transitions. It is intentionally disposable; return to File Select so
+    // the player cannot continue in that synthetic state. Use Load Scenario
+    // when interactive inspection after a test is desired.
+    if (gPlayState != nullptr) {
+        gSaveContext.gameMode = GAMEMODE_FILE_SELECT;
+        gPlayState->state.running = false;
+        SET_NEXT_GAMESTATE(&gPlayState->state, FileChoose_Init, FileChooseContext);
+    }
+}
+
 bool ValidateScenario(const TestScenario& scenario, std::string& detail) {
     const RuntimeStatus runtime = JPAssist_GetRuntimeStatus();
     if (runtime.textId != scenario.textId) {
@@ -321,6 +346,7 @@ bool AdvanceSmokeSuite() {
         sSmoke.stage = passed ? SmokeStage::Passed : SmokeStage::Failed;
         sSmoke.detail = fmt::format("Suite complete: {} passed, {} failed", sSuite.passed, sSuite.failed);
         WriteSuiteSummary();
+        FinishSuiteSession(passed);
         return true;
     }
 
@@ -339,6 +365,15 @@ bool AdvanceSmokeSuite() {
 }
 
 void UpdateSmoke() {
+    if (sAutoRunRequested && !sAutoRunStarted && gPlayState != nullptr && GET_PLAYER(gPlayState) != nullptr) {
+        sAutoRunStarted = true;
+        std::string error;
+        if (!StartSmokeSuite(error)) {
+            SPDLOG_ERROR("[JPAssist Test Lab] Could not start automated suite: {}", error);
+            Ship::Context::GetRawInstance()->GetLogger()->flush();
+            std::_Exit(2);
+        }
+    }
     if (AdvanceSmokeSuite()) {
         return;
     }
@@ -663,6 +698,11 @@ int32_t StatusCommand(std::shared_ptr<Ship::Console>, std::vector<std::string>, 
 
 void JPAssistTestLab_Register() {
     TestScenario_LoadManifest();
+    const char* autoRun = std::getenv("JPASSIST_AUTORUN_SMOKE");
+    sAutoRunRequested = autoRun != nullptr && std::string(autoRun) != "0";
+    if (sAutoRunRequested) {
+        SPDLOG_INFO("[JPAssist Test Lab] Automated smoke suite requested; waiting for an active PlayState");
+    }
     sWindow = std::make_shared<TestLabWindow>(CVAR_WINDOW("JPAssistTestLab"), "JP Assist Test Lab", ImVec2(620, 680));
     Ship::Context::GetRawInstance()->GetWindow()->GetGui()->AddGuiWindow(sWindow);
     GameInteractor::Instance->RegisterGameHook<GameInteractor::OnGameFrameUpdate>(UpdateSmoke);
