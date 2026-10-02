@@ -5,6 +5,7 @@
 #include <memory>
 #include <mutex>
 
+#include <fast/Fast3dGui.h>
 #include <imgui.h>
 #include <libultraship/bridge/consolevariablebridge.h>
 #include <ship/Context.h>
@@ -14,6 +15,11 @@
 
 #include "soh/OTRGlobals.h"
 #include "soh/cvar_prefixes.h"
+#include "assets/soh_assets.h"
+
+extern "C" {
+#include "textures/kanji/kanji.h"
+}
 
 namespace JPAssist {
 namespace {
@@ -30,6 +36,11 @@ struct OverlayState {
 OverlayState sState;
 std::mutex sStateMutex;
 
+constexpr const char* kDPadGlyph = "JPAssist.DialogueGlyph.DPad";
+constexpr const char* kCRightGlyph = "JPAssist.DialogueGlyph.CRight";
+constexpr const char* kAGlyph = "JPAssist.DialogueGlyph.A";
+constexpr const char* kRGlyph = "JPAssist.DialogueGlyph.R";
+
 class JPAssistOverlayWindow final : public Ship::GuiWindow {
   public:
     JPAssistOverlayWindow()
@@ -40,6 +51,21 @@ class JPAssistOverlayWindow final : public Ship::GuiWindow {
     }
 
     void InitElement() override {
+        mFast3dGui = std::dynamic_pointer_cast<Fast::Fast3dGui>(
+            Ship::Context::GetRawInstance()->GetWindow()->GetGui());
+        if (mFast3dGui == nullptr) {
+            return;
+        }
+
+        // Cache game-native glyph art under overlay-specific names so it can
+        // be tinted like the corresponding controller buttons.
+        // The Japanese archive stops just before the dialogue font's western
+        // D-pad character, so use Shipwright's native HUD D-pad art for this
+        // one control instead of trying to load an absent resource.
+        LoadGlyph(kDPadGlyph, gDPadTex, ImVec4(0.86f, 0.88f, 0.92f, 1.0f));
+        LoadGlyph(kCRightGlyph, gMsgKanji83A8ButtonCRightTex, ImVec4(1.0f, 0.82f, 0.22f, 1.0f));
+        LoadGlyph(kAGlyph, gMsgKanji839FButtonATex, ImVec4(0.35f, 0.72f, 1.0f, 1.0f));
+        LoadGlyph(kRGlyph, gMsgKanji83A3ButtonRTex, ImVec4(0.86f, 0.88f, 0.92f, 1.0f));
     }
     void UpdateElement() override {
     }
@@ -110,10 +136,13 @@ class JPAssistOverlayWindow final : public Ship::GuiWindow {
             ImGui::TableSetupColumn("Word", ImGuiTableColumnFlags_WidthStretch, 1.1f);
             ImGui::TableNextRow();
             ImGui::TableSetColumnIndex(0);
+            const float englishColumnLeft = ImGui::GetCursorScreenPos().x;
+            const float englishColumnRight = englishColumnLeft + ImGui::GetContentRegionAvail().x;
             ImGui::PushTextWrapPos(0.0f);
             ImGui::TextUnformatted(mFrameState.studyPage.english.empty() ? "Translation unavailable"
                                                                          : mFrameState.studyPage.english.c_str());
             ImGui::PopTextWrapPos();
+            const float englishTextBottom = ImGui::GetItemRectMax().y;
 
             ImGui::TableSetColumnIndex(1);
             const float headerRight = ImGui::GetCursorScreenPos().x + ImGui::GetContentRegionAvail().x;
@@ -143,6 +172,12 @@ class JPAssistOverlayWindow final : public Ship::GuiWindow {
             }
             ImGui::PopTextWrapPos();
             ImGui::EndTable();
+
+            // Keep the definition column's full height. The compact glyph
+            // rail occupies only otherwise-empty space below the translation
+            // and disappears gracefully when unusually long English text
+            // needs that space.
+            DrawControlHints(englishColumnLeft, englishColumnRight, englishTextBottom);
         }
         if (mFrameState.pendingStudyScroll != 0.0f) {
             ImGui::SetScrollY(std::clamp(ImGui::GetScrollY() + mFrameState.pendingStudyScroll, 0.0f,
@@ -153,8 +188,69 @@ class JPAssistOverlayWindow final : public Ship::GuiWindow {
     }
 
   private:
+    void LoadGlyph(const char* cacheName, const char* resourcePath, const ImVec4& tint) {
+        if (!mFast3dGui->HasTextureByName(cacheName)) {
+            mFast3dGui->LoadGuiTexture(cacheName, resourcePath, "", tint);
+        }
+    }
+
+    void DrawControlHints(float left, float right, float textBottom) const {
+        if (mFast3dGui == nullptr) {
+            return;
+        }
+
+        struct Hint {
+            const char* texture;
+            const char* label;
+        };
+        constexpr Hint hints[] = {
+            { kDPadGlyph, "move / scroll" },
+            { kCRightGlyph, "save" },
+            { kAGlyph, "next" },
+            { kRGlyph, "close" },
+        };
+
+        const float glyphSize = 16.0f * mFrameScale;
+        const float iconLabelGap = 3.0f * mFrameScale;
+        const float groupGap = 10.0f * mFrameScale;
+        const float hintY = ImGui::GetWindowPos().y + ImGui::GetWindowSize().y -
+                            ImGui::GetStyle().WindowPadding.y - glyphSize;
+        if (hintY < textBottom + 4.0f * mFrameScale) {
+            return;
+        }
+
+        float totalWidth = 0.0f;
+        for (size_t i = 0; i < std::size(hints); ++i) {
+            totalWidth += glyphSize + iconLabelGap + ImGui::CalcTextSize(hints[i].label).x;
+            if (i + 1 < std::size(hints)) {
+                totalWidth += groupGap;
+            }
+        }
+        if (totalWidth > right - left) {
+            return;
+        }
+
+        ImDrawList* drawList = ImGui::GetWindowDrawList();
+        const ImU32 labelColor = ImGui::GetColorU32(ImGuiCol_TextDisabled);
+        float x = left;
+        for (size_t i = 0; i < std::size(hints); ++i) {
+            ImTextureID texture = mFast3dGui->GetTextureByName(hints[i].texture);
+            if (texture != nullptr) {
+                drawList->AddImage(texture, ImVec2(x, hintY), ImVec2(x + glyphSize, hintY + glyphSize));
+            }
+            x += glyphSize + iconLabelGap;
+            const ImVec2 labelSize = ImGui::CalcTextSize(hints[i].label);
+            drawList->AddText(ImVec2(x, hintY + (glyphSize - labelSize.y) * 0.5f), labelColor, hints[i].label);
+            x += labelSize.x;
+            if (i + 1 < std::size(hints)) {
+                x += groupGap;
+            }
+        }
+    }
+
     OverlayState mFrameState;
     float mFrameScale = 1.0f;
+    std::shared_ptr<Fast::Fast3dGui> mFast3dGui;
 };
 
 std::shared_ptr<JPAssistOverlayWindow> sWindow;
