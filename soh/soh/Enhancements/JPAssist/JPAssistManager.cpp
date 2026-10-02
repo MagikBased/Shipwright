@@ -10,6 +10,7 @@
 #include "JPAssistOverlay.h"
 #include "JPAssistTestLab.h"
 #include "MessageParser.h"
+#include "NativePageTracker.h"
 #include "StudyPersistence.h"
 #include "StudyRepository.h"
 
@@ -141,14 +142,7 @@ bool sRequestedLanguageInitialized = false;
 uint16_t sTrackedTextId = 0xFFFF;
 uint8_t sLastMsgMode = MSGMODE_NONE;
 int sCurrentPageIndex = 0;
-// Whether sTrackedTextId's own first page has been observed displaying yet.
-// Needed because MSGMODE_TEXT_CONTINUING -> MSGMODE_TEXT_DISPLAYING isn't
-// unique to "same-message page advanced": a TEXTID jump also routes its
-// *first* page through Message_ContinueTextbox, so it produces the exact
-// same transition. Without this guard, jumping to a new message got
-// miscounted as "page 1" of that message instead of page 0 - caught live
-// when toggling right after a jump reported the wrong page.
-bool sFirstPageDisplayed = false;
+JPAssist::NativePageTracker sNativePageTracker;
 
 // True while the overlay should keep reposting the alternate language as the
 // player pages through - cleared on toggle-back or dialogue close.
@@ -554,7 +548,7 @@ void OnDialogMessage() {
         // across an id change that a mode-only check had missed.
         sTrackedTextId = msgCtx->textId;
         sCurrentPageIndex = 0;
-        sFirstPageDisplayed = false;
+        sNativePageTracker.Reset();
         sShowingAlternateLanguage = false;
         // "A newly opened message resets token selection to the first
         // content word" / "Closing a textbox always closes Study Mode"
@@ -572,50 +566,35 @@ void OnDialogMessage() {
         JPAssist::JPAssistOverlay_Hide();
         RecordHistoryForOpenedMessage(sTrackedTextId);
         SPDLOG_INFO("[JPAssist] Dialogue opened: textId {:#x}", sTrackedTextId);
-    } else if (msgMode == MSGMODE_TEXT_DISPLAYING) {
-        // Message_ContinueTextbox (soh/src/code/z_message_PAL.c:2873) is the
-        // only place that sets MSGMODE_TEXT_CONTINUING, and it always resets
-        // msgBufPos to 0 and re-decodes after a 3-frame stateTimer countdown
-        // - the page doesn't actually change on screen until that countdown
-        // hits zero and Message_Decode runs, flipping the mode to
-        // MSGMODE_TEXT_DISPLAYING. tts.cpp's RegisterOnDialogMessageHook
-        // (soh/soh/Enhancements/tts/tts.cpp:1028) fires a beat earlier, at
-        // stateTimer==1, which is fine for queuing speech slightly ahead of
-        // display - but reusing that same check here caused a real, visible
-        // bug: pressing the toggle right around a page turn posted the
-        // *next* page's text while the textbox was still showing the page
-        // before it. Waiting for the actual mode flip fixes that.
-        //
-        // But CONTINUING -> DISPLAYING isn't unique to "next page of the
-        // same message" either: a TEXTID jump's *first* page also runs
-        // through Message_ContinueTextbox, producing this same transition.
-        // sFirstPageDisplayed distinguishes "this id's own first page just
-        // finished decoding" (no increment) from "a later page of an id
-        // we've already been showing" (real advance) - found live when a
-        // jump got miscounted as "page 1" of the target message instead of
-        // its actual page 0.
-        if (sLastMsgMode == MSGMODE_TEXT_CONTINUING && sFirstPageDisplayed) {
-            sCurrentPageIndex++;
-            SPDLOG_INFO("[JPAssist] Page advanced: textId {:#x}, now page {}", sTrackedTextId, sCurrentPageIndex);
-            if (sShowingAlternateLanguage) {
-                // Keep the overlay in sync with the page the player is
-                // actually looking at, same page-index clamp as the initial
-                // toggle.
-                PostAlternateLanguagePage(sTrackedTextId, sRequestedLanguage);
-            }
-            if (sStudyModeActive) {
-                // "A page change resets selection to the first token on
-                // that page" (design doc 5).
-                sSelectedTokenIndex = 0;
-                RecordTokenEncounter(0);
-            }
+    }
+
+    // The native decoder owns an authoritative 1-based textbox number. Use
+    // it instead of inferring page turns from msgMode transitions: ordinary
+    // BOX_BREAK pages can pass through TEXT_NEXT_MSG rather than
+    // TEXT_CONTINUING, while TEXTID jumps and language re-decodes can produce
+    // transitions that look like page turns but are not. Zero means the new
+    // message has not decoded its first page yet and is intentionally ignored.
+    int observedPageIndex = sCurrentPageIndex;
+    const bool decodedPageReady = msgMode != MSGMODE_NONE && msgMode != MSGMODE_TEXT_START &&
+                                  msgMode != MSGMODE_TEXT_BOX_GROWING && msgMode != MSGMODE_TEXT_STARTING &&
+                                  msgMode != MSGMODE_TEXT_NEXT_MSG && msgMode != MSGMODE_TEXT_CONTINUING;
+    if (decodedPageReady &&
+        sNativePageTracker.Observe(JPAssist_GetNativeTextBoxNumber(), observedPageIndex)) {
+        sCurrentPageIndex = observedPageIndex;
+        SPDLOG_INFO("[JPAssist] Page changed: textId {:#x}, now page {}", sTrackedTextId, sCurrentPageIndex);
+        if (sShowingAlternateLanguage) {
+            PostAlternateLanguagePage(sTrackedTextId, sRequestedLanguage);
         }
-        sFirstPageDisplayed = true;
+        if (sStudyModeActive) {
+            sSelectedTokenIndex = 0;
+            RecordTokenEncounter(0);
+        }
     }
 
     if (msgMode == MSGMODE_TEXT_CLOSING && sLastMsgMode != MSGMODE_TEXT_CLOSING) {
         SPDLOG_INFO("[JPAssist] Dialogue closed: textId {:#x}", sTrackedTextId);
         sTrackedTextId = 0xFFFF;
+        sNativePageTracker.Reset();
         sShowingAlternateLanguage = false;
         ExitStudyMode();
         GetOverlay()->ClearNotifications();

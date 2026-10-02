@@ -21,6 +21,10 @@
 static bool sDisplayNextMessageAsEnglish = false;
 static u8 sLastLanguage = LANGUAGE_ENG;
 static u16 sTextBoxNum = 0;
+
+uint16_t JPAssist_GetNativeTextBoxNumber(void) {
+    return sTextBoxNum;
+}
 // #endregion
 
 s16 sTextFade = false; // original name: key_off_flag ?

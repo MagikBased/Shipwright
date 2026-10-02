@@ -17,6 +17,11 @@ typedef struct JPAssistNativeHighlight {
 // state implementation details.
 bool JPAssist_GetNativeHighlight(uint16_t textId, JPAssistNativeHighlight* highlight);
 
+// SoH adapter state used to align a corpus page with the textbox currently
+// decoded by the native message engine. The value is 1-based; zero means no
+// page has been decoded yet.
+uint16_t JPAssist_GetNativeTextBoxNumber(void);
+
 #ifdef __cplusplus
 }
 #endif
