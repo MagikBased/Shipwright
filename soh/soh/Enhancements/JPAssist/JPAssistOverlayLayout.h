@@ -26,7 +26,7 @@ inline OverlayLayout JPAssistOverlay_ComputeLayout(float workX, float workY, flo
     // Its two-column content keeps the English reference and word card
     // readable without covering a large portion of the playfield.
     const float width = std::min(1040.0f * scale, availableWidth);
-    const float height = std::min(230.0f * scale, availableHeight);
+    const float height = std::min(130.0f * scale, availableHeight);
 
     return {
         workX + (safeWidth - width) * 0.5f,

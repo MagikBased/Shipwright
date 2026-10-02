@@ -24,8 +24,6 @@ struct OverlayState {
     OverlayMode mode = OverlayMode::Hidden;
     StudyPage studyPage;
     int selectedTokenIndex = 0;
-    bool saved = false;
-    int encounterCount = 0;
     float pendingStudyScroll = 0.0f;
 };
 
@@ -102,22 +100,16 @@ class JPAssistOverlayWindow final : public Ship::GuiWindow {
                                         static_cast<int>(mFrameState.studyPage.tokens.size()) - 1);
         const StudyToken& token = mFrameState.studyPage.tokens[selected];
 
-        ImGui::TextColored(ImVec4(0.45f, 0.85f, 1.0f, 1.0f), "STUDY MODE  %d/%d", selected + 1,
-                           static_cast<int>(mFrameState.studyPage.tokens.size()));
-        ImGui::Separator();
-
-        // Keep the controls visible while the two-column content scrolls as
-        // one unit. This lets either a long translation or a long definition
-        // use the available vertical space without growing over the game UI.
-        const float footerHeight = ImGui::GetTextLineHeightWithSpacing() * 2.0f + ImGui::GetStyle().ItemSpacing.y;
-        ImGui::BeginChild("JPAssistStudyContent", ImVec2(0.0f, -footerHeight), false);
+        // The card deliberately contains only learning content. Controller
+        // hints and status labels made this panel substantially taller than
+        // the original translation overlay and duplicated stable controls.
+        ImGui::BeginChild("JPAssistStudyContent", ImVec2(0.0f, 0.0f), false);
         if (ImGui::BeginTable("JPAssistStudyColumns", 2,
                               ImGuiTableFlags_SizingStretchProp | ImGuiTableFlags_BordersInnerV)) {
             ImGui::TableSetupColumn("English", ImGuiTableColumnFlags_WidthStretch, 1.2f);
             ImGui::TableSetupColumn("Word", ImGuiTableColumnFlags_WidthStretch, 0.8f);
             ImGui::TableNextRow();
             ImGui::TableSetColumnIndex(0);
-            ImGui::TextColored(ImVec4(0.45f, 0.85f, 1.0f, 1.0f), "ENGLISH");
             ImGui::PushTextWrapPos(0.0f);
             ImGui::TextUnformatted(mFrameState.studyPage.english.empty() ? "Translation unavailable"
                                                                          : mFrameState.studyPage.english.c_str());
@@ -144,11 +136,6 @@ class JPAssistOverlayWindow final : public Ship::GuiWindow {
                                          ImGui::GetScrollMaxY()));
         }
         ImGui::EndChild();
-        ImGui::Separator();
-        ImGui::TextDisabled("%s  Seen %d time%s",
-                            mFrameState.saved ? "Saved to study list" : "C-Right: save word",
-                            mFrameState.encounterCount, mFrameState.encounterCount == 1 ? "" : "s");
-        ImGui::TextDisabled("D-L/R: word  D-U/D: scroll  R/B: close");
         restoreFont();
     }
 
@@ -174,7 +161,7 @@ bool JPAssistOverlay_HasJapaneseFont() {
     return OTRGlobals::Instance != nullptr && OTRGlobals::Instance->fontJapanese != nullptr;
 }
 
-void JPAssistOverlay_ShowStudy(const StudyPage& page, int selectedTokenIndex, bool saved, int encounterCount) {
+void JPAssistOverlay_ShowStudy(const StudyPage& page, int selectedTokenIndex) {
     std::lock_guard<std::mutex> lock(sStateMutex);
     if (sState.mode != OverlayMode::Study) {
         sState.pendingStudyScroll = -100000.0f;
@@ -182,8 +169,6 @@ void JPAssistOverlay_ShowStudy(const StudyPage& page, int selectedTokenIndex, bo
     sState.mode = OverlayMode::Study;
     sState.studyPage = page;
     sState.selectedTokenIndex = selectedTokenIndex;
-    sState.saved = saved;
-    sState.encounterCount = encounterCount;
 }
 
 void JPAssistOverlay_ScrollStudy(float pixels) {

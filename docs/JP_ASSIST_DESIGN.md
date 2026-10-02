@@ -108,7 +108,6 @@ The wide bottom card should contain:
 - Context-appropriate English meaning.
 - The official English line as a reference translation.
 - Optional usage note.
-- Encounter count and saved/known status.
 
 An optional “Quiz Mode” can hide the reading and meaning until A is pressed. Normal lookup mode should show the concise definition immediately, since forcing a card flip during play would add unnecessary friction.
 
@@ -123,9 +122,8 @@ Recommended desktop layout:
 │                                                                      │
 │             Original OoT dialogue box with [会う] highlighted       │
 │  ┌────────────────────────────────────────────────────────────────┐ │
-│  │ ENGLISH                         │ 会う [あう]                    │ │
-│  │ I never expected to meet you…  │ verb · to meet                 │ │
-│  │                                │ C-Right: save · Seen 3 times   │ │
+│  │ I never expected to meet you…  │ 会う [あう]                    │ │
+│  │                                │ verb · to meet                 │ │
 │  └────────────────────────────────────────────────────────────────┘ │
 └──────────────────────────────────────────────────────────────────────┘
 ```

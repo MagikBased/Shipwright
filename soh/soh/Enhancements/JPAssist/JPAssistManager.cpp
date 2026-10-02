@@ -166,13 +166,8 @@ void DrawStudyCard() {
     }
     const auto& tokens = page->tokens;
     int index = std::min(sSelectedTokenIndex, static_cast<int>(tokens.size()) - 1);
-    const JPAssist::StudyToken& token = tokens[index];
 
-    // "Encounter count and saved/known status" (design doc 4.3's card
-    // field list).
-    bool saved = JPAssist::StudyPersistence_IsSaved(token.Id());
-    int encounters = JPAssist::StudyPersistence_GetEncounterCount(token.Id());
-    JPAssist::JPAssistOverlay_ShowStudy(*page, index, saved, encounters);
+    JPAssist::JPAssistOverlay_ShowStudy(*page, index);
 }
 
 // Handles Study Mode's own input and, while active, consumes the buttons

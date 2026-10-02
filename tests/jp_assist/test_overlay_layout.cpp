@@ -37,7 +37,7 @@ TEST(JPAssistOverlayLayout, KeepsWideStudyCardBottomCenteredAt720p) {
     const JPAssist::OverlayLayout layout =
         JPAssist::JPAssistOverlay_ComputeLayout(0.0f, 0.0f, 1280.0f, 720.0f, 1.5f);
 
-    EXPECT_LE(layout.height, 230.0f * 1.5f);
+    EXPECT_LE(layout.height, 130.0f * 1.5f);
     EXPECT_FLOAT_EQ(layout.x, (1280.0f - layout.width) * 0.5f);
     EXPECT_LE(layout.y + layout.height, 720.0f);
 }
