@@ -25,6 +25,20 @@ static u16 sTextBoxNum = 0;
 uint16_t JPAssist_GetNativeTextBoxNumber(void) {
     return sTextBoxNum;
 }
+
+bool JPAssist_GetNativeTextboxBounds(JPAssistNativeTextboxBounds* bounds) {
+    if (bounds == NULL || sTextBoxNum == 0) {
+        return false;
+    }
+
+    // OoT lays messages out in its original 320x240 logical coordinate
+    // space. Use the destination Y rather than the animated current Y so the
+    // study card does not drift while a textbox opens or closes.
+    bounds->y = R_TEXTBOX_Y_TARGET;
+    bounds->height = 64;
+    bounds->logicalScreenHeight = SCREEN_HEIGHT;
+    return true;
+}
 // #endregion
 
 s16 sTextFade = false; // original name: key_off_flag ?

@@ -12,6 +12,12 @@ typedef struct JPAssistNativeHighlight {
     uint32_t length;
 } JPAssistNativeHighlight;
 
+typedef struct JPAssistNativeTextboxBounds {
+    int16_t y;
+    int16_t height;
+    int16_t logicalScreenHeight;
+} JPAssistNativeTextboxBounds;
+
 // Controller icons occupy one native textbox glyph but are expanded to
 // readable ASCII markers in the normalized corpus. Return that marker length
 // so native rendering can remain in the same coordinate space as token spans.
@@ -49,6 +55,11 @@ bool JPAssist_GetNativeHighlight(uint16_t textId, JPAssistNativeHighlight* highl
 // decoded by the native message engine. The value is 1-based; zero means no
 // page has been decoded yet.
 uint16_t JPAssist_GetNativeTextBoxNumber(void);
+
+// Stable target bounds for the currently decoded native textbox. Adapters
+// report their own logical coordinate space; the overlay normalizes it before
+// applying the shared collision-aware placement policy.
+bool JPAssist_GetNativeTextboxBounds(JPAssistNativeTextboxBounds* bounds);
 
 #ifdef __cplusplus
 }

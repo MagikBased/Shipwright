@@ -1,5 +1,6 @@
 #include "JPAssistOverlay.h"
 #include "JPAssistOverlayLayout.h"
+#include "JPAssistNativeHighlight.h"
 
 #include <algorithm>
 #include <cfloat>
@@ -100,10 +101,17 @@ class JPAssistOverlayWindow final : public Ship::GuiWindow {
         }
 
         ImGuiViewport* viewport = ImGui::GetMainViewport();
-        const OverlayLayout layout = JPAssistOverlay_ComputeLayout(viewport->WorkPos.x, viewport->WorkPos.y,
-                                                                   viewport->WorkSize.x, viewport->WorkSize.y,
-                                                                   CVarGetFloat(CVAR_ENHANCEMENT("JPAssist.CardScale"),
-                                                                                1.0f));
+        JPAssistNativeTextboxBounds nativeBounds = {};
+        const bool hasNativeBounds = JPAssist_GetNativeTextboxBounds(&nativeBounds) &&
+                                     nativeBounds.logicalScreenHeight > 0 && nativeBounds.height > 0;
+        const float nativeHeight = static_cast<float>(nativeBounds.logicalScreenHeight);
+        const float nativeTop = hasNativeBounds ? static_cast<float>(nativeBounds.y) / nativeHeight : 0.0f;
+        const float nativeBottom = hasNativeBounds
+                                       ? static_cast<float>(nativeBounds.y + nativeBounds.height) / nativeHeight
+                                       : 0.0f;
+        const OverlayLayout layout = JPAssistOverlay_ComputeAdaptiveLayout(
+            viewport->WorkPos.x, viewport->WorkPos.y, viewport->WorkSize.x, viewport->WorkSize.y,
+            CVarGetFloat(CVAR_ENHANCEMENT("JPAssist.CardScale"), 1.0f), hasNativeBounds, nativeTop, nativeBottom);
         const float scale = layout.scale;
         mFrameScale = scale;
 
