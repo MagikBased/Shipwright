@@ -15,9 +15,11 @@ struct RuntimeStatus {
     uint8_t choiceIndex = 0;
     int selectedTokenIndex = 0;
     int currentPageTokenCount = 0;
+    bool selectedTokenSaved = false;
     uint64_t languageToggleCount = 0;
     uint64_t studyEnterCount = 0;
     uint64_t studyNavigationCount = 0;
+    uint64_t studyScrollCount = 0;
     uint64_t saveToggleCount = 0;
 };
 

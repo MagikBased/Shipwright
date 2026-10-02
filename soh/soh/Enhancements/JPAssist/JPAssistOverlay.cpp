@@ -1,7 +1,9 @@
 #include "JPAssistOverlay.h"
+#include "JPAssistOverlayLayout.h"
 
 #include <algorithm>
 #include <memory>
+#include <mutex>
 
 #include <imgui.h>
 #include <libultraship/bridge/consolevariablebridge.h>
@@ -31,6 +33,7 @@ struct OverlayState {
 };
 
 OverlayState sState;
+std::mutex sStateMutex;
 
 class JPAssistOverlayWindow final : public Ship::GuiWindow {
   public:
@@ -47,25 +50,28 @@ class JPAssistOverlayWindow final : public Ship::GuiWindow {
     }
 
     void Draw() override {
-        if (sState.mode == OverlayMode::Hidden) {
+        {
+            std::lock_guard<std::mutex> lock(sStateMutex);
+            mFrameState = sState;
+            sState.pendingStudyScroll = 0.0f;
+        }
+        if (mFrameState.mode == OverlayMode::Hidden) {
             return;
         }
 
         ImGuiViewport* viewport = ImGui::GetMainViewport();
-        const float scale = CVarGetFloat(CVAR_ENHANCEMENT("JPAssist.CardScale"), 1.0f);
-        const float margin = 24.0f * scale;
-        const bool study = sState.mode == OverlayMode::Study;
-        const float width = (study ? 420.0f : 760.0f) * scale;
-        const float height = (study ? 460.0f : 120.0f) * scale;
-        const ImVec2 position = study
-                                    ? ImVec2(viewport->WorkPos.x + viewport->WorkSize.x - width - margin,
-                                             viewport->WorkPos.y + margin)
-                                    : ImVec2(viewport->WorkPos.x + (viewport->WorkSize.x - width) * 0.5f,
-                                             viewport->WorkPos.y + viewport->WorkSize.y - height - margin);
+        const bool study = mFrameState.mode == OverlayMode::Study;
+        const OverlayLayout layout = JPAssistOverlay_ComputeLayout(viewport->WorkPos.x, viewport->WorkPos.y,
+                                                                   viewport->WorkSize.x, viewport->WorkSize.y,
+                                                                   CVarGetFloat(CVAR_ENHANCEMENT("JPAssist.CardScale"),
+                                                                                1.0f),
+                                                                   study);
+        const float scale = layout.scale;
+        mFrameScale = scale;
 
         ImGui::SetNextWindowViewport(viewport->ID);
-        ImGui::SetNextWindowPos(position, ImGuiCond_Always);
-        ImGui::SetNextWindowSize(ImVec2(width, height), ImGuiCond_Always);
+        ImGui::SetNextWindowPos(ImVec2(layout.x, layout.y), ImGuiCond_Always);
+        ImGui::SetNextWindowSize(ImVec2(layout.width, layout.height), ImGuiCond_Always);
         ImGui::PushStyleColor(ImGuiCol_WindowBg,
                               ImVec4(0.035f, 0.045f, 0.065f,
                                      CVarGetFloat(CVAR_ENHANCEMENT("JPAssist.CardOpacity"), 0.92f)));
@@ -90,29 +96,29 @@ class JPAssistOverlayWindow final : public Ship::GuiWindow {
             }
         };
 
-        ImGui::SetWindowFontScale(CVarGetFloat(CVAR_ENHANCEMENT("JPAssist.CardScale"), 1.0f));
-        if (sState.mode == OverlayMode::Dialogue) {
-            ImGui::TextColored(ImVec4(0.45f, 0.85f, 1.0f, 1.0f), "%s", sState.languageLabel.c_str());
+        ImGui::SetWindowFontScale(mFrameScale);
+        if (mFrameState.mode == OverlayMode::Dialogue) {
+            ImGui::TextColored(ImVec4(0.45f, 0.85f, 1.0f, 1.0f), "%s", mFrameState.languageLabel.c_str());
             ImGui::Separator();
             ImGui::PushTextWrapPos(0.0f);
-            ImGui::TextUnformatted(sState.dialogueText.c_str());
+            ImGui::TextUnformatted(mFrameState.dialogueText.c_str());
             ImGui::PopTextWrapPos();
             restoreFont();
             return;
         }
 
-        if (sState.studyPage.tokens.empty()) {
+        if (mFrameState.studyPage.tokens.empty()) {
             ImGui::TextUnformatted("No reviewed token data is available for this page.");
             restoreFont();
             return;
         }
 
-        const int selected = std::clamp(sState.selectedTokenIndex, 0,
-                                        static_cast<int>(sState.studyPage.tokens.size()) - 1);
-        const StudyToken& token = sState.studyPage.tokens[selected];
+        const int selected = std::clamp(mFrameState.selectedTokenIndex, 0,
+                                        static_cast<int>(mFrameState.studyPage.tokens.size()) - 1);
+        const StudyToken& token = mFrameState.studyPage.tokens[selected];
 
         ImGui::TextColored(ImVec4(0.45f, 0.85f, 1.0f, 1.0f), "STUDY MODE  %d/%d", selected + 1,
-                           static_cast<int>(sState.studyPage.tokens.size()));
+                           static_cast<int>(mFrameState.studyPage.tokens.size()));
         ImGui::Separator();
 
         // Keep the controls visible while allowing long sentences, token
@@ -120,14 +126,15 @@ class JPAssistOverlayWindow final : public Ship::GuiWindow {
         const float footerHeight = ImGui::GetTextLineHeightWithSpacing() * 2.0f + ImGui::GetStyle().ItemSpacing.y;
         ImGui::BeginChild("JPAssistStudyContent", ImVec2(0.0f, -footerHeight), false);
         ImGui::PushTextWrapPos(0.0f);
-        const std::string& sentence = sState.showEnglishSentence ? sState.studyPage.english : sState.studyPage.japanese;
+        const std::string& sentence =
+            mFrameState.showEnglishSentence ? mFrameState.studyPage.english : mFrameState.studyPage.japanese;
         ImGui::TextUnformatted(sentence.c_str());
         ImGui::PopTextWrapPos();
         ImGui::Spacing();
 
         const float contentRight = ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
-        for (size_t i = 0; i < sState.studyPage.tokens.size(); ++i) {
-            const float tokenWidth = ImGui::CalcTextSize(sState.studyPage.tokens[i].surface.c_str()).x;
+        for (size_t i = 0; i < mFrameState.studyPage.tokens.size(); ++i) {
+            const float tokenWidth = ImGui::CalcTextSize(mFrameState.studyPage.tokens[i].surface.c_str()).x;
             // TextColored advances to the next line. Move back beside the
             // previous token only when this token still fits in the card.
             if (i > 0 && ImGui::GetItemRectMax().x + tokenWidth <= contentRight) {
@@ -135,7 +142,7 @@ class JPAssistOverlayWindow final : public Ship::GuiWindow {
             }
             const ImVec4 color = static_cast<int>(i) == selected ? ImVec4(1.0f, 0.82f, 0.25f, 1.0f)
                                                                   : ImVec4(0.82f, 0.86f, 0.92f, 1.0f);
-            ImGui::TextColored(color, "%s", sState.studyPage.tokens[i].surface.c_str());
+            ImGui::TextColored(color, "%s", mFrameState.studyPage.tokens[i].surface.c_str());
         }
 
         ImGui::Spacing();
@@ -154,18 +161,22 @@ class JPAssistOverlayWindow final : public Ship::GuiWindow {
         }
         ImGui::PopTextWrapPos();
         ImGui::Spacing();
-        if (sState.pendingStudyScroll != 0.0f) {
-            ImGui::SetScrollY(std::clamp(ImGui::GetScrollY() + sState.pendingStudyScroll, 0.0f,
+        if (mFrameState.pendingStudyScroll != 0.0f) {
+            ImGui::SetScrollY(std::clamp(ImGui::GetScrollY() + mFrameState.pendingStudyScroll, 0.0f,
                                          ImGui::GetScrollMaxY()));
-            sState.pendingStudyScroll = 0.0f;
         }
         ImGui::EndChild();
         ImGui::Separator();
-        ImGui::TextDisabled("%s  Seen %d time%s", sState.saved ? "Saved to study list" : "C-Right: save word",
-                            sState.encounterCount, sState.encounterCount == 1 ? "" : "s");
+        ImGui::TextDisabled("%s  Seen %d time%s",
+                            mFrameState.saved ? "Saved to study list" : "C-Right: save word",
+                            mFrameState.encounterCount, mFrameState.encounterCount == 1 ? "" : "s");
         ImGui::TextDisabled("D-L/R: word  D-U/D: scroll  L/Z: language  R/B: close");
         restoreFont();
     }
+
+  private:
+    OverlayState mFrameState;
+    float mFrameScale = 1.0f;
 };
 
 std::shared_ptr<JPAssistOverlayWindow> sWindow;
@@ -186,6 +197,7 @@ bool JPAssistOverlay_HasJapaneseFont() {
 }
 
 void JPAssistOverlay_ShowDialogue(const std::string& languageLabel, const std::string& text) {
+    std::lock_guard<std::mutex> lock(sStateMutex);
     sState.mode = OverlayMode::Dialogue;
     sState.languageLabel = languageLabel;
     sState.dialogueText = text;
@@ -193,6 +205,7 @@ void JPAssistOverlay_ShowDialogue(const std::string& languageLabel, const std::s
 
 void JPAssistOverlay_ShowStudy(const StudyPage& page, int selectedTokenIndex, bool saved, int encounterCount,
                                bool showEnglishSentence) {
+    std::lock_guard<std::mutex> lock(sStateMutex);
     if (sState.mode != OverlayMode::Study) {
         sState.pendingStudyScroll = -100000.0f;
     }
@@ -205,12 +218,14 @@ void JPAssistOverlay_ShowStudy(const StudyPage& page, int selectedTokenIndex, bo
 }
 
 void JPAssistOverlay_ScrollStudy(float pixels) {
+    std::lock_guard<std::mutex> lock(sStateMutex);
     if (sState.mode == OverlayMode::Study) {
         sState.pendingStudyScroll += pixels;
     }
 }
 
 void JPAssistOverlay_Hide() {
+    std::lock_guard<std::mutex> lock(sStateMutex);
     sState = OverlayState{};
 }
 

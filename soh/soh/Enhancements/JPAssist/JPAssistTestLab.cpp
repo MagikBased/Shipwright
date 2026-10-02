@@ -54,6 +54,14 @@ enum class SmokeControlStep {
     AwaitStudy,
     PressNavigate,
     AwaitNavigate,
+    PressSave,
+    AwaitSave,
+    PressRestoreSave,
+    AwaitRestoreSave,
+    PressScrollDown,
+    AwaitScrollDown,
+    PressScrollUp,
+    AwaitScrollUp,
     WaitForChoice,
     PressChoiceDeflection,
     AwaitChoiceDeflection,
@@ -68,9 +76,12 @@ struct SmokeState {
     int framesRemaining = 0;
     uint64_t startedAtStudyCount = 0;
     uint64_t startedAtNavigationCount = 0;
+    uint64_t expectedSaveToggleCount = 0;
+    uint64_t expectedScrollCount = 0;
     uint64_t expectedToggleCount = 0;
     uint8_t expectedLanguage = LANGUAGE_ENG;
     uint8_t frozenChoiceIndex = 0;
+    bool initiallySaved = false;
     SmokeControlStep controlStep = SmokeControlStep::None;
     std::string corpusDetail;
     bool validate = false;
@@ -143,6 +154,34 @@ void InjectSmokeControl() {
             SPDLOG_INFO("[JPAssist Test Lab] Injecting Study navigation D-Right");
             InjectButton(BTN_DRIGHT);
             sSmoke.controlStep = SmokeControlStep::AwaitNavigate;
+            sSmoke.framesRemaining = 30;
+            break;
+        case SmokeControlStep::PressSave:
+            SPDLOG_INFO("[JPAssist Test Lab] Injecting save toggle C-Right");
+            InjectButton(BTN_CRIGHT);
+            sSmoke.expectedSaveToggleCount++;
+            sSmoke.controlStep = SmokeControlStep::AwaitSave;
+            sSmoke.framesRemaining = 30;
+            break;
+        case SmokeControlStep::PressRestoreSave:
+            SPDLOG_INFO("[JPAssist Test Lab] Injecting restore save toggle C-Right");
+            InjectButton(BTN_CRIGHT);
+            sSmoke.expectedSaveToggleCount++;
+            sSmoke.controlStep = SmokeControlStep::AwaitRestoreSave;
+            sSmoke.framesRemaining = 30;
+            break;
+        case SmokeControlStep::PressScrollDown:
+            SPDLOG_INFO("[JPAssist Test Lab] Injecting Study scroll D-Down");
+            InjectButton(BTN_DDOWN);
+            sSmoke.expectedScrollCount++;
+            sSmoke.controlStep = SmokeControlStep::AwaitScrollDown;
+            sSmoke.framesRemaining = 30;
+            break;
+        case SmokeControlStep::PressScrollUp:
+            SPDLOG_INFO("[JPAssist Test Lab] Injecting Study scroll D-Up");
+            InjectButton(BTN_DUP);
+            sSmoke.expectedScrollCount++;
+            sSmoke.controlStep = SmokeControlStep::AwaitScrollUp;
             sSmoke.framesRemaining = 30;
             break;
         case SmokeControlStep::PressChoiceDeflection: {
@@ -381,9 +420,28 @@ bool ControlTimedOut(const TestScenario& scenario, const std::string& expectatio
 
 void FinishControlValidation(const TestScenario& scenario) {
     FinishScenario(scenario, true,
-                   sSmoke.corpusDetail + "; controls PASS: L/Z aliases, Study enter/exit, focus consumption" +
+                   sSmoke.corpusDetail +
+                       "; controls PASS: L/Z aliases, Study enter/exit, save/restore, D-pad scroll, focus consumption" +
                        (StudyRepository_FindPage(scenario.textId, 0)->tokens.size() > 1 ? ", token navigation" : "") +
                        (StudyRepository_FindPage(scenario.textId, 0)->isChoice ? ", choice freeze" : ""));
+}
+
+void StartStudyInteractionValidation(const RuntimeStatus& runtime, const std::string& completedStep) {
+    if (runtime.currentPageTokenCount <= 0) {
+        if (runtime.currentPageIsChoice) {
+            sSmoke.controlStep = SmokeControlStep::WaitForChoice;
+            sSmoke.framesRemaining = 360;
+        } else {
+            sSmoke.controlStep = SmokeControlStep::PressExit;
+        }
+        return;
+    }
+
+    sSmoke.expectedSaveToggleCount = runtime.saveToggleCount;
+    sSmoke.expectedScrollCount = runtime.studyScrollCount;
+    sSmoke.initiallySaved = runtime.selectedTokenSaved;
+    sSmoke.controlStep = SmokeControlStep::PressSave;
+    sSmoke.detail = completedStep + "; testing save toggle";
 }
 
 void UpdateControlValidation(const TestScenario& scenario) {
@@ -422,11 +480,8 @@ void UpdateControlValidation(const TestScenario& scenario) {
                 if (runtime.currentPageTokenCount > 1) {
                     sSmoke.controlStep = SmokeControlStep::PressNavigate;
                     sSmoke.detail = "Study entry passed; testing token navigation";
-                } else if (runtime.currentPageIsChoice) {
-                    sSmoke.controlStep = SmokeControlStep::WaitForChoice;
-                    sSmoke.framesRemaining = 360;
                 } else {
-                    sSmoke.controlStep = SmokeControlStep::PressExit;
+                    StartStudyInteractionValidation(runtime, "Study entry passed");
                 }
             } else {
                 ControlTimedOut(scenario, "R did not enter Study Mode");
@@ -435,15 +490,51 @@ void UpdateControlValidation(const TestScenario& scenario) {
         case SmokeControlStep::AwaitNavigate:
             if (runtime.selectedTokenIndex == 1 &&
                 runtime.studyNavigationCount > sSmoke.startedAtNavigationCount) {
+                StartStudyInteractionValidation(runtime, "Navigation passed");
+            } else {
+                ControlTimedOut(scenario, "D-Right did not select the next token");
+            }
+            break;
+        case SmokeControlStep::AwaitSave:
+            if (runtime.saveToggleCount >= sSmoke.expectedSaveToggleCount &&
+                runtime.selectedTokenSaved != sSmoke.initiallySaved) {
+                sSmoke.controlStep = SmokeControlStep::PressRestoreSave;
+                sSmoke.detail = "Save toggle passed; restoring initial study-list state";
+            } else {
+                ControlTimedOut(scenario, "C-Right did not toggle the selected token's saved state");
+            }
+            break;
+        case SmokeControlStep::AwaitRestoreSave:
+            if (runtime.saveToggleCount >= sSmoke.expectedSaveToggleCount &&
+                runtime.selectedTokenSaved == sSmoke.initiallySaved) {
+                sSmoke.controlStep = SmokeControlStep::PressScrollDown;
+                sSmoke.detail = "Save restore passed; testing D-Down scroll";
+            } else {
+                ControlTimedOut(scenario, "second C-Right did not restore the initial saved state");
+            }
+            break;
+        case SmokeControlStep::AwaitScrollDown:
+            if (runtime.studyScrollCount >= sSmoke.expectedScrollCount &&
+                !CHECK_BTN_ALL(gPlayState->state.input[0].press.button, BTN_DDOWN)) {
+                sSmoke.controlStep = SmokeControlStep::PressScrollUp;
+                sSmoke.detail = "D-Down scroll passed; testing D-Up scroll";
+            } else {
+                ControlTimedOut(scenario, "D-Down did not scroll or leaked through Study focus");
+            }
+            break;
+        case SmokeControlStep::AwaitScrollUp:
+            if (runtime.studyScrollCount >= sSmoke.expectedScrollCount &&
+                !CHECK_BTN_ALL(gPlayState->state.input[0].press.button, BTN_DUP)) {
                 if (runtime.currentPageIsChoice) {
                     sSmoke.controlStep = SmokeControlStep::WaitForChoice;
                     sSmoke.framesRemaining = 360;
-                    sSmoke.detail = "Navigation passed; waiting for native choice state";
+                    sSmoke.detail = "Study interactions passed; waiting for native choice state";
                 } else {
                     sSmoke.controlStep = SmokeControlStep::PressExit;
+                    sSmoke.detail = "Study interactions passed; exiting Study Mode";
                 }
             } else {
-                ControlTimedOut(scenario, "D-Right did not select the next token");
+                ControlTimedOut(scenario, "D-Up did not scroll or leaked through Study focus");
             }
             break;
         case SmokeControlStep::WaitForChoice:

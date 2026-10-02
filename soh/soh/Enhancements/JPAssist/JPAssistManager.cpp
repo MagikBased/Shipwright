@@ -74,6 +74,7 @@ int sSelectedTokenIndex = 0;
 uint64_t sLanguageToggleCount = 0;
 uint64_t sStudyEnterCount = 0;
 uint64_t sStudyNavigationCount = 0;
+uint64_t sStudyScrollCount = 0;
 uint64_t sSaveToggleCount = 0;
 bool sFrozenChoiceValid = false;
 uint8_t sFrozenChoiceIndex = 0;
@@ -264,8 +265,10 @@ void HandleStudyModeInput(PlayState* play, MessageContext* msgCtx, Input* input)
         }
 
         if (CHECK_BTN_ALL(input->press.button, BTN_DUP)) {
+            sStudyScrollCount++;
             JPAssist::JPAssistOverlay_ScrollStudy(-80.0f);
         } else if (CHECK_BTN_ALL(input->press.button, BTN_DDOWN)) {
+            sStudyScrollCount++;
             JPAssist::JPAssistOverlay_ScrollStudy(80.0f);
         }
 
@@ -660,10 +663,15 @@ RuntimeStatus JPAssist_GetRuntimeStatus() {
     status.languageToggleCount = sLanguageToggleCount;
     status.studyEnterCount = sStudyEnterCount;
     status.studyNavigationCount = sStudyNavigationCount;
+    status.studyScrollCount = sStudyScrollCount;
     status.saveToggleCount = sSaveToggleCount;
     if (const StudyPage* page = CurrentStudyPage(); page != nullptr) {
         status.currentPageTokenCount = static_cast<int>(page->tokens.size());
         status.currentPageIsChoice = page->isChoice;
+        if (!page->tokens.empty()) {
+            const int index = std::clamp(sSelectedTokenIndex, 0, static_cast<int>(page->tokens.size()) - 1);
+            status.selectedTokenSaved = StudyPersistence_IsSaved(page->tokens[index].Id());
+        }
     }
     if (gPlayState != nullptr) {
         status.choiceIndex = gPlayState->msgCtx.choiceIndex;

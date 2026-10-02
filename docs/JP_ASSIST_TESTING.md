@@ -89,13 +89,15 @@ The first configure may download GoogleTest if it is not installed locally.
 
 Smoke checks cover scene transition, message dispatch, JP Assist observation,
 corpus lookup, expected page/token/choice metadata, L/Z alias behavior, R/B
-Study Mode lifecycle, D-Right navigation, vertical input consumption, choice
-freezing, and the controller-glyph persistence regression. Physical controller
-mapping and ergonomics, C-Right save toggling, D-Up/D-Down scrolling, text
-layout, Japanese glyph rendering, and visual overlap still require an in-game
-manual pass. The controller-glyph case is intentionally persistence-only and
-terminal because its special two-page native message is unsafe to drive as a
-standalone interactive textbox.
+Study Mode lifecycle, D-Right navigation, C-Right save/restore, D-Up/D-Down
+scroll dispatch and input consumption, choice freezing, and the
+controller-glyph persistence regression. Unit tests also verify that dialogue
+and Study cards remain within 720p, 1080p, and ultrawide work areas at all
+supported scales. Physical-controller mapping and ergonomics, visible scroll
+movement, Japanese glyph rendering, and visual overlap still require an
+in-game manual pass. The controller-glyph case is intentionally
+persistence-only and terminal because its special two-page native message is
+unsafe to drive as a standalone interactive textbox.
 
 ## Manual controller and presentation matrix
 

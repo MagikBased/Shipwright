@@ -53,10 +53,12 @@ No gameplay claims should be made until these are exercised in-game:
 
 1. Dialogue lifecycle: open, close, page transitions, text-ID jumps, cutscenes,
    choices, shops, ocarina prompts, and rapidly toggling near transitions.
-2. Controls: physical L-only and Z-only controllers, C-Right saving,
-   D-Up/D-Down scrolling, remapping, ergonomics, and enhancement conflicts.
-3. Presentation: resolutions, UI scaling, long sentences, long definitions,
-   visual verification of the bundled Japanese font, accessibility, and labels.
+2. Controls: physical L-only and Z-only controllers, remapping, ergonomics,
+   and enhancement conflicts. Automated smoke checks now cover C-Right
+   save/restore and D-Up/D-Down scroll dispatch and consumption.
+3. Presentation: visual confirmation of scrolling and tested layout bounds at
+   each resolution/UI scale, long sentences, long definitions, bundled
+   Japanese font rendering, accessibility, and labels.
 4. Corpus: every message/page aligns across languages; control glyphs decode;
    hashes match the supported ROM revision; missing/malformed files fail safely.
 5. Persistence/Anki: reload, malformed JSON, interrupted writes, corpus upgrades,
