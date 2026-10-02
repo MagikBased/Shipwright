@@ -148,10 +148,11 @@ class JPAssistOverlayWindow final : public Ship::GuiWindow {
         // hints and status labels made this panel substantially taller than
         // the original translation overlay and duplicated stable controls.
         ImGui::BeginChild("JPAssistStudyContent", ImVec2(0.0f, 0.0f), false);
-        if (ImGui::BeginTable("JPAssistStudyColumns", 2,
+        if (ImGui::BeginTable("JPAssistStudyColumns", 3,
                               ImGuiTableFlags_SizingStretchProp | ImGuiTableFlags_BordersInnerV)) {
-            ImGui::TableSetupColumn("English", ImGuiTableColumnFlags_WidthStretch, 0.9f);
-            ImGui::TableSetupColumn("Word", ImGuiTableColumnFlags_WidthStretch, 1.1f);
+            ImGui::TableSetupColumn("English", ImGuiTableColumnFlags_WidthStretch, 0.85f);
+            ImGui::TableSetupColumn("Word", ImGuiTableColumnFlags_WidthStretch, 0.45f);
+            ImGui::TableSetupColumn("Definition", ImGuiTableColumnFlags_WidthStretch, 0.90f);
             ImGui::TableNextRow();
             ImGui::TableSetColumnIndex(0);
             const float englishColumnLeft = ImGui::GetCursorScreenPos().x;
@@ -161,24 +162,15 @@ class JPAssistOverlayWindow final : public Ship::GuiWindow {
                 englishColumnRight - englishColumnLeft);
 
             ImGui::TableSetColumnIndex(1);
-            const float headerRight = ImGui::GetCursorScreenPos().x + ImGui::GetContentRegionAvail().x;
-            ImGui::TextColored(ImVec4(1.0f, 0.82f, 0.25f, 1.0f), "%s", token.surface.c_str());
-            if (!token.reading.empty()) {
-                ImGui::SameLine();
-                ImGui::TextDisabled("[%s]", token.reading.c_str());
-            }
+            DrawWordBlock(token);
+
+            ImGui::TableSetColumnIndex(2);
             if (!token.partOfSpeech.empty()) {
+                const float headerRight = ImGui::GetCursorScreenPos().x + ImGui::GetContentRegionAvail().x;
                 const float partOfSpeechWidth = ImGui::CalcTextSize(token.partOfSpeech.c_str()).x;
                 const float partOfSpeechX = headerRight - partOfSpeechWidth;
-                const float minimumGap = ImGui::GetStyle().ItemSpacing.x;
-                if (partOfSpeechX >= ImGui::GetItemRectMax().x + minimumGap) {
-                    const ImVec2 nextLineCursor = ImGui::GetCursorScreenPos();
-                    ImGui::SetCursorScreenPos(ImVec2(partOfSpeechX, ImGui::GetItemRectMin().y));
-                    ImGui::TextDisabled("%s", token.partOfSpeech.c_str());
-                    ImGui::SetCursorScreenPos(nextLineCursor);
-                } else {
-                    ImGui::TextDisabled("%s", token.partOfSpeech.c_str());
-                }
+                ImGui::SetCursorScreenPos(ImVec2(partOfSpeechX, ImGui::GetCursorScreenPos().y));
+                ImGui::TextDisabled("%s", token.partOfSpeech.c_str());
             }
             ImGui::PushTextWrapPos(0.0f);
             ImGui::TextUnformatted(token.meaning.empty() ? "Definition pending review" : token.meaning.c_str());
@@ -208,6 +200,58 @@ class JPAssistOverlayWindow final : public Ship::GuiWindow {
         if (!mFast3dGui->HasTextureByName(cacheName)) {
             mFast3dGui->LoadGuiTexture(cacheName, resourcePath, "", tint);
         }
+    }
+
+    void DrawWordBlock(const StudyToken& token) const {
+        const ImVec2 start = ImGui::GetCursorScreenPos();
+        const ImVec2 available = ImGui::GetContentRegionAvail();
+        ImFont* font = ImGui::GetFont();
+        const float baseFontSize = ImGui::GetFontSize();
+        const float horizontalPadding = 4.0f * mFrameScale;
+        const float usableWidth = std::max(available.x - horizontalPadding * 2.0f, 1.0f);
+        const bool showFurigana = !token.reading.empty() && token.reading != token.surface;
+
+        const ImVec2 baseSurfaceSize = ImGui::CalcTextSize(token.surface.c_str());
+        float surfaceScale = 1.75f;
+        if (baseSurfaceSize.x > 0.0f) {
+            surfaceScale = std::min(surfaceScale, usableWidth / baseSurfaceSize.x);
+        }
+        surfaceScale = std::max(surfaceScale, 0.85f);
+        const float surfaceFontSize = baseFontSize * surfaceScale;
+        const ImVec2 surfaceSize(baseSurfaceSize.x * surfaceScale, baseSurfaceSize.y * surfaceScale);
+
+        float readingScale = 0.72f;
+        ImVec2 readingSize(0.0f, 0.0f);
+        if (showFurigana) {
+            const ImVec2 baseReadingSize = ImGui::CalcTextSize(token.reading.c_str());
+            if (baseReadingSize.x > 0.0f) {
+                readingScale = std::min(readingScale, usableWidth / baseReadingSize.x);
+            }
+            readingScale = std::max(readingScale, 0.55f);
+            readingSize = ImVec2(baseReadingSize.x * readingScale, baseReadingSize.y * readingScale);
+        }
+
+        const float furiganaGap = showFurigana ? 2.0f * mFrameScale : 0.0f;
+        const float contentHeight = readingSize.y + furiganaGap + surfaceSize.y;
+        const float y = start.y + std::max((available.y - contentHeight) * 0.5f, 0.0f);
+        ImDrawList* drawList = ImGui::GetWindowDrawList();
+
+        float surfaceY = y;
+        if (showFurigana) {
+            const float readingX = start.x + (available.x - readingSize.x) * 0.5f;
+            drawList->AddText(font, baseFontSize * readingScale, ImVec2(readingX, y),
+                              ImGui::GetColorU32(ImGuiCol_TextDisabled), token.reading.c_str());
+            surfaceY += readingSize.y + furiganaGap;
+        }
+
+        const float surfaceX = start.x + (available.x - surfaceSize.x) * 0.5f;
+        drawList->AddText(font, surfaceFontSize, ImVec2(surfaceX, surfaceY),
+                          ImGui::GetColorU32(ImVec4(1.0f, 0.82f, 0.25f, 1.0f)), token.surface.c_str());
+
+        // Advance the table cell even though the custom-size text was drawn
+        // directly. The word stays vertically centered without dictating the
+        // height or scroll behavior of the definition column.
+        ImGui::Dummy(ImVec2(available.x, std::max(available.y, contentHeight)));
     }
 
     float DrawEnglishText(const std::string& text, float availableWidth) const {
