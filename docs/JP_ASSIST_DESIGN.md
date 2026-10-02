@@ -99,7 +99,11 @@ Suggested controls:
 | R | Exit Study Mode |
 | L or Z | Toggle the Japanese / English sentence without leaving Study Mode |
 
-The selected Japanese token should be visibly highlighted in a mirrored study line or study overlay. Highlighting the native textbox glyphs directly is desirable but not required for the first release; the original renderer does not expose convenient word-level geometry.
+The selected Japanese token is highlighted directly behind its native textbox
+glyphs. A C-compatible render bridge exposes only the selected normalized-text
+span; the Japanese glyph pass maps that span onto its existing positions and
+draws the backlight before drawing the original characters. This avoids
+re-decoding or mutating live dialogue state.
 
 The side card should contain:
 

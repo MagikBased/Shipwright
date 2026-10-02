@@ -6,6 +6,7 @@
 #include "DialogueRepository.h"
 #include "DialoguePresentation.h"
 #include "JPAssistHistory.h"
+#include "JPAssistNativeHighlight.h"
 #include "JPAssistOverlay.h"
 #include "JPAssistTestLab.h"
 #include "MessageParser.h"
@@ -767,6 +768,23 @@ void RegisterJPAssist() {
 static RegisterShipInitFunc initFunc(RegisterJPAssist);
 
 } // namespace
+
+extern "C" bool JPAssist_GetNativeHighlight(uint16_t textId, JPAssistNativeHighlight* highlight) {
+    if (highlight == nullptr || !sStudyModeActive || textId != sTrackedTextId) {
+        return false;
+    }
+
+    const JPAssist::StudyPage* page = CurrentStudyPage();
+    if (page == nullptr || page->tokens.empty()) {
+        return false;
+    }
+
+    const int index = std::clamp(sSelectedTokenIndex, 0, static_cast<int>(page->tokens.size()) - 1);
+    const JPAssist::StudyToken& token = page->tokens[index];
+    highlight->start = token.start;
+    highlight->length = token.length;
+    return token.length > 0;
+}
 
 namespace JPAssist {
 

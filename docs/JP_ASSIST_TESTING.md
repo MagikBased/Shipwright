@@ -109,6 +109,7 @@ full suite, so the temporary scene remains available for inspection.
 | L alias | `saria_first_greeting` | Disable Z alias; press L twice | JP/EN changes twice; dialogue does not advance |
 | Z alias | `saria_first_greeting` | Disable L alias; press Z twice | JP/EN changes twice; targeting/gameplay state does not change |
 | Study focus | `mido_house_sign` | R, D-Right, D-Left, C-Right, B | Counters increment; textbox remains on the same page; saved state updates |
+| Native highlight | `adult_kakariko` | R, then move through tokens with D-Left/D-Right | Blue backlight follows the complete selected word in the original Japanese textbox without covering its glyphs |
 | Long card | `adult_kakariko` | R, then D-Up/D-Down | Body scrolls; header/footer remain visible; text stays inside the card |
 | Choice focus | `know_it_all_choice` | Select the second answer, press R, then move stick and D-pad vertically | Choice index remains unchanged and status says `selection frozen`; after R/B closes Study Mode, native choice movement resumes |
 | History | Any three scenarios | Open **Dialogue History** and search Japanese, English, then `0x103e` | Newest-first entries filter correctly and both languages wrap without clipping |

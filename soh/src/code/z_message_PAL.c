@@ -15,6 +15,7 @@
 #include "soh/SaveManager.h"
 #include "soh/ResourceManagerHelpers.h"
 #include "soh/Enhancements/savestate_serialize.h"
+#include "soh/Enhancements/JPAssist/JPAssistNativeHighlight.h"
 
 // #region SOH [NTSC] - Allows custom messages to work on japanese
 static bool sDisplayNextMessageAsEnglish = false;
@@ -945,6 +946,149 @@ void Message_HandleOcarina(PlayState* play) {
     }
 }
 
+static s16 Message_GetJpnGlyphLeftAdjustment(u16 character) {
+    switch (character) {
+        case 0x8169:
+        case 0x8175:
+            return -6;
+        case 0x8145:
+            return -3;
+        case 0x8148:
+        case 0x8149:
+        case 0x814F:
+        case 0x8250:
+            return -2;
+        default:
+            return 0;
+    }
+}
+
+static s16 Message_GetJpnGlyphAdvance(u16 character) {
+    switch (character) {
+        case 0x8144:
+            return 3;
+        case 0x816A:
+        case 0x8176:
+            return 5;
+        case 0x8141:
+        case 0x8142:
+        case 0x8168:
+            return 7;
+        case 0x814F:
+        case 0x8194:
+        case 0x8196:
+            return 9;
+        case 0x8145:
+            return 10;
+        default:
+            return (s16)(16.0f * (R_TEXT_CHAR_SCALE / 100.0f));
+    }
+}
+
+static void Message_DrawJPAssistGlyphGlow(PlayState* play, Gfx** gfxP, s16 x, s16 y, s16 glyphSize) {
+    Gfx* gfx = *gfxP;
+    u8 pulse = play->gameplayFrames & 0x1F;
+    if (pulse > 0x0F) {
+        pulse = 0x1F - pulse;
+    }
+
+    gDPPipeSync(gfx++);
+    gDPSetRenderMode(gfx++, G_RM_XLU_SURF, G_RM_XLU_SURF2);
+    gDPSetCombineMode(gfx++, G_CC_PRIMITIVE, G_CC_PRIMITIVE);
+    gDPSetPrimColor(gfx++, 0, 0, 65, 80, 255, 18 + pulse);
+    gDPFillRectangle(gfx++, x - 5, y - 4, x + glyphSize + 5, y + glyphSize + 4);
+    gDPSetPrimColor(gfx++, 0, 0, 72, 96, 255, 34 + pulse);
+    gDPFillRectangle(gfx++, x - 3, y - 2, x + glyphSize + 3, y + glyphSize + 2);
+    gDPSetPrimColor(gfx++, 0, 0, 86, 112, 255, 48 + pulse);
+    gDPFillRectangle(gfx++, x - 1, y, x + glyphSize + 1, y + glyphSize);
+    gDPPipeSync(gfx++);
+    gDPSetCombineLERP(gfx++, 0, 0, 0, PRIMITIVE, TEXEL0, 0, PRIMITIVE, 0, 0, 0, 0, PRIMITIVE, TEXEL0, 0,
+                      PRIMITIVE, 0);
+    *gfxP = gfx;
+}
+
+static void Message_DrawJPAssistNativeHighlight(PlayState* play, Gfx** gfxP) {
+    MessageContext* msgCtx = &play->msgCtx;
+    JPAssistNativeHighlight highlight;
+    u32 normalizedIndex = 0;
+    s16 glyphSize = (s16)(16.0f * (R_TEXT_CHAR_SCALE / 100.0f));
+    s16 x = R_TEXT_INIT_XPOS;
+    s16 y = R_TEXT_INIT_YPOS;
+    u16 i;
+
+    if (!JPAssist_GetNativeHighlight(msgCtx->textId, &highlight)) {
+        return;
+    }
+
+    for (i = 0; i < msgCtx->textDrawPos; i++) {
+        u16 character = msgCtx->msgBufDecodedWide[i];
+        switch (character) {
+            case MESSAGE_NEWLINE_JPN:
+                normalizedIndex++;
+                y += R_TEXT_LINE_SPACING;
+                x = R_TEXT_INIT_XPOS;
+                if (msgCtx->choiceNum == 1 || msgCtx->choiceNum == 2) {
+                    x += 32;
+                }
+                break;
+            case MESSAGE_COLOR_JPN:
+            case MESSAGE_SHIFT_JPN:
+            case MESSAGE_TEXT_SPEED_JPN:
+                if (character == MESSAGE_SHIFT_JPN) {
+                    x += msgCtx->msgBufDecodedWide[i + 1];
+                }
+                i++;
+                break;
+            case MESSAGE_SFX_JPN:
+            case MESSAGE_ITEM_ICON_JPN:
+                if (character == MESSAGE_ITEM_ICON_JPN) {
+                    x += 32;
+                }
+                i++;
+                break;
+            case MESSAGE_SPACE_JPN:
+                x += CVarGetInteger(CVAR_ENHANCEMENT("TextSpacing"), 6);
+                break;
+            case MESSAGE_BACKGROUND_JPN:
+                x += 32;
+                break;
+            case MESSAGE_BOX_BREAK_JPN:
+            case MESSAGE_TEXTID_JPN:
+            case MESSAGE_END_JPN:
+            case MESSAGE_PERSISTENT_JPN:
+            case MESSAGE_EVENT_JPN:
+                return;
+            case MESSAGE_BOX_BREAK_DELAYED_JPN:
+            case MESSAGE_FADE_JPN:
+                i++;
+                return;
+            case MESSAGE_NAME_JPN:
+                // The corpus intentionally omits the runtime player-name
+                // placeholder, so it consumes screen space but no normalized
+                // text index.
+                x += glyphSize;
+                break;
+            case MESSAGE_QUICKTEXT_ENABLE_JPN:
+            case MESSAGE_QUICKTEXT_DISABLE_JPN:
+            case MESSAGE_AWAIT_BUTTON_PRESS_JPN:
+            case MESSAGE_FADE2_JPN:
+            case MESSAGE_UNSKIPPABLE_JPN:
+            case MESSAGE_TWO_CHOICE_JPN:
+            case MESSAGE_THREE_CHOICE_JPN:
+            case MESSAGE_OCARINA_JPN:
+                break;
+            default:
+                x += Message_GetJpnGlyphLeftAdjustment(character);
+                if (normalizedIndex >= highlight.start && normalizedIndex < highlight.start + highlight.length) {
+                    Message_DrawJPAssistGlyphGlow(play, gfxP, x, y, glyphSize);
+                }
+                x += Message_GetJpnGlyphAdvance(character);
+                normalizedIndex++;
+                break;
+        }
+    }
+}
+
 // Taken from decomped N64 1.0 z_message https://decomp.me/scratch/462bn
 void Message_DrawTextJPN(PlayState* play, Gfx** gfxP) {
     MessageContext* msgCtx = &play->msgCtx;
@@ -966,6 +1110,10 @@ void Message_DrawTextJPN(PlayState* play, Gfx** gfxP) {
 
     msgCtx->unk_E3D0 = 0;
     charTexIdx = 0;
+
+    // Draw behind the native glyph pass. This uses the already-decoded page
+    // and never calls Message_DecodeJPN or mutates dialogue progression.
+    Message_DrawJPAssistNativeHighlight(play, &gfx);
 
     for (i = 0; i < msgCtx->textDrawPos; i++) {
         character = msgCtx->msgBufDecodedWide[i];

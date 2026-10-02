@@ -76,6 +76,9 @@ message-state or ImGui assumptions.
 - The overlay mirrors alternate text instead of replacing glyphs inside the
   native textbox. This is safer scaffolding, but native-layout integration is
   still a future milestone.
+- Study Mode does integrate one presentation element into the native renderer:
+  a selected token's normalized corpus span is mapped to the already-decoded
+  Japanese glyph positions and receives a blue backlight before glyph drawing.
 - Dictionary sense selection is heuristic and requires human review through
   `scripts/jp_assist/overrides.py`; the generated review queue tracks remaining
   unresolved definitions.
