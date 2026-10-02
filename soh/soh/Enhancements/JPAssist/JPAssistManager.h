@@ -1,6 +1,21 @@
 #pragma once
 
-// Milestone 1 technical-spike entry point (docs/JP_ASSIST_DESIGN.md). Wires
-// up dialogue detection and the L/Z language toggle. Registration happens
-// automatically via a static RegisterShipInitFunc in JPAssistManager.cpp -
-// nothing else needs to call into this header directly yet.
+#include <cstdint>
+
+namespace JPAssist {
+
+struct RuntimeStatus {
+    uint16_t textId = 0xFFFF;
+    int pageIndex = 0;
+    uint8_t requestedLanguage = 0;
+    bool alternateLanguageVisible = false;
+    bool studyModeActive = false;
+    int selectedTokenIndex = 0;
+    int currentPageTokenCount = 0;
+    uint64_t languageToggleCount = 0;
+    uint64_t studyEnterCount = 0;
+};
+
+RuntimeStatus JPAssist_GetRuntimeStatus();
+
+} // namespace JPAssist

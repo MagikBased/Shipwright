@@ -46,6 +46,7 @@ the game data as:
 
 ```text
 jp_assist/runtime_data.json
+jp_assist/test_scenarios.json
 ```
 
 Ship of Harkinian's application-directory lookup then finds it at startup.
@@ -61,9 +62,10 @@ python scripts/jp_assist/build_anki_deck.py \
 ```
 
 `package_local.py` stages a checksummed personal bundle under ignored `out/`
-and can install the runtime corpus into a specific Ship directory. It does not
-package a font: supported Shipwright builds already contain the licensed
-`fonts/NotoSansJP-Regular.ttf` asset in `soh.o2r`, which JP Assist reuses.
+and can install the runtime corpus and Test Lab scenarios into a specific Ship
+directory. It does not package a font: supported Shipwright builds already
+contain the licensed `fonts/NotoSansJP-Regular.ttf` asset in `soh.o2r`, which
+JP Assist reuses.
 
 `overrides.py` is the human-review layer for correcting tokenization, readings,
 definitions, and game-specific usages. Dictionary output is a draft; sense

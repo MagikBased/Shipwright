@@ -1,0 +1,545 @@
+#include "JPAssistTestLab.h"
+
+#include <algorithm>
+#include <filesystem>
+#include <fstream>
+#include <memory>
+#include <optional>
+#include <string>
+#include <vector>
+
+#include <fmt/format.h>
+#include <imgui.h>
+#include <nlohmann/json.hpp>
+#include <spdlog/spdlog.h>
+
+#include <ship/Context.h>
+#include <ship/debug/Console.h>
+#include <ship/window/Window.h>
+#include <ship/window/gui/Gui.h>
+#include <ship/window/gui/GuiWindow.h>
+
+#include "JPAssistManager.h"
+#include "StudyRepository.h"
+#include "TestScenario.h"
+
+#include "functions.h"
+#include "macros.h"
+#include "variables.h"
+#include "z64.h"
+#include "soh/Enhancements/debugger/MessageViewer.h"
+#include "soh/Enhancements/game-interactor/GameInteractor.h"
+#include "soh/ShipInit.hpp"
+#include "soh/cvar_prefixes.h"
+
+extern PlayState* gPlayState;
+
+extern "C" void Sram_InitDebugSave(void);
+
+namespace JPAssist {
+namespace {
+
+enum class SmokeStage { Idle, WaitingForScene, WaitingForMessage, Loaded, Passed, Failed };
+
+struct SmokeState {
+    SmokeStage stage = SmokeStage::Idle;
+    std::string scenarioId;
+    std::string detail = "Not run";
+    int framesRemaining = 0;
+    uint64_t startedAtToggleCount = 0;
+    uint64_t startedAtStudyCount = 0;
+    bool validate = false;
+};
+
+SmokeState sSmoke;
+TestScenario sPendingScenario;
+int sSelectedScenario = 0;
+int sRawEntrance = 0x00BB;
+int sRawTextId = 0x1001;
+int sRawLanguage = LANGUAGE_JPN;
+int sSelectedProfile = 0;
+constexpr const char* kProgressionProfiles[] = { "debug_child", "post_deku_tree", "adult_all_access", "endgame" };
+std::shared_ptr<Ship::GuiWindow> sWindow;
+bool sSceneInitializedAfterWarp = false;
+int sPostSceneDelay = 0;
+
+bool IsTemporarySession() {
+    return gPlayState != nullptr && gSaveContext.fileNum == 0xFF;
+}
+
+void SetEventFlag(uint16_t flag) {
+    gSaveContext.eventChkInf[flag >> 4] |= 1 << (flag & 0xF);
+}
+
+bool StartTemporarySession(std::string& error) {
+    if (gPlayState == nullptr) {
+        error = "Load any game or debug scene before starting a temporary session.";
+        return false;
+    }
+    Sram_InitDebugSave();
+    gSaveContext.fileNum = 0xFF;
+    gSaveContext.gameMode = GAMEMODE_NORMAL;
+    gSaveContext.cutsceneIndex = 0;
+    error.clear();
+    SPDLOG_INFO("[JPAssist Test Lab] Started non-persistent debug session");
+    return true;
+}
+
+bool ApplyProgressionProfile(const std::string& profile, std::string& error) {
+    if (!IsTemporarySession()) {
+        error = "Progression profiles require a temporary debug session (file 0xFF).";
+        return false;
+    }
+
+    // Reinitialize before every profile so scenarios are deterministic and
+    // cannot inherit event flags from a previously loaded profile.
+    Sram_InitDebugSave();
+    gSaveContext.fileNum = 0xFF;
+    gSaveContext.gameMode = GAMEMODE_NORMAL;
+    gSaveContext.cutsceneIndex = 0;
+
+    if (profile == "debug_child") {
+        gSaveContext.linkAge = LINK_AGE_CHILD;
+    } else if (profile == "post_deku_tree") {
+        gSaveContext.linkAge = LINK_AGE_CHILD;
+        SetEventFlag(EVENTCHKINF_MET_DEKU_TREE);
+        SetEventFlag(EVENTCHKINF_OBTAINED_KOKIRI_EMERALD);
+        SetEventFlag(EVENTCHKINF_OBTAINED_KOKIRI_EMERALD_DEKU_TREE_DEAD);
+    } else if (profile == "adult_all_access") {
+        gSaveContext.linkAge = LINK_AGE_ADULT;
+        SetEventFlag(EVENTCHKINF_OBTAINED_KOKIRI_EMERALD);
+        SetEventFlag(EVENTCHKINF_OBTAINED_ZELDAS_LETTER);
+        SetEventFlag(EVENTCHKINF_OBTAINED_OCARINA_OF_TIME);
+        SetEventFlag(EVENTCHKINF_OPENED_THE_DOOR_OF_TIME);
+        SetEventFlag(EVENTCHKINF_PULLED_MASTER_SWORD_FROM_PEDESTAL);
+        SetEventFlag(EVENTCHKINF_ENTERED_MASTER_SWORD_CHAMBER);
+    } else if (profile == "endgame") {
+        gSaveContext.linkAge = LINK_AGE_ADULT;
+        SetEventFlag(EVENTCHKINF_PULLED_MASTER_SWORD_FROM_PEDESTAL);
+        SetEventFlag(EVENTCHKINF_USED_FOREST_TEMPLE_BLUE_WARP);
+        SetEventFlag(EVENTCHKINF_USED_FIRE_TEMPLE_BLUE_WARP);
+        SetEventFlag(EVENTCHKINF_USED_WATER_TEMPLE_BLUE_WARP);
+        SetEventFlag(EVENTCHKINF_RAINBOW_BRIDGE_BUILT);
+    } else {
+        error = "Unknown progression profile: " + profile;
+        return false;
+    }
+    error.clear();
+    return true;
+}
+
+bool WarpTo(const TestScenario& scenario, std::string& error) {
+    if (gPlayState == nullptr || GET_PLAYER(gPlayState) == nullptr) {
+        error = "A running PlayState is required to warp.";
+        return false;
+    }
+
+    gSaveContext.linkAge = scenario.age == "adult" ? LINK_AGE_ADULT : LINK_AGE_CHILD;
+    gSaveContext.nightFlag = scenario.time == "night";
+    gSaveContext.skyboxTime = gSaveContext.dayTime = scenario.time == "night" ? 0xC000 : 0x8000;
+    gPlayState->nextEntranceIndex = scenario.entrance;
+    gPlayState->transitionTrigger = TRANS_TRIGGER_START;
+    gPlayState->transitionType = TRANS_TYPE_INSTANT;
+    gSaveContext.respawn[RESPAWN_MODE_DOWN].entranceIndex = scenario.entrance;
+    gSaveContext.respawn[RESPAWN_MODE_DOWN].roomIndex = scenario.room;
+    if (scenario.position.enabled) {
+        gSaveContext.respawn[RESPAWN_MODE_DOWN].pos = { scenario.position.x, scenario.position.y, scenario.position.z };
+        gSaveContext.respawn[RESPAWN_MODE_DOWN].yaw = scenario.position.yaw;
+        gSaveContext.respawn[RESPAWN_MODE_DOWN].playerParams = 0xDFF;
+        gSaveContext.respawnFlag = 1;
+    } else {
+        gSaveContext.respawnFlag = 0;
+    }
+    gSaveContext.nextTransitionType = TRANS_TYPE_FADE_BLACK_FAST;
+    error.clear();
+    return true;
+}
+
+void WriteSmokeResult(const TestScenario& scenario, bool passed, const std::string& detail) {
+    const std::string path = Ship::Context::GetPathRelativeToAppDirectory("jp_assist_smoke_results.json");
+    nlohmann::json root = nlohmann::json::object();
+    try {
+        if (std::filesystem::exists(path)) {
+            std::ifstream input(path);
+            input >> root;
+        }
+    } catch (...) {
+        root = nlohmann::json::object();
+    }
+    root["schemaVersion"] = 1;
+    root["results"][scenario.id] = {
+        { "passed", passed },
+        { "detail", detail },
+        { "textId", fmt::format("{:#06x}", scenario.textId) },
+        { "entrance", fmt::format("{:#06x}", scenario.entrance) },
+        { "corpusVersion", StudyRepository_GetCorpusVersion() },
+    };
+    std::ofstream output(path);
+    output << root.dump(2) << '\n';
+}
+
+bool ValidateScenario(const TestScenario& scenario, std::string& detail) {
+    const RuntimeStatus runtime = JPAssist_GetRuntimeStatus();
+    if (runtime.textId != scenario.textId) {
+        detail = fmt::format("Expected text {:#06x}, observed {:#06x}", scenario.textId, runtime.textId);
+        return false;
+    }
+    const StudyPage* page = StudyRepository_FindPage(scenario.textId, runtime.pageIndex);
+    if (page == nullptr) {
+        detail = "Message opened, but no corpus page was found.";
+        return false;
+    }
+    const size_t pageCount = StudyRepository_GetPageCount(scenario.textId);
+    if (scenario.expected.pages >= 0 && static_cast<int>(pageCount) != scenario.expected.pages) {
+        detail = fmt::format("Expected {} pages, observed {}", scenario.expected.pages, pageCount);
+        return false;
+    }
+    if (scenario.expected.tokens >= 0 && static_cast<int>(page->tokens.size()) != scenario.expected.tokens) {
+        detail = fmt::format("Expected {} tokens, observed {}", scenario.expected.tokens, page->tokens.size());
+        return false;
+    }
+    if (scenario.expected.choiceCount >= 0 && page->choiceCount != scenario.expected.choiceCount) {
+        detail = fmt::format("Expected {} choices, observed {}", scenario.expected.choiceCount, page->choiceCount);
+        return false;
+    }
+    detail = fmt::format("PASS: text {:#06x}, {} pages, page {}, {} tokens{}", runtime.textId, pageCount,
+                         runtime.pageIndex, page->tokens.size(),
+                         page->isChoice ? fmt::format(", {} choices", page->choiceCount) : "");
+    return true;
+}
+
+bool BeginScenario(const TestScenario& scenario, bool smoke, std::string& error) {
+    if (!IsTemporarySession() && !StartTemporarySession(error)) {
+        return false;
+    }
+    if (!ApplyProgressionProfile(scenario.progressionProfile, error) || !WarpTo(scenario, error)) {
+        return false;
+    }
+    sSceneInitializedAfterWarp = false;
+    sPostSceneDelay = 0;
+    sSmoke.stage = SmokeStage::WaitingForScene;
+    sPendingScenario = scenario;
+    sSmoke.scenarioId = scenario.id;
+    sSmoke.validate = smoke;
+    sSmoke.framesRemaining = smoke ? 300 : 120;
+    sSmoke.detail = smoke ? "Waiting for scene initialization" : "Warping; message will open after scene initialization";
+    const RuntimeStatus runtime = JPAssist_GetRuntimeStatus();
+    sSmoke.startedAtToggleCount = runtime.languageToggleCount;
+    sSmoke.startedAtStudyCount = runtime.studyEnterCount;
+    return true;
+}
+
+void UpdateSmoke() {
+    if (sSmoke.stage != SmokeStage::WaitingForScene && sSmoke.stage != SmokeStage::WaitingForMessage) {
+        return;
+    }
+    const TestScenario* scenario = &sPendingScenario;
+    if (!sSceneInitializedAfterWarp || gPlayState == nullptr || GET_PLAYER(gPlayState) == nullptr) {
+        if (--sSmoke.framesRemaining <= 0) {
+            sSmoke.stage = SmokeStage::Failed;
+            sSmoke.detail = "Timed out waiting for an active scene/player";
+        }
+        return;
+    }
+
+    if (sSmoke.stage == SmokeStage::WaitingForScene) {
+        // Give actors and the message context a few frames to settle after OnSceneInit.
+        if (sPostSceneDelay-- > 0) {
+            return;
+        }
+        MessageDebug_StartTextBox("", scenario->textId, scenario->language);
+        sSmoke.stage = SmokeStage::WaitingForMessage;
+        sSmoke.framesRemaining = 180;
+        sSmoke.detail = "Message requested; waiting for JP Assist observation";
+        return;
+    }
+
+    std::string detail;
+    if (JPAssist_GetRuntimeStatus().textId == scenario->textId) {
+        if (!sSmoke.validate) {
+            sSmoke.stage = SmokeStage::Loaded;
+            sSmoke.detail = fmt::format("Scenario ready: text {:#06x}", scenario->textId);
+            return;
+        }
+        const bool passed = ValidateScenario(*scenario, detail);
+        sSmoke.stage = passed ? SmokeStage::Passed : SmokeStage::Failed;
+        sSmoke.detail = detail;
+        WriteSmokeResult(*scenario, passed, detail);
+    } else if (--sSmoke.framesRemaining <= 0) {
+        sSmoke.stage = SmokeStage::Failed;
+        sSmoke.detail = "Timed out waiting for JP Assist to observe the requested message";
+        WriteSmokeResult(*scenario, false, sSmoke.detail);
+    }
+}
+
+std::optional<int64_t> ParseCommandInteger(const std::string& value) {
+    try {
+        return std::stoll(value, nullptr, 0);
+    } catch (...) {
+        return std::nullopt;
+    }
+}
+
+const char* StageLabel() {
+    switch (sSmoke.stage) {
+        case SmokeStage::WaitingForScene:
+            return "RUNNING: scene";
+        case SmokeStage::WaitingForMessage:
+            return "RUNNING: message";
+        case SmokeStage::Passed:
+            return "PASS";
+        case SmokeStage::Loaded:
+            return "READY";
+        case SmokeStage::Failed:
+            return "FAIL";
+        default:
+            return "IDLE";
+    }
+}
+
+class TestLabWindow final : public Ship::GuiWindow {
+  public:
+    using GuiWindow::GuiWindow;
+    void InitElement() override {
+    }
+    void UpdateElement() override {
+    }
+    void DrawElement() override {
+        ImGui::TextUnformatted("JP Assist Test Lab");
+        ImGui::TextColored(IsTemporarySession() ? ImVec4(0.3f, 0.9f, 0.4f, 1.0f)
+                                                 : ImVec4(1.0f, 0.65f, 0.2f, 1.0f),
+                           "%s", IsTemporarySession() ? "Temporary debug session active"
+                                                       : "Normal save: progression changes locked");
+        if (!IsTemporarySession() && ImGui::Button("Start temporary debug session")) {
+            std::string error;
+            sSmoke.detail = StartTemporarySession(error) ? "Temporary session ready" : error;
+        }
+
+        ImGui::Combo("Progression profile", &sSelectedProfile, kProgressionProfiles,
+                     IM_ARRAYSIZE(kProgressionProfiles));
+        if (ImGui::Button("Reset/apply progression profile")) {
+            std::string error;
+            sSmoke.detail = ApplyProgressionProfile(kProgressionProfiles[sSelectedProfile], error)
+                                ? fmt::format("Applied {}", kProgressionProfiles[sSelectedProfile])
+                                : error;
+        }
+
+        ImGui::SeparatorText("Scenario");
+        const auto& scenarios = TestScenario_GetAll();
+        if (scenarios.empty()) {
+            ImGui::TextWrapped("No scenarios loaded: %s", TestScenario_GetLoadError().c_str());
+        } else {
+            sSelectedScenario = std::clamp(sSelectedScenario, 0, static_cast<int>(scenarios.size()) - 1);
+            if (ImGui::BeginCombo("Scenario", scenarios[sSelectedScenario].label.c_str())) {
+                for (size_t index = 0; index < scenarios.size(); ++index) {
+                    if (ImGui::Selectable(scenarios[index].label.c_str(), sSelectedScenario == static_cast<int>(index))) {
+                        sSelectedScenario = static_cast<int>(index);
+                    }
+                }
+                ImGui::EndCombo();
+            }
+            const TestScenario& scenario = scenarios[sSelectedScenario];
+            ImGui::TextWrapped("%s", scenario.description.c_str());
+            if (ImGui::Button("Load scenario")) {
+                std::string error;
+                if (!BeginScenario(scenario, false, error)) {
+                    sSmoke.detail = error;
+                    sSmoke.stage = SmokeStage::Failed;
+                }
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("Run smoke check")) {
+                std::string error;
+                if (!BeginScenario(scenario, true, error)) {
+                    sSmoke.detail = error;
+                    sSmoke.stage = SmokeStage::Failed;
+                }
+            }
+        }
+
+        ImGui::SeparatorText("Arbitrary entrance/message");
+        ImGui::InputScalar("Entrance", ImGuiDataType_S32, &sRawEntrance, nullptr, nullptr, "0x%04X",
+                           ImGuiInputTextFlags_CharsHexadecimal);
+        ImGui::InputScalar("Text ID", ImGuiDataType_S32, &sRawTextId, nullptr, nullptr, "0x%04X",
+                           ImGuiInputTextFlags_CharsHexadecimal);
+        ImGui::RadioButton("Japanese", &sRawLanguage, LANGUAGE_JPN);
+        ImGui::SameLine();
+        ImGui::RadioButton("English", &sRawLanguage, LANGUAGE_ENG);
+        if (ImGui::Button("Warp and display")) {
+            TestScenario raw;
+            raw.id = "raw";
+            raw.label = "Raw entrance/message";
+            raw.entrance = sRawEntrance;
+            raw.textId = static_cast<uint16_t>(sRawTextId);
+            raw.language = static_cast<uint8_t>(sRawLanguage);
+            raw.progressionProfile = kProgressionProfiles[sSelectedProfile];
+            raw.age = sSelectedProfile >= 2 ? "adult" : "child";
+            std::string error;
+            if (!BeginScenario(raw, false, error)) {
+                sSmoke.detail = error;
+                sSmoke.stage = SmokeStage::Failed;
+            }
+        }
+
+        ImGui::SeparatorText("Live status");
+        const RuntimeStatus runtime = JPAssist_GetRuntimeStatus();
+        ImGui::Text("Smoke: %s", StageLabel());
+        ImGui::TextWrapped("%s", sSmoke.detail.c_str());
+        ImGui::Text("Scene %s  entrance %#06x", gPlayState ? fmt::format("{:#04x}", gPlayState->sceneNum).c_str() : "--",
+                    gSaveContext.entranceIndex);
+        ImGui::Text("Text %#06x  page %d  tokens %d", runtime.textId, runtime.pageIndex,
+                    runtime.currentPageTokenCount);
+        ImGui::Text("Language %s  Study %s  token %d", runtime.requestedLanguage == LANGUAGE_JPN ? "JP" : "EN",
+                    runtime.studyModeActive ? "active" : "closed", runtime.selectedTokenIndex);
+        ImGui::Text("Observed controls: language toggles %llu, Study entries %llu",
+                    static_cast<unsigned long long>(runtime.languageToggleCount),
+                    static_cast<unsigned long long>(runtime.studyEnterCount));
+        ImGui::TextDisabled("Automated smoke verifies warp -> message -> corpus. L/Z, R, layout, and glyph appearance remain manual.");
+    }
+};
+
+int32_t ScenarioCommand(std::shared_ptr<Ship::Console>, std::vector<std::string> args, std::string* output) {
+    if (args.empty()) {
+        *output = "Usage: jpassist_scenario <id>";
+        return 1;
+    }
+    const TestScenario* scenario = TestScenario_Find(args[0]);
+    if (scenario == nullptr) {
+        *output = "Unknown scenario: " + args[0];
+        return 1;
+    }
+    std::string error;
+    if (!BeginScenario(*scenario, false, error)) {
+        *output = error;
+        return 1;
+    }
+    *output = "Loading scenario " + scenario->id;
+    return 0;
+}
+
+int32_t SmokeCommand(std::shared_ptr<Ship::Console>, std::vector<std::string> args, std::string* output) {
+    if (args.empty()) {
+        *output = "Usage: jpassist_smoke <scenario-id>";
+        return 1;
+    }
+    const TestScenario* scenario = TestScenario_Find(args[0]);
+    if (scenario == nullptr) {
+        *output = "Unknown scenario: " + args[0];
+        return 1;
+    }
+    std::string error;
+    if (!BeginScenario(*scenario, true, error)) {
+        *output = error;
+        return 1;
+    }
+    *output = "Smoke check started for " + scenario->id;
+    return 0;
+}
+
+int32_t SessionCommand(std::shared_ptr<Ship::Console>, std::vector<std::string>, std::string* output) {
+    std::string error;
+    if (!StartTemporarySession(error)) {
+        *output = error;
+        return 1;
+    }
+    *output = "Temporary JP Assist test session started; save writes are disabled for file 0xFF.";
+    return 0;
+}
+
+int32_t ProgressCommand(std::shared_ptr<Ship::Console>, std::vector<std::string> args, std::string* output) {
+    if (args.empty()) {
+        *output = "Usage: jpassist_progress <debug_child|post_deku_tree|adult_all_access|endgame>";
+        return 1;
+    }
+    std::string error;
+    if (!ApplyProgressionProfile(args[0], error)) {
+        *output = error;
+        return 1;
+    }
+    *output = "Applied temporary progression profile " + args[0];
+    return 0;
+}
+
+int32_t WarpCommand(std::shared_ptr<Ship::Console>, std::vector<std::string> args, std::string* output) {
+    if (args.empty()) {
+        *output = "Usage: jpassist_warp <entrance-id> [progression-profile]";
+        return 1;
+    }
+    const auto entrance = ParseCommandInteger(args[0]);
+    if (!entrance || *entrance < 0 || *entrance > INT32_MAX) {
+        *output = "Entrance must be a decimal or 0x-prefixed non-negative integer.";
+        return 1;
+    }
+    std::string error;
+    if (!IsTemporarySession() && !StartTemporarySession(error)) {
+        *output = error;
+        return 1;
+    }
+    const std::string profile = args.size() > 1 ? args[1] : "debug_child";
+    TestScenario scenario;
+    scenario.entrance = static_cast<int32_t>(*entrance);
+    scenario.progressionProfile = profile;
+    scenario.age = profile == "adult_all_access" || profile == "endgame" ? "adult" : "child";
+    if (!ApplyProgressionProfile(profile, error) || !WarpTo(scenario, error)) {
+        *output = error;
+        return 1;
+    }
+    sSmoke.stage = SmokeStage::Idle;
+    *output = fmt::format("Warping to entrance {:#06x} with profile {}", scenario.entrance, profile);
+    return 0;
+}
+
+int32_t MessageCommand(std::shared_ptr<Ship::Console>, std::vector<std::string> args, std::string* output) {
+    if (args.empty()) {
+        *output = "Usage: jpassist_message <text-id> [jpn|eng]";
+        return 1;
+    }
+    const auto textId = ParseCommandInteger(args[0]);
+    if (!textId || *textId < 0 || *textId > UINT16_MAX) {
+        *output = "Text ID must be a decimal or 0x-prefixed 16-bit integer.";
+        return 1;
+    }
+    if (gPlayState == nullptr || GET_PLAYER(gPlayState) == nullptr) {
+        *output = "Load a scene before opening a message.";
+        return 1;
+    }
+    const uint8_t language = args.size() > 1 && (args[1] == "eng" || args[1] == "english") ? LANGUAGE_ENG
+                                                                                              : LANGUAGE_JPN;
+    MessageDebug_StartTextBox("", static_cast<uint16_t>(*textId), language);
+    *output = fmt::format("Opened text {:#06x} in {}", *textId, language == LANGUAGE_JPN ? "Japanese" : "English");
+    return 0;
+}
+
+int32_t StatusCommand(std::shared_ptr<Ship::Console>, std::vector<std::string>, std::string* output) {
+    const RuntimeStatus status = JPAssist_GetRuntimeStatus();
+    *output = fmt::format("{}: {}; text={:#06x} page={} tokens={} language={} study={} temporary={}", StageLabel(),
+                          sSmoke.detail, status.textId, status.pageIndex, status.currentPageTokenCount,
+                          status.requestedLanguage == LANGUAGE_JPN ? "JP" : "EN", status.studyModeActive,
+                          IsTemporarySession());
+    return 0;
+}
+
+} // namespace
+
+void JPAssistTestLab_Register() {
+    TestScenario_LoadManifest();
+    sWindow = std::make_shared<TestLabWindow>(CVAR_WINDOW("JPAssistTestLab"), "JP Assist Test Lab", ImVec2(620, 680));
+    Ship::Context::GetRawInstance()->GetWindow()->GetGui()->AddGuiWindow(sWindow);
+    GameInteractor::Instance->RegisterGameHook<GameInteractor::OnGameFrameUpdate>(UpdateSmoke);
+    GameInteractor::Instance->RegisterGameHook<GameInteractor::OnSceneInit>([](int16_t) {
+        if (sSmoke.stage == SmokeStage::WaitingForScene) {
+            sSceneInitializedAfterWarp = true;
+            sPostSceneDelay = 15;
+        }
+    });
+    auto console = Ship::Context::GetRawInstance()->GetConsole();
+    console->AddCommand("jpassist_test_session", { SessionCommand, "Start a non-persistent JP Assist test session." });
+    console->AddCommand("jpassist_progress", { ProgressCommand, "Apply a temporary progression profile." });
+    console->AddCommand("jpassist_warp", { WarpCommand, "Warp to an arbitrary entrance ID." });
+    console->AddCommand("jpassist_message", { MessageCommand, "Open an arbitrary Japanese or English message." });
+    console->AddCommand("jpassist_scenario", { ScenarioCommand, "Load a JP Assist Test Lab scenario." });
+    console->AddCommand("jpassist_smoke", { SmokeCommand, "Run a JP Assist smoke scenario." });
+    console->AddCommand("jpassist_status", { StatusCommand, "Show JP Assist Test Lab/runtime status." });
+}
+
+} // namespace JPAssist

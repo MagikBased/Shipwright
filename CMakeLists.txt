@@ -201,6 +201,12 @@ add_subdirectory(ZAPDTR/ZAPD ${CMAKE_BINARY_DIR}/ZAPD)
 add_subdirectory(OTRExporter)
 add_subdirectory(soh)
 
+option(JPASSIST_BUILD_TESTS "Build engine-independent JP Assist unit tests" OFF)
+if(JPASSIST_BUILD_TESTS)
+    enable_testing()
+    add_subdirectory(tests/jp_assist)
+endif()
+
 set_property(TARGET soh PROPERTY APPIMAGE_DESKTOP_FILE_TERMINAL YES)
 set_property(TARGET soh PROPERTY APPIMAGE_DESKTOP_FILE "${CMAKE_SOURCE_DIR}/scripts/linux/appimage/soh.desktop")
 set_property(TARGET soh PROPERTY APPIMAGE_ICON_FILE "${CMAKE_BINARY_DIR}/sohIcon.png")

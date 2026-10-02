@@ -123,6 +123,11 @@ const StudyPage* StudyRepository_FindPage(uint16_t textId, int pageIndex) {
     return &found->second[pageIndex];
 }
 
+size_t StudyRepository_GetPageCount(uint16_t textId) {
+    const auto found = sPagesByTextId.find(textId);
+    return found == sPagesByTextId.end() ? 0 : found->second.size();
+}
+
 const std::vector<StudyToken>& StudyRepository_GetTestTokens() {
     static const std::vector<StudyToken> tokens = {
         { "妖精", "妖精", "ようせい", "ようせい", "noun", "fairy", "", 0, 2 },

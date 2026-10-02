@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "scenarios": [
+    {
+      "id": "saria_first_greeting",
+      "label": "Saria — first greeting",
+      "description": "Ordinary Kokiri dialogue used for basic JP/EN toggle and Study Mode checks.",
+      "progressionProfile": "debug_child",
+      "entrance": "0x00BB",
+      "age": "child",
+      "time": "day",
+      "textId": "0x1001",
+      "language": "japanese",
+      "expected": { "pages": 1, "tokens": 1, "choiceCount": 0 }
+    },
+    {
+      "id": "mido_house_sign",
+      "label": "Mido's house sign",
+      "description": "Short wooden-sign message for textbox style and one-page behavior.",
+      "progressionProfile": "debug_child",
+      "entrance": "0x00BB",
+      "age": "child",
+      "time": "day",
+      "textId": "0x033C",
+      "language": "japanese",
+      "expected": { "pages": 1, "tokens": 9, "choiceCount": 0 }
+    },
+    {
+      "id": "know_it_all_choice",
+      "label": "Know-It-All Brothers — choice",
+      "description": "Choice dialogue; Study Mode should remain unavailable while native choice input is active.",
+      "progressionProfile": "debug_child",
+      "entrance": "0x00C9",
+      "age": "child",
+      "time": "day",
+      "textId": "0x103E",
+      "language": "japanese",
+      "expected": { "pages": 1, "tokens": 6, "choiceCount": 2 }
+    },
+    {
+      "id": "adult_kakariko",
+      "label": "Adult Kakariko corpus check",
+      "description": "Adult/time/progression setup plus a regular corpus-backed message.",
+      "progressionProfile": "adult_all_access",
+      "entrance": "0x00DB",
+      "age": "adult",
+      "time": "day",
+      "textId": "0x5085",
+      "language": "japanese",
+      "expected": { "pages": 2, "tokens": 22, "choiceCount": 0 }
+    }
+  ]
+}

@@ -428,6 +428,7 @@ shipofharkinian.json
 # generated oot.o2r and reproduces copyrighted game text.
 /scripts/jp_assist/out/
 /jp_assist_progress.json
+/jp_assist_smoke_results.json
 imgui.ini
 timesplitdata.json
 

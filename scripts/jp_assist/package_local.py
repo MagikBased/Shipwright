@@ -40,6 +40,7 @@ def main() -> None:
     runtime = Path(args.runtime_data) if args.runtime_data else out / "runtime_data.json"
     full_deck = Path(args.full_deck) if args.full_deck else out / "oot_jp_assist.apkg"
     saved_deck = Path(args.saved_deck) if args.saved_deck else out / "oot_jp_assist_saved.apkg"
+    scenarios = base / "test_scenarios.json"
     stage = Path(args.stage_dir) if args.stage_dir else out / "local_bundle"
 
     root = json.loads(runtime.read_text())
@@ -52,6 +53,7 @@ def main() -> None:
         "files": [],
     }
     manifest["files"].append(copy_file(runtime, stage / "jp_assist" / "runtime_data.json"))
+    manifest["files"].append(copy_file(scenarios, stage / "jp_assist" / "test_scenarios.json"))
     for deck in (full_deck, saved_deck):
         if deck.exists():
             manifest["files"].append(copy_file(deck, stage / "anki" / deck.name))
@@ -65,10 +67,16 @@ def main() -> None:
         temporary = destination.with_suffix(".json.tmp")
         shutil.copy2(runtime, temporary)
         temporary.replace(destination)
+        installed_scenarios = destination.parent / "test_scenarios.json"
+        copy_file(scenarios, installed_scenarios)
         installed_manifest = {
             "schemaVersion": manifest["schemaVersion"],
             "corpusVersion": manifest["corpusVersion"],
             "runtimeData": {"bytes": destination.stat().st_size, "sha256": sha256(destination)},
+            "testScenarios": {
+                "bytes": installed_scenarios.stat().st_size,
+                "sha256": sha256(installed_scenarios),
+            },
         }
         (destination.parent / "manifest.json").write_text(json.dumps(installed_manifest, indent=2) + "\n")
         print(f"Installed runtime corpus at {destination}")

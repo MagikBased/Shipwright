@@ -5,6 +5,7 @@
 
 #include "DialogueRepository.h"
 #include "JPAssistOverlay.h"
+#include "JPAssistTestLab.h"
 #include "MessageParser.h"
 #include "StudyPersistence.h"
 #include "StudyRepository.h"
@@ -69,6 +70,8 @@ bool sShowingAlternateLanguage = false;
 // Study Mode selection is an occurrence index within the current corpus page.
 bool sStudyModeActive = false;
 int sSelectedTokenIndex = 0;
+uint64_t sLanguageToggleCount = 0;
+uint64_t sStudyEnterCount = 0;
 
 bool sRomCompatibilityChecked = false;
 
@@ -200,6 +203,7 @@ void HandleStudyModeInput(PlayState* play, MessageContext* msgCtx, Input* input)
         if (rPressed && sRequestedLanguage == LANGUAGE_JPN && msgCtx->choiceNum == 0 && page != nullptr &&
             !page->tokens.empty()) {
             sStudyModeActive = true;
+            sStudyEnterCount++;
             sSelectedTokenIndex = 0;
             RecordTokenEncounter(sSelectedTokenIndex);
             input->press.button &= ~BTN_R;
@@ -319,6 +323,7 @@ void HandleLanguageTogglePress(PlayState* play) {
     MessageContext* msgCtx = &play->msgCtx;
 
     sRequestedLanguage = (sRequestedLanguage == LANGUAGE_JPN) ? LANGUAGE_ENG : LANGUAGE_JPN;
+    sLanguageToggleCount++;
     SPDLOG_INFO("[JPAssist] Language Toggle pressed - now showing {} (textId {:#x}, page {})",
                 (sRequestedLanguage == LANGUAGE_JPN) ? "Japanese" : "English", msgCtx->textId, sCurrentPageIndex);
 
@@ -530,6 +535,12 @@ void RegisterJPAssistMenu() {
     SohGui::mSohMenu->AddWidget(path, "Study card opacity: %.2f", WIDGET_CVAR_SLIDER_FLOAT)
         .CVar(CVAR_ENHANCEMENT("JPAssist.CardOpacity"))
         .Options(UIWidgets::FloatSliderOptions().Min(0.40f).Max(1.0f).Step(0.05f).DefaultValue(0.92f).Format("%.2f"));
+    SohGui::mSohMenu->AddWidget(path, "Open JP Assist Test Lab", WIDGET_WINDOW_BUTTON)
+        .CVar(CVAR_WINDOW("JPAssistTestLab"))
+        .WindowName("JP Assist Test Lab")
+        .HideInSearch(true)
+        .Options(UIWidgets::WindowButtonOptions().Tooltip(
+            "Open developer scenarios, temporary progression profiles, live diagnostics, and smoke checks."));
 }
 
 // "Keep a short... history of recently seen lines" (design doc section 11)
@@ -561,6 +572,7 @@ void RegisterJPAssist() {
     JPAssist::StudyRepository_LoadCorpus();
     JPAssist::StudyPersistence_Load();
     JPAssist::JPAssistOverlay_Register();
+    JPAssist::JPAssistTestLab_Register();
     if (!JPAssist::JPAssistOverlay_HasJapaneseFont()) {
         SPDLOG_WARN("[JPAssist] Shipwright's bundled Japanese font is unavailable; Japanese overlay text may render "
                     "with missing glyphs");
@@ -577,3 +589,23 @@ void RegisterJPAssist() {
 static RegisterShipInitFunc initFunc(RegisterJPAssist);
 
 } // namespace
+
+namespace JPAssist {
+
+RuntimeStatus JPAssist_GetRuntimeStatus() {
+    RuntimeStatus status;
+    status.textId = sTrackedTextId;
+    status.pageIndex = sCurrentPageIndex;
+    status.requestedLanguage = sRequestedLanguage;
+    status.alternateLanguageVisible = sShowingAlternateLanguage;
+    status.studyModeActive = sStudyModeActive;
+    status.selectedTokenIndex = sSelectedTokenIndex;
+    status.languageToggleCount = sLanguageToggleCount;
+    status.studyEnterCount = sStudyEnterCount;
+    if (const StudyPage* page = CurrentStudyPage(); page != nullptr) {
+        status.currentPageTokenCount = static_cast<int>(page->tokens.size());
+    }
+    return status;
+}
+
+} // namespace JPAssist

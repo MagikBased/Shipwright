@@ -48,6 +48,7 @@ const std::string& StudyRepository_GetLoadError();
 // Returns nullptr when the message/page has no reviewed corpus data. Page
 // indices are clamped to support the design's JP/EN page-alignment fallback.
 const StudyPage* StudyRepository_FindPage(uint16_t textId, int pageIndex);
+size_t StudyRepository_GetPageCount(uint16_t textId);
 
 // Fixed fallback tokens retained only for UI development when a generated
 // corpus is unavailable. Production Study Mode does not silently substitute

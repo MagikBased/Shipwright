@@ -22,6 +22,9 @@ boundary so deferred testing can start from a known point.
 - Runtime JSON Schema and generated/copyrighted-data ignore rules.
 - One-command local builds, checksummed staging, atomic corpus installation,
   and automated Anki package/GUID validation.
+- A temporary-save Test Lab with named progression profiles, arbitrary entrance
+  and message controls, manifest-backed scenarios, smoke result reporting, and
+  engine-independent unit tests. See `JP_ASSIST_TESTING.md`.
 
 ## Latest local corpus build
 
