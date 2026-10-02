@@ -152,6 +152,9 @@ _JPN_CUSTOM_GLYPHS = {
     0x83AA: "[Control Stick]",
 }
 
+# The English table uses the low byte of the same custom font glyphs.
+_ENG_CUSTOM_GLYPHS = {code & 0xFF: label for code, label in _JPN_CUSTOM_GLYPHS.items()}
+
 
 @dataclass
 class Page:
@@ -177,7 +180,11 @@ def parse_english(data: bytes) -> list[Page]:
             continue
 
         if code >= 0x20:
-            page.text += chr(code)
+            if code < 0x80:
+                page.text += chr(code)
+            else:
+                # Never leak a raw game-font byte into a UTF-8 string.
+                page.text += _ENG_CUSTOM_GLYPHS.get(code, "?")
             pos += 1
             continue
 

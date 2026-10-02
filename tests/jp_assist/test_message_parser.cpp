@@ -28,6 +28,21 @@ TEST(MessageParser, StopsAtTextId) {
     EXPECT_EQ(result.pages[0].englishText, "A");
 }
 
+TEST(MessageParser, ConvertsGameFontGlyphsToUtf8SafeLabels) {
+    const char message[] = { 'U', 's', 'e', ' ', static_cast<char>(0x9F), ' ', static_cast<char>(0xA1),
+                             MESSAGE_END };
+    const auto result = JPAssist::MessageParser_Parse(message, sizeof(message), LANGUAGE_ENG);
+    ASSERT_EQ(result.pages.size(), 1);
+    EXPECT_EQ(result.pages[0].englishText, "Use [A] [C]");
+}
+
+TEST(MessageParser, ReplacesUnknownExtendedGameFontGlyphs) {
+    const char message[] = { 'X', static_cast<char>(0x80), MESSAGE_END };
+    const auto result = JPAssist::MessageParser_Parse(message, sizeof(message), LANGUAGE_ENG);
+    ASSERT_EQ(result.pages.size(), 1);
+    EXPECT_EQ(result.pages[0].englishText, "X?");
+}
+
 TEST(MessageParser, SplitsJapanesePagesAndDetectsChoice) {
     const uint16_t message[] = { 0x8441, MESSAGE_BOX_BREAK_JPN, MESSAGE_TWO_CHOICE_JPN, 0x8442, MESSAGE_END_JPN };
     const auto result = JPAssist::MessageParser_Parse(reinterpret_cast<const char*>(message), sizeof(message),

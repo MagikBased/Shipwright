@@ -119,9 +119,13 @@ class JPAssistOverlayWindow final : public Ship::GuiWindow {
         ImGui::PopTextWrapPos();
         ImGui::Spacing();
 
+        const float contentRight = ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
         for (size_t i = 0; i < sState.studyPage.tokens.size(); ++i) {
-            if (i > 0) {
-                ImGui::SameLine();
+            const float tokenWidth = ImGui::CalcTextSize(sState.studyPage.tokens[i].surface.c_str()).x;
+            // TextColored advances to the next line. Move back beside the
+            // previous token only when this token still fits in the card.
+            if (i > 0 && ImGui::GetItemRectMax().x + tokenWidth <= contentRight) {
+                ImGui::SameLine(0.0f, 0.0f);
             }
             const ImVec4 color = static_cast<int>(i) == selected ? ImVec4(1.0f, 0.82f, 0.25f, 1.0f)
                                                                   : ImVec4(0.82f, 0.86f, 0.92f, 1.0f);

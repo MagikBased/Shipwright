@@ -137,6 +137,41 @@ bool IsJapaneseControlCode(uint16_t value) {
     }
 }
 
+const char* EnglishCustomGlyph(uint8_t value) {
+    // The English message font uses the low bytes of the Japanese custom
+    // glyph range for controller icons. These are not ISO-8859-1/UTF-8 text;
+    // copying them verbatim produces invalid strings (and previously made
+    // nlohmann::json terminate the game while saving dialogue history).
+    switch (value) {
+        case 0x9F:
+            return "[A]";
+        case 0xA0:
+            return "[B]";
+        case 0xA1:
+            return "[C]";
+        case 0xA2:
+            return "[L]";
+        case 0xA3:
+            return "[R]";
+        case 0xA4:
+            return "[Z]";
+        case 0xA5:
+            return "[C-Up]";
+        case 0xA6:
+            return "[C-Down]";
+        case 0xA7:
+            return "[C-Left]";
+        case 0xA8:
+            return "[C-Right]";
+        case 0xA9:
+            return "[Z-target]";
+        case 0xAA:
+            return "[Control Stick]";
+        default:
+            return nullptr;
+    }
+}
+
 DialogueStructure ParseEnglish(const char* segment, uint32_t length) {
     DialogueStructure result;
     result.found = true;
@@ -154,9 +189,16 @@ DialogueStructure ParseEnglish(const char* segment, uint32_t length) {
             continue;
         }
 
-        if (code >= 0x20) {
+        if (code >= 0x20 && code < 0x80) {
             // Printable ASCII glyph.
             page.englishText.push_back(static_cast<char>(code));
+            pos += 1;
+            continue;
+        }
+
+        if (code >= 0x80) {
+            const char* glyph = EnglishCustomGlyph(code);
+            page.englishText += glyph != nullptr ? glyph : "?";
             pos += 1;
             continue;
         }

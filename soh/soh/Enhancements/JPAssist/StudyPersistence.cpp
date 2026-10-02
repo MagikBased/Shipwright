@@ -127,7 +127,10 @@ void StudyPersistence_Save() {
             SPDLOG_ERROR("[JPAssist] Failed to open {} for writing progress", tmpPath);
             return;
         }
-        file << json.dump(4);
+        // Replace any invalid UTF-8 defensively. MessageParser normalizes
+        // game-font glyph bytes, but progress persistence must remain a hard
+        // no-crash boundary even if another caller supplies malformed text.
+        file << json.dump(4, ' ', false, nlohmann::json::error_handler_t::replace);
     }
 
     std::error_code ec;
