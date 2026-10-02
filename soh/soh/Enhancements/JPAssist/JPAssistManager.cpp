@@ -72,6 +72,8 @@ bool sStudyModeActive = false;
 int sSelectedTokenIndex = 0;
 uint64_t sLanguageToggleCount = 0;
 uint64_t sStudyEnterCount = 0;
+uint64_t sStudyNavigationCount = 0;
+uint64_t sSaveToggleCount = 0;
 
 bool sRomCompatibilityChecked = false;
 
@@ -231,7 +233,14 @@ void HandleStudyModeInput(PlayState* play, MessageContext* msgCtx, Input* input)
             sSelectedTokenIndex = std::max(sSelectedTokenIndex - 1, 0);
         }
         if (sSelectedTokenIndex != previousIndex) {
+            sStudyNavigationCount++;
             RecordTokenEncounter(sSelectedTokenIndex);
+        }
+
+        if (CHECK_BTN_ALL(input->press.button, BTN_DUP)) {
+            JPAssist::JPAssistOverlay_ScrollStudy(-80.0f);
+        } else if (CHECK_BTN_ALL(input->press.button, BTN_DDOWN)) {
+            JPAssist::JPAssistOverlay_ScrollStudy(80.0f);
         }
 
         // "C-Right: add or remove the word from the study list" (design
@@ -239,6 +248,7 @@ void HandleStudyModeInput(PlayState* play, MessageContext* msgCtx, Input* input)
         // an explicit and infrequent action rather than something that
         // fires on every navigation press.
         if (CHECK_BTN_ALL(input->press.button, BTN_CRIGHT)) {
+            sSaveToggleCount++;
             int index = std::min(sSelectedTokenIndex, static_cast<int>(tokens.size()) - 1);
             const std::string& tokenId = tokens[index].Id();
             JPAssist::StudyPersistence_ToggleSaved(tokenId);
@@ -253,8 +263,8 @@ void HandleStudyModeInput(PlayState* play, MessageContext* msgCtx, Input* input)
     // our own exit binding above, but it returns before reaching here, so
     // clearing it too is just defensive - Message_ShouldAdvance's
     // SkipText-cvar branch reads cur.button for B, not just press.button.
-    input->press.button &= ~(BTN_A | BTN_B | BTN_CUP | BTN_R | BTN_DLEFT | BTN_DRIGHT | BTN_CRIGHT);
-    input->cur.button &= ~(BTN_A | BTN_B | BTN_CUP | BTN_R | BTN_DLEFT | BTN_DRIGHT | BTN_CRIGHT);
+    input->press.button &= ~(BTN_A | BTN_B | BTN_CUP | BTN_R | BTN_DUP | BTN_DDOWN | BTN_DLEFT | BTN_DRIGHT | BTN_CRIGHT);
+    input->cur.button &= ~(BTN_A | BTN_B | BTN_CUP | BTN_R | BTN_DUP | BTN_DDOWN | BTN_DLEFT | BTN_DRIGHT | BTN_CRIGHT);
 
     DrawStudyCard();
 }
@@ -602,6 +612,8 @@ RuntimeStatus JPAssist_GetRuntimeStatus() {
     status.selectedTokenIndex = sSelectedTokenIndex;
     status.languageToggleCount = sLanguageToggleCount;
     status.studyEnterCount = sStudyEnterCount;
+    status.studyNavigationCount = sStudyNavigationCount;
+    status.saveToggleCount = sSaveToggleCount;
     if (const StudyPage* page = CurrentStudyPage(); page != nullptr) {
         status.currentPageTokenCount = static_cast<int>(page->tokens.size());
     }

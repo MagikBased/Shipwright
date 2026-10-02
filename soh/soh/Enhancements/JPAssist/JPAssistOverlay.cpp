@@ -27,6 +27,7 @@ struct OverlayState {
     bool saved = false;
     int encounterCount = 0;
     bool showEnglishSentence = false;
+    float pendingStudyScroll = 0.0f;
 };
 
 OverlayState sState;
@@ -113,6 +114,11 @@ class JPAssistOverlayWindow final : public Ship::GuiWindow {
         ImGui::TextColored(ImVec4(0.45f, 0.85f, 1.0f, 1.0f), "STUDY MODE  %d/%d", selected + 1,
                            static_cast<int>(sState.studyPage.tokens.size()));
         ImGui::Separator();
+
+        // Keep the controls visible while allowing long sentences, token
+        // rows, definitions, and notes to scroll within the fixed-size card.
+        const float footerHeight = ImGui::GetTextLineHeightWithSpacing() * 2.0f + ImGui::GetStyle().ItemSpacing.y;
+        ImGui::BeginChild("JPAssistStudyContent", ImVec2(0.0f, -footerHeight), false);
         ImGui::PushTextWrapPos(0.0f);
         const std::string& sentence = sState.showEnglishSentence ? sState.studyPage.english : sState.studyPage.japanese;
         ImGui::TextUnformatted(sentence.c_str());
@@ -148,9 +154,16 @@ class JPAssistOverlayWindow final : public Ship::GuiWindow {
         }
         ImGui::PopTextWrapPos();
         ImGui::Spacing();
+        if (sState.pendingStudyScroll != 0.0f) {
+            ImGui::SetScrollY(std::clamp(ImGui::GetScrollY() + sState.pendingStudyScroll, 0.0f,
+                                         ImGui::GetScrollMaxY()));
+            sState.pendingStudyScroll = 0.0f;
+        }
+        ImGui::EndChild();
+        ImGui::Separator();
         ImGui::TextDisabled("%s  Seen %d time%s", sState.saved ? "Saved to study list" : "C-Right: save word",
                             sState.encounterCount, sState.encounterCount == 1 ? "" : "s");
-        ImGui::TextDisabled("D-Left/Right: word   L/Z: language   R/B: close");
+        ImGui::TextDisabled("D-L/R: word  D-U/D: scroll  L/Z: language  R/B: close");
         restoreFont();
     }
 };
@@ -180,12 +193,21 @@ void JPAssistOverlay_ShowDialogue(const std::string& languageLabel, const std::s
 
 void JPAssistOverlay_ShowStudy(const StudyPage& page, int selectedTokenIndex, bool saved, int encounterCount,
                                bool showEnglishSentence) {
+    if (sState.mode != OverlayMode::Study) {
+        sState.pendingStudyScroll = -100000.0f;
+    }
     sState.mode = OverlayMode::Study;
     sState.studyPage = page;
     sState.selectedTokenIndex = selectedTokenIndex;
     sState.saved = saved;
     sState.encounterCount = encounterCount;
     sState.showEnglishSentence = showEnglishSentence;
+}
+
+void JPAssistOverlay_ScrollStudy(float pixels) {
+    if (sState.mode == OverlayMode::Study) {
+        sState.pendingStudyScroll += pixels;
+    }
 }
 
 void JPAssistOverlay_Hide() {

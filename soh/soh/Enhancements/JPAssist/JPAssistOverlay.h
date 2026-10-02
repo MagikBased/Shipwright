@@ -20,6 +20,7 @@ void JPAssistOverlay_ShowDialogue(const std::string& languageLabel, const std::s
 // Anki-like card. The manager owns navigation; the overlay is presentation-only.
 void JPAssistOverlay_ShowStudy(const StudyPage& page, int selectedTokenIndex, bool saved, int encounterCount,
                                bool showEnglishSentence);
+void JPAssistOverlay_ScrollStudy(float pixels);
 void JPAssistOverlay_Hide();
 
 } // namespace JPAssist

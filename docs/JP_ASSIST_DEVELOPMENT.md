@@ -10,8 +10,9 @@ boundary so deferred testing can start from a known point.
 - Corpus-backed Japanese and English page display without changing the save's
   global language or mutating the active message context.
 - R enters Study Mode on a Japanese, non-choice page with token data.
-- D-Left/D-Right select occurrences; C-Right saves a vocabulary item; R or B
-  closes the panel. Native dialogue advance inputs are consumed while focused.
+- D-Left/D-Right select occurrences; D-Up/D-Down scroll long cards; C-Right
+  saves a vocabulary item; R or B closes the panel. Native dialogue advance
+  inputs are consumed while focused.
 - Frame-safe ImGui dialogue overlay and Anki-style study card.
 - Japanese overlay text uses Shipwright's bundled Noto Sans Japanese font and
   logs a graceful fallback warning if the asset is unavailable.

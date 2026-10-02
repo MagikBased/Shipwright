@@ -9,8 +9,9 @@ not create or modify a normal save. Start from any loaded scene, then open
 
 1. Select **Start temporary debug session**. The lab initializes Shipwright's
    debug save and marks it as temporary (`fileNum 0xFF`).
-2. Pick a scenario and choose **Load scenario** for inspection or **Run smoke
-   check** for the automated warp/message/corpus assertions.
+2. Pick a scenario and choose **Load scenario** for inspection, **Run smoke
+   check** for one automated check, or **Run all smoke checks** for the full
+   sequential suite.
 3. Exercise L or Z for the language toggle and R for Study Mode manually.
 4. Review `jp_assist_smoke_results.json` in the application directory for the
    last result per scenario.
@@ -35,6 +36,7 @@ jpassist_warp <entrance-id> [profile]
 jpassist_message <text-id> [jpn|eng]
 jpassist_scenario <scenario-id>
 jpassist_smoke <scenario-id>
+jpassist_smoke_all
 jpassist_status
 ```
 
@@ -42,6 +44,11 @@ jpassist_status
 `jpassist_message` opens any table message in the current scene. A scenario
 combines both operations and can additionally set room, age, time, position,
 yaw, progression, and assertions.
+
+Use ordinary textbox messages for automated scenarios. Messages containing
+the ocarina control code depend on actor-driven ocarina setup and are unsafe to
+inject as standalone textboxes; they require a manual test through their normal
+gameplay interaction.
 
 ## Unit tests
 
@@ -59,6 +66,9 @@ The first configure may download GoogleTest if it is not installed locally.
 ## Automation boundary
 
 Smoke checks cover scene transition, message dispatch, JP Assist observation,
-corpus lookup, and expected page/token/choice metadata. Controller bindings,
-input consumption, text layout, Japanese glyph rendering, and visual overlap
-still require an in-game manual pass.
+corpus lookup, expected page/token/choice metadata, and the controller-glyph
+persistence regression. Controller bindings, input consumption, text layout,
+Japanese glyph rendering, and visual overlap still require an in-game manual
+pass. The Test Lab's live counters make L/Z toggles, Study Mode entries,
+D-Left/D-Right navigation, and C-Right save toggles directly observable;
+D-Up/D-Down scrolls long Study Mode content while the footer remains fixed.

@@ -51,7 +51,17 @@ struct SmokeState {
     bool validate = false;
 };
 
+struct SmokeSuiteState {
+    bool active = false;
+    size_t nextScenario = 0;
+    int passed = 0;
+    int failed = 0;
+    int advanceDelay = 0;
+    std::vector<std::string> failedScenarioIds;
+};
+
 SmokeState sSmoke;
+SmokeSuiteState sSuite;
 TestScenario sPendingScenario;
 int sSelectedScenario = 0;
 int sRawEntrance = 0x00BB;
@@ -175,7 +185,30 @@ void WriteSmokeResult(const TestScenario& scenario, bool passed, const std::stri
         { "corpusVersion", StudyRepository_GetCorpusVersion() },
     };
     std::ofstream output(path);
-    output << root.dump(2) << '\n';
+    output << root.dump(2, ' ', false, nlohmann::json::error_handler_t::replace) << '\n';
+}
+
+void WriteSuiteSummary() {
+    const std::string path = Ship::Context::GetPathRelativeToAppDirectory("jp_assist_smoke_results.json");
+    nlohmann::json root = nlohmann::json::object();
+    try {
+        if (std::filesystem::exists(path)) {
+            std::ifstream input(path);
+            input >> root;
+        }
+    } catch (...) {
+        root = nlohmann::json::object();
+    }
+    root["schemaVersion"] = 1;
+    root["lastSuite"] = {
+        { "passed", sSuite.passed },
+        { "failed", sSuite.failed },
+        { "total", sSuite.passed + sSuite.failed },
+        { "failedScenarioIds", sSuite.failedScenarioIds },
+        { "corpusVersion", StudyRepository_GetCorpusVersion() },
+    };
+    std::ofstream output(path);
+    output << root.dump(2, ' ', false, nlohmann::json::error_handler_t::replace) << '\n';
 }
 
 bool ValidateScenario(const TestScenario& scenario, std::string& detail) {
@@ -229,15 +262,93 @@ bool BeginScenario(const TestScenario& scenario, bool smoke, std::string& error)
     return true;
 }
 
+void FinishScenario(const TestScenario& scenario, bool passed, const std::string& detail) {
+    sSmoke.stage = passed ? SmokeStage::Passed : SmokeStage::Failed;
+    sSmoke.detail = detail;
+    if (sSmoke.validate) {
+        WriteSmokeResult(scenario, passed, detail);
+    }
+    if (sSuite.active) {
+        if (passed) {
+            sSuite.passed++;
+        } else {
+            sSuite.failed++;
+            sSuite.failedScenarioIds.push_back(scenario.id);
+        }
+        // Injected messages must finish their normal close path before another
+        // scene transition. Warping with an active message can leave animation
+        // requests pointing into the outgoing PlayState arena.
+        if (gPlayState != nullptr) {
+            Message_CloseTextbox(gPlayState);
+        }
+        sSuite.advanceDelay = 30;
+    }
+}
+
+bool StartSmokeSuite(std::string& error) {
+    const auto& scenarios = TestScenario_GetAll();
+    if (scenarios.empty()) {
+        error = "No Test Lab scenarios are loaded.";
+        return false;
+    }
+    sSuite = SmokeSuiteState{};
+    sSuite.active = true;
+    sSuite.nextScenario = 1;
+    if (!BeginScenario(scenarios.front(), true, error)) {
+        sSuite.active = false;
+        return false;
+    }
+    sSmoke.detail = fmt::format("Suite 1/{}: {}", scenarios.size(), scenarios.front().id);
+    return true;
+}
+
+bool AdvanceSmokeSuite() {
+    if (!sSuite.active || (sSmoke.stage != SmokeStage::Passed && sSmoke.stage != SmokeStage::Failed)) {
+        return false;
+    }
+    if (sSuite.advanceDelay-- > 0) {
+        return true;
+    }
+    if (gPlayState != nullptr && gPlayState->msgCtx.msgMode != MSGMODE_NONE) {
+        Message_CloseTextbox(gPlayState);
+        return true;
+    }
+
+    const auto& scenarios = TestScenario_GetAll();
+    if (sSuite.nextScenario >= scenarios.size()) {
+        sSuite.active = false;
+        const bool passed = sSuite.failed == 0;
+        sSmoke.stage = passed ? SmokeStage::Passed : SmokeStage::Failed;
+        sSmoke.detail = fmt::format("Suite complete: {} passed, {} failed", sSuite.passed, sSuite.failed);
+        WriteSuiteSummary();
+        return true;
+    }
+
+    const size_t index = sSuite.nextScenario++;
+    std::string error;
+    if (!BeginScenario(scenarios[index], true, error)) {
+        sSuite.failed++;
+        sSuite.failedScenarioIds.push_back(scenarios[index].id);
+        sSmoke.stage = SmokeStage::Failed;
+        sSmoke.detail = error;
+        sSuite.advanceDelay = 1;
+        return true;
+    }
+    sSmoke.detail = fmt::format("Suite {}/{}: {}", index + 1, scenarios.size(), scenarios[index].id);
+    return true;
+}
+
 void UpdateSmoke() {
+    if (AdvanceSmokeSuite()) {
+        return;
+    }
     if (sSmoke.stage != SmokeStage::WaitingForScene && sSmoke.stage != SmokeStage::WaitingForMessage) {
         return;
     }
     const TestScenario* scenario = &sPendingScenario;
     if (!sSceneInitializedAfterWarp || gPlayState == nullptr || GET_PLAYER(gPlayState) == nullptr) {
         if (--sSmoke.framesRemaining <= 0) {
-            sSmoke.stage = SmokeStage::Failed;
-            sSmoke.detail = "Timed out waiting for an active scene/player";
+            FinishScenario(*scenario, false, "Timed out waiting for an active scene/player");
         }
         return;
     }
@@ -262,13 +373,9 @@ void UpdateSmoke() {
             return;
         }
         const bool passed = ValidateScenario(*scenario, detail);
-        sSmoke.stage = passed ? SmokeStage::Passed : SmokeStage::Failed;
-        sSmoke.detail = detail;
-        WriteSmokeResult(*scenario, passed, detail);
+        FinishScenario(*scenario, passed, detail);
     } else if (--sSmoke.framesRemaining <= 0) {
-        sSmoke.stage = SmokeStage::Failed;
-        sSmoke.detail = "Timed out waiting for JP Assist to observe the requested message";
-        WriteSmokeResult(*scenario, false, sSmoke.detail);
+        FinishScenario(*scenario, false, "Timed out waiting for JP Assist to observe the requested message");
     }
 }
 
@@ -355,6 +462,23 @@ class TestLabWindow final : public Ship::GuiWindow {
                     sSmoke.stage = SmokeStage::Failed;
                 }
             }
+            ImGui::SameLine();
+            // Keep BeginDisabled/EndDisabled balanced even when clicking the button
+            // starts the suite and changes sSuite.active during this same frame.
+            const bool suiteWasActive = sSuite.active;
+            if (suiteWasActive) {
+                ImGui::BeginDisabled();
+            }
+            if (ImGui::Button("Run all smoke checks")) {
+                std::string error;
+                if (!StartSmokeSuite(error)) {
+                    sSmoke.detail = error;
+                    sSmoke.stage = SmokeStage::Failed;
+                }
+            }
+            if (suiteWasActive) {
+                ImGui::EndDisabled();
+            }
         }
 
         ImGui::SeparatorText("Arbitrary entrance/message");
@@ -385,15 +509,21 @@ class TestLabWindow final : public Ship::GuiWindow {
         const RuntimeStatus runtime = JPAssist_GetRuntimeStatus();
         ImGui::Text("Smoke: %s", StageLabel());
         ImGui::TextWrapped("%s", sSmoke.detail.c_str());
+        if (sSuite.active) {
+            ImGui::Text("Suite: %zu/%zu complete  (%d pass, %d fail)", sSuite.nextScenario - 1,
+                        TestScenario_GetAll().size(), sSuite.passed, sSuite.failed);
+        }
         ImGui::Text("Scene %s  entrance %#06x", gPlayState ? fmt::format("{:#04x}", gPlayState->sceneNum).c_str() : "--",
                     gSaveContext.entranceIndex);
         ImGui::Text("Text %#06x  page %d  tokens %d", runtime.textId, runtime.pageIndex,
                     runtime.currentPageTokenCount);
         ImGui::Text("Language %s  Study %s  token %d", runtime.requestedLanguage == LANGUAGE_JPN ? "JP" : "EN",
                     runtime.studyModeActive ? "active" : "closed", runtime.selectedTokenIndex);
-        ImGui::Text("Observed controls: language toggles %llu, Study entries %llu",
+        ImGui::Text("Observed controls: language %llu, Study %llu, navigation %llu, saves %llu",
                     static_cast<unsigned long long>(runtime.languageToggleCount),
-                    static_cast<unsigned long long>(runtime.studyEnterCount));
+                    static_cast<unsigned long long>(runtime.studyEnterCount),
+                    static_cast<unsigned long long>(runtime.studyNavigationCount),
+                    static_cast<unsigned long long>(runtime.saveToggleCount));
         ImGui::TextDisabled("Automated smoke verifies warp -> message -> corpus. L/Z, R, layout, and glyph appearance remain manual.");
     }
 };
@@ -433,6 +563,16 @@ int32_t SmokeCommand(std::shared_ptr<Ship::Console>, std::vector<std::string> ar
         return 1;
     }
     *output = "Smoke check started for " + scenario->id;
+    return 0;
+}
+
+int32_t SmokeAllCommand(std::shared_ptr<Ship::Console>, std::vector<std::string>, std::string* output) {
+    std::string error;
+    if (!StartSmokeSuite(error)) {
+        *output = error;
+        return 1;
+    }
+    *output = fmt::format("Started all {} JP Assist smoke scenarios", TestScenario_GetAll().size());
     return 0;
 }
 
@@ -539,6 +679,7 @@ void JPAssistTestLab_Register() {
     console->AddCommand("jpassist_message", { MessageCommand, "Open an arbitrary Japanese or English message." });
     console->AddCommand("jpassist_scenario", { ScenarioCommand, "Load a JP Assist Test Lab scenario." });
     console->AddCommand("jpassist_smoke", { SmokeCommand, "Run a JP Assist smoke scenario." });
+    console->AddCommand("jpassist_smoke_all", { SmokeAllCommand, "Run all JP Assist smoke scenarios." });
     console->AddCommand("jpassist_status", { StatusCommand, "Show JP Assist Test Lab/runtime status." });
 }
 

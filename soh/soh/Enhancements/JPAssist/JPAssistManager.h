@@ -14,6 +14,8 @@ struct RuntimeStatus {
     int currentPageTokenCount = 0;
     uint64_t languageToggleCount = 0;
     uint64_t studyEnterCount = 0;
+    uint64_t studyNavigationCount = 0;
+    uint64_t saveToggleCount = 0;
 };
 
 RuntimeStatus JPAssist_GetRuntimeStatus();
