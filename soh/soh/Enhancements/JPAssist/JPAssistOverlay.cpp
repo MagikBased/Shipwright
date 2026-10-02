@@ -106,8 +106,8 @@ class JPAssistOverlayWindow final : public Ship::GuiWindow {
         ImGui::BeginChild("JPAssistStudyContent", ImVec2(0.0f, 0.0f), false);
         if (ImGui::BeginTable("JPAssistStudyColumns", 2,
                               ImGuiTableFlags_SizingStretchProp | ImGuiTableFlags_BordersInnerV)) {
-            ImGui::TableSetupColumn("English", ImGuiTableColumnFlags_WidthStretch, 1.2f);
-            ImGui::TableSetupColumn("Word", ImGuiTableColumnFlags_WidthStretch, 0.8f);
+            ImGui::TableSetupColumn("English", ImGuiTableColumnFlags_WidthStretch, 0.9f);
+            ImGui::TableSetupColumn("Word", ImGuiTableColumnFlags_WidthStretch, 1.1f);
             ImGui::TableNextRow();
             ImGui::TableSetColumnIndex(0);
             ImGui::PushTextWrapPos(0.0f);
@@ -116,12 +116,25 @@ class JPAssistOverlayWindow final : public Ship::GuiWindow {
             ImGui::PopTextWrapPos();
 
             ImGui::TableSetColumnIndex(1);
+            const float headerRight = ImGui::GetCursorScreenPos().x + ImGui::GetContentRegionAvail().x;
             ImGui::TextColored(ImVec4(1.0f, 0.82f, 0.25f, 1.0f), "%s", token.surface.c_str());
             if (!token.reading.empty()) {
                 ImGui::SameLine();
                 ImGui::TextDisabled("[%s]", token.reading.c_str());
             }
-            ImGui::TextDisabled("%s", token.partOfSpeech.c_str());
+            if (!token.partOfSpeech.empty()) {
+                const float partOfSpeechWidth = ImGui::CalcTextSize(token.partOfSpeech.c_str()).x;
+                const float partOfSpeechX = headerRight - partOfSpeechWidth;
+                const float minimumGap = ImGui::GetStyle().ItemSpacing.x;
+                if (partOfSpeechX >= ImGui::GetItemRectMax().x + minimumGap) {
+                    const ImVec2 nextLineCursor = ImGui::GetCursorScreenPos();
+                    ImGui::SetCursorScreenPos(ImVec2(partOfSpeechX, ImGui::GetItemRectMin().y));
+                    ImGui::TextDisabled("%s", token.partOfSpeech.c_str());
+                    ImGui::SetCursorScreenPos(nextLineCursor);
+                } else {
+                    ImGui::TextDisabled("%s", token.partOfSpeech.c_str());
+                }
+            }
             ImGui::PushTextWrapPos(0.0f);
             ImGui::TextUnformatted(token.meaning.empty() ? "Definition pending review" : token.meaning.c_str());
             if (!token.note.empty()) {
