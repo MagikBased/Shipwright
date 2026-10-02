@@ -1047,6 +1047,11 @@ static void Message_DrawJPAssistNativeHighlight(PlayState* play, Gfx** gfxP) {
                 i++;
                 break;
             case MESSAGE_SPACE_JPN:
+                // The corpus parser decodes Shift-JIS 0x8140 as U+3000.
+                // Although the native renderer handles it as a spacing
+                // command rather than a textured glyph, it still occupies
+                // one normalized-text code point.
+                normalizedIndex++;
                 x += CVarGetInteger(CVAR_ENHANCEMENT("TextSpacing"), 6);
                 break;
             case MESSAGE_BACKGROUND_JPN:
