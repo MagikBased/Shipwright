@@ -19,6 +19,7 @@ struct StudyToken {
     std::string note;          // optional usage note
     uint32_t start = 0;        // Unicode code-point offset in the normalized page
     uint32_t length = 0;       // Unicode code-point length
+    std::string senseId;       // stable dictionary/context sense for cloud and Anki identity
 
     // Stable ID for persistence (design doc section 8.3: "Stable IDs should
     // derive from lemma, reading, and selected sense rather than list

@@ -81,6 +81,7 @@ bool StudyRepository_LoadCorpus(const std::string& explicitPath) {
                     token.note = tokenJson.value("note", "");
                     token.start = tokenJson.value("start", 0U);
                     token.length = tokenJson.value("length", 0U);
+                    token.senseId = tokenJson.value("senseId", "");
                     page.tokens.push_back(std::move(token));
                 }
                 pages.push_back(std::move(page));

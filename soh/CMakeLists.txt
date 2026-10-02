@@ -715,6 +715,17 @@ else()
     )
 endif()
 
+# JP Assist account sync uses libcurl for HTTPS on desktop platforms. Keep the
+# portable outbox/client available when curl is absent, but expose a clear
+# runtime status instead of attempting plaintext HTTP over SDL_net.
+if(NOT CMAKE_SYSTEM_NAME MATCHES "NintendoSwitch|CafeOS")
+    find_package(CURL QUIET)
+    if(CURL_FOUND)
+        list(APPEND ADDITIONAL_LIBRARY_DEPENDENCIES CURL::libcurl)
+        target_compile_definitions(${PROJECT_NAME} PRIVATE JPASSIST_HAS_CURL=1)
+    endif()
+endif()
+
 if(USE_ASAN)
     target_compile_options(libultraship PRIVATE -fsanitize=address)
     target_link_options(libultraship PRIVATE -fsanitize=address)
@@ -751,8 +762,8 @@ INSTALL(FILES $<TARGET_PDB_FILE:soh> DESTINATION ./debug COMPONENT ship)
 INSTALL(FILES ${CMAKE_BINARY_DIR}/soh/soh.o2r DESTINATION . COMPONENT ship)
 endif()
 
-find_program(CURL NAMES curl DOC "Path to the curl program.  Used to download files.")
-execute_process(COMMAND ${CURL} -sSfL https://raw.githubusercontent.com/mdqinc/SDL_GameControllerDB/master/gamecontrollerdb.txt -o ${CMAKE_BINARY_DIR}/gamecontrollerdb.txt OUTPUT_VARIABLE RESULT)
+find_program(CURL_EXECUTABLE NAMES curl DOC "Path to the curl program. Used to download files.")
+execute_process(COMMAND ${CURL_EXECUTABLE} -sSfL https://raw.githubusercontent.com/mdqinc/SDL_GameControllerDB/master/gamecontrollerdb.txt -o ${CMAKE_BINARY_DIR}/gamecontrollerdb.txt OUTPUT_VARIABLE RESULT)
 
 if("${CMAKE_SYSTEM_NAME}" STREQUAL "Darwin")
 configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/macosx/Info.plist.in ${CMAKE_BINARY_DIR}/macosx/Info.plist @ONLY)

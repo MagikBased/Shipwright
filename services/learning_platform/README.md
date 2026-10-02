@@ -22,6 +22,12 @@ Open <http://127.0.0.1:8766>. Interactive API documentation is available at
 `services/learning_platform/var/` directory. Override it with
 `JP_ASSIST_PLATFORM_DB=/path/to/platform.sqlite3`.
 
+In Ship of Harkinian, open **Enhancements → JP Assist**, enable **Sync learning
+progress**, leave the local service URL as `http://127.0.0.1:8766`, and choose
+**Connect learning account**. Copy the displayed address and code, sign in to
+the local website, and approve the device. Offline events are retained in the
+game's `jp_assist_sync.json` and upload automatically after reconnection.
+
 Set `JP_ASSIST_COOKIE_SECURE=1` behind HTTPS in any non-local deployment. The
 MVP is not production-ready until HTTPS termination, email verification,
 password recovery, rate limiting, backups, monitoring, and deployment secrets
@@ -43,7 +49,8 @@ Content-Type: application/json
 ```
 
 It shows the returned `userCode`, polls `/v1/device-pairings/token` using the
-opaque `deviceCode`, and securely stores the one-time returned `deviceToken`.
+opaque `deviceCode`, and stores the one-time returned `deviceToken` in a private
+local state file (`0600` on POSIX systems).
 The player approves the user code while signed into the website. A pending
 claim receives HTTP 428 and should respect the returned polling interval.
 

@@ -30,6 +30,11 @@ boundary so deferred testing can start from a known point.
   and message controls, manifest-backed scenarios, automated controller/focus
   smoke checks, result reporting, and engine-independent unit tests. See
   `JP_ASSIST_TESTING.md`.
+- Optional learning-account sync with device-code pairing, a durable offline
+  event outbox, idempotent background uploads, cross-game vocabulary/gameplay
+  statistics, and a server-generated saved-word manifest for the existing
+  stable-GUID Anki builder. Extracted dialogue remains local. See
+  `LEARNING_PLATFORM_MVP.md` and `services/learning_platform/README.md`.
 
 ## Latest local corpus build
 
@@ -63,6 +68,10 @@ No gameplay claims should be made until these are exercised in-game:
    hashes match the supported ROM revision; missing/malformed files fail safely.
 5. Persistence/Anki: reload, malformed JSON, interrupted writes, corpus upgrades,
    saved-only export, repeat generation, and Anki update-versus-duplicate behavior.
+6. Account sync: approve/revoke/re-pair from the in-game settings, launch while
+   offline, reconnect with a queued outbox, and verify production HTTPS and OS
+   credential-store integration. The transport/store logic and API are covered
+   automatically; these remaining checks concern the live UI and deployment.
 
 ## Cross-game direction
 

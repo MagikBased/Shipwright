@@ -9,6 +9,7 @@
 #include "JPAssistNativeHighlight.h"
 #include "JPAssistOverlay.h"
 #include "JPAssistTestLab.h"
+#include "LearningSyncRuntime.h"
 #include "MessageParser.h"
 #include "NativePageTracker.h"
 #include "StudyPersistence.h"
@@ -27,7 +28,9 @@
 
 #include <libultraship/bridge/consolevariablebridge.h>
 #include <soh/SohGui/SohMenu.h>
+#include <soh/SohGui/SohGui.hpp>
 #include <soh/SohGui/UIWidgetOptions.hpp>
+#include <soh/SohGui/UIWidgets.hpp>
 #include <soh/cvar_prefixes.h>
 
 #include <ship/debug/Console.h>
@@ -149,6 +152,7 @@ void RecordTokenEncounter(int index) {
     const auto& tokens = page->tokens;
     index = std::min(index, static_cast<int>(tokens.size()) - 1);
     JPAssist::StudyPersistence_RecordEncounter(tokens[index].Id());
+    JPAssist::LearningSync_RecordWordEvent("word_encountered", tokens[index], sTrackedTextId, sCurrentPageIndex);
 }
 
 // Redraws the card for the currently selected token every frame Study Mode
@@ -201,6 +205,7 @@ void HandleStudyModeInput(PlayState* play, MessageContext* msgCtx, Input* input)
                 input->cur.button &= ~(BTN_DUP | BTN_DDOWN);
             }
             RecordTokenEncounter(sSelectedTokenIndex);
+            JPAssist::LearningSync_RecordDialogueEvent("study_mode_opened", sTrackedTextId, sCurrentPageIndex);
             input->press.button &= ~BTN_R;
             input->cur.button &= ~BTN_R;
             DrawStudyCard();
@@ -262,8 +267,11 @@ void HandleStudyModeInput(PlayState* play, MessageContext* msgCtx, Input* input)
             const std::string& tokenId = tokens[index].Id();
             JPAssist::StudyPersistence_ToggleSaved(tokenId);
             JPAssist::StudyPersistence_Save();
+            const bool saved = JPAssist::StudyPersistence_IsSaved(tokenId);
+            JPAssist::LearningSync_RecordWordEvent(saved ? "word_saved" : "word_unsaved", tokens[index],
+                                                   sTrackedTextId, sCurrentPageIndex);
             SPDLOG_INFO("[JPAssist] Token {} {}", tokenId,
-                        JPAssist::StudyPersistence_IsSaved(tokenId) ? "saved" : "unsaved");
+                        saved ? "saved" : "unsaved");
         }
     }
 
@@ -284,6 +292,9 @@ void HandleStudyModeInput(PlayState* play, MessageContext* msgCtx, Input* input)
 // English text for whatever textId just opened. Prefer the normalized corpus,
 // which retains choice text; use the raw-table parser only as a fallback.
 void RecordHistoryForOpenedMessage(uint16_t textId) {
+    // Account sync receives stable IDs and counts only. The rendered Japanese
+    // and English dialogue remains in the game's local corpus/history.
+    JPAssist::LearningSync_RecordDialogueEvent("dialogue_seen", textId, 0);
     std::string text;
     if (const JPAssist::StudyPage* page = JPAssist::StudyRepository_FindPage(textId, 0);
         page != nullptr && !page->english.empty()) {
@@ -443,6 +454,59 @@ void RegisterJPAssistMenu() {
         .WindowName("JP Assist Dialogue History")
         .Options(UIWidgets::WindowButtonOptions().Tooltip(
             "Browse and search the 20 most recently opened Japanese and English dialogue lines."));
+
+    SohGui::mSohMenu->AddWidget(path, "Learning account (optional)", WIDGET_SEPARATOR_TEXT);
+    SohGui::mSohMenu->AddWidget(path, "Sync learning progress", WIDGET_CVAR_CHECKBOX)
+        .CVar(CVAR_ENHANCEMENT("JPAssist.AccountSync.Enabled"))
+        .Callback([](WidgetInfo&) { JPAssist::LearningSync_Configure(); })
+        .Options(UIWidgets::CheckboxOptions().DefaultValue(false).Tooltip(
+            "Synchronize content-neutral word IDs, encounter counts, and saved state. Dialogue text stays local."));
+    SohGui::mSohMenu->AddWidget(path, "Service URL", WIDGET_CUSTOM).CustomFunction([](WidgetInfo& info) {
+        ImGui::TextUnformatted(info.name.c_str());
+        if (UIWidgets::CVarInputString(
+                "##JPAssistAccountEndpoint", CVAR_ENHANCEMENT("JPAssist.AccountSync.Endpoint"),
+                UIWidgets::InputOptions()
+                    .Color(THEME_COLOR)
+                    .PlaceholderText("http://127.0.0.1:8766")
+                    .DefaultValue("http://127.0.0.1:8766")
+                    .Size(ImVec2(ImGui::GetContentRegionAvail().x, 0))
+                    .LabelPosition(UIWidgets::LabelPositions::None))) {
+            JPAssist::LearningSync_Configure();
+        }
+    });
+    SohGui::mSohMenu->AddWidget(path, "Connect learning account", WIDGET_BUTTON)
+        .PreFunc([](WidgetInfo& info) {
+            const JPAssist::LearningSyncStatus status = JPAssist::LearningSync_GetStatus();
+            info.options->disabled = !status.enabled || !status.transportAvailable || status.connected || status.pairing;
+        })
+        .Callback([](WidgetInfo&) { JPAssist::LearningSync_BeginPairing(); })
+        .Options(UIWidgets::ButtonOptions().Tooltip(
+            "Request a short-lived code, then approve this game from the learning website. Your password is never "
+            "entered into the game."));
+    SohGui::mSohMenu->AddWidget(path, "LearningAccountStatus", WIDGET_CUSTOM)
+        .CustomFunction([](WidgetInfo&) {
+            const JPAssist::LearningSyncStatus status = JPAssist::LearningSync_GetStatus();
+            ImGui::TextWrapped("%s", status.message.empty() ? "Not connected" : status.message.c_str());
+            if (status.pairing) {
+                ImGui::Text("Code: %s", status.userCode.c_str());
+                ImGui::TextWrapped("Open: %s", status.verificationUrl.c_str());
+                if (UIWidgets::Button("Copy address and code##JPAssistPairing",
+                                      UIWidgets::ButtonOptions().Color(THEME_COLOR))) {
+                    const std::string clipboard = status.verificationUrl + "\n" + status.userCode;
+                    ImGui::SetClipboardText(clipboard.c_str());
+                }
+            }
+            if (status.pendingEventCount != 0) {
+                ImGui::Text("Waiting to sync: %zu events", status.pendingEventCount);
+            }
+        })
+        .HideInSearch(true);
+    SohGui::mSohMenu->AddWidget(path, "Disconnect learning account", WIDGET_BUTTON)
+        .PreFunc([](WidgetInfo& info) {
+            const JPAssist::LearningSyncStatus status = JPAssist::LearningSync_GetStatus();
+            info.options->disabled = !status.connected && !status.pairing;
+        })
+        .Callback([](WidgetInfo&) { JPAssist::LearningSync_Disconnect(); });
 }
 
 // Console companion to the searchable GUI history browser. Keeping this
@@ -469,6 +533,7 @@ int32_t JPAssistHistoryCommand(std::shared_ptr<Ship::Console> console, std::vect
 void RegisterJPAssist() {
     JPAssist::StudyRepository_LoadCorpus();
     JPAssist::StudyPersistence_Load();
+    JPAssist::LearningSync_Initialize();
     JPAssist::JPAssistOverlay_Register();
     JPAssist::JPAssistHistory_Register();
     JPAssist::JPAssistTestLab_Register();

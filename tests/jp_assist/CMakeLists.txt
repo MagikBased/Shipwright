@@ -13,6 +13,8 @@ endif()
 
 add_executable(jpassist_tests
     test_dialogue_presentation.cpp
+    test_learning_sync_store.cpp
+    test_learning_sync_client.cpp
     test_message_parser.cpp
     test_native_highlight.cpp
     test_native_page_tracker.cpp
@@ -20,6 +22,8 @@ add_executable(jpassist_tests
     test_scenario_parser.cpp
     test_study_token.cpp
     ${CMAKE_SOURCE_DIR}/soh/soh/Enhancements/JPAssist/MessageParser.cpp
+    ${CMAKE_SOURCE_DIR}/soh/soh/Enhancements/JPAssist/LearningSyncStore.cpp
+    ${CMAKE_SOURCE_DIR}/soh/soh/Enhancements/JPAssist/LearningSyncClient.cpp
     ${CMAKE_SOURCE_DIR}/soh/soh/Enhancements/JPAssist/TestScenarioParser.cpp
 )
 

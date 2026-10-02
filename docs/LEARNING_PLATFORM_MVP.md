@@ -23,6 +23,17 @@ corpus.
 8. A local command combines that manifest with `runtime_data.json` and produces
    the existing stable-GUID `.apkg` deck.
 
+This slice is implemented. Ship of Harkinian has an opt-in account section in
+**Enhancements → JP Assist**. Its shared client persists an atomic offline
+outbox, pairs without collecting account credentials, performs HTTP work on a
+background thread, retries with bounded exponential backoff, and acknowledges
+both newly accepted and already-seen event IDs. The game adapter emits stable
+message, word, sense, game, adapter, and corpus-version identifiers.
+Remote service URLs require HTTPS; cleartext HTTP is accepted only for the
+loopback development service. Pairing state and device credentials are bound
+to the service URL that issued them, so editing the URL requires an explicit
+disconnect/re-pair and cannot silently forward a token to another host.
+
 ## Privacy and copyright boundary
 
 The hosted service accepts identifiers and activity, not extracted dialogue:
@@ -45,6 +56,10 @@ payload to learning events without a separate content licensing decision.
 - Pairing codes expire and can be claimed once.
 - A mod receives a revocable device token and never receives the account
   password or website session.
+- The desktop client keeps that token in `jp_assist_sync.json`; POSIX builds
+  restrict the file to the current user (`0600`). A production follow-up can
+  move this secret behind each operating system's credential store without
+  changing the pairing or event APIs.
 
 Email verification, password recovery, third-party login, administration, and
 rate limiting are deployment requirements after the local MVP proves the
@@ -90,8 +105,11 @@ Adapters map game state to a game-neutral envelope:
 ```
 
 The shared client is responsible for durable queueing, batching, exponential
-backoff, and acknowledging only accepted or duplicate event IDs. It must never
-perform network I/O on the game/render thread.
+backoff, and acknowledging only accepted or duplicate event IDs. It never
+performs network I/O on the game/render thread. `LearningSyncClient` and
+`LearningSyncStore` are game-neutral; `LearningSyncRuntime` is the current SoH
+adapter. Future recompilation mods can reuse the former two and supply their
+own event mapping, storage path, UI, and game/adapter IDs.
 
 ## Deferred deliberately
 
