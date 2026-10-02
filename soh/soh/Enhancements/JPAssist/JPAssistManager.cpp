@@ -4,6 +4,7 @@
 #include <spdlog/spdlog.h>
 
 #include "DialogueRepository.h"
+#include "DialoguePresentation.h"
 #include "JPAssistHistory.h"
 #include "JPAssistOverlay.h"
 #include "JPAssistTestLab.h"
@@ -44,6 +45,90 @@ extern std::shared_ptr<SohMenu> mSohMenu;
 }
 
 namespace {
+
+class SohDialoguePresentationHost final : public DialogueStudy::PresentationHost {
+  public:
+    DialogueStudy::PresentationCapabilities GetCapabilities() const override {
+        // SoH currently has a safe ImGui presentation path. Its native
+        // decoder changes MessageContext state, so native replacement stays
+        // disabled until a non-mutating host hook exists.
+        return {
+            .nativeTextReplacement = false,
+            .attachedPanel = true,
+            .dialogueAnchor = false,
+            .controllerGlyphs = false,
+        };
+    }
+
+    bool ShowNativeReplacement(std::string_view, std::string_view) override {
+        return false;
+    }
+
+    void ShowAttachedTranslation(std::string_view languageTag, std::string_view text) override {
+        JPAssist::JPAssistOverlay_ShowDialogue(std::string(languageTag), std::string(text));
+    }
+
+    void RestoreNativeDialogue() override {
+        // The current adapter never mutates native dialogue.
+    }
+
+    void HideDialoguePresentation() override {
+        JPAssist::JPAssistOverlay_Hide();
+    }
+};
+
+SohDialoguePresentationHost sPresentationHost;
+bool sNativeFallbackReported = false;
+
+DialogueStudy::DialogueDisplayMode GetDialogueDisplayMode() {
+    const int32_t configured = CVarGetInteger(CVAR_ENHANCEMENT("JPAssist.DialogueDisplayMode"),
+                                               static_cast<int32_t>(
+                                                   DialogueStudy::DialogueDisplayMode::AttachedTranslation));
+    switch (configured) {
+        case static_cast<int32_t>(DialogueStudy::DialogueDisplayMode::NativeSwap):
+            return DialogueStudy::DialogueDisplayMode::NativeSwap;
+        case static_cast<int32_t>(DialogueStudy::DialogueDisplayMode::JapaneseOnly):
+            return DialogueStudy::DialogueDisplayMode::JapaneseOnly;
+        case static_cast<int32_t>(DialogueStudy::DialogueDisplayMode::AttachedTranslation):
+        default:
+            return DialogueStudy::DialogueDisplayMode::AttachedTranslation;
+    }
+}
+
+DialogueStudy::PresentationPlan GetDialoguePresentationPlan() {
+    return DialogueStudy::ResolvePresentationPlan(GetDialogueDisplayMode(), sPresentationHost.GetCapabilities());
+}
+
+void HideDialoguePresentation() {
+    sPresentationHost.RestoreNativeDialogue();
+    sPresentationHost.HideDialoguePresentation();
+}
+
+void PresentAlternateDialogue(std::string_view languageTag, std::string_view text) {
+    const DialogueStudy::PresentationPlan plan = GetDialoguePresentationPlan();
+    if (plan.usedFallback && !sNativeFallbackReported) {
+        SPDLOG_WARN("[JPAssist] Native Swap is not supported by the SoH presentation adapter yet; using the attached "
+                    "translation panel");
+        sNativeFallbackReported = true;
+    } else if (!plan.usedFallback) {
+        sNativeFallbackReported = false;
+    }
+
+    switch (plan.surface) {
+        case DialogueStudy::DialogueSurface::NativeTextbox:
+            if (!sPresentationHost.ShowNativeReplacement(languageTag, text)) {
+                sPresentationHost.ShowAttachedTranslation(languageTag, text);
+            }
+            break;
+        case DialogueStudy::DialogueSurface::AttachedPanel:
+            sPresentationHost.ShowAttachedTranslation(languageTag, text);
+            break;
+        case DialogueStudy::DialogueSurface::Hidden:
+        default:
+            HideDialoguePresentation();
+            break;
+    }
+}
 
 // Independent from gSaveContext.language (design doc section 4.2: display
 // language must not leak into the player's menu-language setting). Starts
@@ -304,11 +389,16 @@ void HandleStudyModeInput(PlayState* play, MessageContext* msgCtx, Input* input)
 void PostAlternateLanguagePage(uint16_t textId, uint8_t language) {
     GetOverlay()->ClearNotifications();
 
+    if (GetDialoguePresentationPlan().surface == DialogueStudy::DialogueSurface::Hidden) {
+        HideDialoguePresentation();
+        return;
+    }
+
     if (const JPAssist::StudyPage* page = JPAssist::StudyRepository_FindPage(textId, sCurrentPageIndex);
         page != nullptr) {
         const std::string& text = language == LANGUAGE_JPN ? page->japanese : page->english;
         if (!text.empty()) {
-            JPAssist::JPAssistOverlay_ShowDialogue(language == LANGUAGE_JPN ? "Japanese" : "English", text);
+            PresentAlternateDialogue(language == LANGUAGE_JPN ? "JP" : "EN", text);
             return;
         }
     }
@@ -321,7 +411,7 @@ void PostAlternateLanguagePage(uint16_t textId, uint8_t language) {
                     "surface \"Translation unavailable\")",
                     textId, (language == LANGUAGE_JPN) ? "Japanese" : "English");
         GetOverlay()->TextDrawNotification(3.0f, true, "Translation unavailable");
-        JPAssist::JPAssistOverlay_Hide();
+        HideDialoguePresentation();
         return;
     }
 
@@ -346,20 +436,25 @@ void PostAlternateLanguagePage(uint16_t textId, uint8_t language) {
     const auto& page = structure.pages[clampedPage];
 
     if (language == LANGUAGE_JPN) {
-        JPAssist::JPAssistOverlay_Hide();
+        HideDialoguePresentation();
         GetOverlay()->TextDrawNotification(4.0f, true, "%s",
                                            page.isChoice ? "(choice - text not yet decoded)"
                                                          : "(Japanese text not yet decoded)");
     } else if (page.isChoice) {
-        JPAssist::JPAssistOverlay_Hide();
+        HideDialoguePresentation();
         GetOverlay()->TextDrawNotification(4.0f, true, "(choice)");
     } else if (!page.englishText.empty()) {
-        JPAssist::JPAssistOverlay_ShowDialogue("English", page.englishText);
+        PresentAlternateDialogue("EN", page.englishText);
     }
 }
 
 void HandleLanguageTogglePress(PlayState* play) {
     MessageContext* msgCtx = &play->msgCtx;
+
+    if (!sStudyModeActive && !DialogueStudy::AllowsOrdinaryDialogueToggle(GetDialogueDisplayMode())) {
+        GetOverlay()->TextDrawNotification(2.5f, true, "English reference is available in Study Mode");
+        return;
+    }
 
     sRequestedLanguage = (sRequestedLanguage == LANGUAGE_JPN) ? LANGUAGE_ENG : LANGUAGE_JPN;
     sLanguageToggleCount++;
@@ -373,7 +468,7 @@ void HandleLanguageTogglePress(PlayState* play) {
         if (sStudyModeActive) {
             DrawStudyCard();
         } else {
-            JPAssist::JPAssistOverlay_Hide();
+            HideDialoguePresentation();
         }
         return;
     }
@@ -434,6 +529,16 @@ void OnDialogMessage() {
     if (!sRequestedLanguageInitialized) {
         sRequestedLanguage = gSaveContext.language;
         sRequestedLanguageInitialized = true;
+    }
+
+    // Japanese Only is a study-first mode: ordinary dialogue stays on the
+    // source language and L/Z is reserved for switching the sentence inside
+    // Study Mode. Reset any English selection left over from another mode so
+    // changing this preference cannot accidentally lock R entry.
+    if (!sStudyModeActive && GetDialogueDisplayMode() == DialogueStudy::DialogueDisplayMode::JapaneseOnly) {
+        sRequestedLanguage = LANGUAGE_JPN;
+        sShowingAlternateLanguage = false;
+        HideDialoguePresentation();
     }
 
     uint8_t msgMode = msgCtx->msgMode;
@@ -576,6 +681,20 @@ void RegisterJPAssistMenu() {
         .Options(UIWidgets::CheckboxOptions().DefaultValue(true).Tooltip(
             "Master toggle for the JP Assist language-learning tools (L/Z language toggle, Study Mode). "
             "Disabling this leaves the game exactly as if the mod weren't installed."));
+    SohGui::mSohMenu->AddWidget(path, "Dialogue display", WIDGET_CVAR_COMBOBOX)
+        .CVar(CVAR_ENHANCEMENT("JPAssist.DialogueDisplayMode"))
+        .Options(UIWidgets::ComboboxOptions()
+                     .ComboMap({
+                         { static_cast<int32_t>(DialogueStudy::DialogueDisplayMode::NativeSwap),
+                           "Native swap (adapter preview)" },
+                         { static_cast<int32_t>(DialogueStudy::DialogueDisplayMode::AttachedTranslation),
+                           "Attached translation" },
+                         { static_cast<int32_t>(DialogueStudy::DialogueDisplayMode::JapaneseOnly),
+                           "Japanese only (English in Study Mode)" },
+                     })
+                     .DefaultIndex(static_cast<uint32_t>(DialogueStudy::DialogueDisplayMode::AttachedTranslation))
+                     .Tooltip("Choose how English reference text appears. Native Swap currently falls back to the "
+                              "attached panel until the SoH adapter has a safe native-text replacement hook."));
     SohGui::mSohMenu->AddWidget(path, "Enable L as a Language Toggle alias", WIDGET_CVAR_CHECKBOX)
         .CVar(CVAR_ENHANCEMENT("JPAssist.EnableLAlias"))
         .Options(UIWidgets::CheckboxOptions().DefaultValue(true).Tooltip(
@@ -660,6 +779,10 @@ RuntimeStatus JPAssist_GetRuntimeStatus() {
     status.studyModeActive = sStudyModeActive;
     status.choiceSelectionFrozen = sStudyModeActive && sFrozenChoiceValid;
     status.selectedTokenIndex = sSelectedTokenIndex;
+    status.displayMode = GetDialogueDisplayMode();
+    const DialogueStudy::PresentationPlan presentationPlan = GetDialoguePresentationPlan();
+    status.dialogueSurface = presentationPlan.surface;
+    status.displayModeFallback = presentationPlan.usedFallback;
     status.languageToggleCount = sLanguageToggleCount;
     status.studyEnterCount = sStudyEnterCount;
     status.studyNavigationCount = sStudyNavigationCount;

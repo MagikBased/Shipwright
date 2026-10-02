@@ -75,8 +75,9 @@ class JPAssistOverlayWindow final : public Ship::GuiWindow {
         ImGui::PushStyleColor(ImGuiCol_WindowBg,
                               ImVec4(0.035f, 0.045f, 0.065f,
                                      CVarGetFloat(CVAR_ENHANCEMENT("JPAssist.CardOpacity"), 0.92f)));
-        ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.35f, 0.70f, 0.90f, 0.85f));
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 8.0f * scale);
+        ImGui::PushStyleColor(ImGuiCol_Border, study ? ImVec4(0.35f, 0.70f, 0.90f, 0.85f)
+                                                     : ImVec4(0.35f, 0.38f, 0.45f, 0.45f));
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, (study ? 8.0f : 3.0f) * scale);
         ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 1.0f);
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(16.0f * scale, 14.0f * scale));
         ImGui::SetNextWindowBgAlpha(1.0f);

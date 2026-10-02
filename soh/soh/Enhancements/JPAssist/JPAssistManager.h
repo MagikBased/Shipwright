@@ -2,6 +2,8 @@
 
 #include <cstdint>
 
+#include "DialoguePresentation.h"
+
 namespace JPAssist {
 
 struct RuntimeStatus {
@@ -16,6 +18,9 @@ struct RuntimeStatus {
     int selectedTokenIndex = 0;
     int currentPageTokenCount = 0;
     bool selectedTokenSaved = false;
+    DialogueStudy::DialogueDisplayMode displayMode = DialogueStudy::DialogueDisplayMode::AttachedTranslation;
+    DialogueStudy::DialogueSurface dialogueSurface = DialogueStudy::DialogueSurface::Hidden;
+    bool displayModeFallback = false;
     uint64_t languageToggleCount = 0;
     uint64_t studyEnterCount = 0;
     uint64_t studyNavigationCount = 0;

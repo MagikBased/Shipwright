@@ -12,6 +12,7 @@ if(NOT GTest_FOUND)
 endif()
 
 add_executable(jpassist_tests
+    test_dialogue_presentation.cpp
     test_message_parser.cpp
     test_overlay_layout.cpp
     test_scenario_parser.cpp

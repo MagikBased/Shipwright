@@ -165,6 +165,10 @@ Important state rules:
 
 ## 6. Technical design
 
+The cross-game architecture and host capability contract are documented in
+[`DIALOGUE_STUDY_PLATFORM.md`](DIALOGUE_STUDY_PLATFORM.md). JP Assist is the
+OoT adapter and content pack, not the boundary of the reusable design.
+
 ### 6.1 Proposed components
 
 Add a self-contained enhancement under:
@@ -480,6 +484,7 @@ Writes should be atomic: write a temporary file, flush it, then replace the prio
 Add a JP Assist section to the Enhancements menu:
 
 - Enable JP Assist.
+- Dialogue display: Native Swap, Attached Translation, or Japanese Only.
 - Default dialogue language.
 - Enable L as a Language Toggle alias.
 - Enable Z as a Language Toggle alias.
@@ -665,7 +670,7 @@ Built as `scripts/jp_assist/{extract_dialogue,message_codes,tokenize_dialogue,ov
 ## 16. Open decisions
 
 1. Should C-Right save the selected word, or would another Study Mode input be more comfortable?
-2. Should English replace the native text or appear as a temporary overlay?
+2. Which additional SoH render hook can support Native Swap without mutating the live message decoder state?
 3. Should cutscenes freeze completely while the study panel is open?
 4. Should particles and punctuation be selectable by default?
 5. Should definitions appear immediately or use Anki-style reveal by default?

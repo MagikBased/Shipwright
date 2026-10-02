@@ -64,6 +64,13 @@ No gameplay claims should be made until these are exercised in-game:
 5. Persistence/Anki: reload, malformed JSON, interrupted writes, corpus upgrades,
    saved-only export, repeat generation, and Anki update-versus-duplicate behavior.
 
+## Cross-game direction
+
+The game-neutral presentation contract and adapter roadmap live in
+[`DIALOGUE_STUDY_PLATFORM.md`](DIALOGUE_STUDY_PLATFORM.md). New game ports
+should implement the host capability interface rather than copying SoH's
+message-state or ImGui assumptions.
+
 ## Known implementation limits
 
 - The overlay mirrors alternate text instead of replacing glyphs inside the

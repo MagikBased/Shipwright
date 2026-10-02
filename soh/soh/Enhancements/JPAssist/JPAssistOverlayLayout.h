@@ -22,7 +22,9 @@ inline OverlayLayout JPAssistOverlay_ComputeLayout(float workX, float workY, flo
     const float margin = std::min(24.0f * scale, maxMargin);
     const float availableWidth = std::max(safeWidth - margin * 2.0f, 1.0f);
     const float availableHeight = std::max(safeHeight - margin * 2.0f, 1.0f);
-    const float width = std::min((studyMode ? 420.0f : 760.0f) * scale, availableWidth);
+    // The dialogue panel follows the native textbox's broad horizontal
+    // silhouette; Study Mode remains a compact side card.
+    const float width = std::min((studyMode ? 420.0f : 960.0f) * scale, availableWidth);
     const float height = std::min((studyMode ? 460.0f : 120.0f) * scale, availableHeight);
 
     return {

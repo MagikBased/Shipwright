@@ -763,6 +763,30 @@ const char* StageLabel() {
     }
 }
 
+const char* DisplayModeLabel(DialogueStudy::DialogueDisplayMode mode) {
+    switch (mode) {
+        case DialogueStudy::DialogueDisplayMode::NativeSwap:
+            return "native swap";
+        case DialogueStudy::DialogueDisplayMode::JapaneseOnly:
+            return "Japanese only";
+        case DialogueStudy::DialogueDisplayMode::AttachedTranslation:
+        default:
+            return "attached translation";
+    }
+}
+
+const char* DialogueSurfaceLabel(DialogueStudy::DialogueSurface surface) {
+    switch (surface) {
+        case DialogueStudy::DialogueSurface::NativeTextbox:
+            return "native textbox";
+        case DialogueStudy::DialogueSurface::AttachedPanel:
+            return "attached panel";
+        case DialogueStudy::DialogueSurface::Hidden:
+        default:
+            return "hidden";
+    }
+}
+
 class TestLabWindow final : public Ship::GuiWindow {
   public:
     using GuiWindow::GuiWindow;
@@ -878,6 +902,8 @@ class TestLabWindow final : public Ship::GuiWindow {
                     runtime.currentPageTokenCount);
         ImGui::Text("Language %s  Study %s  token %d", runtime.requestedLanguage == LANGUAGE_JPN ? "JP" : "EN",
                     runtime.studyModeActive ? "active" : "closed", runtime.selectedTokenIndex);
+        ImGui::Text("Display %s -> %s%s", DisplayModeLabel(runtime.displayMode),
+                    DialogueSurfaceLabel(runtime.dialogueSurface), runtime.displayModeFallback ? " (fallback)" : "");
         ImGui::Text("Choice page %s  choice %u  selection %s", runtime.currentPageIsChoice ? "yes" : "no",
                     runtime.choiceIndex, runtime.choiceSelectionFrozen ? "frozen" : "native");
         ImGui::Text("Observed controls: language %llu, Study %llu, navigation %llu, saves %llu",
@@ -1013,10 +1039,11 @@ int32_t MessageCommand(std::shared_ptr<Ship::Console>, std::vector<std::string> 
 
 int32_t StatusCommand(std::shared_ptr<Ship::Console>, std::vector<std::string>, std::string* output) {
     const RuntimeStatus status = JPAssist_GetRuntimeStatus();
-    *output = fmt::format("{}: {}; text={:#06x} page={} tokens={} language={} study={} temporary={}", StageLabel(),
+    *output = fmt::format("{}: {}; text={:#06x} page={} tokens={} language={} display={} surface={}{} study={} temporary={}", StageLabel(),
                           sSmoke.detail, status.textId, status.pageIndex, status.currentPageTokenCount,
-                          status.requestedLanguage == LANGUAGE_JPN ? "JP" : "EN", status.studyModeActive,
-                          IsTemporarySession());
+                          status.requestedLanguage == LANGUAGE_JPN ? "JP" : "EN", DisplayModeLabel(status.displayMode),
+                          DialogueSurfaceLabel(status.dialogueSurface), status.displayModeFallback ? "(fallback)" : "",
+                          status.studyModeActive, IsTemporarySession());
     return 0;
 }
 
