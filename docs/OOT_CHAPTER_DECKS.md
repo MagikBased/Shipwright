@@ -171,3 +171,14 @@ A chapter becomes `ready` only when:
 - stable-ID, duplicate, package-import, and regeneration tests pass;
 - the site reports the true card and audio counts; and
 - text-only generation remains supported even when an audio provider exists.
+
+Run the course-wide structural and provenance audit at any point with:
+
+```bash
+python3 scripts/jp_assist/validate_catalog_course.py
+```
+
+For a release, add `--require-ready`. The strict form fails unless every
+chapter reaches its configured coverage target, is marked ready, exposes a
+download, has unique examples and Anki GUIDs, contains no prerequisite repeats,
+and retains valid corpus evidence.
