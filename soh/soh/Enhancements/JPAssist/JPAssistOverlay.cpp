@@ -35,6 +35,7 @@ struct OverlayState {
     OverlayMode mode = OverlayMode::Hidden;
     StudyPage studyPage;
     int selectedTokenIndex = 0;
+    bool wordAudioAvailable = false;
     float pendingStudyScroll = 0.0f;
 };
 
@@ -180,7 +181,7 @@ class JPAssistOverlayWindow final : public Ship::GuiWindow {
         const float englishTextBottom = DrawEnglishText(
             mFrameState.studyPage.english.empty() ? "Translation unavailable" : mFrameState.studyPage.english,
             englishColumnRight - englishColumnLeft);
-        DrawControlHints(englishColumnLeft, englishColumnRight, englishTextBottom);
+        DrawControlHints(englishColumnLeft, englishColumnRight, englishTextBottom, mFrameState.wordAudioAvailable);
         ApplyPendingStudyScroll();
         ImGui::EndChild();
 
@@ -570,7 +571,7 @@ class JPAssistOverlayWindow final : public Ship::GuiWindow {
         return ImGui::GetItemRectMax().y;
     }
 
-    void DrawControlHints(float left, float right, float textBottom) const {
+    void DrawControlHints(float left, float right, float textBottom, bool wordAudioAvailable) const {
         if (mFast3dGui == nullptr) {
             return;
         }
@@ -579,8 +580,9 @@ class JPAssistOverlayWindow final : public Ship::GuiWindow {
             const char* texture;
             const char* label;
         };
-        constexpr Hint hints[] = {
+        const Hint hints[] = {
             { kDPadGlyph, "move / scroll" },
+            { wordAudioAvailable ? kCLeftGlyph : nullptr, wordAudioAvailable ? "listen" : nullptr },
             { kCRightGlyph, "save" },
             { kAGlyph, "next" },
             { kRGlyph, "close" },
@@ -597,11 +599,13 @@ class JPAssistOverlayWindow final : public Ship::GuiWindow {
 
         float totalWidth = 0.0f;
         for (size_t i = 0; i < std::size(hints); ++i) {
-            totalWidth += glyphSize + iconLabelGap + ImGui::CalcTextSize(hints[i].label).x;
-            if (i + 1 < std::size(hints)) {
-                totalWidth += groupGap;
+            if (hints[i].texture == nullptr) {
+                continue;
             }
+            totalWidth += glyphSize + iconLabelGap + ImGui::CalcTextSize(hints[i].label).x;
+            totalWidth += groupGap;
         }
+        totalWidth = std::max(0.0f, totalWidth - groupGap);
         if (totalWidth > right - left) {
             return;
         }
@@ -610,6 +614,9 @@ class JPAssistOverlayWindow final : public Ship::GuiWindow {
         const ImU32 labelColor = ImGui::GetColorU32(ImGuiCol_TextDisabled);
         float x = left;
         for (size_t i = 0; i < std::size(hints); ++i) {
+            if (hints[i].texture == nullptr) {
+                continue;
+            }
             ImTextureID texture = mFast3dGui->GetTextureByName(hints[i].texture);
             if (texture != nullptr) {
                 drawList->AddImage(texture, ImVec2(x, hintY), ImVec2(x + glyphSize, hintY + glyphSize));
@@ -618,9 +625,7 @@ class JPAssistOverlayWindow final : public Ship::GuiWindow {
             const ImVec2 labelSize = ImGui::CalcTextSize(hints[i].label);
             drawList->AddText(ImVec2(x, hintY + (glyphSize - labelSize.y) * 0.5f), labelColor, hints[i].label);
             x += labelSize.x;
-            if (i + 1 < std::size(hints)) {
-                x += groupGap;
-            }
+            x += groupGap;
         }
     }
 
@@ -656,7 +661,7 @@ bool JPAssistOverlay_HasJapaneseFont() {
     return OTRGlobals::Instance != nullptr && OTRGlobals::Instance->fontJapanese != nullptr;
 }
 
-void JPAssistOverlay_ShowStudy(const StudyPage& page, int selectedTokenIndex) {
+void JPAssistOverlay_ShowStudy(const StudyPage& page, int selectedTokenIndex, bool wordAudioAvailable) {
     std::lock_guard<std::mutex> lock(sStateMutex);
     if (sState.mode != OverlayMode::Study || sState.selectedTokenIndex != selectedTokenIndex ||
         sState.studyPage.japanese != page.japanese) {
@@ -665,6 +670,7 @@ void JPAssistOverlay_ShowStudy(const StudyPage& page, int selectedTokenIndex) {
     sState.mode = OverlayMode::Study;
     sState.studyPage = page;
     sState.selectedTokenIndex = selectedTokenIndex;
+    sState.wordAudioAvailable = wordAudioAvailable;
 }
 
 void JPAssistOverlay_ScrollStudy(float pixels) {

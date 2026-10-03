@@ -80,7 +80,12 @@ def stage_audio(
     target = out_dir / game["id"] / chapter["id"]
     entries = []
     for card in chapter.get("sampleCards", []):
-        entry = {"cardId": card["id"], "wordAudio": None, "sentenceAudio": None}
+        entry = {
+            "cardId": card["id"],
+            "wordId": f"{card['written']}|{card['reading']}",
+            "wordAudio": None,
+            "sentenceAudio": None,
+        }
         if provider.provider_id != "none":
             stem = safe_stem(card["id"])
             word_path = target / f"{stem}-word.wav"

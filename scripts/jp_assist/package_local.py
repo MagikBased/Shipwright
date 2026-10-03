@@ -26,6 +26,55 @@ def copy_file(source: Path, destination: Path) -> dict:
     }
 
 
+def package_audio(manifest_paths: list[Path], destination_root: Path, allow_unreviewed: bool = False) -> list[dict]:
+    """Copy reviewed word audio and write the runtime identity index."""
+    entries: dict[str, dict] = {}
+    source_digests: dict[str, str] = {}
+    copied = []
+    for manifest_path in manifest_paths:
+        manifest_path = manifest_path.expanduser().resolve()
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        if manifest.get("reviewStatus") != "approved" and not allow_unreviewed:
+            raise ValueError(f"Audio manifest needs review before packaging: {manifest_path}")
+        source_root = manifest_path.parent
+        for entry in manifest.get("entries", []):
+            word_id = entry.get("wordId")
+            relative_audio = entry.get("wordAudio")
+            if not word_id or not relative_audio:
+                continue
+            source = (source_root / relative_audio).resolve()
+            if not source.is_relative_to(source_root) or not source.is_file():
+                raise ValueError(f"Audio path is missing or outside its manifest: {relative_audio}")
+            if source.suffix.lower() != ".wav":
+                raise ValueError(f"Only WAV word audio can be packaged: {relative_audio}")
+            source_digest = sha256(source)
+            if word_id in source_digests and source_digests[word_id] != source_digest:
+                raise ValueError(f"Conflicting audio entries for {word_id}")
+            source_digests[word_id] = source_digest
+            suffix = source.suffix.lower() or ".wav"
+            filename = f"{hashlib.sha256(word_id.encode('utf-8')).hexdigest()[:20]}{suffix}"
+            destination = destination_root / "audio" / filename
+            runtime_entry = {"wordId": word_id, "wordAudio": f"audio/{filename}"}
+            entries[word_id] = runtime_entry
+            if not destination.exists() or sha256(destination) != source_digest:
+                copied.append(copy_file(source, destination))
+    if not entries:
+        return copied
+    runtime_manifest = destination_root / "audio_manifest.json"
+    runtime_manifest.parent.mkdir(parents=True, exist_ok=True)
+    runtime_manifest.write_text(json.dumps({
+        "schemaVersion": 1,
+        "sampleType": "spoken-word",
+        "entries": [entries[word_id] for word_id in sorted(entries)],
+    }, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    copied.append({
+        "path": runtime_manifest.as_posix(),
+        "bytes": runtime_manifest.stat().st_size,
+        "sha256": sha256(runtime_manifest),
+    })
+    return copied
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--runtime-data", default=None)
@@ -33,6 +82,10 @@ def main() -> None:
     parser.add_argument("--saved-deck", default=None)
     parser.add_argument("--stage-dir", default=None, help="Local bundle output directory")
     parser.add_argument("--install-dir", default=None, help="Directory containing soh.elf/Ship of Harkinian")
+    parser.add_argument("--audio-manifest", action="append", default=[],
+                        help="Reviewed catalog audio manifest; may be supplied once per chapter")
+    parser.add_argument("--accept-unreviewed-audio", action="store_true",
+                        help="Development-only override for manifests still marked needs-human-review")
     args = parser.parse_args()
 
     base = Path(__file__).parent
@@ -54,6 +107,10 @@ def main() -> None:
     }
     manifest["files"].append(copy_file(runtime, stage / "jp_assist" / "runtime_data.json"))
     manifest["files"].append(copy_file(scenarios, stage / "jp_assist" / "test_scenarios.json"))
+    audio_manifests = [Path(path) for path in args.audio_manifest]
+    manifest["files"].extend(package_audio(
+        audio_manifests, stage / "jp_assist", args.accept_unreviewed_audio,
+    ))
     for deck in (full_deck, saved_deck):
         if deck.exists():
             manifest["files"].append(copy_file(deck, stage / "anki" / deck.name))
@@ -69,6 +126,9 @@ def main() -> None:
         temporary.replace(destination)
         installed_scenarios = destination.parent / "test_scenarios.json"
         copy_file(scenarios, installed_scenarios)
+        installed_audio = package_audio(
+            audio_manifests, destination.parent, args.accept_unreviewed_audio,
+        )
         installed_manifest = {
             "schemaVersion": manifest["schemaVersion"],
             "corpusVersion": manifest["corpusVersion"],
@@ -77,6 +137,7 @@ def main() -> None:
                 "bytes": installed_scenarios.stat().st_size,
                 "sha256": sha256(installed_scenarios),
             },
+            "audioFiles": [{"bytes": item["bytes"], "sha256": item["sha256"]} for item in installed_audio],
         }
         (destination.parent / "manifest.json").write_text(json.dumps(installed_manifest, indent=2) + "\n")
         print(f"Installed runtime corpus at {destination}")

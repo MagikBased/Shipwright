@@ -20,6 +20,8 @@ def main() -> None:
     parser.add_argument("--progress-file", default=None)
     parser.add_argument("--install-dir", default=None)
     parser.add_argument("--strict", action="store_true")
+    parser.add_argument("--audio-manifest", action="append", default=[])
+    parser.add_argument("--accept-unreviewed-audio", action="store_true")
     args = parser.parse_args()
 
     scripts = Path(__file__).parent
@@ -46,6 +48,10 @@ def main() -> None:
     package_args = []
     if args.install_dir:
         package_args.extend(("--install-dir", args.install_dir))
+    for audio_manifest in args.audio_manifest:
+        package_args.extend(("--audio-manifest", audio_manifest))
+    if args.accept_unreviewed_audio:
+        package_args.append("--accept-unreviewed-audio")
     run(scripts, "package_local.py", *package_args)
 
 

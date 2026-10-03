@@ -97,6 +97,7 @@ Suggested controls:
 | D-pad Up / Down | Move between dictionary senses or card sections |
 | A or C-Up | Reveal or advance native dialogue while keeping the card open |
 | B | Close the card, then exit Study Mode |
+| C-Left | Play the selected word's pronunciation when reviewed audio is installed |
 | C-Right | Add or remove the word from the study list |
 | R | Exit Study Mode |
 
@@ -105,6 +106,13 @@ glyphs. A C-compatible render bridge exposes only the selected normalized-text
 span; the Japanese glyph pass maps that span onto its existing positions and
 draws the backlight before drawing the original characters. This avoids
 re-decoding or mutating live dialogue state.
+
+Pronunciation audio is optional and keyed by the same stable `written|reading`
+identity as cards and saved progress. Only locally packaged, reviewed WAV clips
+are exposed in-game. C-Left is omitted from the card hints when the selected
+word has no clip. Clips are decoded on first use, resampled to Ship's 32 kHz
+stereo stream, cached, and mixed into the normal game output without replacing
+music, effects, or dialogue state.
 
 The wide bottom card should contain:
 

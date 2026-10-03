@@ -12,8 +12,10 @@ boundary so deferred testing can start from a known point.
 - R enters Study Mode on any Japanese page with token data. Choice selection
   is frozen while the study panel owns focus, including analog-stick input.
 - D-Left/D-Right select occurrences; D-Up/D-Down scroll long cards; C-Right
-  saves a vocabulary item; R or B closes the panel. A and C-Up continue native
-  dialogue while the card follows page and chained text-ID changes.
+  saves a vocabulary item; C-Left plays its pronunciation when an optional
+  reviewed audio bundle contains that word; R or B closes the panel. A and
+  C-Up continue native dialogue while the card follows page and chained
+  text-ID changes.
 - Frame-safe, bottom-centered ImGui English-reference and vocabulary card.
 - Japanese overlay text uses Shipwright's bundled Noto Sans Japanese font and
   logs a graceful fallback warning if the asset is unavailable.

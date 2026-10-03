@@ -29,6 +29,7 @@ class GenerateCatalogAudioTest(unittest.TestCase):
     chapter = {"id": "01-start", "order": 1, "sampleCards": [{
         "id": "森|もり|forest",
         "written": "森",
+        "reading": "もり",
         "sentenceJapanese": "森を歩く。",
     }]}
 
@@ -38,6 +39,7 @@ class GenerateCatalogAudioTest(unittest.TestCase):
             manifest = stage_audio(self.game, self.chapter, NoneProvider(), out)
             self.assertEqual(manifest["provider"], "none")
             self.assertEqual(manifest["reviewStatus"], "not-applicable")
+            self.assertEqual(manifest["entries"][0]["wordId"], "森|もり")
             self.assertIsNone(manifest["entries"][0]["wordAudio"])
             saved = json.loads((out / "game-01-manifest.json").read_text())
             self.assertEqual(saved, manifest)

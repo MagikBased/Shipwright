@@ -51,6 +51,8 @@ the game data as:
 ```text
 jp_assist/runtime_data.json
 jp_assist/test_scenarios.json
+jp_assist/audio_manifest.json       # optional
+jp_assist/audio/*.wav               # optional
 ```
 
 Ship of Harkinian's application-directory lookup then finds it at startup.
@@ -139,6 +141,32 @@ and can install the runtime corpus and Test Lab scenarios into a specific Ship
 directory. It does not package a font: supported Shipwright builds already
 contain the licensed `fonts/NotoSansJP-Regular.ttf` asset in `soh.o2r`, which
 JP Assist reuses.
+
+### Optional in-game pronunciation audio
+
+Study Mode plays reviewed word audio with **C-Left** when the highlighted
+`lemma|reading` identity is present in the optional local audio manifest. The
+hint appears only for words that have audio. Clips are decoded from WAV,
+resampled to Ship's 32 kHz stereo stream, and mixed with game audio; pressing
+C-Left again restarts the pronunciation.
+
+Generate chapter audio into the ignored review area, listen to every clip, and
+change that generated manifest's `reviewStatus` to `approved`. Then package one
+or more approved chapter manifests:
+
+```bash
+python scripts/jp_assist/generate_catalog_audio.py \
+  --chapter 1 --provider kokoro-local --accept-kokoro-license-review
+
+python scripts/jp_assist/package_local.py \
+  --audio-manifest scripts/jp_assist/out/catalog_audio/ocarina-of-time-01-manifest.json \
+  --install-dir build-cmake/soh
+```
+
+The packager rejects unreviewed clips by default. Developers can use
+`--accept-unreviewed-audio` for temporary local testing, but those clips should
+not be treated as published course content. Restart Ship after installing or
+changing audio so it reloads the manifest.
 
 `overrides.py` is the human-review layer for correcting tokenization, readings,
 definitions, and game-specific usages. Dictionary output is a draft; sense

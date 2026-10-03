@@ -13,6 +13,7 @@ endif()
 
 add_executable(jpassist_tests
     test_dialogue_presentation.cpp
+    test_audio_math.cpp
     test_learning_sync_store.cpp
     test_learning_sync_client.cpp
     test_message_parser.cpp

@@ -21,6 +21,7 @@
 #include <spdlog/sinks/rotating_file_sink.h>
 
 #include "Enhancements/gameconsole.h"
+#include "Enhancements/JPAssist/JPAssistAudio.h"
 #ifdef _WIN32
 #include <Windows.h>
 #else
@@ -1049,6 +1050,8 @@ void OTRAudio_Thread() {
             AudioMgr_CreateNextAudioBuffer(audio_buffer + i * (num_audio_samples * NUM_AUDIO_CHANNELS),
                                            num_audio_samples);
         }
+
+        JPAssist::JPAssistAudio_Mix(audio_buffer, total_frames);
 
         AudioPlayer_Play(reinterpret_cast<u8*>(audio_buffer), total_samples * sizeof(int16_t));
     };
