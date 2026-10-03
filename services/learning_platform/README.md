@@ -47,6 +47,18 @@ limits. See
 for configuration, migrations, backup/restore, upgrades, and the deployment
 smoke test.
 
+For a production-shaped environment that remains entirely on this computer,
+run from the repository root:
+
+```bash
+services/learning_platform/scripts/staging.sh up
+```
+
+This starts HTTPS, persistent data, local email capture, private Prometheus
+metrics, and the provisioned Grafana operations dashboard. Use
+`scripts/staging.sh status`, `logs`, `smoke`, and `down` for its lifecycle. See
+the deployment guide for URLs and the local-certificate note.
+
 Useful non-container database commands are also available:
 
 ```bash

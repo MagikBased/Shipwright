@@ -14,6 +14,35 @@ provider-neutral and works on a small Linux host with a public IP.
 The SQLite MVP intentionally runs one application worker. Scale-up and multiple
 application replicas require moving the storage layer to a server database.
 
+## Local production-shaped staging
+
+From the repository root, one command builds and starts a loopback-only stack
+with production settings:
+
+```bash
+services/learning_platform/scripts/staging.sh up
+```
+
+It validates the Compose configuration, waits for readiness, and runs the
+production deployment smoke test. The site is available at
+`https://localhost:8443`; Mailpit at `http://127.0.0.1:8025`; Prometheus at
+`http://127.0.0.1:9090`; and Grafana at `http://127.0.0.1:3000`. Caddy uses a
+local certificate, so a browser trust exception may be required. The committed
+`.env.staging` values are intentionally local-only and must not be reused for a
+public deployment.
+
+```bash
+services/learning_platform/scripts/staging.sh status
+services/learning_platform/scripts/staging.sh logs app
+services/learning_platform/scripts/staging.sh smoke
+services/learning_platform/scripts/staging.sh down
+```
+
+`down` stops containers without deleting persistent volumes. The launcher
+supports current Docker Compose as well as the legacy rootless Podman stack
+shipped by Linux Mint 21; its Podman 3 workaround touches only the Compose
+network named for this project.
+
 ## Configure and start
 
 From `services/learning_platform`:
@@ -51,6 +80,9 @@ API path, for example `https://learn.example.com`.
 | `JP_ASSIST_COOKIE_SECURE` | Sends website sessions only over HTTPS | `1` |
 | `JP_ASSIST_ALLOWED_HOSTS` | Rejects unexpected Host headers | public hostname plus internal health hosts |
 | `JP_ASSIST_TRUST_PROXY_HEADERS` | Uses Caddy's forwarded client address | `1` behind bundled Caddy |
+| `JP_ASSIST_STRUCTURED_LOGS` | Emits content-neutral JSON request/audit logs | `1` |
+| `JP_ASSIST_BACKUP_DIR` | Directory inspected for backup metrics | `/backups` |
+| `JP_ASSIST_BIND_ADDRESS` | Address used for public HTTP/HTTPS bindings | `0.0.0.0` public, `127.0.0.1` local staging |
 | `JP_ASSIST_RATE_LIMIT_WINDOW_SECONDS` | Sliding rate-limit window | `60` |
 | `JP_ASSIST_AUTH_RATE_LIMIT` | Registrations/login attempts per IP/window | `20` |
 | `JP_ASSIST_PAIRING_RATE_LIMIT` | Pairing requests/polls per IP/window | `180` |
@@ -64,6 +96,22 @@ Production startup fails closed if secure cookies or explicit allowed hosts
 are missing. Device/session bearer credentials are generated randomly and
 stored only as SHA-256 hashes, so there is no static application signing secret
 to provision in this version.
+
+## Logs and monitoring
+
+Every response includes an `X-Request-ID`. A valid caller-provided ID is
+preserved; otherwise the app generates a UUID. Structured request logs contain
+only timestamp, request ID, method, normalized route template, status, and
+duration. Audit logs contain the request ID, audit type, and metadata key names,
+not bodies, query strings, addresses, cookies, bearer tokens, email addresses,
+or dialogue.
+
+Prometheus scrapes `/internal/metrics` across the private Compose network.
+Caddy deliberately returns 404 for `/internal/*`, so these metrics cannot be
+read through the public site. The provisioned **JP Assist Operations** Grafana
+dashboard displays request rate, 5xx ratio, p95 latency, readiness, database
+size, retained events, backup count, and retained mail-delivery failures. The
+monitoring and mail UIs bind to host loopback even in the public-host example.
 
 ## Health and migrations
 
@@ -119,8 +167,9 @@ python scripts/deployment_smoke.py https://learn.example.com
 ## Remaining public-beta requirements
 
 The deployment scaffold supplies HTTPS, host validation, rate limits, health
-checks, migrations, and backups. Before advertising an open public service,
-add an operational backup schedule with restore drills, external uptime/error
-monitoring, email verification, password recovery, an abuse/contact process,
-and a privacy policy. These require deployment-specific email and organizational
-choices and are intentionally not guessed by the repository scaffold.
+checks, migrations, manual backups, structured logs, and local monitoring.
+Before advertising an open public service, add an operational backup schedule
+with restore drills, external uptime/error monitoring, a real email provider,
+an abuse/contact process, and a published privacy policy. These require
+deployment-specific infrastructure and organizational choices and are
+intentionally not guessed by the repository scaffold.

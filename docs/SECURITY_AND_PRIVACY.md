@@ -78,6 +78,14 @@ The event API rejects unknown fields, including attempted dialogue payloads.
 The runtime dictionary importer copies dictionary fields only and does not copy
 message text.
 
+Operational telemetry follows the same boundary. Structured request logs use
+normalized route templates and omit query strings, bodies, headers, addresses,
+cookies, and tokens. Audit logs emit only audit types and metadata key names;
+their request IDs permit correlation without duplicating account content.
+Prometheus labels are bounded to method, route template, status, and audit type.
+The metrics endpoint is reachable only on the private Compose network and Caddy
+blocks the entire `/internal/` prefix from the public origin.
+
 ## Threat model
 
 | Threat | Current control | Remaining release work |

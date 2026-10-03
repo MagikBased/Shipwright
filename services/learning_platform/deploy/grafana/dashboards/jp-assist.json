@@ -1,0 +1,88 @@
+{
+  "annotations": {"list": []},
+  "editable": false,
+  "graphTooltip": 1,
+  "panels": [
+    {
+      "datasource": {"type": "prometheus", "uid": "jp-assist-prometheus"},
+      "fieldConfig": {"defaults": {"unit": "reqps"}, "overrides": []},
+      "gridPos": {"h": 8, "w": 8, "x": 0, "y": 0},
+      "id": 1,
+      "targets": [{"expr": "sum(rate(jp_assist_http_requests_total[5m]))", "legendFormat": "requests"}],
+      "title": "Request rate",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "jp-assist-prometheus"},
+      "fieldConfig": {"defaults": {"unit": "percentunit"}, "overrides": []},
+      "gridPos": {"h": 8, "w": 8, "x": 8, "y": 0},
+      "id": 2,
+      "targets": [{"expr": "sum(rate(jp_assist_http_requests_total{status=~\"5..\"}[5m])) / clamp_min(sum(rate(jp_assist_http_requests_total[5m])), 1e-9)", "legendFormat": "5xx ratio"}],
+      "title": "Error ratio",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "jp-assist-prometheus"},
+      "fieldConfig": {"defaults": {"unit": "s"}, "overrides": []},
+      "gridPos": {"h": 8, "w": 8, "x": 16, "y": 0},
+      "id": 3,
+      "targets": [{"expr": "histogram_quantile(0.95, sum by (le) (rate(jp_assist_http_request_duration_seconds_bucket[5m])))", "legendFormat": "p95"}],
+      "title": "Request latency",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "jp-assist-prometheus"},
+      "fieldConfig": {"defaults": {"unit": "short"}, "overrides": []},
+      "gridPos": {"h": 6, "w": 4, "x": 0, "y": 8},
+      "id": 4,
+      "targets": [{"expr": "jp_assist_ready", "legendFormat": "ready"}],
+      "title": "Ready",
+      "type": "stat"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "jp-assist-prometheus"},
+      "fieldConfig": {"defaults": {"unit": "decbytes"}, "overrides": []},
+      "gridPos": {"h": 6, "w": 5, "x": 4, "y": 8},
+      "id": 5,
+      "targets": [{"expr": "jp_assist_database_bytes", "legendFormat": "database"}],
+      "title": "Database size",
+      "type": "stat"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "jp-assist-prometheus"},
+      "fieldConfig": {"defaults": {"unit": "short"}, "overrides": []},
+      "gridPos": {"h": 6, "w": 5, "x": 9, "y": 8},
+      "id": 6,
+      "targets": [{"expr": "jp_assist_events_stored", "legendFormat": "events"}],
+      "title": "Events stored",
+      "type": "stat"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "jp-assist-prometheus"},
+      "fieldConfig": {"defaults": {"unit": "short"}, "overrides": []},
+      "gridPos": {"h": 6, "w": 5, "x": 14, "y": 8},
+      "id": 7,
+      "targets": [{"expr": "jp_assist_backup_files", "legendFormat": "backups"}],
+      "title": "Backups",
+      "type": "stat"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "jp-assist-prometheus"},
+      "fieldConfig": {"defaults": {"unit": "short"}, "overrides": []},
+      "gridPos": {"h": 6, "w": 5, "x": 19, "y": 8},
+      "id": 8,
+      "targets": [{"expr": "jp_assist_mail_delivery_failures", "legendFormat": "failures"}],
+      "title": "Mail failures",
+      "type": "stat"
+    }
+  ],
+  "refresh": "15s",
+  "schemaVersion": 41,
+  "tags": ["jp-assist", "operations"],
+  "templating": {"list": []},
+  "time": {"from": "now-6h", "to": "now"},
+  "timezone": "browser",
+  "title": "JP Assist Operations",
+  "uid": "jp-assist-operations",
+  "version": 1
+}

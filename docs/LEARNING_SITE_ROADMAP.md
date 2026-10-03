@@ -231,6 +231,16 @@ pass against the built release image.
 
 ## Milestone 7 — Operations-ready local staging
 
+Status: **in progress**. A one-command, loopback-only production-shaped stack
+now starts the app, Caddy HTTPS proxy, persistent SQLite volumes, Mailpit,
+Prometheus, and a provisioned Grafana operations dashboard. Correlated JSON
+request/audit logs omit request content and credentials; private metrics cover
+traffic, latency, failures, ingestion, readiness, database size, retained
+events, backups, and mail failures. The stack and public/private metrics
+boundary have been exercised on the supported local Podman compatibility path.
+Scheduled backup/restore drills, migration rehearsal, load qualification, and
+the complete operator runbooks remain open.
+
 Deliverables:
 
 - One command starts the app, reverse proxy, persistent database, local mail

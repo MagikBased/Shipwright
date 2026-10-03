@@ -47,6 +47,8 @@ class Settings:
     smtp_password: str = ""
     smtp_starttls: bool = False
     public_base_url: str = "http://127.0.0.1:8766"
+    backup_directory: str = ""
+    structured_logs: bool = False
 
     @classmethod
     def from_environment(cls, database_path: str | Path | None = None) -> "Settings":
@@ -89,6 +91,10 @@ class Settings:
                 "JP_ASSIST_PUBLIC_BASE_URL",
                 f"https://{allowed_hosts[0]}" if production else "http://127.0.0.1:8766",
             ).rstrip("/"),
+            backup_directory=os.environ.get(
+                "JP_ASSIST_BACKUP_DIR", "/backups" if production else str(root / "var" / "backups")
+            ),
+            structured_logs=_boolean("JP_ASSIST_STRUCTURED_LOGS", production),
         )
         settings.validate()
         return settings

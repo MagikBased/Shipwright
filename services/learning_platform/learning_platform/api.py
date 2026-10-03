@@ -15,6 +15,7 @@ from .config import Settings
 from .database import LATEST_SCHEMA_VERSION
 from .errors import AuthenticationError, PlatformError
 from .mailer import Mailer, mailer_from_settings
+from .observability import METRICS_CONTENT_TYPE, Observability, monotonic_time
 from .rate_limit import SlidingWindowRateLimiter
 from .service import LearningPlatform
 
@@ -204,6 +205,9 @@ def create_app(
         settings.database_path, mailer=mailer, public_base_url=settings.public_base_url,
     )
     rate_limiter = rate_limiter or SlidingWindowRateLimiter()
+    observability = Observability(
+        settings.database_path, settings.backup_directory, settings.structured_logs,
+    )
     app = FastAPI(
         title="JP Assist Learning Platform",
         version="0.3.0",
@@ -213,6 +217,7 @@ def create_app(
     )
     app.state.platform = platform
     app.state.settings = settings
+    app.state.observability = observability
     if settings.allowed_hosts != ("*",):
         app.add_middleware(TrustedHostMiddleware, allowed_hosts=list(settings.allowed_hosts))
 
@@ -251,6 +256,26 @@ def create_app(
                 return response
         return await call_next(request)
 
+    @app.middleware("http")
+    async def observe_requests(request: Request, call_next):
+        request_id = observability.request_id(request.headers.get("x-request-id"))
+        tokens = observability.bind(request_id)
+        started = monotonic_time()
+        status = 500
+        observability.http_in_flight.inc()
+        try:
+            response = await call_next(request)
+            status = response.status_code
+            response.headers["X-Request-ID"] = request_id
+            return response
+        finally:
+            route = getattr(request.scope.get("route"), "path", "unmatched")
+            observability.http_in_flight.dec()
+            observability.record_request(
+                request_id, request.method, route, status, monotonic_time() - started,
+            )
+            observability.reset(tokens)
+
     @app.exception_handler(PlatformError)
     async def platform_error_handler(_request: Request, error: PlatformError) -> JSONResponse:
         return JSONResponse(
@@ -273,6 +298,13 @@ def create_app(
             "schemaVersion": platform.database.schema_version() if ready else None,
             "expectedSchemaVersion": LATEST_SCHEMA_VERSION,
         }
+
+    @app.get("/internal/metrics", include_in_schema=False)
+    def metrics() -> Response:
+        return Response(
+            content=observability.render_metrics(platform),
+            headers={"Content-Type": METRICS_CONTENT_TYPE},
+        )
 
     @app.post("/v1/auth/register", status_code=201)
     def register(payload: RegisterRequest, request: Request, response: Response) -> dict[str, Any]:
@@ -376,10 +408,14 @@ def create_app(
 
     @app.post("/v1/events/batch")
     def ingest_events(payload: EventBatchRequest, authorization: str | None = Header(default=None)) -> dict[str, Any]:
-        return platform.ingest_events(
+        result = platform.ingest_events(
             bearer_token(authorization),
             [model_dict(event) for event in payload.events],
         )
+        observability.record_event_batch(
+            len(result["acceptedEventIds"]), len(result["duplicateEventIds"]),
+        )
+        return result
 
     @app.get("/v1/me/devices")
     def devices(request: Request, authorization: str | None = Header(default=None)) -> list[dict[str, Any]]:

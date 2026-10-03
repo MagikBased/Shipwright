@@ -34,6 +34,7 @@ from .fsrs_scheduler import (
     schedule,
 )
 from .mailer import MailDeliveryError, Mailer, NullMailer, OutboundEmail
+from .observability import current_request_id, record_audit
 from .security import hash_password, new_bearer_token, new_user_code, token_hash, verify_password
 
 
@@ -1722,13 +1723,18 @@ class LearningPlatform:
         self, connection: sqlite3.Connection, user_id: str | None, event_type: str,
         metadata: dict[str, Any] | None = None,
     ) -> None:
+        audit_metadata = dict(metadata or {})
+        request_id = current_request_id()
+        if request_id:
+            audit_metadata["requestId"] = request_id
         connection.execute(
             "INSERT INTO audit_events VALUES (?, ?, ?, ?, ?)",
             (
                 str(uuid.uuid4()), user_id, event_type, isoformat(self.now()),
-                json.dumps(metadata or {}, sort_keys=True, separators=(",", ":")),
+                json.dumps(audit_metadata, sort_keys=True, separators=(",", ":")),
             ),
         )
+        record_audit(event_type, audit_metadata)
 
     def _store_action_token(
         self, connection: sqlite3.Connection, user_id: str, purpose: str, raw_token: str,
