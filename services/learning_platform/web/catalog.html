@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Game Catalog — JP Assist Learning</title>
+  <link rel="stylesheet" href="/static/styles.css">
+  <link rel="stylesheet" href="/static/polish.css">
+  <link rel="stylesheet" href="/static/catalog.css">
+  <script type="module" src="/static/catalog.js"></script>
+</head>
+<body>
+  <header class="catalog-header">
+    <div><a class="eyebrow catalog-home" href="/">JP ASSIST</a><h1>Game catalog</h1><p class="lede">Progression-aware Japanese courses built around the language each adventure asks you to understand.</p></div>
+    <a class="button-link quiet-link" href="/">Learning account</a>
+  </header>
+  <main>
+    <div id="catalog-status" class="panel catalog-loading" role="status">Loading catalog…</div>
+    <section id="game-catalog" class="hidden" aria-labelledby="game-title">
+      <div class="catalog-hero panel">
+        <div><span id="game-series" class="eyebrow"></span><h2 id="game-title"></h2><p id="game-summary"></p></div>
+        <dl id="game-facts" class="catalog-facts"></dl>
+      </div>
+      <section class="catalog-explainer" aria-labelledby="deck-model-title">
+        <div><span class="eyebrow">COURSE STRUCTURE</span><h2 id="deck-model-title">One journey, eleven chapter decks</h2></div>
+        <p id="chapter-model"></p>
+        <p id="audio-policy" class="muted"></p>
+      </section>
+      <ol id="chapter-list" class="chapter-list"></ol>
+    </section>
+  </main>
+</body>
+</html>

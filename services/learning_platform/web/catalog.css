@@ -1,0 +1,209 @@
+.catalog-header {
+  min-height: 190px;
+}
+
+.catalog-home {
+  text-decoration: none;
+}
+
+.button-link {
+  border-radius: 8px;
+  display: inline-block;
+  font-weight: 750;
+  padding: 11px 16px;
+  text-decoration: none;
+}
+
+.quiet-link {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  color: var(--text);
+}
+
+.catalog-loading {
+  margin-bottom: 40px;
+}
+
+.catalog-loading.error {
+  border-color: var(--red);
+  color: var(--red);
+}
+
+.catalog-hero {
+  align-items: start;
+  display: grid;
+  gap: 32px;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 0.55fr);
+}
+
+.catalog-hero h2 {
+  font-size: clamp(2rem, 4vw, 3.4rem);
+  margin: 8px 0 12px;
+}
+
+.catalog-facts {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0;
+}
+
+.catalog-facts div {
+  background: var(--panel2);
+  border-radius: 10px;
+  padding: 13px;
+}
+
+.catalog-facts dt {
+  color: var(--muted);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+}
+
+.catalog-facts dd {
+  color: var(--gold);
+  font-weight: 750;
+  margin: 5px 0 0;
+}
+
+.catalog-explainer {
+  display: grid;
+  gap: 20px;
+  grid-template-columns: 0.65fr 1fr 1fr;
+  margin: 48px 0 24px;
+}
+
+.catalog-explainer p {
+  margin-top: 3px;
+}
+
+.chapter-list {
+  display: grid;
+  gap: 14px;
+  list-style: none;
+  margin: 0 0 64px;
+  padding: 0;
+}
+
+.chapter-heading {
+  align-items: start;
+  display: grid;
+  gap: 16px;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+}
+
+.chapter-number {
+  color: var(--cyan);
+  font-size: 1.4rem;
+  font-weight: 800;
+}
+
+.chapter-heading h3 {
+  font-size: 1.35rem;
+  margin: 0;
+}
+
+.chapter-heading p {
+  margin: 4px 0 0;
+}
+
+.catalog-badge {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 750;
+  padding: 5px 9px;
+}
+
+.catalog-badge.pilot {
+  border-color: color-mix(in srgb, var(--gold) 60%, var(--line));
+  color: var(--gold);
+}
+
+.chapter-scope {
+  color: var(--text) !important;
+  margin-bottom: 10px;
+}
+
+.chapter-milestones {
+  color: var(--muted);
+  display: flex;
+  flex-wrap: wrap;
+  font-size: 0.82rem;
+  gap: 8px 24px;
+}
+
+.chapter-dependencies {
+  color: var(--cyan) !important;
+  font-size: 0.82rem;
+  margin-bottom: 0;
+}
+
+.pilot-cards {
+  border-top: 1px solid var(--line);
+  margin-top: 18px;
+  padding-top: 16px;
+}
+
+.pilot-cards summary {
+  color: var(--gold);
+  cursor: pointer;
+  font-weight: 750;
+}
+
+.pilot-grid {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 14px;
+}
+
+.pilot-grid article {
+  background: var(--panel2);
+  border-radius: 10px;
+  padding: 16px;
+}
+
+.pilot-grid h4 {
+  color: var(--gold);
+  display: inline;
+  font-size: 1.55rem;
+  margin: 0 8px 0 0;
+}
+
+.pilot-grid .reading {
+  color: var(--muted);
+}
+
+.pilot-grid p {
+  margin: 8px 0 0;
+}
+
+.pilot-grid .card-meaning {
+  color: var(--cyan);
+  font-size: 0.9rem;
+}
+
+@media (max-width: 780px) {
+  .catalog-hero,
+  .catalog-explainer,
+  .pilot-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .catalog-header {
+    align-items: start;
+    flex-direction: column;
+    padding: 40px 0;
+  }
+
+  .chapter-heading {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .catalog-badge {
+    grid-column: 2;
+    justify-self: start;
+  }
+}

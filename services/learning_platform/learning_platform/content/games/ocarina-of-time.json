@@ -1,0 +1,221 @@
+{
+  "schemaVersion": 1,
+  "id": "ocarina-of-time",
+  "title": "Ocarina of Time",
+  "series": "The Legend of Zelda",
+  "platform": "Ship of Harkinian",
+  "status": "in-development",
+  "summary": "A progression-aware Japanese vocabulary course organized around the major stages of the adventure.",
+  "chapterModel": {
+    "kind": "progression",
+    "description": "Chapters follow durable story and dungeon milestones. Later adult chapters expose prerequisites and a recommended order because some objectives can be completed nonlinearly.",
+    "assignmentRule": "A vocabulary note belongs to the earliest chapter where it is needed and is tagged with every later chapter where it appears.",
+    "deckLayout": "JP Assist::Ocarina of Time::NN Chapter title"
+  },
+  "audio": {
+    "mode": "optional",
+    "status": "not-generated",
+    "provider": null,
+    "description": "Decks remain fully usable without audio. Only reviewed, commercially usable local or free generation may populate the optional word and sentence audio fields."
+  },
+  "chapters": [
+    {
+      "id": "01-boy-without-a-fairy",
+      "order": 1,
+      "title": "The Boy Without a Fairy",
+      "subtitle": "Kokiri Forest and the Great Deku Tree",
+      "scope": "Opening conversations, forest navigation, obtaining basic equipment, and the first dungeon.",
+      "startMarker": "New game",
+      "endMarker": "Receive the forest spiritual stone",
+      "prerequisites": [],
+      "deck": {
+        "status": "pilot",
+        "downloadAvailable": false,
+        "reviewedCardCount": 6,
+        "audioStatus": "none",
+        "description": "A small reviewed sample proves the content and export format before full corpus assignment."
+      },
+      "sampleCards": [
+        {
+          "id": "森|もり|forest",
+          "written": "森",
+          "reading": "もり",
+          "partOfSpeech": "noun",
+          "meaning": "forest",
+          "sentenceJapanese": "深い森では、古い精霊が旅人の道を守っている。",
+          "sentenceEnglish": "In the deep forest, an ancient spirit guards the traveler's path.",
+          "wordAudio": null,
+          "sentenceAudio": null
+        },
+        {
+          "id": "妖精|ようせい|fairy",
+          "written": "妖精",
+          "reading": "ようせい",
+          "partOfSpeech": "noun",
+          "meaning": "fairy; sprite",
+          "sentenceJapanese": "小さな妖精が月明かりの道を照らした。",
+          "sentenceEnglish": "A tiny fairy lit the moonlit path.",
+          "wordAudio": null,
+          "sentenceAudio": null
+        },
+        {
+          "id": "剣|けん|sword",
+          "written": "剣",
+          "reading": "けん",
+          "partOfSpeech": "noun",
+          "meaning": "sword",
+          "sentenceJapanese": "若い騎士は石の台から古い剣を持ち上げた。",
+          "sentenceEnglish": "The young knight lifted an old sword from the stone pedestal.",
+          "wordAudio": null,
+          "sentenceAudio": null
+        },
+        {
+          "id": "盾|たて|shield",
+          "written": "盾",
+          "reading": "たて",
+          "partOfSpeech": "noun",
+          "meaning": "shield",
+          "sentenceJapanese": "木の盾には森を守る紋章が刻まれている。",
+          "sentenceEnglish": "The wooden shield bears a crest that protects the forest.",
+          "wordAudio": null,
+          "sentenceAudio": null
+        },
+        {
+          "id": "勇気|ゆうき|courage",
+          "written": "勇気",
+          "reading": "ゆうき",
+          "partOfSpeech": "noun",
+          "meaning": "courage; bravery",
+          "sentenceJapanese": "勇気があれば、暗い洞窟にも進める。",
+          "sentenceEnglish": "With courage, you can venture into a dark cavern.",
+          "wordAudio": null,
+          "sentenceAudio": null
+        },
+        {
+          "id": "目覚める|めざめる|awaken",
+          "written": "目覚める",
+          "reading": "めざめる",
+          "partOfSpeech": "verb",
+          "meaning": "to awaken",
+          "sentenceJapanese": "朝の鐘が鳴ると、眠っていた守り手が目覚めた。",
+          "sentenceEnglish": "When the morning bell rang, the sleeping guardian awoke.",
+          "wordAudio": null,
+          "sentenceAudio": null
+        }
+      ]
+    },
+    {
+      "id": "02-princess-of-destiny",
+      "order": 2,
+      "title": "The Princess of Destiny",
+      "subtitle": "Hyrule Field, the market, and the castle",
+      "scope": "Leaving the forest, traveling across the field, entering the castle, and meeting the princess.",
+      "startMarker": "Leave Kokiri Forest",
+      "endMarker": "Learn the royal song",
+      "prerequisites": ["01-boy-without-a-fairy"],
+      "deck": {"status": "planned", "downloadAvailable": false, "reviewedCardCount": 0, "audioStatus": "none"}
+    },
+    {
+      "id": "03-gorons-ruby",
+      "order": 3,
+      "title": "The Goron's Ruby",
+      "subtitle": "Kakariko Village and Death Mountain",
+      "scope": "Village errands, climbing the mountain, meeting the Gorons, and Dodongo's Cavern.",
+      "startMarker": "Open the path to Death Mountain",
+      "endMarker": "Receive the fire spiritual stone",
+      "prerequisites": ["02-princess-of-destiny"],
+      "deck": {"status": "planned", "downloadAvailable": false, "reviewedCardCount": 0, "audioStatus": "none"}
+    },
+    {
+      "id": "04-zoras-sapphire",
+      "order": 4,
+      "title": "The Zora's Sapphire",
+      "subtitle": "Zora's Domain and the lake journey",
+      "scope": "River travel, aquatic vocabulary, the Zora court, and the third child-era dungeon.",
+      "startMarker": "Follow the river toward Zora's Domain",
+      "endMarker": "Receive the water spiritual stone",
+      "prerequisites": ["02-princess-of-destiny"],
+      "deck": {"status": "planned", "downloadAvailable": false, "reviewedCardCount": 0, "audioStatus": "none"}
+    },
+    {
+      "id": "05-door-of-time",
+      "order": 5,
+      "title": "The Door of Time",
+      "subtitle": "The castle escape and Temple of Time",
+      "scope": "The final child-era pursuit, the Ocarina of Time, and opening the sacred door.",
+      "startMarker": "Collect all three spiritual stones",
+      "endMarker": "Awaken as the Hero of Time",
+      "prerequisites": ["03-gorons-ruby", "04-zoras-sapphire"],
+      "deck": {"status": "planned", "downloadAvailable": false, "reviewedCardCount": 0, "audioStatus": "none"}
+    },
+    {
+      "id": "06-forest-awakens",
+      "order": 6,
+      "title": "The Forest Awakens",
+      "subtitle": "The ruined future and Forest Temple",
+      "scope": "Returning as an adult, revisiting the forest, and awakening the Forest Sage.",
+      "startMarker": "Receive the adult quest",
+      "endMarker": "Awaken the Forest Sage",
+      "prerequisites": ["05-door-of-time"],
+      "deck": {"status": "planned", "downloadAvailable": false, "reviewedCardCount": 0, "audioStatus": "none"}
+    },
+    {
+      "id": "07-fire-sage",
+      "order": 7,
+      "title": "The Fire Sage",
+      "subtitle": "Death Mountain and the Fire Temple",
+      "scope": "A changed mountain, rescuing Gorons, heat hazards, and awakening the Fire Sage.",
+      "startMarker": "Return to Death Mountain as an adult",
+      "endMarker": "Awaken the Fire Sage",
+      "prerequisites": ["05-door-of-time"],
+      "recommendedAfter": ["06-forest-awakens"],
+      "deck": {"status": "planned", "downloadAvailable": false, "reviewedCardCount": 0, "audioStatus": "none"}
+    },
+    {
+      "id": "08-beneath-the-ice",
+      "order": 8,
+      "title": "Beneath the Ice",
+      "subtitle": "Ice Cavern and Water Temple",
+      "scope": "The frozen domain, acquiring cold-weather tools, lake exploration, and awakening the Water Sage.",
+      "startMarker": "Find the frozen Zora's Domain",
+      "endMarker": "Awaken the Water Sage",
+      "prerequisites": ["05-door-of-time"],
+      "recommendedAfter": ["06-forest-awakens", "07-fire-sage"],
+      "deck": {"status": "planned", "downloadAvailable": false, "reviewedCardCount": 0, "audioStatus": "none"}
+    },
+    {
+      "id": "09-darkness-beneath-kakariko",
+      "order": 9,
+      "title": "Darkness Beneath Kakariko",
+      "subtitle": "Bottom of the Well and Shadow Temple",
+      "scope": "Hidden village history, illusion and undead vocabulary, and awakening the Shadow Sage.",
+      "startMarker": "Witness the disaster in Kakariko",
+      "endMarker": "Awaken the Shadow Sage",
+      "prerequisites": ["06-forest-awakens", "07-fire-sage", "08-beneath-the-ice"],
+      "deck": {"status": "planned", "downloadAvailable": false, "reviewedCardCount": 0, "audioStatus": "none"}
+    },
+    {
+      "id": "10-spirit-of-the-desert",
+      "order": 10,
+      "title": "Spirit of the Desert",
+      "subtitle": "Gerudo Fortress and Spirit Temple",
+      "scope": "Crossing the wasteland, infiltrating the fortress, time-shifted puzzles, and awakening the Spirit Sage.",
+      "startMarker": "Enter Gerudo territory",
+      "endMarker": "Awaken the Spirit Sage",
+      "prerequisites": ["05-door-of-time"],
+      "recommendedAfter": ["08-beneath-the-ice"],
+      "deck": {"status": "planned", "downloadAvailable": false, "reviewedCardCount": 0, "audioStatus": "none"}
+    },
+    {
+      "id": "11-hero-of-time",
+      "order": 11,
+      "title": "The Hero of Time",
+      "subtitle": "The sages' final task and the last battle",
+      "scope": "The final revelation, breaking the castle barrier, confronting evil, and the ending.",
+      "startMarker": "Awaken all six sages",
+      "endMarker": "Complete the final battle",
+      "prerequisites": ["09-darkness-beneath-kakariko", "10-spirit-of-the-desert"],
+      "deck": {"status": "planned", "downloadAvailable": false, "reviewedCardCount": 0, "audioStatus": "none"}
+    }
+  ]
+}

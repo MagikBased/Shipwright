@@ -191,6 +191,12 @@ PYTHONPATH=services/learning_platform \
 
 ## Anki handoff
 
+The public game catalog is available at `/catalog`, with machine-readable data at
+`/v1/catalog/games`. Its reviewed chapter decks are separate from the personal
+saved-word export below: catalog cards use original example sentences intended
+for distribution, while personal exports join a player's identifiers to their
+local extracted corpus. See [Ocarina of Time chapter decks](../../docs/OOT_CHAPTER_DECKS.md).
+
 Use **Download saved words** on the dashboard. The downloaded JSON is accepted
 directly by the existing local builder:
 

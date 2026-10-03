@@ -126,6 +126,26 @@ class LearningPlatformApiTest(unittest.TestCase):
         self.assertEqual(page.headers["Referrer-Policy"], "no-referrer")
         self.assertEqual(page.headers["X-Content-Type-Options"], "nosniff")
 
+        catalog_page = self.client.get("/catalog")
+        self.assertEqual(catalog_page.status_code, 200)
+        self.assertIn("Game catalog", catalog_page.text)
+
+    def test_public_catalog_exposes_ordered_oot_chapters_and_pilot_cards(self):
+        listing = self.client.get("/v1/catalog/games")
+        self.assertEqual(listing.status_code, 200)
+        self.assertEqual(listing.json()["games"][0]["id"], "ocarina-of-time")
+        self.assertEqual(listing.json()["games"][0]["chapterCount"], 11)
+
+        response = self.client.get("/v1/catalog/games/ocarina-of-time")
+        self.assertEqual(response.status_code, 200)
+        game = response.json()
+        self.assertEqual([chapter["order"] for chapter in game["chapters"]], list(range(1, 12)))
+        self.assertEqual(game["chapters"][0]["deck"]["status"], "pilot")
+        self.assertGreaterEqual(len(game["chapters"][0]["sampleCards"]), 5)
+        self.assertTrue(all(card["wordAudio"] is None for card in game["chapters"][0]["sampleCards"]))
+        self.assertTrue(all(card["sentenceAudio"] is None for card in game["chapters"][0]["sampleCards"]))
+        self.assertEqual(self.client.get("/v1/catalog/games/not-a-game").status_code, 404)
+
     def test_cookie_mutations_require_matching_csrf_token(self):
         self.client.post(
             "/v1/auth/register",

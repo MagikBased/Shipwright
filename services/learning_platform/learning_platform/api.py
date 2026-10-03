@@ -5,13 +5,14 @@ import secrets
 from pathlib import Path
 from typing import Any
 
-from fastapi import FastAPI, Header, Request, Response
+from fastapi import FastAPI, Header, HTTPException, Request, Response
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 from pydantic import BaseModel, Field, StrictInt
 
 from .config import Settings
+from .catalog import GameCatalog
 from .database import LATEST_SCHEMA_VERSION
 from .errors import AuthenticationError, PlatformError
 from .mailer import Mailer, mailer_from_settings
@@ -208,6 +209,7 @@ def create_app(
     observability = Observability(
         settings.database_path, settings.backup_directory, settings.structured_logs,
     )
+    catalog = GameCatalog()
     app = FastAPI(
         title="JP Assist Learning Platform",
         version="0.3.0-rc.1",
@@ -305,6 +307,18 @@ def create_app(
             content=observability.render_metrics(platform),
             headers={"Content-Type": METRICS_CONTENT_TYPE},
         )
+
+    @app.get("/v1/catalog/games")
+    def catalog_games() -> dict[str, Any]:
+        games = catalog.list_games()
+        return {"schemaVersion": 1, "games": games}
+
+    @app.get("/v1/catalog/games/{game_id}")
+    def catalog_game(game_id: str) -> dict[str, Any]:
+        game = catalog.get_game(game_id)
+        if game is None:
+            raise HTTPException(status_code=404, detail="Catalog game not found")
+        return game
 
     @app.post("/v1/auth/register", status_code=201)
     def register(payload: RegisterRequest, request: Request, response: Response) -> dict[str, Any]:
@@ -595,6 +609,10 @@ def create_app(
     @app.get("/", include_in_schema=False)
     def website() -> FileResponse:
         return FileResponse(web_root / "index.html")
+
+    @app.get("/catalog", include_in_schema=False)
+    def catalog_website() -> FileResponse:
+        return FileResponse(web_root / "catalog.html")
 
     return app
 
