@@ -10,6 +10,8 @@
     "kind": "progression",
     "description": "Chapters follow durable story and dungeon milestones. Later adult chapters expose prerequisites and a recommended order because some objectives can be completed nonlinearly.",
     "assignmentRule": "Each deck teaches the most important vocabulary needed in that chapter after removing words taught by every transitive hard prerequisite. Parallel optional branches may share a word when neither branch requires the other.",
+    "completionRule": "A core chapter deck must cover at least 80% of token occurrences in its mapped dialogue after crediting vocabulary taught by transitive hard prerequisites. Reviewers may add rarer story-essential terms beyond the threshold.",
+    "coreCoverageTargetPercent": 80,
     "deckLayout": "JP Assist::Ocarina of Time::NN Chapter title"
   },
   "audio": {
@@ -32,7 +34,7 @@
       "deck": {
         "status": "pilot",
         "downloadAvailable": false,
-        "reviewedCardCount": 6,
+        "reviewedCardCount": 17,
         "audioStatus": "none",
         "description": "A small reviewed sample proves the content and export format before full corpus assignment."
       },
@@ -106,6 +108,138 @@
           "sentenceJapanese": "泉の精霊は、静かな歌で傷ついた旅人を癒やした。",
           "sentenceEnglish": "The spirit of the spring healed the wounded traveler with a quiet song.",
           "corpusEvidence": {"identity": "精霊|せいれい|jmdict:1380230:0", "messageIds": ["0x0080"]},
+          "wordAudio": null,
+          "sentenceAudio": null
+        },
+        {
+          "id": "の|の|possessive-particle",
+          "written": "の",
+          "reading": "の",
+          "partOfSpeech": "particle",
+          "meaning": "indicates possession or association",
+          "sentenceJapanese": "森の奥に古い塔がある。",
+          "sentenceEnglish": "There is an old tower deep in the forest.",
+          "corpusEvidence": {"identity": "の|の|jmdict:1469800:0", "messageIds": ["0x0007"]},
+          "wordAudio": null,
+          "sentenceAudio": null
+        },
+        {
+          "id": "に|に|time-place-particle",
+          "written": "に",
+          "reading": "に",
+          "partOfSpeech": "particle",
+          "meaning": "at; in; on; to",
+          "sentenceJapanese": "夕暮れに旅人は村に着いた。",
+          "sentenceEnglish": "At dusk, the traveler arrived at the village.",
+          "corpusEvidence": {"identity": "に|に|jmdict:2028990:0", "messageIds": ["0x0030"]},
+          "wordAudio": null,
+          "sentenceAudio": null
+        },
+        {
+          "id": "を|を|object-particle",
+          "written": "を",
+          "reading": "を",
+          "partOfSpeech": "particle",
+          "meaning": "marks the direct object of an action",
+          "sentenceJapanese": "騎士は重い門を開けた。",
+          "sentenceEnglish": "The knight opened the heavy gate.",
+          "corpusEvidence": {"identity": "を|を|jmdict:2029010:0", "messageIds": ["0x0007"]},
+          "wordAudio": null,
+          "sentenceAudio": null
+        },
+        {
+          "id": "て|て|te-form-connector",
+          "written": "て",
+          "reading": "て",
+          "partOfSpeech": "particle",
+          "meaning": "connects actions or indicates doing something by a means",
+          "sentenceJapanese": "松明を持って洞窟へ入った。",
+          "sentenceEnglish": "The traveler entered the cavern carrying a torch.",
+          "corpusEvidence": {"identity": "て|て|override:て|て", "messageIds": ["0x002f"]},
+          "wordAudio": null,
+          "sentenceAudio": null
+        },
+        {
+          "id": "た|た|past-auxiliary",
+          "written": "た",
+          "reading": "た",
+          "partOfSpeech": "auxiliary verb",
+          "meaning": "marks a past or completed action",
+          "sentenceJapanese": "夜明け前に竜が目を覚ました。",
+          "sentenceEnglish": "The dragon awoke before dawn.",
+          "corpusEvidence": {"identity": "た|た|override:た|た", "messageIds": ["0x002f"]},
+          "wordAudio": null,
+          "sentenceAudio": null
+        },
+        {
+          "id": "だ|だ|plain-copula",
+          "written": "だ",
+          "reading": "だ",
+          "partOfSpeech": "auxiliary verb",
+          "meaning": "plain copula; to be",
+          "sentenceJapanese": "あれは伝説の剣だ。",
+          "sentenceEnglish": "That is a legendary sword.",
+          "corpusEvidence": {"identity": "だ|だ|override:だ|だ", "messageIds": ["0x0007"]},
+          "wordAudio": null,
+          "sentenceAudio": null
+        },
+        {
+          "id": "で|で|location-particle",
+          "written": "で",
+          "reading": "で",
+          "partOfSpeech": "particle",
+          "meaning": "at; in; marks where an action occurs",
+          "sentenceJapanese": "古い城で宝箱を見つけた。",
+          "sentenceEnglish": "The traveler found a treasure chest in the old castle.",
+          "corpusEvidence": {"identity": "で|で|jmdict:2028980:0", "messageIds": ["0x0030"]},
+          "wordAudio": null,
+          "sentenceAudio": null
+        },
+        {
+          "id": "は|は|topic-particle",
+          "written": "は",
+          "reading": "は",
+          "partOfSpeech": "particle",
+          "meaning": "marks the topic of a sentence",
+          "sentenceJapanese": "この森は夜になると道が変わる。",
+          "sentenceEnglish": "The paths in this forest change when night falls.",
+          "corpusEvidence": {"identity": "は|は|jmdict:2028920:0", "messageIds": ["0x0030"]},
+          "wordAudio": null,
+          "sentenceAudio": null
+        },
+        {
+          "id": "する|する|do",
+          "written": "する",
+          "reading": "する",
+          "partOfSpeech": "verb",
+          "meaning": "to do; to carry out",
+          "sentenceJapanese": "旅人は夜までに支度をする。",
+          "sentenceEnglish": "The traveler prepares before nightfall.",
+          "corpusEvidence": {"identity": "する|する|jmdict:1157170:0", "messageIds": ["0x002f"]},
+          "wordAudio": null,
+          "sentenceAudio": null
+        },
+        {
+          "id": "が|が|subject-particle",
+          "written": "が",
+          "reading": "が",
+          "partOfSpeech": "particle",
+          "meaning": "marks the subject of a sentence",
+          "sentenceJapanese": "谷の向こうで鐘が鳴った。",
+          "sentenceEnglish": "A bell rang beyond the valley.",
+          "corpusEvidence": {"identity": "が|が|jmdict:2028930:0", "messageIds": ["0x002f"]},
+          "wordAudio": null,
+          "sentenceAudio": null
+        },
+        {
+          "id": "と|と|quotation-particle",
+          "written": "と",
+          "reading": "と",
+          "partOfSpeech": "particle",
+          "meaning": "marks a quotation, accompaniment, or pairing",
+          "sentenceJapanese": "魔法使いは「扉よ、開け」と唱えた。",
+          "sentenceEnglish": "The mage chanted, ‘O door, open.’",
+          "corpusEvidence": {"identity": "と|と|override:と|と", "messageIds": ["0x002f"]},
           "wordAudio": null,
           "sentenceAudio": null
         }

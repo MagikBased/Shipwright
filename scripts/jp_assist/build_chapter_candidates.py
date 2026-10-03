@@ -24,6 +24,7 @@ DEFAULT_CATALOG = (
 )
 DEFAULT_MAPPING = Path(__file__).parent / "chapter_mapping" / "ocarina-of-time.json"
 DEFAULT_OUT_DIR = Path(__file__).parent / "out" / "chapter_candidates"
+CORE_COVERAGE_TARGET_PERCENT = 80.0
 
 
 def message_number(value: str) -> int:
@@ -142,6 +143,7 @@ def collect_candidates(
     }
     by_chapter: dict[str, list[dict[str, Any]]] = {chapter["id"]: [] for chapter in catalog["chapters"]}
     excluded_by_prerequisite: Counter[str] = Counter()
+    prerequisite_covered_occurrences: Counter[str] = Counter()
     for identity, counts in occurrences.items():
         identity_text = "|".join(identity)
         mapped_frequency = sum(counts.values())
@@ -152,6 +154,7 @@ def collect_candidates(
             )
             if taught_by_prerequisite:
                 excluded_by_prerequisite[chapter_id] += 1
+                prerequisite_covered_occurrences[chapter_id] += counts[chapter_id]
                 continue
             later = sorted(
                 (
@@ -181,6 +184,58 @@ def collect_candidates(
         for rank, row in enumerate(rows, 1):
             row["importanceRank"] = rank
 
+    chapter_summaries = []
+    for chapter in catalog["chapters"]:
+        chapter_id = chapter["id"]
+        rows = by_chapter[chapter_id]
+        total_occurrences = prerequisite_covered_occurrences[chapter_id] + sum(
+            row["chapterFrequency"] for row in rows
+        )
+        published_occurrences = sum(
+            row["chapterFrequency"]
+            for row in rows
+            if row["reviewStatus"] == "published"
+        )
+        covered_occurrences = prerequisite_covered_occurrences[chapter_id] + published_occurrences
+        target_occurrences = int(
+            total_occurrences * CORE_COVERAGE_TARGET_PERCENT / 100.0 + 0.999999
+        )
+        additional_cards_to_target = 0
+        projected_occurrences = covered_occurrences
+        for row in rows:
+            if projected_occurrences >= target_occurrences:
+                break
+            if row["reviewStatus"] == "published":
+                continue
+            projected_occurrences += row["chapterFrequency"]
+            additional_cards_to_target += 1
+        chapter_summaries.append({
+            "chapterId": chapter_id,
+            "mappingStatus": next(
+                item["status"] for item in mapping["chapters"]
+                if item["chapterId"] == chapter_id
+            ),
+            "mappedMessageCount": len(mapped_existing[chapter_id]),
+            "candidateCount": len(rows),
+            "excludedByPrerequisiteCount": excluded_by_prerequisite[chapter_id],
+            "publishedCount": sum(
+                row["reviewStatus"] == "published" for row in rows
+            ),
+            "totalTokenOccurrences": total_occurrences,
+            "prerequisiteCoveredOccurrences": prerequisite_covered_occurrences[chapter_id],
+            "publishedCoveredOccurrences": published_occurrences,
+            "coveredTokenOccurrences": covered_occurrences,
+            "coveragePercent": round(
+                covered_occurrences * 100.0 / total_occurrences, 2
+            ) if total_occurrences else 100.0,
+            "coreCoverageTargetPercent": CORE_COVERAGE_TARGET_PERCENT,
+            "additionalCardsToCoreTarget": additional_cards_to_target,
+            "projectedCoreCardCount": (
+                sum(row["reviewStatus"] == "published" for row in rows)
+                + additional_cards_to_target
+            ),
+        })
+
     summary = {
         "schemaVersion": 2,
         "gameId": catalog["id"],
@@ -190,19 +245,11 @@ def collect_candidates(
         "totalMessageCount": len(messages),
         "selectionRule": (
             "Rank by frequency in this chapter, then full-game recurrence; "
-            "exclude words taught by any transitive hard-prerequisite deck."
+            "exclude words taught by any transitive hard-prerequisite deck. "
+            "A core deck is complete at 80% of mapped token occurrences; "
+            "reviewers may add rarer story-essential vocabulary beyond that gate."
         ),
-        "chapters": [
-            {
-                "chapterId": chapter["id"],
-                "mappingStatus": next(item["status"] for item in mapping["chapters"] if item["chapterId"] == chapter["id"]),
-                "mappedMessageCount": len(mapped_existing[chapter["id"]]),
-                "candidateCount": len(by_chapter[chapter["id"]]),
-                "excludedByPrerequisiteCount": excluded_by_prerequisite[chapter["id"]],
-                "publishedCount": sum(row["reviewStatus"] == "published" for row in by_chapter[chapter["id"]]),
-            }
-            for chapter in catalog["chapters"]
-        ],
+        "chapters": chapter_summaries,
     }
     return by_chapter, summary
 
@@ -246,7 +293,10 @@ def main() -> None:
         print(
             f"{chapter['chapterId']}: {chapter['candidateCount']} candidates, "
             f"{chapter['excludedByPrerequisiteCount']} prerequisite repeats excluded, "
-            f"{chapter['publishedCount']} published ({chapter['mappingStatus']})"
+            f"{chapter['publishedCount']} published, "
+            f"{chapter['coveragePercent']:.2f}% token coverage, "
+            f"{chapter['additionalCardsToCoreTarget']} cards to 80% "
+            f"({chapter['mappingStatus']})"
         )
 
 

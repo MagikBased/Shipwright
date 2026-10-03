@@ -28,6 +28,12 @@ A deck introduces the most important vocabulary needed for its chapter after
 subtracting every word taught by any transitive hard-prerequisite deck.
 Recommended ordering does not count as a prerequisite: parallel optional
 branches may both teach a shared word so either route remains self-contained.
+"Complete core deck" has an objective corpus gate: its own reviewed cards plus
+cards taught by transitive hard prerequisites must account for at least 80% of
+the token occurrences in that chapter's mapped dialogue. This deliberately
+measures recurring reading value rather than requiring a card for every rare
+name, typo, interjection, or dictionary sense. Reviewers may still add rarer
+story-essential terms beyond the threshold.
 Later occurrences in dependent chapters become chapter tags rather than
 duplicate notes. The Anki hierarchy is:
 
@@ -81,7 +87,9 @@ metadata and message IDs but deliberately omit Japanese and English dialogue.
 Each TSV includes an explicit importance rank. Regenerating after cards are
 published removes those identities from dependent queues, and the summary
 reports how many repeats were removed because a prerequisite already teaches
-them. Catalog deck
+them. The summary also reports current token coverage, prerequisite coverage,
+and the number of additional ranked cards needed to meet the 80% core gate.
+Catalog deck
 generation independently rejects a published card that duplicates any
 transitive hard prerequisite, so an editorial mistake cannot silently create a
 redundant deck.

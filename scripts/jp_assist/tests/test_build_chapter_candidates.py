@@ -49,6 +49,11 @@ class BuildChapterCandidatesTest(unittest.TestCase):
         self.assertNotIn("english", forest)
         self.assertEqual(summary["mappedMessageCount"], 3)
         self.assertEqual(summary["chapters"][1]["excludedByPrerequisiteCount"], 1)
+        self.assertEqual(summary["chapters"][1]["totalTokenOccurrences"], 2)
+        self.assertEqual(summary["chapters"][1]["prerequisiteCoveredOccurrences"], 1)
+        self.assertEqual(summary["chapters"][1]["publishedCoveredOccurrences"], 0)
+        self.assertEqual(summary["chapters"][1]["coveragePercent"], 50.0)
+        self.assertEqual(summary["chapters"][1]["additionalCardsToCoreTarget"], 1)
         self.assertEqual(by_chapter["two"][0]["importanceRank"], 1)
 
     def test_parallel_branches_can_teach_the_same_new_word(self):
