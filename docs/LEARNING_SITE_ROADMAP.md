@@ -39,14 +39,16 @@ Completed:
   direct browser-to-local-Anki AnkiConnect export.
 - Deterministic FSRS-6 review queue with append-only, replayable review history.
 - Password changes, session revocation, per-game clearing, and account deletion.
+- Hashed, expiring email verification/recovery/change tokens; category-based
+  notification preferences; local reminder delivery and unsubscribe.
 - Versioned SQLite migrations, health/readiness checks, HTTPS deployment
   scaffold, rate limits, and backup/restore commands.
 - Service, API, migration, deployment, and cross-component Anki acceptance tests.
 
 Known intentional limitations:
 
-- Reminder preference is stored but notifications are not delivered.
-- Email verification and password recovery are absent.
+- Reminder delivery is locally testable and idempotent, but periodic invocation
+  remains an operations milestone; no real email provider is configured.
 - Chromium browser workflows, responsive layouts, accessibility, recovery
   states, and visual regressions have deterministic automated coverage;
   Firefox and WebKit qualification remains part of the release-candidate gate.
@@ -169,6 +171,11 @@ deduplicated by its original revlog ID, and returning ownership to JP Assist
 rebuilds its FSRS state from the immutable combined history.
 
 ## Milestone 5 — Identity, recovery, and notifications
+
+Status: **complete**. Identity actions use hashed, expiring, single-use tokens;
+password and email changes revoke sessions; resend/cleanup/audit behavior is
+covered; and local FileMailer/Mailpit transports support complete browser
+acceptance without external delivery.
 
 All flows must work locally using a development mail catcher; selecting a real
 email provider is a deployment-time concern.

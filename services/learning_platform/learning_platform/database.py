@@ -2,7 +2,7 @@ import sqlite3
 from pathlib import Path
 
 
-LATEST_SCHEMA_VERSION = 7
+LATEST_SCHEMA_VERSION = 8
 
 SCHEMA = """
 PRAGMA foreign_keys = ON;
@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS metadata (
     value TEXT NOT NULL
 );
 
-INSERT OR IGNORE INTO metadata(key, value) VALUES ('schema_version', '7');
+INSERT OR IGNORE INTO metadata(key, value) VALUES ('schema_version', '8');
 
 CREATE TABLE IF NOT EXISTS users (
     id TEXT PRIMARY KEY,
@@ -20,7 +20,8 @@ CREATE TABLE IF NOT EXISTS users (
     display_name TEXT NOT NULL,
     password_salt BLOB NOT NULL,
     password_hash BLOB NOT NULL,
-    created_at TEXT NOT NULL
+    created_at TEXT NOT NULL,
+    email_verified_at TEXT
 );
 
 CREATE TABLE IF NOT EXISTS sessions (
@@ -221,6 +222,50 @@ CREATE TABLE IF NOT EXISTS export_history (
 );
 
 CREATE INDEX IF NOT EXISTS export_history_user_time_idx ON export_history(user_id, created_at);
+
+CREATE TABLE IF NOT EXISTS action_tokens (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    purpose TEXT NOT NULL CHECK (purpose IN (
+        'verify_email', 'reset_password', 'change_email', 'unsubscribe_reminders'
+    )),
+    token_hash TEXT NOT NULL UNIQUE,
+    target_email TEXT,
+    created_at TEXT NOT NULL,
+    expires_at TEXT NOT NULL,
+    consumed_at TEXT
+);
+
+CREATE INDEX IF NOT EXISTS action_tokens_user_purpose_idx
+    ON action_tokens(user_id, purpose, created_at);
+
+CREATE TABLE IF NOT EXISTS notification_preferences (
+    user_id TEXT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+    review_reminders INTEGER NOT NULL DEFAULT 0,
+    product_updates INTEGER NOT NULL DEFAULT 0,
+    reminder_hour INTEGER NOT NULL DEFAULT 18 CHECK (reminder_hour BETWEEN 0 AND 23),
+    timezone TEXT NOT NULL DEFAULT 'UTC',
+    updated_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS notification_deliveries (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    category TEXT NOT NULL,
+    local_date TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    UNIQUE(user_id, category, local_date)
+);
+
+CREATE TABLE IF NOT EXISTS audit_events (
+    id TEXT PRIMARY KEY,
+    user_id TEXT REFERENCES users(id) ON DELETE CASCADE,
+    event_type TEXT NOT NULL,
+    occurred_at TEXT NOT NULL,
+    metadata_json TEXT NOT NULL DEFAULT '{}'
+);
+
+CREATE INDEX IF NOT EXISTS audit_events_user_time_idx ON audit_events(user_id, occurred_at);
 """
 
 
@@ -243,7 +288,10 @@ class Database:
             goal_columns = {row["name"] for row in connection.execute("PRAGMA table_info(learning_goals)")}
             if "timezone" not in goal_columns:
                 connection.execute("ALTER TABLE learning_goals ADD COLUMN timezone TEXT NOT NULL DEFAULT 'UTC'")
-            connection.execute("UPDATE metadata SET value = '7' WHERE key = 'schema_version'")
+            user_columns = {row["name"] for row in connection.execute("PRAGMA table_info(users)")}
+            if "email_verified_at" not in user_columns:
+                connection.execute("ALTER TABLE users ADD COLUMN email_verified_at TEXT")
+            connection.execute("UPDATE metadata SET value = '8' WHERE key = 'schema_version'")
 
     @staticmethod
     def _migrate_review_schema(connection: sqlite3.Connection) -> None:

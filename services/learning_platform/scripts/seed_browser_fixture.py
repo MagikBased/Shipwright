@@ -7,6 +7,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from learning_platform.service import LearningPlatform, isoformat
+from learning_platform.mailer import Mailer
 
 
 EMAIL = "learner@example.test"
@@ -26,11 +27,14 @@ def _pair(platform: LearningPlatform, session: str, name: str, adapter: str, gam
     return platform.claim_pairing(pairing["deviceCode"])
 
 
-def seed_fixture(database_path: Path, reset: bool = False) -> dict[str, str]:
+def seed_fixture(
+    database_path: Path, reset: bool = False, mailer: Mailer | None = None,
+    public_base_url: str = "http://127.0.0.1:18766",
+) -> dict[str, str]:
     database_path = database_path.resolve()
     if reset:
         _remove_database(database_path)
-    platform = LearningPlatform(database_path)
+    platform = LearningPlatform(database_path, mailer=mailer, public_base_url=public_base_url)
     account = platform.register_user(EMAIL, PASSWORD, DISPLAY_NAME)
     session = account["token"]
     game_a = _pair(platform, session, "Synthetic desktop", "test-adapter-a", "test-adventure-a")

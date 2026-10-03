@@ -90,7 +90,7 @@ class DeploymentTest(unittest.TestCase):
                     );
                 """)
             migrated = Database(path)
-            self.assertEqual(migrated.schema_version(), 7)
+            self.assertEqual(migrated.schema_version(), LATEST_SCHEMA_VERSION)
             expected = {"scheduler_version", "algorithm_version", "parameters_json", "desired_retention",
                         "card_state", "step", "stability", "difficulty", "scheduled_days", "elapsed_days"}
             with migrated.connect() as connection:
@@ -113,7 +113,7 @@ class DeploymentTest(unittest.TestCase):
                 buried = connection.execute(
                     "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'buried_cards'"
                 ).fetchone()
-            self.assertEqual(migrated.schema_version(), 7)
+            self.assertEqual(migrated.schema_version(), LATEST_SCHEMA_VERSION)
             self.assertIn("timezone", goal_columns)
             self.assertIsNotNone(buried)
 
@@ -127,7 +127,7 @@ class DeploymentTest(unittest.TestCase):
             migrated = Database(path)
             with migrated.connect() as connection:
                 columns = {row["name"] for row in connection.execute("PRAGMA table_info(review_collections)")}
-            self.assertEqual(migrated.schema_version(), 7)
+            self.assertEqual(migrated.schema_version(), LATEST_SCHEMA_VERSION)
             self.assertTrue({"collection_id", "review_owner", "anki_deck", "last_anki_sync_at"}.issubset(columns))
 
     def test_version_six_gains_anki_review_source_identity(self):
@@ -143,9 +143,28 @@ class DeploymentTest(unittest.TestCase):
             with migrated.connect() as connection:
                 columns = {row["name"] for row in connection.execute("PRAGMA table_info(reviews)")}
                 indexes = {row["name"] for row in connection.execute("PRAGMA index_list(reviews)")}
-            self.assertEqual(migrated.schema_version(), 7)
+            self.assertEqual(migrated.schema_version(), LATEST_SCHEMA_VERSION)
             self.assertTrue({"source_review_id", "source_card_id", "review_duration_ms", "source_metadata_json"}.issubset(columns))
             self.assertIn("reviews_source_identity_idx", indexes)
+
+    def test_version_seven_gains_identity_tokens_notifications_and_audit(self):
+        with tempfile.TemporaryDirectory(prefix="jp-assist-identity-migration-") as temporary:
+            path = Path(temporary) / "version-seven.sqlite3"
+            database = Database(path)
+            with database.connect() as connection:
+                connection.execute("UPDATE metadata SET value = '7' WHERE key = 'schema_version'")
+                for table in (
+                    "notification_deliveries", "notification_preferences", "action_tokens", "audit_events",
+                ):
+                    connection.execute(f"DROP TABLE {table}")
+                connection.execute("ALTER TABLE users DROP COLUMN email_verified_at")
+            migrated = Database(path)
+            with migrated.connect() as connection:
+                user_columns = {row["name"] for row in connection.execute("PRAGMA table_info(users)")}
+                tables = {row[0] for row in connection.execute("SELECT name FROM sqlite_master WHERE type='table'")}
+            self.assertEqual(migrated.schema_version(), LATEST_SCHEMA_VERSION)
+            self.assertIn("email_verified_at", user_columns)
+            self.assertTrue({"action_tokens", "notification_preferences", "notification_deliveries", "audit_events"}.issubset(tables))
 
     def test_backup_and_restore_create_ready_database_and_safety_copy(self):
         with tempfile.TemporaryDirectory(prefix="jp-assist-backup-") as temporary:

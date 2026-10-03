@@ -9,6 +9,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from .database import Database, LATEST_SCHEMA_VERSION
+from .config import Settings
+from .mailer import mailer_from_settings
 from .service import LearningPlatform
 
 
@@ -113,6 +115,7 @@ def main() -> None:
     subparsers.add_parser("status", help="Check schema version and SQLite integrity")
     subparsers.add_parser("migrate", help="Apply all supported schema migrations")
     subparsers.add_parser("rebuild-reviews", help="Rebuild derived FSRS card state from the review log")
+    subparsers.add_parser("send-reminders", help="Send due-review reminders through the configured local mail transport")
     backup_parser = subparsers.add_parser("backup", help="Create a consistent online SQLite backup")
     backup_parser.add_argument("output", type=Path)
     backup_parser.add_argument("--force", action="store_true")
@@ -145,6 +148,16 @@ def main() -> None:
     elif args.command == "rebuild-reviews":
         count = LearningPlatform(database_path, allow_scheduler_upgrade=True).rebuild_review_states()
         print(f"Rebuilt {count} FSRS card states in {database_path}")
+    elif args.command == "send-reminders":
+        settings = Settings.from_environment(database_path)
+        result = LearningPlatform(
+            database_path, mailer=mailer_from_settings(settings),
+            public_base_url=settings.public_base_url,
+        ).send_due_reminders()
+        print(
+            f"Reminder delivery: {result['sent']} sent, {result['failed']} failed, "
+            f"{result['skipped']} skipped"
+        )
     elif args.command == "backup":
         Database(database_path)
         backup_database(database_path, args.output, args.force)

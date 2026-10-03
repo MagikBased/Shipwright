@@ -38,6 +38,15 @@ class Settings:
     auth_rate_limit: int
     pairing_rate_limit: int
     event_rate_limit: int
+    mail_transport: str = "disabled"
+    mailbox_path: str = ""
+    smtp_host: str = ""
+    smtp_port: int = 1025
+    smtp_from: str = "JP Assist <no-reply@jp-assist.invalid>"
+    smtp_username: str = ""
+    smtp_password: str = ""
+    smtp_starttls: bool = False
+    public_base_url: str = "http://127.0.0.1:8766"
 
     @classmethod
     def from_environment(cls, database_path: str | Path | None = None) -> "Settings":
@@ -62,6 +71,24 @@ class Settings:
             auth_rate_limit=_positive_integer("JP_ASSIST_AUTH_RATE_LIMIT", 20),
             pairing_rate_limit=_positive_integer("JP_ASSIST_PAIRING_RATE_LIMIT", 180),
             event_rate_limit=_positive_integer("JP_ASSIST_EVENT_RATE_LIMIT", 180),
+            mail_transport=os.environ.get(
+                "JP_ASSIST_MAIL_TRANSPORT", "smtp" if production else "file"
+            ).strip().lower(),
+            mailbox_path=os.environ.get(
+                "JP_ASSIST_MAILBOX_PATH", str(root / "var" / "dev-mailbox.jsonl")
+            ),
+            smtp_host=os.environ.get("JP_ASSIST_SMTP_HOST", "mailpit" if production else ""),
+            smtp_port=_positive_integer("JP_ASSIST_SMTP_PORT", 1025),
+            smtp_from=os.environ.get(
+                "JP_ASSIST_SMTP_FROM", "JP Assist <no-reply@jp-assist.invalid>"
+            ),
+            smtp_username=os.environ.get("JP_ASSIST_SMTP_USERNAME", ""),
+            smtp_password=os.environ.get("JP_ASSIST_SMTP_PASSWORD", ""),
+            smtp_starttls=_boolean("JP_ASSIST_SMTP_STARTTLS", False),
+            public_base_url=os.environ.get(
+                "JP_ASSIST_PUBLIC_BASE_URL",
+                f"https://{allowed_hosts[0]}" if production else "http://127.0.0.1:8766",
+            ).rstrip("/"),
         )
         settings.validate()
         return settings
@@ -73,4 +100,13 @@ class Settings:
             raise ValueError("Production requires JP_ASSIST_COOKIE_SECURE=1")
         if self.production and self.allowed_hosts == ("*",):
             raise ValueError("Production requires an explicit JP_ASSIST_ALLOWED_HOSTS value")
-
+        if self.mail_transport not in {"disabled", "file", "smtp"}:
+            raise ValueError("JP_ASSIST_MAIL_TRANSPORT must be disabled, file, or smtp")
+        if self.mail_transport == "file" and not self.mailbox_path:
+            raise ValueError("File mail transport requires JP_ASSIST_MAILBOX_PATH")
+        if self.mail_transport == "smtp" and (not self.smtp_host or self.smtp_port == 0):
+            raise ValueError("SMTP mail transport requires JP_ASSIST_SMTP_HOST and a nonzero port")
+        if self.production and self.mail_transport != "smtp":
+            raise ValueError("Production requires JP_ASSIST_MAIL_TRANSPORT=smtp")
+        if not self.public_base_url.startswith(("http://", "https://")):
+            raise ValueError("JP_ASSIST_PUBLIC_BASE_URL must be an http(s) URL")

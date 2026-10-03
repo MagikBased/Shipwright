@@ -71,16 +71,16 @@ payload to learning events without a separate content licensing decision.
   changing the pairing or event APIs.
 
 The account UI supports password changes, device and website-session
-revocation, full personal-data export, per-game progress clearing, and account
-deletion. Email verification, password recovery, third-party login, and
-administration remain deployment requirements after the local MVP proves the
-workflow.
+revocation, full personal-data export, per-game progress clearing, account
+deletion, email verification, password recovery, verified email changes, and
+local notification preferences. Third-party login and administration remain
+outside the local MVP.
 
 The release scaffold now supplies HTTPS termination, explicit host validation,
 endpoint-specific in-process rate limits, health/readiness checks, versioned
-schema startup, and consistent backup/restore commands. Email verification,
-password recovery, external monitoring, and operational backup scheduling
-remain deployment-owner requirements before an open public beta. See
+schema startup, consistent backup/restore commands, and a local-only Mailpit
+topology. A real email provider, external monitoring, and operational backup
+scheduling remain deployment-owner requirements before an open public beta. See
 `LEARNING_PLATFORM_DEPLOYMENT.md`.
 
 ## Event contract
@@ -140,18 +140,16 @@ without uploading either language's text.
 
 - Search/filter/sort vocabulary library and per-game activity.
 - Notes, tags, and new/learning/known/ignored states.
-- Daily goals and a stored reminder preference.
-- Append-only reviews with an MVP due queue.
-- Direct browser-to-local-Anki AnkiConnect export.
+- Daily goals and local reminder delivery with unsubscribe.
+- Append-only reviews with deterministic FSRS-6 scheduling.
+- Idempotent browser-to-local-Anki card and review-history synchronization.
 - Licensed dictionary metadata import that strips game dialogue.
 - Complete personal-data export and account/privacy controls.
 
 ## Deferred deliberately
 
-- Exact FSRS scheduling and bidirectional Anki review-history reconciliation.
 - Direct AnkiWeb credentials (the current handoff is local AnkiConnect only).
-- Actual reminder delivery; the account currently stores preference and goals.
-- Email verification and password recovery.
+- Real transactional-email delivery (local development/staging uses Mailpit).
 - Public content packs containing copyrighted dialogue.
 - Social features, leaderboards, or public profiles.
 

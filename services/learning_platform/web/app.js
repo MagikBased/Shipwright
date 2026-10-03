@@ -5,7 +5,7 @@ const auth = document.querySelector("#auth");
 const dashboard = document.querySelector("#dashboard");
 const logout = document.querySelector("#logout");
 const WORD_PAGE_SIZE = 50;
-const state = { user: null, stats: null, goals: null, words: [], wordsOffset: 0, wordsHaveMore: false, wordRequestVersion: 0, activity: { days: [], games: [] }, devices: [], sessions: [], queue: [], reviewIndex: 0, reviewCollection: null, ankiCollection: null, ankiPlan: null };
+const state = { user: null, stats: null, goals: null, notifications: null, words: [], wordsOffset: 0, wordsHaveMore: false, wordRequestVersion: 0, activity: { days: [], games: [] }, devices: [], sessions: [], queue: [], reviewIndex: 0, reviewCollection: null, ankiCollection: null, ankiPlan: null };
 const connectionStatus = document.querySelector("#connection-status");
 
 function setConnectionStatus(message = "", retry = false) {
@@ -44,13 +44,13 @@ async function loadDashboard() {
   document.querySelector("#games").innerHTML = skeletonCards(2);
   document.querySelector("#learning-states").innerHTML = skeletonCards(4);
   try {
-    const [stats, activity, goals, devices, sessions, reviewCollection] = await Promise.all([
-      api("/v1/me/stats"), api("/v1/me/activity"), api("/v1/me/goals"), api("/v1/me/devices"), api("/v1/me/sessions"), api("/v1/me/review-collection"),
+    const [stats, activity, goals, notifications, devices, sessions, reviewCollection] = await Promise.all([
+      api("/v1/me/stats"), api("/v1/me/activity"), api("/v1/me/goals"), api("/v1/me/notification-preferences"), api("/v1/me/devices"), api("/v1/me/sessions"), api("/v1/me/review-collection"),
     ]);
-    Object.assign(state, { user, stats, activity, goals, devices, sessions, reviewCollection });
+    Object.assign(state, { user, stats, activity, goals, notifications, devices, sessions, reviewCollection });
     document.querySelectorAll(".account-username").forEach(input => { input.value = user.email; });
     document.querySelector("#greeting").textContent = `${user.displayName}'s learning overview`;
-    renderOverview(goals); renderConnections(); await populateGames(); renderReviewOwner(); await loadWords();
+    renderOverview(goals); renderConnections(); renderAccountSettings(); await populateGames(); renderReviewOwner(); await loadWords();
     if (navigator.onLine) setConnectionStatus();
   } catch (error) {
     showNotice(`Your account is signed in, but some data could not be loaded: ${error.message}`, true);
@@ -121,6 +121,18 @@ function openWordEditor(index) {
 function renderConnections() {
   document.querySelector("#devices").innerHTML = state.devices.length ? state.devices.map(device => `<div class="card-row"><div><strong>${escapeHtml(device.deviceName)}</strong><small>${escapeHtml(device.gameId)} · last seen ${escapeHtml(device.lastSeenAt.slice(0,10))}</small></div><button class="quiet revoke-device" data-id="${escapeHtml(device.id)}">Revoke</button></div>`).join("") : '<p class="muted">No connected mods yet.</p>';
   document.querySelector("#sessions").innerHTML = state.sessions.map(session => `<div class="card-row"><div><strong>${session.current?"This session":"Website session"}</strong><small>Created ${escapeHtml(session.createdAt.slice(0,10))} · expires ${escapeHtml(session.expiresAt.slice(0,10))}</small></div><button class="quiet revoke-session" data-id="${escapeHtml(session.id)}">${session.current?"Sign out":"Revoke"}</button></div>`).join("");
+}
+
+function renderAccountSettings() {
+  const verified = state.user.emailVerified;
+  document.querySelector("#email-status").innerHTML = `<strong>${escapeHtml(state.user.email)}</strong><br><span class="pill ${verified ? "saved" : ""}">${verified ? "verified" : "verification needed"}</span>`;
+  document.querySelector("#resend-verification").classList.toggle("hidden", verified);
+  document.querySelector("#test-reminder").disabled = !verified;
+  const form = document.querySelector("#notification-form");
+  form.reviewReminders.checked = state.notifications.reviewReminders;
+  form.productUpdates.checked = state.notifications.productUpdates;
+  form.reminderHour.value = state.notifications.reminderHour;
+  form.timezone.value = state.notifications.timezone;
 }
 
 async function loadReviewQueue() { state.queue = await api("/v1/me/reviews/queue?limit=100"); state.reviewIndex = 0; renderReview(false); }
@@ -215,8 +227,47 @@ async function importAnkiHistory() {
   return { ...result, skipped: collected.skipped, cards: collected.cards };
 }
 
+function showAuthMode(mode = "default") {
+  document.querySelector("#login-form").classList.toggle("hidden", mode !== "default");
+  document.querySelector("#register-form").classList.toggle("hidden", mode !== "default");
+  document.querySelector("#reset-request-form").classList.toggle("hidden", mode !== "request-reset");
+  document.querySelector("#reset-complete-form").classList.toggle("hidden", mode !== "complete-reset");
+}
+
+async function handleInitialAction() {
+  const parameters = new URLSearchParams(location.hash.slice(1));
+  const action = parameters.get("action"), token = parameters.get("token");
+  if (!action || !token) return false;
+  if (action === "reset-password") {
+    auth.classList.remove("hidden"); dashboard.classList.add("hidden"); logout.classList.add("hidden");
+    showAuthMode("complete-reset");
+    document.querySelector("#reset-complete-form").token.value = token;
+    return true;
+  }
+  const actions = {
+    "verify-email": ["/v1/auth/verify-email", "Email verified."],
+    "change-email": ["/v1/auth/change-email/confirm", "Email changed. Sign in with your new address."],
+    "unsubscribe-reminders": ["/v1/auth/notifications/unsubscribe", "Review reminder emails are disabled."],
+  };
+  const selected = actions[action];
+  if (!selected) return false;
+  try {
+    await api(selected[0], { method: "POST", body: JSON.stringify({ token }) });
+    showNotice(selected[1]);
+  } catch (error) {
+    showNotice(error.message, true);
+  } finally {
+    history.replaceState({}, "", location.pathname);
+  }
+  return false;
+}
+
 document.querySelector("#tabs").addEventListener("click", async event => { const button = event.target.closest("[data-view]"); if (!button) return; document.querySelectorAll("#tabs button").forEach(item => item.classList.toggle("active", item===button)); document.querySelectorAll(".view").forEach(view => view.classList.add("hidden")); document.querySelector(`#view-${button.dataset.view}`).classList.remove("hidden"); if (button.dataset.view==="review") await loadReviewQueue(); });
-for (const [id,path] of [["login-form","/v1/auth/login"],["register-form","/v1/auth/register"]]) document.querySelector(`#${id}`).addEventListener("submit", async event => { event.preventDefault(); const form=event.currentTarget, button=form.querySelector("button[type=submit]"); setBusy(button,true,id==="login-form"?"Signing in…":"Creating account…"); try { await api(path,{method:"POST",body:JSON.stringify(formJson(form))}); showNotice(""); await loadDashboard(); } catch(error){showNotice(error.message,true);} finally { setBusy(button,false); } });
+for (const [id,path] of [["login-form","/v1/auth/login"],["register-form","/v1/auth/register"]]) document.querySelector(`#${id}`).addEventListener("submit", async event => { event.preventDefault(); const form=event.currentTarget, button=form.querySelector("button[type=submit]"); setBusy(button,true,id==="login-form"?"Signing in…":"Creating account…"); try { const result=await api(path,{method:"POST",body:JSON.stringify(formJson(form))}); showNotice(id==="register-form"?(result.verificationEmailSent?"Account created. Check your email to verify the address.":"Account created, but the verification email could not be delivered. Retry from Account."):""); await loadDashboard(); } catch(error){showNotice(error.message,true);} finally { setBusy(button,false); } });
+document.querySelector("#forgot-password").addEventListener("click",()=>showAuthMode("request-reset"));
+document.querySelectorAll(".auth-back").forEach(button=>button.addEventListener("click",()=>{history.replaceState({},"",location.pathname);showAuthMode();}));
+document.querySelector("#reset-request-form").addEventListener("submit",async event=>{event.preventDefault();const form=event.currentTarget,button=form.querySelector("button[type=submit]");setBusy(button,true,"Sending…");try{const result=await api("/v1/auth/password-reset/request",{method:"POST",body:JSON.stringify(formJson(form))});showNotice(result.message);showAuthMode();}catch(error){showNotice(error.message,true);}finally{setBusy(button,false);}});
+document.querySelector("#reset-complete-form").addEventListener("submit",async event=>{event.preventDefault();const form=event.currentTarget,button=form.querySelector("button[type=submit]");setBusy(button,true,"Resetting…");try{await api("/v1/auth/password-reset/complete",{method:"POST",body:JSON.stringify(formJson(form))});history.replaceState({},"",location.pathname);form.reset();showAuthMode();showNotice("Password reset. Sign in with your new password.");}catch(error){showNotice(error.message,true);}finally{setBusy(button,false);}});
 document.querySelector("#pair-form").addEventListener("submit", async event => { event.preventDefault(); const form=event.currentTarget, button=form.querySelector("button[type=submit]"); setBusy(button,true,"Pairing…"); try { const result=await api("/v1/device-pairings/approve",{method:"POST",body:JSON.stringify(formJson(form))}); showNotice(`${result.deviceName} is approved. Return to the game to finish connecting.`); form.reset(); } catch(error){showNotice(error.message,true);} finally { setBusy(button,false); } });
 document.querySelector("#goals-form").addEventListener("submit", async event => { event.preventDefault(); const form=event.currentTarget, button=form.querySelector("button[type=submit]"); setBusy(button,true,"Saving…"); try { state.goals=await api("/v1/me/goals",{method:"PUT",body:JSON.stringify({dailyNewWords:Number(form.dailyNewWords.value),dailyReviews:Number(form.dailyReviews.value),remindersEnabled:form.remindersEnabled.checked,timezone:form.timezone.value.trim()})});renderOverview(state.goals);showNotice("Goals saved."); } catch(error){showNotice(error.message,true);} finally { setBusy(button,false); } });
 let searchTimer; for (const id of ["word-search","word-state","word-sort","saved-only"]) document.querySelector(`#${id}`).addEventListener("input",()=>{clearTimeout(searchTimer);searchTimer=setTimeout(()=>loadWords(true).catch(error=>showNotice(error.message,true)),180);});
@@ -233,6 +284,12 @@ document.querySelector("#export-game").addEventListener("change",()=>loadAnkiCol
 document.querySelector("#anki-owner").addEventListener("change",async event=>{const select=event.currentTarget,next=select.value,previous=state.ankiCollection.reviewOwner;if(next===previous)return;const confirmed=await confirmAction("Change review owner?",`${next==="anki"?"Anki":"JP Assist"} will become the only scheduler for this collection. Existing review history is kept, but due cards appear only in the owning scheduler.`,"Change owner",true);if(!confirmed){select.value=previous;return;}try{await saveAnkiCollection(next,true);showNotice(`${next==="anki"?"Anki":"JP Assist"} now owns scheduling for this collection.`);}catch(error){select.value=previous;showNotice(error.message,true);}});
 document.querySelector("#devices").addEventListener("click",async event=>{const button=event.target.closest(".revoke-device");if(!button)return;if(!await confirmAction("Revoke device?","This mod will no longer be able to synchronize until it is paired again.","Revoke device",true))return;try{await api(`/v1/me/devices/${encodeURIComponent(button.dataset.id)}`,{method:"DELETE"});showNotice("Device access revoked.");await loadDashboard();}catch(error){showNotice(error.message,true);}}); document.querySelector("#sessions").addEventListener("click",async event=>{const button=event.target.closest(".revoke-session");if(!button)return;if(!await confirmAction(button.textContent==="Sign out"?"Sign out this session?":"Revoke website session?","That browser will need to sign in again.",button.textContent,true))return;try{await api(`/v1/me/sessions/${encodeURIComponent(button.dataset.id)}`,{method:"DELETE"});showNotice("Session revoked.");await loadDashboard();}catch(error){showNotice(error.message,true);}});
 document.querySelector("#password-form").addEventListener("submit",async event=>{event.preventDefault();const form=event.currentTarget,button=form.querySelector("button[type=submit]");setBusy(button,true,"Changing…");try{await api("/v1/me/password",{method:"PUT",body:JSON.stringify(formJson(form))});form.reset();showNotice("Password changed. Other website sessions were revoked.");await loadDashboard();}catch(error){showNotice(error.message,true);}finally{setBusy(button,false);}});
+document.querySelector("#resend-verification").addEventListener("click",async event=>{const button=event.currentTarget;setBusy(button,true,"Sending…");try{const result=await api("/v1/me/verification-email",{method:"POST"});showNotice(result.alreadyVerified?"This email is already verified.":result.sent?"Verification email sent.":"The verification email could not be delivered. Check the local mail service.",!result.alreadyVerified&&!result.sent);}catch(error){showNotice(error.message,true);}finally{setBusy(button,false);}});
+document.querySelector("#change-email-form").addEventListener("submit",async event=>{event.preventDefault();const form=event.currentTarget,button=form.querySelector("button[type=submit]");setBusy(button,true,"Sending…");try{const result=await api("/v1/me/change-email",{method:"POST",body:JSON.stringify(formJson(form))});form.reset();showNotice(result.sent?"Confirmation sent to the new address. Your current email remains active until confirmed.":"The confirmation could not be delivered. Check the local mail service.",!result.sent);}catch(error){showNotice(error.message,true);}finally{setBusy(button,false);}});
+document.querySelector("#notification-form").addEventListener("submit",async event=>{event.preventDefault();const form=event.currentTarget,button=form.querySelector("button[type=submit]");setBusy(button,true,"Saving…");try{state.notifications=await api("/v1/me/notification-preferences",{method:"PUT",body:JSON.stringify({reviewReminders:form.reviewReminders.checked,productUpdates:form.productUpdates.checked,reminderHour:Number(form.reminderHour.value),timezone:form.timezone.value.trim()})});renderAccountSettings();showNotice("Notification preferences saved.");}catch(error){showNotice(error.message,true);}finally{setBusy(button,false);}});
+document.querySelector("#test-reminder").addEventListener("click",async event=>{const button=event.currentTarget;setBusy(button,true,"Sending…");try{await api("/v1/me/notification-preferences/test",{method:"POST"});showNotice("Test reminder sent to the local mailbox.");}catch(error){showNotice(error.message,true);}finally{setBusy(button,false);}});
 document.querySelector("#clear-game-form").addEventListener("submit",async event=>{event.preventDefault();const gameId=event.currentTarget.gameId.value;if(!gameId||!await confirmAction("Clear game progress?",`Permanently remove synchronized events and progress for ${gameId}. Notes and review history will remain.`,"Clear progress",true))return;try{await api("/v1/me/clear-game",{method:"POST",body:JSON.stringify({gameId})});showNotice(`${gameId} progress cleared.`);await loadDashboard();}catch(error){showNotice(error.message,true);}});
 document.querySelector("#delete-account-form").addEventListener("submit",async event=>{event.preventDefault();const form=event.currentTarget;if(!await confirmAction("Delete this account?","This permanently removes the account and all synchronized learning data. This cannot be undone.","Delete account",true))return;try{await api("/v1/me",{method:"DELETE",body:JSON.stringify(formJson(form))});showNotice("Account deleted.");await loadDashboard();}catch(error){showNotice(error.message,true);}});
-logout.addEventListener("click",async()=>{try{await api("/v1/auth/logout",{method:"POST"});}finally{await loadDashboard();}}); loadDashboard();
+logout.addEventListener("click",async()=>{try{await api("/v1/auth/logout",{method:"POST"});}finally{await loadDashboard();}});
+window.addEventListener("hashchange",()=>handleInitialAction().then(held=>{if(!held)loadDashboard();}));
+handleInitialAction().then(held=>{if(!held)loadDashboard();});

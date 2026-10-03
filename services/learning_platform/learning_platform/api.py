@@ -13,6 +13,7 @@ from pydantic import BaseModel, Field, StrictInt
 from .config import Settings
 from .database import LATEST_SCHEMA_VERSION
 from .errors import AuthenticationError, PlatformError
+from .mailer import Mailer, mailer_from_settings
 from .rate_limit import SlidingWindowRateLimiter
 from .service import LearningPlatform
 
@@ -31,6 +32,31 @@ class RegisterRequest(ApiModel):
 class LoginRequest(ApiModel):
     email: str
     password: str
+
+
+class EmailRequest(ApiModel):
+    email: str
+
+
+class TokenRequest(ApiModel):
+    token: str
+
+
+class PasswordResetRequest(ApiModel):
+    token: str
+    newPassword: str
+
+
+class EmailChangeRequest(ApiModel):
+    password: str
+    newEmail: str
+
+
+class NotificationPreferencesRequest(ApiModel):
+    reviewReminders: bool = False
+    productUpdates: bool = False
+    reminderHour: StrictInt = 18
+    timezone: str = "UTC"
 
 
 class PairingRequest(ApiModel):
@@ -166,15 +192,20 @@ def create_app(
     database_path: str | Path | None = None,
     settings: Settings | None = None,
     rate_limiter: SlidingWindowRateLimiter | None = None,
+    mailer: Mailer | None = None,
 ) -> FastAPI:
     root = Path(__file__).resolve().parent.parent
     settings = settings or Settings.from_environment(database_path)
     settings.validate()
-    platform = LearningPlatform(settings.database_path)
+    if mailer is None:
+        mailer = mailer_from_settings(settings)
+    platform = LearningPlatform(
+        settings.database_path, mailer=mailer, public_base_url=settings.public_base_url,
+    )
     rate_limiter = rate_limiter or SlidingWindowRateLimiter()
     app = FastAPI(
         title="JP Assist Learning Platform",
-        version="0.2.0",
+        version="0.3.0",
         docs_url=None if settings.production else "/docs",
         redoc_url=None if settings.production else "/redoc",
         openapi_url=None if settings.production else "/openapi.json",
@@ -243,6 +274,29 @@ def create_app(
         _set_session_cookie(response, result["token"], settings.cookie_secure)
         return result
 
+    @app.post("/v1/auth/verify-email")
+    def verify_email(payload: TokenRequest) -> dict[str, Any]:
+        return platform.verify_email(payload.token)
+
+    @app.post("/v1/auth/password-reset/request")
+    def request_password_reset(payload: EmailRequest) -> dict[str, str]:
+        return platform.request_password_reset(payload.email)
+
+    @app.post("/v1/auth/password-reset/complete", status_code=204)
+    def complete_password_reset(payload: PasswordResetRequest, response: Response) -> None:
+        platform.reset_password(payload.token, payload.newPassword)
+        response.delete_cookie("jp_assist_session", path="/", samesite="lax")
+
+    @app.post("/v1/auth/change-email/confirm")
+    def confirm_email_change(payload: TokenRequest, response: Response) -> dict[str, Any]:
+        user = platform.confirm_email_change(payload.token)
+        response.delete_cookie("jp_assist_session", path="/", samesite="lax")
+        return user
+
+    @app.post("/v1/auth/notifications/unsubscribe", status_code=204)
+    def unsubscribe_notifications(payload: TokenRequest) -> None:
+        platform.unsubscribe_review_reminders(payload.token)
+
     @app.post("/v1/auth/logout", status_code=204)
     def logout(request: Request, response: Response, authorization: str | None = Header(default=None)) -> None:
         token = session_token(request, authorization)
@@ -252,6 +306,43 @@ def create_app(
     @app.get("/v1/me")
     def me(request: Request, authorization: str | None = Header(default=None)) -> dict[str, Any]:
         return platform.authenticate_session(session_token(request, authorization))
+
+    @app.post("/v1/me/verification-email")
+    def resend_verification_email(
+        request: Request, authorization: str | None = Header(default=None),
+    ) -> dict[str, Any]:
+        return platform.resend_email_verification(session_token(request, authorization))
+
+    @app.post("/v1/me/change-email")
+    def request_email_change(
+        payload: EmailChangeRequest, request: Request,
+        authorization: str | None = Header(default=None),
+    ) -> dict[str, Any]:
+        return platform.request_email_change(
+            session_token(request, authorization), payload.password, payload.newEmail,
+        )
+
+    @app.get("/v1/me/notification-preferences")
+    def notification_preferences(
+        request: Request, authorization: str | None = Header(default=None),
+    ) -> dict[str, Any]:
+        return platform.get_notification_preferences(session_token(request, authorization))
+
+    @app.put("/v1/me/notification-preferences")
+    def update_notification_preferences(
+        payload: NotificationPreferencesRequest, request: Request,
+        authorization: str | None = Header(default=None),
+    ) -> dict[str, Any]:
+        return platform.update_notification_preferences(
+            session_token(request, authorization), payload.reviewReminders,
+            payload.productUpdates, payload.reminderHour, payload.timezone,
+        )
+
+    @app.post("/v1/me/notification-preferences/test")
+    def send_test_review_reminder(
+        request: Request, authorization: str | None = Header(default=None),
+    ) -> dict[str, bool]:
+        return platform.send_test_review_reminder(session_token(request, authorization))
 
     @app.post("/v1/device-pairings", status_code=201)
     def start_pairing(payload: PairingRequest) -> dict[str, Any]:
@@ -483,7 +574,13 @@ def _rate_limit_rule(request: Request, settings: Settings) -> tuple[str, str, in
         return None
     path = request.url.path
     identity = _request_identity(request, settings)
-    if path in {"/v1/auth/register", "/v1/auth/login"}:
+    if path in {
+        "/v1/auth/register", "/v1/auth/login", "/v1/auth/password-reset/request",
+        "/v1/auth/password-reset/complete", "/v1/auth/verify-email",
+        "/v1/auth/change-email/confirm", "/v1/auth/notifications/unsubscribe",
+        "/v1/me/verification-email", "/v1/me/change-email",
+        "/v1/me/notification-preferences/test",
+    }:
         return "auth", identity, settings.auth_rate_limit
     if path.startswith("/v1/device-pairings"):
         return "pairing", identity, settings.pairing_rate_limit

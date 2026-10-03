@@ -23,7 +23,7 @@ module.exports = defineConfig({
     trace: "retain-on-failure",
   },
   webServer: {
-    command: `${python} scripts/browser_test_server.py --database var/browser-test.sqlite3 --port 18766`,
+    command: `${python} scripts/browser_test_server.py --database var/browser-test.sqlite3 --mailbox var/browser-mailbox.jsonl --port 18766`,
     url: "http://127.0.0.1:18766/readyz",
     reuseExistingServer: false,
     timeout: 30_000,

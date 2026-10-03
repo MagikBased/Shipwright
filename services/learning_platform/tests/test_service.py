@@ -3,6 +3,7 @@ import tempfile
 import unittest
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from urllib.parse import parse_qs, urlparse
 
 from learning_platform.errors import (
     AuthenticationError,
@@ -11,6 +12,15 @@ from learning_platform.errors import (
     ValidationError,
 )
 from learning_platform.service import LearningPlatform
+from learning_platform.security import token_hash
+
+
+class RecordingMailer:
+    def __init__(self):
+        self.messages = []
+
+    def send(self, message):
+        self.messages.append(message)
 
 
 class Clock:
@@ -25,9 +35,17 @@ class LearningPlatformTest(unittest.TestCase):
     def setUp(self):
         self.temporary = tempfile.TemporaryDirectory(prefix="jp-assist-platform-")
         self.clock = Clock()
-        self.platform = LearningPlatform(Path(self.temporary.name) / "test.sqlite3", now=self.clock)
+        self.mailer = RecordingMailer()
+        self.platform = LearningPlatform(
+            Path(self.temporary.name) / "test.sqlite3", now=self.clock,
+            mailer=self.mailer, public_base_url="http://learn.example.test",
+        )
         account = self.platform.register_user("player@example.com", "correct horse battery", "Player")
         self.session = account["token"]
+
+    def latest_mail_token(self):
+        urls = [part for part in self.mailer.messages[-1].text.split() if part.startswith("http")]
+        return next(parse_qs(urlparse(url).fragment)["token"][0] for url in urls if "token=" in url)
 
     def tearDown(self):
         self.temporary.cleanup()
@@ -65,6 +83,89 @@ class LearningPlatformTest(unittest.TestCase):
             self.platform.authenticate_session(logged_in["token"])
         with self.assertRaises(ConflictError):
             self.platform.register_user("player@example.com", "another safe password", "Other")
+
+    def test_email_verification_is_hashed_expiring_and_single_use(self):
+        self.assertFalse(self.platform.authenticate_session(self.session)["emailVerified"])
+        token = self.latest_mail_token()
+        with self.platform.database.connect() as connection:
+            stored = connection.execute(
+                "SELECT token_hash FROM action_tokens WHERE purpose = 'verify_email'",
+            ).fetchone()[0]
+        self.assertNotEqual(stored, token)
+        verified = self.platform.verify_email(token)
+        self.assertTrue(verified["emailVerified"])
+        with self.assertRaisesRegex(ValidationError, "invalid or expired"):
+            self.platform.verify_email(token)
+
+        second = self.platform.register_user(
+            "expires@example.com", "another safe password", "Expires",
+        )
+        expired_token = self.latest_mail_token()
+        self.clock.value += timedelta(hours=25)
+        with self.assertRaisesRegex(ValidationError, "invalid or expired"):
+            self.platform.verify_email(expired_token)
+        self.assertFalse(self.platform.authenticate_session(second["token"])["emailVerified"])
+        self.assertTrue(self.platform.resend_email_verification(second["token"])["sent"])
+        with self.platform.database.connect() as connection:
+            self.assertIsNone(connection.execute(
+                "SELECT 1 FROM action_tokens WHERE token_hash = ?", (token_hash(expired_token),),
+            ).fetchone())
+
+        third = self.platform.register_user(
+            "cooldown@example.com", "another safe password", "Cooldown",
+        )
+        with self.assertRaisesRegex(ConflictError, "wait one minute"):
+            self.platform.resend_email_verification(third["token"])
+
+    def test_password_reset_is_enumeration_resistant_and_revokes_sessions(self):
+        unknown = self.platform.request_password_reset("missing@example.com")
+        before = len(self.mailer.messages)
+        known = self.platform.request_password_reset("player@example.com")
+        self.assertEqual(unknown, known)
+        self.assertEqual(len(self.mailer.messages), before + 1)
+        reset_token = self.latest_mail_token()
+        self.platform.reset_password(reset_token, "a replacement safe password")
+        with self.assertRaises(AuthenticationError):
+            self.platform.authenticate_session(self.session)
+        with self.assertRaises(AuthenticationError):
+            self.platform.login("player@example.com", "correct horse battery")
+        self.session = self.platform.login("player@example.com", "a replacement safe password")["token"]
+        with self.assertRaisesRegex(ValidationError, "invalid or expired"):
+            self.platform.reset_password(reset_token, "yet another safe password")
+
+    def test_verified_email_change_requires_password_and_revokes_sessions(self):
+        self.platform.verify_email(self.latest_mail_token())
+        with self.assertRaises(AuthenticationError):
+            self.platform.request_email_change(
+                self.session, "wrong password", "new-address@example.com",
+            )
+        result = self.platform.request_email_change(
+            self.session, "correct horse battery", "new-address@example.com",
+        )
+        self.assertTrue(result["sent"])
+        self.platform.confirm_email_change(self.latest_mail_token())
+        with self.assertRaises(AuthenticationError):
+            self.platform.authenticate_session(self.session)
+        self.session = self.platform.login("new-address@example.com", "correct horse battery")["token"]
+        self.assertTrue(self.platform.authenticate_session(self.session)["emailVerified"])
+
+    def test_notification_preferences_reminder_deduplication_and_unsubscribe(self):
+        self.platform.verify_email(self.latest_mail_token())
+        device = self.pair_device()
+        self.platform.ingest_events(device["deviceToken"], [self.event("reminder-save", "word_saved")])
+        preferences = self.platform.update_notification_preferences(
+            self.session, True, False, 0, "America/Chicago",
+        )
+        self.assertTrue(preferences["reviewReminders"])
+        first = self.platform.send_due_reminders()
+        second = self.platform.send_due_reminders()
+        self.assertEqual(first, {"sent": 1, "failed": 0, "skipped": 0})
+        self.assertEqual(second, {"sent": 0, "failed": 0, "skipped": 1})
+        self.assertEqual(self.mailer.messages[-1].category, "review_reminder")
+        self.platform.unsubscribe_review_reminders(self.latest_mail_token())
+        self.assertFalse(self.platform.get_notification_preferences(self.session)["reviewReminders"])
+        with self.assertRaisesRegex(ValidationError, "invalid or expired"):
+            self.platform.unsubscribe_review_reminders(self.latest_mail_token())
 
     def test_pairing_is_one_time_and_account_approved(self):
         pairing = self.platform.start_pairing("Test PC", "ship-of-harkinian", "ocarina-of-time")

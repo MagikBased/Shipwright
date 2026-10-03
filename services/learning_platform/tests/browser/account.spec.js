@@ -22,6 +22,27 @@ async function downloadedJson(download) {
   return JSON.parse(await readFile(await download.path(), "utf8"));
 }
 
+async function mailboxMessages() {
+  try {
+    return (await readFile("var/browser-mailbox.jsonl", "utf8")).trim().split("\n").filter(Boolean).map(line => JSON.parse(line));
+  } catch (_) {
+    return [];
+  }
+}
+
+async function latestMail(recipient, category) {
+  let message;
+  await expect.poll(async () => {
+    message = (await mailboxMessages()).filter(item => item.recipient === recipient && item.category === category).at(-1);
+    return Boolean(message);
+  }).toBe(true);
+  return message;
+}
+
+function actionLink(message) {
+  return message.text.split(/\s+/).find(part => part.startsWith("http") && part.includes("#action="));
+}
+
 test.describe.serial("learning account", () => {
   test("registers and deletes an isolated account", async ({ page }) => {
     await page.goto("/");
@@ -38,6 +59,68 @@ test.describe.serial("learning account", () => {
     await page.keyboard.press("Escape");
     await expect(page.locator("#confirm-dialog")).toBeHidden();
     await expect(page.locator("#dashboard")).toBeVisible();
+    await page.locator("#delete-account-form button[type=submit]").click();
+    await page.locator("#confirm-accept").click();
+    await expect(page.locator("#auth")).toBeVisible();
+  });
+
+  test("verifies identity, changes email, configures notifications, and resets password", async ({ page }) => {
+    const originalEmail = "recovery@example.test";
+    const changedEmail = "recovery-new@example.test";
+    const originalPassword = "recovery safe password";
+    const resetPassword = "recovery reset password";
+    await page.goto("/");
+    const register = page.locator("#register-form");
+    await register.locator("input[name=displayName]").fill("Recovery Learner");
+    await register.locator("input[name=email]").fill(originalEmail);
+    await register.locator("input[name=password]").fill(originalPassword);
+    await register.locator("button[type=submit]").click();
+    await expect(page.locator("#notice")).toContainText("Check your email");
+
+    await page.goto(actionLink(await latestMail(originalEmail, "verify_email")));
+    await expect(page.locator("#notice")).toContainText("Email verified");
+    await openView(page, "account");
+    await expect(page.locator("#email-status")).toContainText("verified");
+
+    const notifications = page.locator("#notification-form");
+    await notifications.locator("input[name=reviewReminders]").check();
+    await notifications.locator("input[name=productUpdates]").check();
+    await notifications.locator("input[name=reminderHour]").fill("19");
+    await notifications.locator("input[name=timezone]").fill("America/Chicago");
+    await notifications.locator("button[type=submit]").click();
+    await expect(page.locator("#notice")).toContainText("Notification preferences saved");
+    await page.locator("#test-reminder").click();
+    await expect(page.locator("#notice")).toContainText("Test reminder sent");
+    await page.goto(actionLink(await latestMail(originalEmail, "review_reminder_test")));
+    await expect(page.locator("#notice")).toContainText("Review reminder emails are disabled");
+    await openView(page, "account");
+    await expect(page.locator("#notification-form input[name=reviewReminders]")).not.toBeChecked();
+
+    const changeEmail = page.locator("#change-email-form");
+    await changeEmail.locator("input[name=newEmail]").fill(changedEmail);
+    await changeEmail.locator("input[name=password]").fill(originalPassword);
+    await changeEmail.locator("button[type=submit]").click();
+    await expect(page.locator("#notice")).toContainText("Confirmation sent");
+    await page.goto(actionLink(await latestMail(changedEmail, "change_email")));
+    await expect(page.locator("#notice")).toContainText("Email changed");
+    await expect(page.locator("#auth")).toBeVisible();
+
+    await page.locator("#forgot-password").click();
+    await page.locator("#reset-request-form input[name=email]").fill(changedEmail);
+    await page.locator("#reset-request-form button[type=submit]").click();
+    await expect(page.locator("#notice")).toContainText("If that account exists");
+    await page.goto(actionLink(await latestMail(changedEmail, "reset_password")));
+    await expect(page.locator("#reset-complete-form")).toBeVisible();
+    await page.locator("#reset-complete-form input[name=newPassword]").fill(resetPassword);
+    await page.locator("#reset-complete-form button[type=submit]").click();
+    await expect(page.locator("#notice")).toContainText("Password reset");
+
+    await page.locator("#login-form input[name=email]").fill(changedEmail);
+    await page.locator("#login-form input[name=password]").fill(resetPassword);
+    await page.locator("#login-form button[type=submit]").click();
+    await expect(page.locator("#dashboard")).toBeVisible();
+    await openView(page, "account");
+    await page.locator("#delete-account-form input[name=password]").fill(resetPassword);
     await page.locator("#delete-account-form button[type=submit]").click();
     await page.locator("#confirm-accept").click();
     await expect(page.locator("#auth")).toBeVisible();

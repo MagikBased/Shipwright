@@ -184,6 +184,8 @@ class LearningPlatformApiTest(unittest.TestCase):
             auth_rate_limit=20,
             pairing_rate_limit=180,
             event_rate_limit=180,
+            mail_transport="smtp",
+            smtp_host="mailpit",
         )
         with TestClient(create_app(settings=settings)) as client:
             self.assertEqual(client.get("/readyz").status_code, 200)

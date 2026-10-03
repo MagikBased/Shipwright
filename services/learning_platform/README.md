@@ -34,8 +34,8 @@ game's `jp_assist_sync.json` and upload automatically after reconnection.
 
 Set `JP_ASSIST_COOKIE_SECURE=1` behind HTTPS in any non-local deployment. The
 included production scaffold supplies HTTPS termination, rate limiting, and
-backup tooling. An open public beta still requires email verification,
-password recovery, an operational backup schedule, and external monitoring.
+backup tooling. An open public beta still requires an operational backup
+schedule, external monitoring, and a real transactional-email provider.
 
 ## Production deployment scaffold
 
@@ -109,11 +109,12 @@ After signing in, the website provides:
   personal tags, and notes;
 - a pinned FSRS-6 review queue with next-interval previews and append-only
   review history;
-- daily new-word and review goals (the reminder preference is stored, but this
-  release does not send notifications);
+- daily new-word and review goals with local reminder delivery;
 - saved-word and complete-account JSON exports;
 - mod-device and website-session revocation, password changes, per-game data
   clearing, and account deletion.
+- email verification, password recovery, verified email changes, and
+  category/timezone-aware notification settings.
 
 The scheduler uses `py-fsrs==6.3.2`, its FSRS-6 defaults, 90% desired retention,
 and disabled interval fuzzing so the same review timestamps and ratings always
@@ -136,6 +137,13 @@ Anki synchronization has a read-only preflight and an explicit scheduling
 owner. Repeat syncs update by stable word/sense identity rather than spelling.
 See [Anki interoperability](../../docs/ANKI_INTEROPERABILITY.md) for modes,
 conflict behavior, and local AnkiConnect recovery.
+
+Identity links are hashed at rest, purpose-bound, expiring, and single-use.
+Development captures messages in `var/dev-mailbox.jsonl`; the Compose staging
+stack captures SMTP in Mailpit at `http://127.0.0.1:8025`. See
+[identity and notifications](../../docs/IDENTITY_AND_NOTIFICATIONS.md) for
+token lifetimes, recovery rules, reminder delivery, and the local-only mail
+boundary.
 
 ## Dictionary enrichment
 

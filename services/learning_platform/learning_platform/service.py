@@ -1,13 +1,16 @@
 from __future__ import annotations
 
 import json
+import html
 import math
 import re
 import sqlite3
+import smtplib
 import uuid
 from datetime import datetime, time, timedelta, timezone
 from pathlib import Path
 from typing import Any, Callable
+from urllib.parse import urlencode
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from .database import Database
@@ -30,6 +33,7 @@ from .fsrs_scheduler import (
     replay,
     schedule,
 )
+from .mailer import MailDeliveryError, Mailer, NullMailer, OutboundEmail
 from .security import hash_password, new_bearer_token, new_user_code, token_hash, verify_password
 
 
@@ -92,10 +96,13 @@ def require_identifier(name: str, value: Any) -> str:
 class LearningPlatform:
     def __init__(
         self, database_path: str | Path, now: Callable[[], datetime] = utc_now,
-        allow_scheduler_upgrade: bool = False,
+        allow_scheduler_upgrade: bool = False, mailer: Mailer | None = None,
+        public_base_url: str = "http://127.0.0.1:8766",
     ):
         self.database = Database(database_path)
         self.now = now
+        self.mailer = mailer or NullMailer()
+        self.public_base_url = public_base_url.rstrip("/")
         self._rebuild_stale_review_states(allow_scheduler_upgrade)
 
     def _rebuild_stale_review_states(self, allow_scheduler_upgrade: bool) -> None:
@@ -196,16 +203,32 @@ class LearningPlatform:
         user_id = str(uuid.uuid4())
         salt, digest = hash_password(password)
         created_at = isoformat(self.now())
+        verification_token = new_bearer_token()
         try:
             with self.database.connect() as connection:
+                connection.execute("BEGIN IMMEDIATE")
                 connection.execute(
-                    "INSERT INTO users VALUES (?, ?, ?, ?, ?, ?)",
+                    """
+                    INSERT INTO users (id, email, display_name, password_salt, password_hash, created_at)
+                    VALUES (?, ?, ?, ?, ?, ?)
+                    """,
                     (user_id, normalized_email, clean_name, salt, digest, created_at),
                 )
+                self._store_action_token(
+                    connection, user_id, "verify_email", verification_token,
+                    self.now() + timedelta(hours=24), None,
+                )
+                self._audit(connection, user_id, "account_registered")
         except sqlite3.IntegrityError as exc:
             raise ConflictError("An account with that email already exists") from exc
 
-        return {"user": self._public_user(user_id, normalized_email, clean_name), "token": self._new_session(user_id)}
+        mail_sent = self._send_action_email(
+            user_id, normalized_email, "verify_email", verification_token,
+        )
+        return {
+            "user": self._public_user(user_id, normalized_email, clean_name, None),
+            "token": self._new_session(user_id), "verificationEmailSent": mail_sent,
+        }
 
     def login(self, email: str, password: str) -> dict[str, Any]:
         normalized_email = self._validate_email(email)
@@ -214,7 +237,9 @@ class LearningPlatform:
         if row is None or not verify_password(password, row["password_salt"], row["password_hash"]):
             raise AuthenticationError("Invalid email or password")
         return {
-            "user": self._public_user(row["id"], row["email"], row["display_name"]),
+            "user": self._public_user(
+                row["id"], row["email"], row["display_name"], row["email_verified_at"],
+            ),
             "token": self._new_session(row["id"]),
         }
 
@@ -223,7 +248,7 @@ class LearningPlatform:
         with self.database.connect() as connection:
             row = connection.execute(
                 """
-                SELECT users.id, users.email, users.display_name
+                SELECT users.id, users.email, users.display_name, users.email_verified_at
                 FROM sessions JOIN users ON users.id = sessions.user_id
                 WHERE sessions.token_hash = ? AND sessions.expires_at > ?
                 """,
@@ -231,11 +256,219 @@ class LearningPlatform:
             ).fetchone()
         if row is None:
             raise AuthenticationError("The session is missing, expired, or invalid")
-        return self._public_user(row["id"], row["email"], row["display_name"])
+        return self._public_user(
+            row["id"], row["email"], row["display_name"], row["email_verified_at"],
+        )
 
     def logout(self, token: str) -> None:
         with self.database.connect() as connection:
             connection.execute("DELETE FROM sessions WHERE token_hash = ?", (token_hash(token),))
+
+    def verify_email(self, raw_token: str) -> dict[str, Any]:
+        now = isoformat(self.now())
+        with self.database.connect() as connection:
+            connection.execute("BEGIN IMMEDIATE")
+            token = self._valid_action_token(connection, raw_token, "verify_email", now)
+            connection.execute("UPDATE users SET email_verified_at = ? WHERE id = ?", (now, token["user_id"]))
+            connection.execute("UPDATE action_tokens SET consumed_at = ? WHERE id = ?", (now, token["id"]))
+            self._audit(connection, token["user_id"], "email_verified")
+            user = connection.execute("SELECT * FROM users WHERE id = ?", (token["user_id"],)).fetchone()
+        return self._public_user(user["id"], user["email"], user["display_name"], now)
+
+    def resend_email_verification(self, session_token: str) -> dict[str, Any]:
+        user = self.authenticate_session(session_token)
+        if user["emailVerified"]:
+            return {"sent": False, "alreadyVerified": True}
+        raw_token = new_bearer_token()
+        with self.database.connect() as connection:
+            connection.execute("BEGIN IMMEDIATE")
+            self._enforce_token_cooldown(connection, user["id"], "verify_email")
+            self._store_action_token(
+                connection, user["id"], "verify_email", raw_token,
+                self.now() + timedelta(hours=24), None,
+            )
+            self._audit(connection, user["id"], "verification_resent")
+        return {
+            "sent": self._send_action_email(user["id"], user["email"], "verify_email", raw_token),
+            "alreadyVerified": False,
+        }
+
+    def request_password_reset(self, email: str) -> dict[str, str]:
+        generic = {"message": "If that account exists, a password-reset email has been sent."}
+        try:
+            normalized_email = self._validate_email(email)
+        except ValidationError:
+            return generic
+        with self.database.connect() as connection:
+            user = connection.execute("SELECT * FROM users WHERE email = ?", (normalized_email,)).fetchone()
+            if user is None:
+                return generic
+            recent = connection.execute(
+                """
+                SELECT created_at FROM action_tokens
+                WHERE user_id = ? AND purpose = 'reset_password'
+                ORDER BY created_at DESC LIMIT 1
+                """,
+                (user["id"],),
+            ).fetchone()
+            if recent is not None and self._seconds_since(recent["created_at"]) < 60:
+                return generic
+            raw_token = new_bearer_token()
+            connection.execute("BEGIN IMMEDIATE")
+            self._store_action_token(
+                connection, user["id"], "reset_password", raw_token,
+                self.now() + timedelta(hours=1), None,
+            )
+            self._audit(connection, user["id"], "password_reset_requested")
+        self._send_action_email(user["id"], normalized_email, "reset_password", raw_token)
+        return generic
+
+    def reset_password(self, raw_token: str, new_password: str) -> None:
+        self._validate_password(new_password)
+        now = isoformat(self.now())
+        salt, digest = hash_password(new_password)
+        with self.database.connect() as connection:
+            connection.execute("BEGIN IMMEDIATE")
+            token = self._valid_action_token(connection, raw_token, "reset_password", now)
+            connection.execute(
+                "UPDATE users SET password_salt = ?, password_hash = ? WHERE id = ?",
+                (salt, digest, token["user_id"]),
+            )
+            connection.execute("DELETE FROM sessions WHERE user_id = ?", (token["user_id"],))
+            connection.execute("UPDATE action_tokens SET consumed_at = ? WHERE id = ?", (now, token["id"]))
+            self._audit(connection, token["user_id"], "password_reset_completed")
+
+    def request_email_change(self, session_token: str, password: str, new_email: str) -> dict[str, Any]:
+        user = self.authenticate_session(session_token)
+        target = self._validate_email(new_email)
+        if target == user["email"]:
+            raise ValidationError("The new email must be different from the current email")
+        raw_token = new_bearer_token()
+        with self.database.connect() as connection:
+            connection.execute("BEGIN IMMEDIATE")
+            account = connection.execute("SELECT * FROM users WHERE id = ?", (user["id"],)).fetchone()
+            if not verify_password(password, account["password_salt"], account["password_hash"]):
+                raise AuthenticationError("Password is incorrect")
+            if connection.execute("SELECT 1 FROM users WHERE email = ?", (target,)).fetchone() is not None:
+                raise ConflictError("An account with that email already exists")
+            self._enforce_token_cooldown(connection, user["id"], "change_email")
+            self._store_action_token(
+                connection, user["id"], "change_email", raw_token,
+                self.now() + timedelta(hours=1), target,
+            )
+            self._audit(connection, user["id"], "email_change_requested")
+        return {"sent": self._send_action_email(user["id"], target, "change_email", raw_token)}
+
+    def confirm_email_change(self, raw_token: str) -> dict[str, Any]:
+        now = isoformat(self.now())
+        with self.database.connect() as connection:
+            connection.execute("BEGIN IMMEDIATE")
+            token = self._valid_action_token(connection, raw_token, "change_email", now)
+            try:
+                connection.execute(
+                    "UPDATE users SET email = ?, email_verified_at = ? WHERE id = ?",
+                    (token["target_email"], now, token["user_id"]),
+                )
+            except sqlite3.IntegrityError as error:
+                raise ConflictError("That email is already used by another account") from error
+            connection.execute("DELETE FROM sessions WHERE user_id = ?", (token["user_id"],))
+            connection.execute("UPDATE action_tokens SET consumed_at = ? WHERE id = ?", (now, token["id"]))
+            self._audit(connection, token["user_id"], "email_change_completed")
+            user = connection.execute("SELECT * FROM users WHERE id = ?", (token["user_id"],)).fetchone()
+        return self._public_user(user["id"], user["email"], user["display_name"], now)
+
+    def get_notification_preferences(self, session_token: str) -> dict[str, Any]:
+        user = self.authenticate_session(session_token)
+        with self.database.connect() as connection:
+            row = connection.execute(
+                "SELECT * FROM notification_preferences WHERE user_id = ?", (user["id"],),
+            ).fetchone()
+            goals = connection.execute(
+                "SELECT reminders_enabled, timezone FROM learning_goals WHERE user_id = ?", (user["id"],),
+            ).fetchone()
+        if row is None:
+            return {
+                "reviewReminders": bool(goals["reminders_enabled"]) if goals else False,
+                "productUpdates": False, "reminderHour": 18,
+                "timezone": goals["timezone"] if goals else "UTC", "updatedAt": None,
+            }
+        return {
+            "reviewReminders": bool(row["review_reminders"]),
+            "productUpdates": bool(row["product_updates"]),
+            "reminderHour": row["reminder_hour"], "timezone": row["timezone"],
+            "updatedAt": row["updated_at"],
+        }
+
+    def update_notification_preferences(
+        self, session_token: str, review_reminders: bool, product_updates: bool,
+        reminder_hour: int, timezone_name: str,
+    ) -> dict[str, Any]:
+        user = self.authenticate_session(session_token)
+        if type(reminder_hour) is not int or not 0 <= reminder_hour <= 23:
+            raise ValidationError("reminderHour must be between 0 and 23")
+        self._timezone(timezone_name)
+        now = isoformat(self.now())
+        with self.database.connect() as connection:
+            connection.execute("BEGIN IMMEDIATE")
+            connection.execute(
+                """
+                INSERT INTO notification_preferences (
+                    user_id, review_reminders, product_updates, reminder_hour, timezone, updated_at
+                ) VALUES (?, ?, ?, ?, ?, ?)
+                ON CONFLICT(user_id) DO UPDATE SET
+                    review_reminders = excluded.review_reminders,
+                    product_updates = excluded.product_updates,
+                    reminder_hour = excluded.reminder_hour,
+                    timezone = excluded.timezone,
+                    updated_at = excluded.updated_at
+                """,
+                (user["id"], int(review_reminders), int(product_updates), reminder_hour, timezone_name, now),
+            )
+            connection.execute(
+                "UPDATE learning_goals SET reminders_enabled = ?, timezone = ?, updated_at = ? WHERE user_id = ?",
+                (int(review_reminders), timezone_name, now, user["id"]),
+            )
+            self._audit(connection, user["id"], "notification_preferences_updated")
+        return self.get_notification_preferences(session_token)
+
+    def unsubscribe_review_reminders(self, raw_token: str) -> None:
+        now = isoformat(self.now())
+        with self.database.connect() as connection:
+            connection.execute("BEGIN IMMEDIATE")
+            token = self._valid_action_token(connection, raw_token, "unsubscribe_reminders", now)
+            connection.execute(
+                "UPDATE notification_preferences SET review_reminders = 0, updated_at = ? WHERE user_id = ?",
+                (now, token["user_id"]),
+            )
+            connection.execute(
+                "UPDATE learning_goals SET reminders_enabled = 0, updated_at = ? WHERE user_id = ?",
+                (now, token["user_id"]),
+            )
+            connection.execute("UPDATE action_tokens SET consumed_at = ? WHERE id = ?", (now, token["id"]))
+            self._audit(connection, token["user_id"], "review_reminders_unsubscribed")
+
+    def send_test_review_reminder(self, session_token: str) -> dict[str, bool]:
+        user = self.authenticate_session(session_token)
+        if not user["emailVerified"]:
+            raise ConflictError("Verify your email before sending a test reminder")
+        raw_token = new_bearer_token()
+        with self.database.connect() as connection:
+            connection.execute("BEGIN IMMEDIATE")
+            token_id = self._store_action_token(
+                connection, user["id"], "unsubscribe_reminders", raw_token,
+                self.now() + timedelta(days=90), None,
+            )
+            self._audit(connection, user["id"], "test_review_reminder_requested")
+        try:
+            self.mailer.send(self._review_reminder_email(user["email"], 3, raw_token, test=True))
+        except (MailDeliveryError, OSError, smtplib.SMTPException) as error:
+            with self.database.connect() as connection:
+                connection.execute("DELETE FROM action_tokens WHERE id = ?", (token_id,))
+                self._audit(connection, user["id"], "test_review_reminder_failed")
+            raise ConflictError("The test email could not be delivered; check the local mail service") from error
+        with self.database.connect() as connection:
+            self._audit(connection, user["id"], "test_review_reminder_sent")
+        return {"sent": True}
 
     def start_pairing(self, device_name: str, adapter_id: str, game_id: str) -> dict[str, Any]:
         clean_name = device_name.strip()
@@ -808,6 +1041,18 @@ class LearningPlatform:
                 """,
                 (user["id"], daily_new_words, daily_reviews, int(reminders_enabled), timezone_name, now),
             )
+            connection.execute(
+                """
+                INSERT INTO notification_preferences (
+                    user_id, review_reminders, product_updates, reminder_hour, timezone, updated_at
+                ) VALUES (?, ?, 0, 18, ?, ?)
+                ON CONFLICT(user_id) DO UPDATE SET
+                    review_reminders = excluded.review_reminders,
+                    timezone = excluded.timezone,
+                    updated_at = excluded.updated_at
+                """,
+                (user["id"], int(reminders_enabled), timezone_name, now),
+            )
         return self.get_goals(session_token)
 
     @staticmethod
@@ -1258,17 +1503,35 @@ class LearningPlatform:
                 FROM review_collections WHERE user_id = ? ORDER BY collection_id
                 """,
                 (user["id"],))]
+            notification_preferences = connection.execute(
+                """
+                SELECT review_reminders, product_updates, reminder_hour, timezone, updated_at
+                FROM notification_preferences WHERE user_id = ?
+                """,
+                (user["id"],),
+            ).fetchone()
+            audit_events = [dict(row) for row in connection.execute(
+                """
+                SELECT event_type, occurred_at, metadata_json
+                FROM audit_events WHERE user_id = ? ORDER BY occurred_at, id
+                """,
+                (user["id"],),
+            )]
         for annotation in annotations:
             annotation["tags"] = json.loads(annotation.pop("tags_json"))
         for review in reviews:
             review["parameters"] = json.loads(review.pop("parameters_json"))
             review["sourceMetadata"] = json.loads(review.pop("source_metadata_json"))
-        return {"schemaVersion": 3, "exportedAt": exported_at, "user": user,
+        for audit_event in audit_events:
+            audit_event["metadata"] = json.loads(audit_event.pop("metadata_json"))
+        return {"schemaVersion": 4, "exportedAt": exported_at, "user": user,
                 "stats": self.get_stats(session_token), "goals": self.get_goals(session_token),
                 "words": self.list_word_progress(session_token, limit=1000),
                 "annotations": annotations, "reviews": reviews, "events": events,
                 "devices": self.list_devices(session_token), "sessions": self.list_sessions(session_token),
-                "pairings": pairings, "exportHistory": exports, "reviewCollections": review_collections}
+                "pairings": pairings, "exportHistory": exports, "reviewCollections": review_collections,
+                "notificationPreferences": dict(notification_preferences) if notification_preferences else None,
+                "auditEvents": audit_events}
 
     def clear_game_progress(self, session_token: str, game_id: str) -> None:
         user = self.authenticate_session(session_token)
@@ -1315,6 +1578,216 @@ class LearningPlatform:
                     attribution=excluded.attribution, updated_at=excluded.updated_at
                 """, normalized)
         return len(normalized)
+
+    def send_due_reminders(self) -> dict[str, int]:
+        """Send at most one due-review reminder per user and local calendar day."""
+        with self.database.connect() as connection:
+            candidates = connection.execute(
+                """
+                SELECT users.id, users.email, preferences.reminder_hour, preferences.timezone
+                FROM users
+                JOIN notification_preferences AS preferences ON preferences.user_id = users.id
+                LEFT JOIN review_collections AS ownership
+                  ON ownership.user_id = users.id AND ownership.collection_id = 'all'
+                WHERE users.email_verified_at IS NOT NULL
+                  AND preferences.review_reminders = 1
+                  AND COALESCE(ownership.review_owner, 'jp_assist') = 'jp_assist'
+                """
+            ).fetchall()
+        sent = failed = skipped = 0
+        for candidate in candidates:
+            local_now = self.now().astimezone(self._timezone(candidate["timezone"]))
+            if local_now.hour < candidate["reminder_hour"]:
+                skipped += 1
+                continue
+            now = isoformat(self.now())
+            with self.database.connect() as connection:
+                due = connection.execute(
+                    """
+                    SELECT COUNT(*) FROM word_progress AS progress
+                    LEFT JOIN word_annotations AS annotation
+                      ON annotation.user_id = progress.user_id
+                     AND annotation.word_id = progress.word_id
+                     AND annotation.sense_id = progress.sense_id
+                    LEFT JOIN review_state AS review
+                      ON review.user_id = progress.user_id
+                     AND review.word_id = progress.word_id
+                     AND review.sense_id = progress.sense_id
+                    WHERE progress.user_id = ?
+                      AND (progress.saved = 1 OR annotation.learning_state = 'learning')
+                      AND COALESCE(annotation.learning_state, 'new') != 'ignored'
+                      AND (review.due_at IS NULL OR review.due_at <= ?)
+                    """,
+                    (candidate["id"], now),
+                ).fetchone()[0]
+                if due == 0:
+                    skipped += 1
+                    continue
+                delivery_id = str(uuid.uuid4())
+                connection.execute("BEGIN IMMEDIATE")
+                inserted = connection.execute(
+                    """
+                    INSERT OR IGNORE INTO notification_deliveries
+                        (id, user_id, category, local_date, created_at)
+                    VALUES (?, ?, 'review_reminder', ?, ?)
+                    """,
+                    (delivery_id, candidate["id"], local_now.date().isoformat(), now),
+                )
+                if inserted.rowcount == 0:
+                    skipped += 1
+                    continue
+                unsubscribe_token = new_bearer_token()
+                token_id = self._store_action_token(
+                    connection, candidate["id"], "unsubscribe_reminders", unsubscribe_token,
+                    self.now() + timedelta(days=90), None,
+                )
+            message = self._review_reminder_email(candidate["email"], due, unsubscribe_token)
+            try:
+                self.mailer.send(message)
+            except (MailDeliveryError, OSError, smtplib.SMTPException):
+                failed += 1
+                with self.database.connect() as connection:
+                    connection.execute("DELETE FROM notification_deliveries WHERE id = ?", (delivery_id,))
+                    connection.execute("DELETE FROM action_tokens WHERE id = ?", (token_id,))
+                    self._audit(connection, candidate["id"], "review_reminder_failed")
+            else:
+                sent += 1
+                with self.database.connect() as connection:
+                    self._audit(connection, candidate["id"], "review_reminder_sent", {"dueCount": due})
+        return {"sent": sent, "failed": failed, "skipped": skipped}
+
+    def _review_reminder_email(
+        self, recipient: str, due: int, unsubscribe_token: str, test: bool = False,
+    ) -> OutboundEmail:
+        url = self._action_url("unsubscribe-reminders", unsubscribe_token)
+        prefix = "Test: " if test else ""
+        intro = "This is a test of your JP Assist review reminders." if test else (
+            f"You have {due} review{'s' if due != 1 else ''} ready in JP Assist."
+        )
+        return OutboundEmail(
+            recipient=recipient,
+            subject=f"{prefix}{due} JP Assist review{'s' if due != 1 else ''} waiting",
+            text=(
+                f"{intro}\n\nOpen JP Assist: {self.public_base_url}/\n"
+                f"Unsubscribe from review reminders: {url}\n"
+            ),
+            html=(
+                f"<p>{html.escape(intro)}</p>"
+                f'<p><a href="{html.escape(self.public_base_url + "/", quote=True)}">Open JP Assist</a></p>'
+                f'<p><a href="{html.escape(url, quote=True)}">Unsubscribe from review reminders</a></p>'
+            ),
+            category="review_reminder_test" if test else "review_reminder",
+        )
+
+    def _audit(
+        self, connection: sqlite3.Connection, user_id: str | None, event_type: str,
+        metadata: dict[str, Any] | None = None,
+    ) -> None:
+        connection.execute(
+            "INSERT INTO audit_events VALUES (?, ?, ?, ?, ?)",
+            (
+                str(uuid.uuid4()), user_id, event_type, isoformat(self.now()),
+                json.dumps(metadata or {}, sort_keys=True, separators=(",", ":")),
+            ),
+        )
+
+    def _store_action_token(
+        self, connection: sqlite3.Connection, user_id: str, purpose: str, raw_token: str,
+        expires_at: datetime, target_email: str | None,
+    ) -> str:
+        now = isoformat(self.now())
+        cutoff = isoformat(self.now() - timedelta(days=7))
+        connection.execute(
+            "DELETE FROM action_tokens WHERE expires_at <= ? OR (consumed_at IS NOT NULL AND consumed_at <= ?)",
+            (now, cutoff),
+        )
+        connection.execute(
+            """
+            UPDATE action_tokens SET consumed_at = ?
+            WHERE user_id = ? AND purpose = ? AND consumed_at IS NULL
+            """,
+            (now, user_id, purpose),
+        )
+        token_id = str(uuid.uuid4())
+        connection.execute(
+            """
+            INSERT INTO action_tokens (
+                id, user_id, purpose, token_hash, target_email, created_at, expires_at, consumed_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, NULL)
+            """,
+            (
+                token_id, user_id, purpose, token_hash(raw_token), target_email,
+                now, isoformat(expires_at),
+            ),
+        )
+        return token_id
+
+    @staticmethod
+    def _valid_action_token(
+        connection: sqlite3.Connection, raw_token: str, purpose: str, now: str,
+    ) -> sqlite3.Row:
+        if not isinstance(raw_token, str) or not 20 <= len(raw_token) <= 256:
+            raise ValidationError("This link is invalid or expired")
+        row = connection.execute(
+            """
+            SELECT * FROM action_tokens
+            WHERE token_hash = ? AND purpose = ? AND consumed_at IS NULL AND expires_at > ?
+            """,
+            (token_hash(raw_token), purpose, now),
+        ).fetchone()
+        if row is None:
+            raise ValidationError("This link is invalid or expired")
+        return row
+
+    def _enforce_token_cooldown(
+        self, connection: sqlite3.Connection, user_id: str, purpose: str,
+    ) -> None:
+        row = connection.execute(
+            """
+            SELECT created_at FROM action_tokens
+            WHERE user_id = ? AND purpose = ? ORDER BY created_at DESC LIMIT 1
+            """,
+            (user_id, purpose),
+        ).fetchone()
+        if row is not None and self._seconds_since(row["created_at"]) < 60:
+            raise ConflictError("Please wait one minute before requesting another email")
+
+    def _seconds_since(self, timestamp: str) -> float:
+        value = datetime.fromisoformat(timestamp.replace("Z", "+00:00"))
+        return (self.now() - value).total_seconds()
+
+    def _action_url(self, action: str, raw_token: str) -> str:
+        return f"{self.public_base_url}/#{urlencode({'action': action, 'token': raw_token})}"
+
+    def _send_action_email(
+        self, user_id: str, recipient: str, purpose: str, raw_token: str,
+    ) -> bool:
+        templates = {
+            "verify_email": ("Verify your JP Assist email", "verify-email", "Verify email"),
+            "reset_password": ("Reset your JP Assist password", "reset-password", "Reset password"),
+            "change_email": ("Confirm your new JP Assist email", "change-email", "Confirm email change"),
+        }
+        subject, action, label = templates[purpose]
+        url = self._action_url(action, raw_token)
+        message = OutboundEmail(
+            recipient=recipient,
+            subject=subject,
+            text=f"{label}: {url}\n\nIf you did not request this, you can ignore this email.\n",
+            html=(
+                f"<p><a href=\"{html.escape(url, quote=True)}\">{html.escape(label)}</a></p>"
+                "<p>If you did not request this, you can ignore this email.</p>"
+            ),
+            category=purpose,
+        )
+        try:
+            self.mailer.send(message)
+        except (MailDeliveryError, OSError, smtplib.SMTPException):
+            with self.database.connect() as connection:
+                self._audit(connection, user_id, f"{purpose}_delivery_failed")
+            return False
+        with self.database.connect() as connection:
+            self._audit(connection, user_id, f"{purpose}_email_sent")
+        return True
 
     def _new_session(self, user_id: str) -> str:
         token = new_bearer_token()
@@ -1478,5 +1951,11 @@ class LearningPlatform:
             raise ValidationError("Password must contain between 10 and 256 characters")
 
     @staticmethod
-    def _public_user(user_id: str, email: str, display_name: str) -> dict[str, str]:
-        return {"id": user_id, "email": email, "displayName": display_name}
+    def _public_user(
+        user_id: str, email: str, display_name: str, email_verified_at: str | None,
+    ) -> dict[str, Any]:
+        return {
+            "id": user_id, "email": email, "displayName": display_name,
+            "emailVerified": email_verified_at is not None,
+            "emailVerifiedAt": email_verified_at,
+        }
