@@ -30,12 +30,18 @@ Database: schema `9`
 
 ## Artifact handoff
 
-- [ ] Run `services/learning_platform/scripts/build_release_candidate.sh 0.3.0-rc.1`
+- [x] Run `services/learning_platform/scripts/build_release_candidate.sh 0.3.0-rc.1`
   from a clean commit.
-- [ ] Verify `SHA256SUMS` for the source archive, image archive, SBOM,
+- [x] Verify `SHA256SUMS` for the source archive, image archive, SBOM,
   vulnerability report, manifest, and release notes.
-- [ ] Apply local Git tag `jp-assist-site-v0.3.0-rc.1` to that exact commit.
-- [ ] Record final commit, image ID, artifact checksums, and validation date below.
+- [x] Apply local Git tag `jp-assist-site-v0.3.0-rc.1` to that exact commit.
+- [x] Record the exact commit, image ID, UTC generation time, and artifact
+  checksums in the generated `manifest.json` and `SHA256SUMS` files.
+
+The handoff bundle is generated locally under
+`services/learning_platform/var/releases/0.3.0-rc.1/`. These build products are
+intentionally ignored; the manifest and checksum file inside the bundle are
+the authoritative release-instance record.
 
 ## Technical sign-off
 
@@ -48,5 +54,5 @@ Database: schema `9`
 | Operations | clean staging rehearsal, monitoring, runbooks | Ready |
 | Compatibility | `/v1`, schema 9, adapter policy | Ready |
 
-Final artifact sign-off remains incomplete until the four artifact-handoff
-items above are executed against a clean, tagged commit.
+All local release-candidate gates are signed off. Public hosting remains a
+separate roadmap phase.

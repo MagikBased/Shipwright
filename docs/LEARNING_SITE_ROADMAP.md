@@ -270,12 +270,13 @@ acceptance suite, restore a backup, and shut down without orphaned state.
 
 ## Milestone 8 — Release candidate
 
-Status: **in progress**. Chromium and Firefox qualification pass; WebKit's
+Status: **complete**. Chromium and Firefox qualification pass; WebKit's
 current-host dependency limitation is documented. Embedded onboarding,
 pairing/Anki troubleshooting, privacy copy, the compatibility policy, versioned
-release notes, artifact builder, and evidence-based release checklist are now
-present. Final clean-commit artifact generation, checksum verification, and
-local release tag remain open.
+release notes, artifact builder, and evidence-based release checklist are
+present. The clean-commit release bundle includes a source archive, runnable
+image archive, SBOM, vulnerability report, manifest, checksums, and release
+notes, and its exact commit has a local annotated release tag.
 
 Deliverables:
 

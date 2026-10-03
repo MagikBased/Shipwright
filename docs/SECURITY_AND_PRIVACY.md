@@ -135,12 +135,12 @@ image SBOM, and record any accepted vulnerability with owner, rationale, and an
 expiry date. A clean automated result is evidence for—not a replacement for—the
 final threat-model review.
 
-### Release audit record — 2026-10-02
+### Release audit record — 2026-10-03
 
 - `pip-audit` reported no known vulnerability in the pinned application
   requirements, and `npm audit` reported no browser-test dependency finding.
-- Gitleaks scanned all 3,879 commits with no unreviewed finding after applying
-  the fingerprint-specific upstream allowlist.
+- Gitleaks scanned all repository history with no unreviewed finding after
+  applying the fingerprint-specific upstream allowlist.
 - The final Alpine 3.23 image inventory contains 58 packages. The Grype result
   has no unresolved high or critical finding; its remaining report contains
   nine medium and one negligible finding.
