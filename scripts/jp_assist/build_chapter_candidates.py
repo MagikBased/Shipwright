@@ -146,8 +146,11 @@ def collect_candidates(
         identity_text = "|".join(identity)
         mapped_frequency = sum(counts.values())
         for chapter_id in sorted(counts, key=chapter_order.get):
-            prerequisite_appearances = prerequisites[chapter_id].intersection(counts)
-            if prerequisite_appearances:
+            taught_by_prerequisite = any(
+                (identity_text, prerequisite) in published
+                for prerequisite in prerequisites[chapter_id]
+            )
+            if taught_by_prerequisite:
                 excluded_by_prerequisite[chapter_id] += 1
                 continue
             later = sorted(
@@ -187,7 +190,7 @@ def collect_candidates(
         "totalMessageCount": len(messages),
         "selectionRule": (
             "Rank by frequency in this chapter, then full-game recurrence; "
-            "exclude words appearing in any transitive hard prerequisite."
+            "exclude words taught by any transitive hard-prerequisite deck."
         ),
         "chapters": [
             {

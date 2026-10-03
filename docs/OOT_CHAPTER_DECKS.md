@@ -25,7 +25,7 @@ Each chapter therefore declares hard prerequisites separately from recommended
 ordering.
 
 A deck introduces the most important vocabulary needed for its chapter after
-subtracting every word that appeared in any transitive hard prerequisite.
+subtracting every word taught by any transitive hard-prerequisite deck.
 Recommended ordering does not count as a prerequisite: parallel optional
 branches may both teach a shared word so either route remains self-contained.
 Later occurrences in dependent chapters become chapter tags rather than
@@ -41,8 +41,9 @@ JP Assist::Ocarina of Time::11 The Hero of Time
 
 1. Map dialogue and location identifiers to one or more chapter ranges.
 2. Aggregate vocabulary by stable lemma, reading, and sense identity.
-3. For each chapter, remove identities present in any transitive hard
-   prerequisite; do not remove identities merely because they occur in a
+3. Review decks in prerequisite order. For each chapter, remove identities
+   already taught by any transitive hard-prerequisite deck; do not remove an
+   identity merely because it occurs in prerequisite dialogue or in a
    numerically earlier parallel branch.
 4. Rank the remaining candidates by frequency in the chapter, then recurrence
    across the full game corpus. Reviewers use usefulness and learner level to
@@ -77,8 +78,10 @@ the mapping contains no stale IDs.
 It writes one ignored TSV per chapter plus `summary.json` under
 `scripts/jp_assist/out/chapter_candidates/`. These files contain dictionary
 metadata and message IDs but deliberately omit Japanese and English dialogue.
-Each TSV includes an explicit importance rank. The summary reports how many
-repeats were removed because a prerequisite already teaches them. Catalog deck
+Each TSV includes an explicit importance rank. Regenerating after cards are
+published removes those identities from dependent queues, and the summary
+reports how many repeats were removed because a prerequisite already teaches
+them. Catalog deck
 generation independently rejects a published card that duplicates any
 transitive hard prerequisite, so an editorial mistake cannot silently create a
 redundant deck.
