@@ -88,18 +88,22 @@ blocks the entire `/internal/` prefix from the public origin.
 
 ## Threat model
 
-| Threat | Current control | Remaining release work |
+The local release-candidate review is complete. Items marked deferred below
+require a hosting decision or multi-instance architecture and are gates for a
+public deployment, not for the single-host local candidate.
+
+| Threat | Current control | Residual or deferred risk |
 | --- | --- | --- |
-| Stolen website session | Hashed 30-day token, `HttpOnly` cookie, independent public session ID, privacy-minimal browser label, revocation, password/reset invalidation | Verify rotation policy in the final audit |
-| Cross-site request forgery | Double-submit token on cookie-authenticated mutations; SameSite cookies | Continue negative tests as routes are added |
-| Pairing-code guessing | Short expiry, one-time claim, rate limit, explicit account approval | Load-test shared limiter topology |
-| Device-token theft | Hashed storage, per-device scope, revocation | Document adapter-side secret storage |
-| Malicious event payload | Strict schemas, identifier and count bounds, unknown-field rejection | Expand fuzz/property coverage |
-| Malicious dictionary metadata | Explicit field import, output escaping in the UI | Add corpus-size and pathological-string tests |
-| AnkiConnect abuse | Browser connects only to loopback; explicit user action; no server proxy | Document least-privilege AnkiConnect origin setup |
-| Recovery-link leakage | Hashed, purpose-bound, expiring, single-use tokens in URL fragments; no-referrer policy | Validate real-provider log/redaction behavior before hosting |
-| Destructive account action | Reauthentication or explicit confirmation, CSRF defense, audit events | Complete release threat-model review |
-| Backup disclosure | Local mode-0600 SQLite backups and no raw bearer values in the database | Add encryption/storage policy for chosen infrastructure |
+| Stolen website session | Hashed fixed-lifetime 30-day token, `HttpOnly` cookie, independent public session ID, privacy-minimal browser label, revocation, password/reset invalidation | Sessions are deliberately non-sliding and are not transparently rotated, avoiding concurrent-request races; public deployment should reassess duration against its risk profile |
+| Cross-site request forgery | Double-submit token on every cookie-authenticated mutation; SameSite cookies; negative API tests | Re-run the route inventory whenever a mutation is added |
+| Pairing-code guessing | Short expiry, one-time claim, rate limit, explicit account approval | A shared limiter is required before horizontally scaling beyond one app instance |
+| Device-token theft | Hashed storage, per-device scope, revocation; the reference adapter stores its local state mode `0600` on POSIX | Platform-specific credential vaults remain a future adapter enhancement |
+| Malicious event payload | Strict schemas, identifier/type/count/length bounds and unknown-field rejection, exercised by privacy and validation tests | Extend the adversarial corpus when the event contract grows |
+| Malicious dictionary metadata | Explicit field import, contextual output escaping, pathological-string browser acceptance, and an 8,000-entry load corpus | Re-run corpus qualification for materially larger bundled dictionaries |
+| AnkiConnect abuse | Browser connects only to loopback; explicit user action; no server proxy; setup documents an exact-origin `webCorsOriginList` | The user controls the local AnkiConnect add-on and its permissions |
+| Recovery-link leakage | Hashed, purpose-bound, expiring, single-use tokens in URL fragments; no-referrer policy | Validate the selected provider's log/redaction behavior before public hosting |
+| Destructive account action | Reauthentication or explicit confirmation, CSRF defense, audit events, browser acceptance for cancellation and completion | No known local-candidate gap; repeat review when adding destructive actions |
+| Backup disclosure | Local mode-`0600` SQLite backups, bounded retention, and no raw bearer values in the database | Select encrypted off-host storage and a key-management policy before public hosting |
 
 ## Supply-chain evidence
 

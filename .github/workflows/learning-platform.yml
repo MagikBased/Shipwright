@@ -10,6 +10,8 @@ on:
       - "docs/LEARNING_PLATFORM_*.md"
       - "docs/LEARNING_SITE_ROADMAP.md"
       - "docs/SECURITY_AND_PRIVACY.md"
+      - "docs/ANKI_INTEROPERABILITY.md"
+      - "docs/releases/**"
   pull_request:
     paths:
       - ".github/workflows/learning-platform.yml"
@@ -19,6 +21,8 @@ on:
       - "docs/LEARNING_PLATFORM_*.md"
       - "docs/LEARNING_SITE_ROADMAP.md"
       - "docs/SECURITY_AND_PRIVACY.md"
+      - "docs/ANKI_INTEROPERABILITY.md"
+      - "docs/releases/**"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -45,7 +49,7 @@ jobs:
         working-directory: services/learning_platform
         run: |
           npm ci --ignore-scripts
-          npx playwright install --with-deps chromium
+          npx playwright install --with-deps chromium firefox
 
       - name: Run service and API tests
         run: |
@@ -53,9 +57,13 @@ jobs:
             venv/learning-platform/bin/python -m unittest discover \
             -s services/learning_platform/tests -v
 
-      - name: Run browser acceptance
+      - name: Run Chromium browser acceptance
         working-directory: services/learning_platform
         run: npm run test:browser
+
+      - name: Run Firefox browser acceptance
+        working-directory: services/learning_platform
+        run: JP_ASSIST_TEST_BROWSER=firefox npm run test:browser
 
       - name: Run cross-component Anki acceptance
         run: venv/learning-platform/bin/python scripts/jp_assist/run_mvp_acceptance.py

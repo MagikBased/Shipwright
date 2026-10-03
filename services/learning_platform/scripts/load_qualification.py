@@ -109,6 +109,24 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         )
         session_token = account["token"]
         devices = pair_devices(platform, session_token, args.devices)
+        dictionary_entries = []
+        for device_index in range(args.devices):
+            for number in range(args.events_per_device):
+                word_id = f"synthetic-load-{device_index:03d}-{number:07d}|reading-{number:07d}"
+                meaning = f"content-neutral load-test definition {device_index}-{number}"
+                if device_index == 0 and number == 0:
+                    meaning = '<script>window.__jpAssistInjected=true</script> pathological load marker'
+                dictionary_entries.append({
+                    "wordId": word_id,
+                    "senseId": "synthetic-sense",
+                    "written": f"Synthetic {device_index}-{number}",
+                    "reading": f"reading-{number:07d}",
+                    "partOfSpeech": "test fixture",
+                    "meaning": meaning,
+                    "source": "synthetic-load-test",
+                    "attribution": "Content-neutral generated qualification data",
+                })
+        platform.import_dictionary_entries(dictionary_entries)
 
         port = free_port()
         base_url = f"http://127.0.0.1:{port}"
@@ -212,6 +230,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                     "eventsPerDevice": args.events_per_device,
                     "batchSize": args.batch_size,
                     "queryRequests": len(query_paths),
+                    "dictionaryEntries": len(dictionary_entries),
                 },
                 "results": {
                     "acceptedEvents": accepted,

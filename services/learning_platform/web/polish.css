@@ -113,6 +113,33 @@ button:disabled {
   margin-top: 0;
 }
 
+.onboarding ol,
+.inline-help ol {
+  padding-left: 1.25rem;
+}
+
+.onboarding li,
+.inline-help li {
+  margin: 0.45rem 0;
+}
+
+.inline-help {
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  margin-top: 18px;
+  padding-top: 14px;
+}
+
+.inline-help summary {
+  color: var(--cyan);
+  cursor: pointer;
+  font-weight: 750;
+}
+
+.inline-help code {
+  color: var(--text);
+}
+
 .preflight-counts {
   display: grid;
   gap: 8px;

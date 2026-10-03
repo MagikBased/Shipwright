@@ -106,6 +106,9 @@ EOF
     logs)
         run_compose logs --tail=200 -f "${@:2}"
         ;;
+    logs-once)
+        run_compose logs --tail=200 "${@:2}"
+        ;;
     smoke)
         smoke
         ;;
@@ -119,7 +122,7 @@ EOF
         run_compose config
         ;;
     *)
-        echo "Usage: $0 {up|down|destroy|status|logs [service...]|smoke|backup|restore-drill|config}" >&2
+        echo "Usage: $0 {up|down|destroy|status|logs [service...]|logs-once [service...]|smoke|backup|restore-drill|config}" >&2
         exit 2
         ;;
 esac

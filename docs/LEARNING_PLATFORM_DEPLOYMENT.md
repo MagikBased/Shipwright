@@ -37,6 +37,7 @@ public deployment.
 ```bash
 services/learning_platform/scripts/staging.sh status
 services/learning_platform/scripts/staging.sh logs app
+services/learning_platform/scripts/staging.sh logs-once maintenance
 services/learning_platform/scripts/staging.sh smoke
 services/learning_platform/scripts/staging.sh backup
 services/learning_platform/scripts/staging.sh restore-drill
@@ -95,6 +96,7 @@ API path, for example `https://learn.example.com`.
 | `JP_ASSIST_BACKUP_DIR` | Directory inspected for backup metrics | `/backups` |
 | `JP_ASSIST_BACKUP_INTERVAL_SECONDS` | Delay between automatic backup attempts | `86400` |
 | `JP_ASSIST_BACKUP_RETAIN_COUNT` | Newest automatic backups kept locally | `14` |
+| `JP_ASSIST_MAINTENANCE_INTERVAL_SECONDS` | Delay between reminder/cleanup passes | `3600` |
 | `JP_ASSIST_BIND_ADDRESS` | Address used for public HTTP/HTTPS bindings | `0.0.0.0` public, `127.0.0.1` local staging |
 | `JP_ASSIST_RATE_LIMIT_WINDOW_SECONDS` | Sliding rate-limit window | `60` |
 | `JP_ASSIST_AUTH_RATE_LIMIT` | Registrations/login attempts per IP/window | `20` |
@@ -125,6 +127,12 @@ read through the public site. The provisioned **JP Assist Operations** Grafana
 dashboard displays request rate, 5xx ratio, p95 latency, readiness, database
 size, retained events, backup count, and retained mail-delivery failures. The
 monitoring and mail UIs bind to host loopback even in the public-host example.
+
+The `maintenance` sidecar invokes idempotent due-review delivery and retention
+cleanup immediately after startup and hourly thereafter. It shares the SQLite
+volume because both operations intentionally write delivery/audit or delete
+expired operational rows; WAL mode and the single-worker topology serialize
+those short transactions.
 
 ## Health and migrations
 

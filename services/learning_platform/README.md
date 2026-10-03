@@ -1,12 +1,12 @@
-# JP Assist Learning Platform MVP
+# JP Assist Learning Platform
 
-This directory contains the content-neutral account and progress service
+This directory contains the content-neutral account and progress service. The
+current local release candidate is `0.3.0-rc.1`; its original MVP contract is
 described in [`docs/LEARNING_PLATFORM_MVP.md`](../../docs/LEARNING_PLATFORM_MVP.md).
 It is intentionally separate from the Shipwright build: the game can be
 developed and used without running this optional service.
 
-The path from the current MVP to a polished, deployment-ready local release is
-tracked in
+The path from the release candidate to a publicly hosted service is tracked in
 [`docs/LEARNING_SITE_ROADMAP.md`](../../docs/LEARNING_SITE_ROADMAP.md).
 
 ## Run locally
@@ -244,8 +244,9 @@ and failed-response logs under the ignored `var/` directory on failures:
 ```bash
 cd services/learning_platform
 npm install
-npx playwright install chromium
+npx playwright install chromium firefox
 npm run test:browser
+JP_ASSIST_TEST_BROWSER=firefox npm run test:browser
 ```
 
 Use `JP_ASSIST_TEST_PYTHON` or `JP_ASSIST_TEST_CHROMIUM` to select different

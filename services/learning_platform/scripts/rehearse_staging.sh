@@ -12,6 +12,9 @@ cleanup() {
 trap cleanup EXIT
 
 "$script_dir/staging.sh" up
+maintenance_log="$($script_dir/staging.sh logs-once maintenance 2>&1)"
+grep -q "Reminder delivery:" <<<"$maintenance_log"
+grep -q "Operational cleanup:" <<<"$maintenance_log"
 "$script_dir/staging.sh" backup
 "$script_dir/staging.sh" restore-drill
 "$script_dir/staging.sh" smoke

@@ -21,6 +21,10 @@ Prometheus and Grafana bind to loopback; `/internal/metrics` must return 404
 through Caddy. Use an `X-Request-ID` from a response to correlate request and
 account-audit JSON logs without inspecting request content.
 
+The `maintenance` container should remain running. Its hourly loop sends
+idempotent due-review reminders and cleans bounded operational history. Inspect
+`staging.sh logs maintenance` when reminder or retention behavior is suspect.
+
 Run the full disposable operational qualification before a release:
 
 ```bash

@@ -58,10 +58,11 @@ history.
 
 ## Local connection recovery
 
-If the site reports `Failed to fetch`, verify that Anki is open, AnkiConnect is
-installed and enabled, and port 8765 is not blocked. Add the local/staging site
-origin to AnkiConnect's `webCorsOriginList`; do not expose port 8765 publicly.
-Malformed-response errors usually indicate an incompatible plugin or another
-service occupying that port. The preflight performs no writes, so it is safe to
-fix the connection and retry. If review-history import alone is unsupported,
-update AnkiConnect; card synchronization remains available independently.
+If the site reports that it could not reach AnkiConnect, verify that Anki is
+open, AnkiConnect is installed and enabled, and port 8765 is not blocked. Add
+the local/staging site origin to AnkiConnect's `webCorsOriginList`; do not expose
+port 8765 publicly. Transport and invalid-JSON errors are normalized so these
+instructions remain consistent across Chromium and Firefox. The preflight
+performs no writes, so it is safe to fix the connection and retry. If
+review-history import alone is unsupported, update AnkiConnect; card
+synchronization remains available independently.

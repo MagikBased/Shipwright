@@ -47,11 +47,12 @@ Completed:
 
 Known intentional limitations:
 
-- Reminder delivery is locally testable and idempotent, but periodic invocation
-  remains an operations milestone; no real email provider is configured.
+- Reminder delivery is locally testable, idempotent, and invoked by the hourly
+  maintenance sidecar; no real email provider is configured.
 - Chromium browser workflows, responsive layouts, accessibility, recovery
   states, and visual regressions have deterministic automated coverage;
-  Firefox and WebKit qualification remains part of the release-candidate gate.
+  Firefox passes the functional/accessibility suite, while the documented
+  current-host WebKit dependency limitation remains outside release support.
 - AnkiConnect review-history import depends on the locally installed plugin
   supporting `getReviewsOfCards`; unsupported versions receive an explicit
   update-and-retry message.
@@ -268,6 +269,13 @@ Exit gate: a clean machine can create the staging environment, run the complete
 acceptance suite, restore a backup, and shut down without orphaned state.
 
 ## Milestone 8 — Release candidate
+
+Status: **in progress**. Chromium and Firefox qualification pass; WebKit's
+current-host dependency limitation is documented. Embedded onboarding,
+pairing/Anki troubleshooting, privacy copy, the compatibility policy, versioned
+release notes, artifact builder, and evidence-based release checklist are now
+present. Final clean-commit artifact generation, checksum verification, and
+local release tag remain open.
 
 Deliverables:
 

@@ -168,8 +168,17 @@ function renderReview(revealed) {
 }
 
 async function anki(action, params = {}) {
-  const response = await fetch("http://127.0.0.1:8765", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action, version: 6, params }) });
-  const result = await response.json(); if (result.error) throw new Error(result.error); return result.result;
+  let response;
+  try {
+    response = await fetch("http://127.0.0.1:8765", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action, version: 6, params }) });
+  } catch (_) {
+    throw new Error("Could not reach AnkiConnect. Start Anki and confirm AnkiConnect is installed.");
+  }
+  let result;
+  try { result = await response.json(); }
+  catch (_) { throw new Error("AnkiConnect returned invalid JSON."); }
+  if (!response.ok) throw new Error(`AnkiConnect returned HTTP ${response.status}.`);
+  if (result.error) throw new Error(result.error); return result.result;
 }
 function collectionQuery(game = document.querySelector("#export-game").value) { return game ? `?gameId=${encodeURIComponent(game)}` : ""; }
 function updateAnkiHistoryAvailability() {

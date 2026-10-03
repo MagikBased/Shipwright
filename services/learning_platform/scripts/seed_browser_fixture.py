@@ -52,6 +52,12 @@ def seed_fixture(
         ("未収録|みしゅうろく", "sense:missing", "未収録", "みしゅうろく", "", "", 2, True, game_b),
         ("橋|はし", "sense:bridge", "橋", "はし", "noun", "bridge", 4, True, game_a),
         ("橋|はし", "sense:span", "橋", "はし", "noun", "a spanning structure used as a crossing", 2, True, game_b),
+        (
+            "危険表示|きけんひょうじ", "sense:hostile-metadata",
+            '<img src=x onerror="window.__jpAssistInjected=true">', "きけんひょうじ",
+            "test fixture", '<script>window.__jpAssistInjected=true</script> unsafe marker',
+            1, False, game_a,
+        ),
     ]
     vocabulary.extend(
         (

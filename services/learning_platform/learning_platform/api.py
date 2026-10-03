@@ -210,7 +210,7 @@ def create_app(
     )
     app = FastAPI(
         title="JP Assist Learning Platform",
-        version="0.3.0",
+        version="0.3.0-rc.1",
         docs_url=None if settings.production else "/docs",
         redoc_url=None if settings.production else "/redoc",
         openapi_url=None if settings.production else "/openapi.json",

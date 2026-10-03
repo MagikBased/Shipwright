@@ -143,6 +143,21 @@ test.describe.serial("learning account", () => {
     await expect(page.locator("#stats .stat")).toHaveCount(6);
   });
 
+  test("keeps onboarding, pairing, Anki, and privacy help in the product", async ({ page }) => {
+    await page.goto("/");
+    await expect(page.locator(".onboarding")).toContainText("Connect learning account");
+    await expect(page.locator(".onboarding")).toContainText("not dialogue");
+    await login(page);
+    await openView(page, "connections");
+    await page.locator("#pair-form details").click();
+    await expect(page.locator("#pair-form details")).toContainText("Codes expire after 10 minutes");
+    await openView(page, "export");
+    await page.locator("#view-export details").click();
+    await expect(page.locator("#view-export details")).toContainText("webCorsOriginList");
+    await openView(page, "account");
+    await expect(page.locator("#view-account")).toContainText("Operational backups may retain deleted account data");
+  });
+
   test("renders overview accessibly and at supported widths", async ({ page, browser }) => {
     await login(page);
     await expect(page.locator("#stats .stat")).toHaveCount(6);
@@ -174,7 +189,8 @@ test.describe.serial("learning account", () => {
     }
   });
 
-  test("matches the primary-view visual baselines", async ({ page }) => {
+  test("matches the primary-view visual baselines", async ({ page, browserName }) => {
+    test.skip(browserName !== "chromium", "Visual baselines are pinned to Chromium rendering");
     await login(page);
     const masks = [page.locator("#sessions"), page.locator("#devices small")];
     for (const view of ["overview", "vocabulary", "review", "export", "connections", "account"]) {
@@ -205,7 +221,7 @@ test.describe.serial("learning account", () => {
     await expect(page.locator(".word-card")).toHaveCount(50);
     await expect(page.locator("#load-more-words")).toBeVisible();
     await page.locator("#load-more-words").click();
-    await expect(page.locator(".word-card")).toHaveCount(68);
+    await expect(page.locator(".word-card")).toHaveCount(69);
     await expect(page.locator("#load-more-words")).toBeHidden();
     await page.locator("#word-search").fill("forest");
     await expect(page.locator(".word-card")).toHaveCount(1);
@@ -220,6 +236,13 @@ test.describe.serial("learning account", () => {
     await editor.locator("button[type=submit]").click();
     await page.locator("#word-state").selectOption("known");
     await expect(page.locator(".word-card")).toContainText("tested");
+
+    await page.locator("#word-state").selectOption("");
+    await page.locator("#word-search").fill("unsafe marker");
+    await expect(page.locator(".word-card")).toHaveCount(1);
+    await expect(page.locator(".word-card")).toContainText("<img src=x");
+    await expect(page.locator(".word-card img")).toHaveCount(0);
+    expect(await page.evaluate(() => window.__jpAssistInjected)).toBeUndefined();
   });
 
   test("completes a due review", async ({ page }) => {
@@ -371,10 +394,10 @@ test.describe.serial("learning account", () => {
     await expect(page.locator("#anki-apply")).toBeHidden();
     scenario = "malformed";
     await page.locator("#anki-import").click();
-    await expect(page.locator("#notice")).toContainText(/AnkiConnect:.*JSON/i);
+    await expect(page.locator("#notice")).toContainText("AnkiConnect: AnkiConnect returned invalid JSON");
     scenario = "unavailable";
     await page.locator("#anki-import").click();
-    await expect(page.locator("#notice")).toContainText("AnkiConnect: Failed to fetch");
+    await expect(page.locator("#notice")).toContainText("AnkiConnect: Could not reach AnkiConnect");
     scenario = "unsupported";
     await page.locator("#anki-owner").selectOption("anki");
     await page.locator("#confirm-accept").click();

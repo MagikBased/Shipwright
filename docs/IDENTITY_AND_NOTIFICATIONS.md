@@ -61,11 +61,12 @@ PYTHONPATH=services/learning_platform \
   venv/learning-platform/bin/python -m learning_platform.manage send-reminders
 ```
 
-The command is safe to run repeatedly. A production scheduler can invoke it
-periodically in a later operations milestone. Failed deliveries remove their
-daily delivery marker so they can be retried. Users can send a test email from
-Account → Notifications and every review email carries a single-use
-unsubscribe link.
+The command is safe to run repeatedly. The Compose `maintenance` sidecar runs a
+pass immediately and hourly by default, followed by bounded operational-data
+cleanup. The database uniqueness constraint keeps overlapping/restarted passes
+idempotent. Failed deliveries remove their daily delivery marker so they can be
+retried. Users can send a test email from Account → Notifications and every
+review email carries a single-use unsubscribe link.
 
 ## Acceptance coverage
 
