@@ -192,8 +192,12 @@ python scripts/jp_assist/export_saved_deck.py
 The Export page also offers an optional direct AnkiConnect handoff. Anki and
 AnkiConnect must be running on the same computer, and AnkiConnect must allow
 the learning site's origin. The browser talks to `127.0.0.1:8765` directly;
-the service never receives Anki credentials or review data from that action.
-Only cards with server-side dictionary metadata are sent by this direct path.
+the service never receives Anki credentials. Only cards with server-side
+dictionary metadata are sent by this direct path. When Anki is explicitly
+selected as review owner, the user may separately import review history. The
+service then stores source revlog IDs and original timestamps for idempotent
+activity tracking and later FSRS replay; it does not compete with Anki for due
+dates.
 
 ## Tests
 

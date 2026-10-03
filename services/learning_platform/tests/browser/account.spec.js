@@ -187,13 +187,14 @@ test.describe.serial("learning account", () => {
       else if (request.action === "modelFieldNames") result = modelFields;
       else if (request.action === "findNotes") result = notes.map(note => note.noteId);
       else if (request.action === "notesInfo") result = notes.filter(note => request.params.notes.includes(note.noteId));
+      else if (request.action === "getReviewsOfCards") result = Object.fromEntries(request.params.cards.map((cardId, index) => [String(cardId), index ? [] : [{ id: 1790856000123, usn: 1, ease: 3, ivl: 4, lastIvl: 1, factor: 2450, time: 3210, type: 1 }]]));
       else if (request.action === "createDeck") result = 1;
       else if (request.action === "createModel") { modelExists = true; modelFields = [...request.params.inOrderFields]; result = 1; }
       else if (request.action === "modelFieldAdd") { modelFields.push(request.params.fieldName); }
       else if (request.action === "addNotes") {
         result = request.params.notes.map(note => {
           const noteId = nextNoteId++;
-          notes.push({ noteId, modelName: note.modelName, tags: note.tags, fields: Object.fromEntries(Object.entries(note.fields).map(([name, value], order) => [name, { value, order }])) });
+          notes.push({ noteId, cards: [noteId + 10000], modelName: note.modelName, tags: note.tags, fields: Object.fromEntries(Object.entries(note.fields).map(([name, value], order) => [name, { value, order }])) });
           return noteId;
         });
       } else if (request.action === "updateNote") {
@@ -236,6 +237,11 @@ test.describe.serial("learning account", () => {
     await page.locator("#anki-owner").selectOption("anki");
     await page.locator("#confirm-accept").click();
     await expect(page.locator("#notice")).toContainText("Anki now owns scheduling");
+    await expect(page.locator("#anki-history")).toBeEnabled();
+    await page.locator("#anki-history").click();
+    await expect(page.locator("#notice")).toContainText("1 imported, 0 already present");
+    await page.locator("#anki-history").click();
+    await expect(page.locator("#notice")).toContainText("0 imported, 1 already present");
     await openView(page, "review");
     await expect(page.locator("#review-owner-note")).toContainText("Anki owns scheduling");
     await expect(page.locator("#review-card")).toContainText("Anki owns this review queue");
@@ -266,8 +272,12 @@ test.describe.serial("learning account", () => {
         modelNames: ["JP Assist Vocabulary"],
         modelFieldNames: Object.keys(fields),
         findNotes: [1, 2],
-        notesInfo: [{ noteId: 1, fields, tags: ["jp-assist"] }, { noteId: 2, fields, tags: ["jp-assist"] }],
+        notesInfo: [{ noteId: 1, cards: [101], fields, tags: ["jp-assist"] }, { noteId: 2, cards: [102], fields, tags: ["jp-assist"] }],
       };
+      if (scenario === "unsupported" && request.action === "getReviewsOfCards") {
+        await route.fulfill({ json: { result: null, error: "unsupported action" }, headers: { "Access-Control-Allow-Origin": "*" } });
+        return;
+      }
       const result = defaults[request.action];
       await route.fulfill({ json: { result, error: null }, headers: { "Access-Control-Allow-Origin": "*" } });
     });
@@ -281,6 +291,11 @@ test.describe.serial("learning account", () => {
     scenario = "unavailable";
     await page.locator("#anki-import").click();
     await expect(page.locator("#notice")).toContainText("AnkiConnect: Failed to fetch");
+    scenario = "unsupported";
+    await page.locator("#anki-owner").selectOption("anki");
+    await page.locator("#confirm-accept").click();
+    await page.locator("#anki-history").click();
+    await expect(page.locator("#notice")).toContainText("does not support review-history import");
   });
 
   test("pairs and revokes account access", async ({ page, request }) => {

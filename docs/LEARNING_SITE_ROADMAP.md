@@ -37,7 +37,7 @@ Completed:
   metadata imports.
 - Activity overview, goals, saved-word export, complete account export, and
   direct browser-to-local-Anki AnkiConnect export.
-- MVP review queue with append-only review history.
+- Deterministic FSRS-6 review queue with append-only, replayable review history.
 - Password changes, session revocation, per-game clearing, and account deletion.
 - Versioned SQLite migrations, health/readiness checks, HTTPS deployment
   scaffold, rate limits, and backup/restore commands.
@@ -45,13 +45,14 @@ Completed:
 
 Known intentional limitations:
 
-- The current scheduler is not exact FSRS.
 - Reminder preference is stored but notifications are not delivered.
 - Email verification and password recovery are absent.
 - Chromium browser workflows, responsive layouts, accessibility, recovery
   states, and visual regressions have deterministic automated coverage;
   Firefox and WebKit qualification remains part of the release-candidate gate.
-- AnkiConnect currently exports cards but does not reconcile review history.
+- AnkiConnect review-history import depends on the locally installed plugin
+  supporting `getReviewsOfCards`; unsupported versions receive an explicit
+  update-and-retry message.
 
 ## Milestone 1 — Account acceptance harness
 
@@ -139,12 +140,10 @@ deleted and rebuilt entirely from the immutable review log.
 
 ## Milestone 4 — Anki interoperability
 
-Status: **in progress**. Scheduling ownership is explicit and safely switched
-per collection. Browser-to-Anki synchronization now performs a read-only
-preflight, preserves stable word/sense identities and custom tags, migrates
-non-identity fields, updates stale notes, blocks duplicate identities, and is
-covered for repeat-sync idempotence and connection failures. Review-history
-feature detection/import and final recovery acceptance remain.
+Status: **complete**. Scheduling ownership is explicit and safely switched per
+collection. Card synchronization and review-history import preserve stable
+word/sense and source identities, repeat safely, recover visibly from local
+AnkiConnect failures, and are covered by real-browser/API acceptance tests.
 
 Support two explicit modes rather than allowing competing schedulers:
 
@@ -165,7 +164,9 @@ Deliverables:
 - Clear recovery instructions for Anki unavailable/CORS/configuration failures.
 
 Exit gate: repeat syncs are idempotent, no same-spelling vocabulary is lost,
-and the review owner is visible wherever due dates are shown.
+the review owner is visible wherever due dates are shown, imported history is
+deduplicated by its original revlog ID, and returning ownership to JP Assist
+rebuilds its FSRS state from the immutable combined history.
 
 ## Milestone 5 — Identity, recovery, and notifications
 

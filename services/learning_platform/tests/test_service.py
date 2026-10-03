@@ -1,3 +1,4 @@
+import json
 import tempfile
 import unittest
 from datetime import datetime, timedelta, timezone
@@ -290,6 +291,51 @@ class LearningPlatformTest(unittest.TestCase):
         )
         self.assertEqual(restored["reviewOwner"], "jp_assist")
         self.assertEqual(len(self.platform.review_queue(self.session)), 1)
+
+    def test_anki_history_import_is_idempotent_auditable_and_replayable(self):
+        device = self.pair_device()
+        self.platform.ingest_events(device["deviceToken"], [self.event("anki-save", "word_saved")])
+        review = {
+            "sourceReviewId": "1790856000123", "sourceCardId": "987654321",
+            "wordId": "武器|ぶき", "senseId": None, "rating": 3,
+            "reviewedAt": "2026-09-30T12:00:00Z", "intervalDays": 4,
+            "previousIntervalDays": 1, "factor": 2450, "durationMs": 3210,
+            "reviewType": 1,
+        }
+        with self.assertRaises(ConflictError):
+            self.platform.import_anki_reviews(self.session, [review])
+        self.platform.update_review_collection(
+            self.session, None, "anki", "JP Assist Test", confirmed=True,
+        )
+        with self.assertRaisesRegex(ValidationError, "all-games"):
+            self.platform.import_anki_reviews(self.session, [review], "ocarina-of-time")
+        first = self.platform.import_anki_reviews(self.session, [review])
+        retry = self.platform.import_anki_reviews(self.session, [review])
+        self.assertEqual((first["accepted"], first["duplicates"]), (1, 0))
+        self.assertEqual((retry["accepted"], retry["duplicates"]), (0, 1))
+        with self.platform.database.connect() as connection:
+            stored = connection.execute(
+                "SELECT * FROM reviews WHERE source = 'anki' AND source_review_id = ?",
+                (review["sourceReviewId"],),
+            ).fetchone()
+        self.assertEqual(stored["reviewed_at"], "2026-09-30T12:00:00.000Z")
+        self.assertEqual(stored["due_at"], "2026-10-04T12:00:00.000Z")
+        self.assertEqual(stored["source_card_id"], "987654321")
+        self.assertEqual(stored["review_duration_ms"], 3210)
+        self.assertEqual(json.loads(stored["source_metadata_json"])["factor"], 2450)
+
+        self.platform.update_review_collection(
+            self.session, None, "jp_assist", "JP Assist Test", confirmed=True,
+        )
+        with self.platform.database.connect() as connection:
+            state = connection.execute(
+                "SELECT * FROM review_state WHERE user_id = ? AND word_id = ?",
+                (self.platform.authenticate_session(self.session)["id"], "武器|ぶき"),
+            ).fetchone()
+        self.assertEqual(state["last_reviewed_at"], "2026-09-30T12:00:00.000Z")
+        imported = next(item for item in self.platform.account_export(self.session)["reviews"] if item["source"] == "anki")
+        self.assertEqual(imported["source_review_id"], review["sourceReviewId"])
+        self.assertEqual(imported["sourceMetadata"]["previousIntervalDays"], 1.0)
 
     def test_session_password_and_per_game_clear_controls(self):
         first_device = self.pair_device()

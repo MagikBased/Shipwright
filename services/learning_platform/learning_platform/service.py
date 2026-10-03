@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import math
 import re
 import sqlite3
 import uuid
@@ -72,13 +73,13 @@ def isoformat(value: datetime) -> str:
     return value.astimezone(timezone.utc).isoformat(timespec="milliseconds").replace("+00:00", "Z")
 
 
-def parse_timestamp(value: str) -> str:
+def parse_timestamp(value: str, field_name: str = "occurredAt") -> str:
     try:
         parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
     except (TypeError, ValueError) as exc:
-        raise ValidationError("occurredAt must be an ISO-8601 timestamp") from exc
+        raise ValidationError(f"{field_name} must be an ISO-8601 timestamp") from exc
     if parsed.tzinfo is None:
-        raise ValidationError("occurredAt must include a timezone")
+        raise ValidationError(f"{field_name} must include a timezone")
     return isoformat(parsed)
 
 
@@ -865,6 +866,7 @@ class LearningPlatform:
             )
         now = isoformat(self.now())
         with self.database.connect() as connection:
+            connection.execute("BEGIN IMMEDIATE")
             connection.execute(
                 """
                 INSERT INTO review_collections (
@@ -876,6 +878,8 @@ class LearningPlatform:
                 """,
                 (user["id"], collection_id, review_owner, clean_deck, now),
             )
+            if collection_id == "all" and owner_changed and review_owner == "jp_assist":
+                self._rebuild_review_states(connection, user["id"])
         return self.get_review_collection(session_token, game_id)
 
     def mark_anki_synced(self, session_token: str, game_id: str | None = None) -> dict[str, Any]:
@@ -1072,6 +1076,104 @@ class LearningPlatform:
                 "reviewedAt": now, "dueAt": due_at, "intervalDays": interval,
                 "repetitions": repetitions, "lapses": lapses, **projection}
 
+    def import_anki_reviews(
+        self, session_token: str, reviews: list[dict[str, Any]], game_id: str | None = None,
+    ) -> dict[str, Any]:
+        """Append Anki revlog entries without letting JP Assist compete for scheduling ownership."""
+        user = self.authenticate_session(session_token)
+        if game_id is not None:
+            raise ValidationError("Anki review history can be imported only for the all-games collection")
+        collection = self.get_review_collection(session_token, game_id)
+        if collection["reviewOwner"] != "anki":
+            raise ConflictError("Set Anki as the review owner before importing its review history")
+        if not 1 <= len(reviews) <= 5000:
+            raise ValidationError("reviews must contain between 1 and 5000 entries")
+
+        normalized = []
+        seen_source_ids: set[str] = set()
+        for item in reviews:
+            source_review_id = item.get("sourceReviewId")
+            source_card_id = item.get("sourceCardId")
+            if not isinstance(source_review_id, str) or not source_review_id.strip() or len(source_review_id) > 128:
+                raise ValidationError("sourceReviewId must contain between 1 and 128 characters")
+            if not isinstance(source_card_id, str) or not source_card_id.strip() or len(source_card_id) > 128:
+                raise ValidationError("sourceCardId must contain between 1 and 128 characters")
+            source_review_id = source_review_id.strip()
+            source_card_id = source_card_id.strip()
+            if source_review_id in seen_source_ids:
+                raise ValidationError("reviews contains a duplicate sourceReviewId")
+            seen_source_ids.add(source_review_id)
+            word_id = item.get("wordId")
+            if not isinstance(word_id, str) or not word_id or len(word_id) > 512:
+                raise ValidationError("wordId must contain between 1 and 512 characters")
+            sense_id = item.get("senseId") or ""
+            if not isinstance(sense_id, str) or len(sense_id) > 512:
+                raise ValidationError("senseId must be a string no longer than 512 characters")
+            rating = item.get("rating")
+            if type(rating) is not int or rating not in {1, 2, 3, 4}:
+                raise ValidationError("rating must be 1 (again), 2 (hard), 3 (good), or 4 (easy)")
+            reviewed_at = parse_timestamp(item.get("reviewedAt"), "reviewedAt")
+            interval_days = item.get("intervalDays", 0)
+            previous_interval_days = item.get("previousIntervalDays", 0)
+            factor = item.get("factor")
+            duration_ms = item.get("durationMs")
+            review_type = item.get("reviewType")
+            for name, value in (("intervalDays", interval_days), ("previousIntervalDays", previous_interval_days)):
+                if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value) or value < 0:
+                    raise ValidationError(f"{name} must be a finite non-negative number")
+            if factor is not None and (type(factor) is not int or factor < 0):
+                raise ValidationError("factor must be a non-negative integer")
+            if duration_ms is not None and (type(duration_ms) is not int or duration_ms < 0):
+                raise ValidationError("durationMs must be a non-negative integer")
+            if review_type is not None and (type(review_type) is not int or review_type < 0):
+                raise ValidationError("reviewType must be a non-negative integer")
+            reviewed_value = datetime.fromisoformat(reviewed_at.replace("Z", "+00:00"))
+            due_at = isoformat(reviewed_value + timedelta(days=float(interval_days)))
+            metadata = {
+                "previousIntervalDays": float(previous_interval_days),
+                "factor": factor,
+                "reviewType": review_type,
+            }
+            normalized.append((
+                str(uuid.uuid4()), user["id"], word_id, sense_id, rating, reviewed_at, due_at,
+                float(interval_days), (factor / 1000 if factor else 2.5), "anki", "anki-connect",
+                "Anki", "[]", 0.9, None, None, None, None, None, None,
+                source_review_id, source_card_id, duration_ms,
+                json.dumps(metadata, ensure_ascii=False, sort_keys=True, separators=(",", ":")),
+            ))
+
+        accepted: list[str] = []
+        duplicates: list[str] = []
+        with self.database.connect() as connection:
+            connection.execute("BEGIN IMMEDIATE")
+            progress = {
+                (row["word_id"], row["sense_id"])
+                for row in connection.execute(
+                    "SELECT word_id, sense_id FROM word_progress WHERE user_id = ?", (user["id"],),
+                )
+            }
+            unknown = sorted({(row[2], row[3]) for row in normalized} - progress)
+            if unknown:
+                raise NotFoundError(f"Word not found in this account: {unknown[0][0]}")
+            for row in normalized:
+                cursor = connection.execute(
+                    """
+                    INSERT OR IGNORE INTO reviews (
+                        id, user_id, word_id, sense_id, rating, reviewed_at, due_at, interval_days,
+                        ease, source, scheduler_version, algorithm_version, parameters_json,
+                        desired_retention, card_state, step, stability, difficulty, scheduled_days,
+                        elapsed_days, source_review_id, source_card_id, review_duration_ms,
+                        source_metadata_json
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    row,
+                )
+                (accepted if cursor.rowcount else duplicates).append(row[20])
+        return {
+            "accepted": len(accepted), "duplicates": len(duplicates),
+            "acceptedSourceReviewIds": accepted, "duplicateSourceReviewIds": duplicates,
+        }
+
     def list_sessions(self, session_token: str) -> list[dict[str, Any]]:
         user = self.authenticate_session(session_token)
         current_hash = token_hash(session_token)
@@ -1131,7 +1233,8 @@ class LearningPlatform:
                 """
                 SELECT word_id, sense_id, rating, reviewed_at, due_at, interval_days, source,
                        scheduler_version, algorithm_version, parameters_json, desired_retention,
-                       card_state, step, stability, difficulty, scheduled_days, elapsed_days
+                       card_state, step, stability, difficulty, scheduled_days, elapsed_days,
+                       source_review_id, source_card_id, review_duration_ms, source_metadata_json
                 FROM reviews WHERE user_id = ? ORDER BY reviewed_at, id
                 """,
                 (user["id"],))]
@@ -1159,7 +1262,8 @@ class LearningPlatform:
             annotation["tags"] = json.loads(annotation.pop("tags_json"))
         for review in reviews:
             review["parameters"] = json.loads(review.pop("parameters_json"))
-        return {"schemaVersion": 2, "exportedAt": exported_at, "user": user,
+            review["sourceMetadata"] = json.loads(review.pop("source_metadata_json"))
+        return {"schemaVersion": 3, "exportedAt": exported_at, "user": user,
                 "stats": self.get_stats(session_token), "goals": self.get_goals(session_token),
                 "words": self.list_word_progress(session_token, limit=1000),
                 "annotations": annotations, "reviews": reviews, "events": events,

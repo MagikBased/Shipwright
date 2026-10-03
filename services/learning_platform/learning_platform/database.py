@@ -2,7 +2,7 @@ import sqlite3
 from pathlib import Path
 
 
-LATEST_SCHEMA_VERSION = 6
+LATEST_SCHEMA_VERSION = 7
 
 SCHEMA = """
 PRAGMA foreign_keys = ON;
@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS metadata (
     value TEXT NOT NULL
 );
 
-INSERT OR IGNORE INTO metadata(key, value) VALUES ('schema_version', '6');
+INSERT OR IGNORE INTO metadata(key, value) VALUES ('schema_version', '7');
 
 CREATE TABLE IF NOT EXISTS users (
     id TEXT PRIMARY KEY,
@@ -173,7 +173,11 @@ CREATE TABLE IF NOT EXISTS reviews (
     stability REAL,
     difficulty REAL,
     scheduled_days REAL,
-    elapsed_days REAL
+    elapsed_days REAL,
+    source_review_id TEXT,
+    source_card_id TEXT,
+    review_duration_ms INTEGER,
+    source_metadata_json TEXT NOT NULL DEFAULT '{}'
 );
 
 CREATE INDEX IF NOT EXISTS reviews_user_time_idx ON reviews(user_id, reviewed_at);
@@ -239,7 +243,7 @@ class Database:
             goal_columns = {row["name"] for row in connection.execute("PRAGMA table_info(learning_goals)")}
             if "timezone" not in goal_columns:
                 connection.execute("ALTER TABLE learning_goals ADD COLUMN timezone TEXT NOT NULL DEFAULT 'UTC'")
-            connection.execute("UPDATE metadata SET value = '6' WHERE key = 'schema_version'")
+            connection.execute("UPDATE metadata SET value = '7' WHERE key = 'schema_version'")
 
     @staticmethod
     def _migrate_review_schema(connection: sqlite3.Connection) -> None:
@@ -272,10 +276,21 @@ class Database:
             "difficulty": "REAL",
             "scheduled_days": "REAL",
             "elapsed_days": "REAL",
+            "source_review_id": "TEXT",
+            "source_card_id": "TEXT",
+            "review_duration_ms": "INTEGER",
+            "source_metadata_json": "TEXT NOT NULL DEFAULT '{}'",
         }
         for name, definition in review_additions.items():
             if name not in review_columns:
                 connection.execute(f"ALTER TABLE reviews ADD COLUMN {name} {definition}")
+        connection.execute(
+            """
+            CREATE UNIQUE INDEX IF NOT EXISTS reviews_source_identity_idx
+                ON reviews(user_id, source, source_review_id)
+                WHERE source_review_id IS NOT NULL
+            """
+        )
 
     @staticmethod
     def _schema_version(connection: sqlite3.Connection) -> int:

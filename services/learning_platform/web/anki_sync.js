@@ -116,3 +116,58 @@ export async function applyAnkiPlan(anki, plan) {
     racedDuplicates: results.filter(value => !value).length,
   };
 }
+
+function ankiIntervalDays(value) {
+  const interval = Number(value) || 0;
+  return interval < 0 ? Math.abs(interval) / 86400 : interval;
+}
+
+export async function collectAnkiReviews(anki, manifest) {
+  const desired = new Map(manifest.words.map(word => [noteIdentity(word), word]));
+  const noteIds = await anki("findNotes", { query: `note:\"${ANKI_MODEL}\"` });
+  const notes = noteIds.length ? await anki("notesInfo", { notes: noteIds }) : [];
+  const cards = new Map();
+  for (const note of notes) {
+    const word = desired.get(fieldValue(note, "Word ID"));
+    if (!word) continue;
+    for (const cardId of note.cards || []) cards.set(String(cardId), word);
+  }
+  if (!cards.size) return { reviews: [], skipped: 0, cards: 0 };
+
+  let history;
+  try {
+    history = await anki("getReviewsOfCards", { cards: [...cards.keys()] });
+  } catch (error) {
+    throw new Error(`This AnkiConnect version does not support review-history import. Update AnkiConnect and retry. (${error.message})`);
+  }
+  if (!history || typeof history !== "object" || Array.isArray(history)) {
+    throw new Error("AnkiConnect returned malformed review history.");
+  }
+
+  const reviews = [];
+  let skipped = 0;
+  for (const [cardId, entries] of Object.entries(history)) {
+    const word = cards.get(String(cardId));
+    if (!word || !Array.isArray(entries)) continue;
+    for (const entry of entries) {
+      const rating = Number(entry.ease);
+      const timestamp = Number(entry.id);
+      if (![1, 2, 3, 4].includes(rating) || !Number.isFinite(timestamp)) {
+        skipped++;
+        continue;
+      }
+      reviews.push({
+        sourceReviewId: String(entry.id), sourceCardId: String(cardId),
+        wordId: word.wordId, senseId: word.senseId || null, rating,
+        reviewedAt: new Date(timestamp).toISOString(),
+        intervalDays: ankiIntervalDays(entry.ivl),
+        previousIntervalDays: ankiIntervalDays(entry.lastIvl),
+        factor: Number.isInteger(Number(entry.factor)) ? Number(entry.factor) : null,
+        durationMs: Number.isInteger(Number(entry.time)) ? Number(entry.time) : null,
+        reviewType: Number.isInteger(Number(entry.type)) ? Number(entry.type) : null,
+      });
+    }
+  }
+  reviews.sort((left, right) => left.reviewedAt.localeCompare(right.reviewedAt) || left.sourceReviewId.localeCompare(right.sourceReviewId));
+  return { reviews, skipped, cards: cards.size };
+}

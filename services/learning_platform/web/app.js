@@ -1,5 +1,5 @@
 import { confirmAction, downloadJson, escapeHtml, setBusy, showNotice, skeletonCards } from "./ui.js";
-import { applyAnkiPlan, preflightAnki } from "./anki_sync.js";
+import { applyAnkiPlan, collectAnkiReviews, preflightAnki } from "./anki_sync.js";
 
 const auth = document.querySelector("#auth");
 const dashboard = document.querySelector("#dashboard");
@@ -155,17 +155,25 @@ async function anki(action, params = {}) {
   const result = await response.json(); if (result.error) throw new Error(result.error); return result.result;
 }
 function collectionQuery(game = document.querySelector("#export-game").value) { return game ? `?gameId=${encodeURIComponent(game)}` : ""; }
+function updateAnkiHistoryAvailability() {
+  const allGames = !document.querySelector("#export-game").value;
+  const button = document.querySelector("#anki-history");
+  button.disabled = !allGames || state.ankiCollection?.reviewOwner !== "anki";
+  button.title = allGames ? "" : "Select All games to import the global Anki review history.";
+}
 async function loadAnkiCollection() {
   state.ankiCollection = await api(`/v1/me/review-collection${collectionQuery()}`);
   document.querySelector("#anki-owner").value = state.ankiCollection.reviewOwner;
   document.querySelector("#anki-deck").value = state.ankiCollection.ankiDeck;
   document.querySelector("#anki-last-sync").textContent = state.ankiCollection.lastAnkiSyncAt ? `Last successful sync ${state.ankiCollection.lastAnkiSyncAt.slice(0, 16).replace("T", " ")} UTC` : "Not synced yet";
+  updateAnkiHistoryAvailability();
   state.ankiPlan = null; renderAnkiPlan();
 }
 async function saveAnkiCollection(reviewOwner, confirmed = false) {
   const gameId = document.querySelector("#export-game").value || null;
   state.ankiCollection = await api("/v1/me/review-collection", { method: "PUT", body: JSON.stringify({ gameId, reviewOwner, ankiDeck: document.querySelector("#anki-deck").value.trim(), confirmed }) });
   if (!gameId) { state.reviewCollection = state.ankiCollection; renderReviewOwner(); }
+  updateAnkiHistoryAvailability();
   return state.ankiCollection;
 }
 function renderAnkiPlan() {
@@ -191,6 +199,21 @@ async function applyAnkiSync() {
   showNotice(`Anki sync complete: ${result.added} added, ${result.updated} updated, ${result.unchanged} unchanged${result.racedDuplicates ? `, ${result.racedDuplicates} concurrent duplicates skipped` : ""}.`);
   await checkAnki();
 }
+async function importAnkiHistory() {
+  if (document.querySelector("#export-game").value) throw new Error("Select All games before importing review history.");
+  if (state.ankiCollection.reviewOwner !== "anki") throw new Error("Set Anki as the review owner before importing review history.");
+  const gameId = document.querySelector("#export-game").value || null;
+  const manifest = await api(`/v1/me/exports/saved-words${collectionQuery()}`);
+  const collected = await collectAnkiReviews(anki, manifest);
+  if (!collected.reviews.length) return { accepted: 0, duplicates: 0, skipped: collected.skipped, cards: collected.cards };
+  const result = { accepted: 0, duplicates: 0 };
+  for (let offset = 0; offset < collected.reviews.length; offset += 5000) {
+    const batch = await api("/v1/me/reviews/import/anki", { method: "POST", body: JSON.stringify({ gameId, reviews: collected.reviews.slice(offset, offset + 5000) }) });
+    result.accepted += batch.accepted;
+    result.duplicates += batch.duplicates;
+  }
+  return { ...result, skipped: collected.skipped, cards: collected.cards };
+}
 
 document.querySelector("#tabs").addEventListener("click", async event => { const button = event.target.closest("[data-view]"); if (!button) return; document.querySelectorAll("#tabs button").forEach(item => item.classList.toggle("active", item===button)); document.querySelectorAll(".view").forEach(view => view.classList.add("hidden")); document.querySelector(`#view-${button.dataset.view}`).classList.remove("hidden"); if (button.dataset.view==="review") await loadReviewQueue(); });
 for (const [id,path] of [["login-form","/v1/auth/login"],["register-form","/v1/auth/register"]]) document.querySelector(`#${id}`).addEventListener("submit", async event => { event.preventDefault(); const form=event.currentTarget, button=form.querySelector("button[type=submit]"); setBusy(button,true,id==="login-form"?"Signing in…":"Creating account…"); try { await api(path,{method:"POST",body:JSON.stringify(formJson(form))}); showNotice(""); await loadDashboard(); } catch(error){showNotice(error.message,true);} finally { setBusy(button,false); } });
@@ -205,6 +228,7 @@ document.querySelector("#bury-review").addEventListener("click",async event=>{co
 document.querySelector("#download-manifest").addEventListener("click",async event=>{const button=event.currentTarget;setBusy(button,true,"Preparing…");try{const game=document.querySelector("#export-game").value;downloadJson(await api(`/v1/me/exports/saved-words${game?`?gameId=${encodeURIComponent(game)}`:""}`),"jp_assist_cloud_progress.json");}catch(error){showNotice(error.message,true);}finally{setBusy(button,false);}}); document.querySelector("#download-account").addEventListener("click",async event=>{const button=event.currentTarget;setBusy(button,true,"Preparing…");try{downloadJson(await api("/v1/me/exports/account"),"jp_assist_account_export.json");}catch(error){showNotice(error.message,true);}finally{setBusy(button,false);}});
 document.querySelector("#anki-import").addEventListener("click",async event=>{const button=event.currentTarget;setBusy(button,true,"Checking…");try{const plan=await checkAnki();showNotice(`Preflight ready: ${plan.counts.additions} add, ${plan.counts.updates} update, ${plan.counts.unchanged} unchanged.`);}catch(error){showNotice(`AnkiConnect: ${error.message}`,true);}finally{setBusy(button,false);}});
 document.querySelector("#anki-apply").addEventListener("click",async event=>{const button=event.currentTarget;setBusy(button,true,"Syncing…");try{await applyAnkiSync();}catch(error){showNotice(`AnkiConnect: ${error.message}`,true);}finally{setBusy(button,false);}});
+document.querySelector("#anki-history").addEventListener("click",async event=>{const button=event.currentTarget;setBusy(button,true,"Importing…");try{const result=await importAnkiHistory();showNotice(`Anki history: ${result.accepted} imported, ${result.duplicates} already present${result.skipped?`, ${result.skipped} unsupported entries skipped`:""}.`);}catch(error){showNotice(`AnkiConnect: ${error.message}`,true);}finally{setBusy(button,false);}});
 document.querySelector("#export-game").addEventListener("change",()=>loadAnkiCollection().catch(error=>showNotice(error.message,true)));
 document.querySelector("#anki-owner").addEventListener("change",async event=>{const select=event.currentTarget,next=select.value,previous=state.ankiCollection.reviewOwner;if(next===previous)return;const confirmed=await confirmAction("Change review owner?",`${next==="anki"?"Anki":"JP Assist"} will become the only scheduler for this collection. Existing review history is kept, but due cards appear only in the owning scheduler.`,"Change owner",true);if(!confirmed){select.value=previous;return;}try{await saveAnkiCollection(next,true);showNotice(`${next==="anki"?"Anki":"JP Assist"} now owns scheduling for this collection.`);}catch(error){select.value=previous;showNotice(error.message,true);}});
 document.querySelector("#devices").addEventListener("click",async event=>{const button=event.target.closest(".revoke-device");if(!button)return;if(!await confirmAction("Revoke device?","This mod will no longer be able to synchronize until it is paired again.","Revoke device",true))return;try{await api(`/v1/me/devices/${encodeURIComponent(button.dataset.id)}`,{method:"DELETE"});showNotice("Device access revoked.");await loadDashboard();}catch(error){showNotice(error.message,true);}}); document.querySelector("#sessions").addEventListener("click",async event=>{const button=event.target.closest(".revoke-session");if(!button)return;if(!await confirmAction(button.textContent==="Sign out"?"Sign out this session?":"Revoke website session?","That browser will need to sign in again.",button.textContent,true))return;try{await api(`/v1/me/sessions/${encodeURIComponent(button.dataset.id)}`,{method:"DELETE"});showNotice("Session revoked.");await loadDashboard();}catch(error){showNotice(error.message,true);}});

@@ -104,6 +104,25 @@ class AnkiSyncCompleteRequest(ApiModel):
     gameId: str | None = None
 
 
+class AnkiReviewImportItem(ApiModel):
+    sourceReviewId: str
+    sourceCardId: str
+    wordId: str
+    senseId: str | None = None
+    rating: StrictInt
+    reviewedAt: str
+    intervalDays: float = 0
+    previousIntervalDays: float = 0
+    factor: StrictInt | None = None
+    durationMs: StrictInt | None = None
+    reviewType: StrictInt | None = None
+
+
+class AnkiReviewImportRequest(ApiModel):
+    gameId: str | None = None
+    reviews: list[AnkiReviewImportItem]
+
+
 class PasswordRequest(ApiModel):
     currentPassword: str
     newPassword: str
@@ -364,6 +383,25 @@ def create_app(
         authorization: str | None = Header(default=None),
     ) -> dict[str, Any]:
         return platform.mark_anki_synced(session_token(request, authorization), payload.gameId)
+
+    @app.post("/v1/me/reviews/import/anki")
+    def import_anki_reviews(
+        payload: AnkiReviewImportRequest, request: Request,
+        authorization: str | None = Header(default=None),
+    ) -> dict[str, Any]:
+        reviews = [
+            {
+                "sourceReviewId": item.sourceReviewId, "sourceCardId": item.sourceCardId,
+                "wordId": item.wordId, "senseId": item.senseId, "rating": item.rating,
+                "reviewedAt": item.reviewedAt, "intervalDays": item.intervalDays,
+                "previousIntervalDays": item.previousIntervalDays, "factor": item.factor,
+                "durationMs": item.durationMs, "reviewType": item.reviewType,
+            }
+            for item in payload.reviews
+        ]
+        return platform.import_anki_reviews(
+            session_token(request, authorization), reviews, payload.gameId,
+        )
 
     @app.get("/v1/me/exports/saved-words")
     def saved_words_export(
