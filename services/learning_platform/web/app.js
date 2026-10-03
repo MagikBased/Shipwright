@@ -162,6 +162,8 @@ function renderReview(revealed) {
   const labels = ["Again", "Hard", "Good", "Easy"];
   actions.querySelectorAll("[data-rating]").forEach((button, index) => {
     const preview = card.ratingPreviews?.find(item => item.rating === index + 1);
+    button.disabled = false;
+    delete button.dataset.idleLabel;
     button.innerHTML = `${labels[index]}${preview ? `<small>${formatInterval(preview.intervalDays)}</small>` : ""}`;
   });
   actions.classList.toggle("hidden", !revealed);

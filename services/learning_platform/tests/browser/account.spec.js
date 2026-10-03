@@ -245,11 +245,25 @@ test.describe.serial("learning account", () => {
     expect(await page.evaluate(() => window.__jpAssistInjected)).toBeUndefined();
   });
 
-  test("completes a due review", async ({ page }) => {
+  test("accepts repeated ratings and completes due reviews", async ({ page }) => {
+    const againRatings = [];
+    page.on("request", request => {
+      if (request.method() === "POST" && new URL(request.url()).pathname === "/v1/me/reviews") {
+        const payload = request.postDataJSON();
+        if (payload.rating === 1) againRatings.push(`${payload.wordId}\0${payload.senseId || ""}`);
+      }
+    });
     await login(page); await openView(page, "review");
     await page.locator("#review-card").click();
     await expect(page.locator("#review-actions")).toBeVisible();
     await expect(page.locator("#review-actions [data-rating='3'] small")).toHaveText(/m|h|d|mo|y/);
+    await page.locator("#review-actions [data-rating='1']").click();
+    await page.locator("#review-card").click();
+    await expect(page.locator("#review-actions [data-rating='1']")).toBeEnabled();
+    await page.locator("#review-actions [data-rating='1']").click();
+    await expect.poll(() => againRatings.length).toBe(2);
+    expect(againRatings[0]).not.toBe(againRatings[1]);
+    await page.locator("#review-card").click();
     const buriedMeaning = await page.locator("#review-card .meaning").textContent();
     await page.locator("#bury-review").click();
     await page.locator("#review-card").click();
