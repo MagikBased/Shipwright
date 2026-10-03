@@ -1,0 +1,63 @@
+name: learning-platform
+
+on:
+  push:
+    paths:
+      - ".github/workflows/learning-platform.yml"
+      - "services/learning_platform/**"
+      - "scripts/jp_assist/**"
+      - "docs/LEARNING_PLATFORM_MVP.md"
+      - "docs/LEARNING_SITE_ROADMAP.md"
+  pull_request:
+    paths:
+      - ".github/workflows/learning-platform.yml"
+      - "services/learning_platform/**"
+      - "scripts/jp_assist/**"
+      - "docs/LEARNING_PLATFORM_MVP.md"
+      - "docs/LEARNING_SITE_ROADMAP.md"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  acceptance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install Python dependencies
+        run: |
+          python3 -m venv venv/learning-platform
+          venv/learning-platform/bin/pip install -r services/learning_platform/requirements.txt genanki
+
+      - name: Install browser-test dependencies
+        working-directory: services/learning_platform
+        run: |
+          npm ci --ignore-scripts
+          npx playwright install --with-deps chromium
+
+      - name: Run service and API tests
+        run: |
+          PYTHONPATH=services/learning_platform \
+            venv/learning-platform/bin/python -m unittest discover \
+            -s services/learning_platform/tests -v
+
+      - name: Run browser acceptance
+        working-directory: services/learning_platform
+        run: npm run test:browser
+
+      - name: Run cross-component Anki acceptance
+        run: venv/learning-platform/bin/python scripts/jp_assist/run_mvp_acceptance.py
+
+      - name: Upload browser failure artifacts
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: learning-platform-browser-failures
+          path: |
+            services/learning_platform/var/playwright-results
+            services/learning_platform/var/playwright-report
+          if-no-files-found: ignore
+          retention-days: 7

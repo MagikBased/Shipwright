@@ -185,6 +185,32 @@ PYTHONPATH=services/learning_platform \
   python3 -m unittest discover -s services/learning_platform/tests -v
 ```
 
+The browser acceptance suite creates and later removes an isolated database at
+`services/learning_platform/var/browser-test.sqlite3`. It uses system Chromium
+when available, exercises the real server and rendered account site, runs axe
+accessibility checks, and retains screenshots, traces, HTML, console messages,
+and failed-response logs under the ignored `var/` directory on failures:
+
+```bash
+cd services/learning_platform
+npm install
+npm run test:browser
+```
+
+Use `JP_ASSIST_TEST_PYTHON` or `JP_ASSIST_TEST_CHROMIUM` to select different
+executables. If there is no system Chromium, install Playwright's copy with
+`npx playwright install chromium`.
+
+The fixture can also be generated independently for manual inspection. The
+`--reset` flag deletes only the exact database path supplied:
+
+```bash
+PYTHONPATH=services/learning_platform \
+  venv/learning-platform/bin/python \
+  services/learning_platform/scripts/seed_browser_fixture.py \
+  --database services/learning_platform/var/manual-fixture.sqlite3 --reset
+```
+
 The cross-component acceptance test starts a temporary localhost server and
 database, executes the complete pairing and retry-safe event flow, exports a
 manifest, builds the deck twice, and verifies its context and stable note IDs:

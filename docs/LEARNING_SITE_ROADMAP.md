@@ -54,6 +54,9 @@ Known intentional limitations:
 
 ## Milestone 1 — Account acceptance harness
 
+Status: **complete**. The deterministic fixture and Playwright suite cover the
+exit gate below; failure artifacts are retained in an ignored local directory.
+
 Build deterministic browser tests around a synthetic account containing
 multiple games, homographs, multiple senses, long definitions, missing
 definitions, notes, tags, saved/unsaved words, due reviews, and revoked devices.
