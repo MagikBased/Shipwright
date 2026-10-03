@@ -7,7 +7,7 @@ from typing import Any
 from fastapi import FastAPI, Header, Request, Response
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel
+from pydantic import BaseModel, StrictInt
 
 from .errors import AuthenticationError, PlatformError
 from .service import LearningPlatform
@@ -53,6 +53,7 @@ class EventRequest(ApiModel):
     wordId: str | None = None
     senseId: str | None = None
     messageId: str | None = None
+    pageIndex: StrictInt | None = None
     locationId: str | None = None
     count: int = 1
 

@@ -90,8 +90,11 @@ python scripts/jp_assist/build_anki_deck.py \
 ```
 
 The service never needs the extracted dialogue. The local builder joins stable
-word IDs with local `runtime_data.json`, retaining the existing stable Anki
-GUID behavior and context-rich cards.
+word IDs with local `runtime_data.json`. Cloud manifests include the message
+and page where each word was saved, so the card uses that dialogue instead of
+an arbitrary occurrence elsewhere in the game. A custom deck name also gets
+its own stable Anki namespace: repeated imports update that named deck without
+merging it into the complete `OoT JP Assist` deck.
 
 ## Tests
 

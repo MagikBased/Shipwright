@@ -99,6 +99,7 @@ Adapters map game state to a game-neutral envelope:
   "wordId": "武器|ぶき",
   "senseId": "weapon",
   "messageId": "0x1034",
+  "pageIndex": 2,
   "locationId": "kokiri-forest",
   "count": 1
 }
@@ -110,6 +111,11 @@ performs network I/O on the game/render thread. `LearningSyncClient` and
 `LearningSyncStore` are game-neutral; `LearningSyncRuntime` is the current SoH
 adapter. Future recompilation mods can reuse the former two and supply their
 own event mapping, storage path, UI, and game/adapter IDs.
+
+Saved-word exports retain only the content-neutral message ID and page index
+where the save occurred. The local Anki builder joins those identifiers to the
+player's local corpus, so cards use the dialogue context that prompted the save
+without uploading either language's text.
 
 ## Deferred deliberately
 

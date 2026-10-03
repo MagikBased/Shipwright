@@ -26,7 +26,6 @@ std::string MessageId(uint16_t textId) {
 }
 
 LearningEvent BaseEvent(const std::string& type, uint16_t textId, int pageIndex) {
-    (void)pageIndex;
     LearningEvent event;
     event.eventId = LearningSync_NewEventId();
     event.type = type;
@@ -36,6 +35,7 @@ LearningEvent BaseEvent(const std::string& type, uint16_t textId, int pageIndex)
     event.contentVersion =
         StudyRepository_IsCorpusLoaded() ? StudyRepository_GetCorpusVersion() : "corpus-unavailable";
     event.messageId = MessageId(textId);
+    event.pageIndex = pageIndex;
     return event;
 }
 

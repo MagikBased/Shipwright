@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS metadata (
     value TEXT NOT NULL
 );
 
-INSERT OR IGNORE INTO metadata(key, value) VALUES ('schema_version', '1');
+INSERT OR IGNORE INTO metadata(key, value) VALUES ('schema_version', '2');
 
 CREATE TABLE IF NOT EXISTS users (
     id TEXT PRIMARY KEY,
@@ -66,6 +66,7 @@ CREATE TABLE IF NOT EXISTS events (
     word_id TEXT,
     sense_id TEXT,
     message_id TEXT,
+    page_index INTEGER,
     location_id TEXT,
     event_count INTEGER NOT NULL,
     received_at TEXT NOT NULL,
@@ -109,6 +110,10 @@ class Database:
             Path(self.path).parent.mkdir(parents=True, exist_ok=True)
         with self.connect() as connection:
             connection.executescript(SCHEMA)
+            event_columns = {row["name"] for row in connection.execute("PRAGMA table_info(events)")}
+            if "page_index" not in event_columns:
+                connection.execute("ALTER TABLE events ADD COLUMN page_index INTEGER")
+            connection.execute("UPDATE metadata SET value = '2' WHERE key = 'schema_version'")
 
     def connect(self) -> sqlite3.Connection:
         connection = sqlite3.connect(self.path, timeout=10.0)

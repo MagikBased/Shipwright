@@ -19,6 +19,7 @@ struct LearningEvent {
     std::string senseId;
     std::string messageId;
     std::string locationId;
+    int32_t pageIndex = -1;
     uint32_t count = 1;
 };
 

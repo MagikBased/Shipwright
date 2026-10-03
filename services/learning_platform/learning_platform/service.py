@@ -43,6 +43,7 @@ EVENT_FIELDS = {
     "wordId",
     "senseId",
     "messageId",
+    "pageIndex",
     "locationId",
     "count",
 }
@@ -267,8 +268,8 @@ class LearningPlatform:
                     INSERT OR IGNORE INTO events(
                         device_id, event_id, user_id, event_type, occurred_at, game_id,
                         adapter_id, content_version, word_id, sense_id, message_id,
-                        location_id, event_count, received_at
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        page_index, location_id, event_count, received_at
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     """,
                     (
                         device["id"],
@@ -282,6 +283,7 @@ class LearningPlatform:
                         event.get("wordId"),
                         event.get("senseId", ""),
                         event.get("messageId"),
+                        event.get("pageIndex"),
                         event.get("locationId"),
                         event["count"],
                         received_at,
@@ -375,12 +377,19 @@ class LearningPlatform:
                 f"""
                 SELECT progress.word_id, progress.sense_id, progress.encounter_count,
                        progress.selection_count, progress.saved, progress.first_seen_at,
-                       progress.last_seen_at, GROUP_CONCAT(games.game_id) AS game_ids
+                       progress.last_seen_at, GROUP_CONCAT(DISTINCT games.game_id) AS game_ids,
+                       saved_event.game_id AS context_game_id,
+                       saved_event.message_id AS context_message_id,
+                       saved_event.page_index AS context_page_index
                 FROM word_progress AS progress
                 LEFT JOIN game_word_progress AS games
                   ON games.user_id = progress.user_id
                  AND games.word_id = progress.word_id
                  AND games.sense_id = progress.sense_id
+                LEFT JOIN events AS saved_event
+                  ON saved_event.user_id = progress.user_id
+                 AND saved_event.event_id = progress.saved_event_id
+                 AND saved_event.event_type = 'word_saved'
                 WHERE progress.user_id = ? {where_saved}
                 GROUP BY progress.user_id, progress.word_id, progress.sense_id
                 ORDER BY progress.saved DESC, progress.encounter_count DESC, progress.word_id
@@ -397,6 +406,9 @@ class LearningPlatform:
                 "saved": bool(row["saved"]),
                 "firstSeenAt": row["first_seen_at"],
                 "lastSeenAt": row["last_seen_at"],
+                "contextGameId": row["context_game_id"] if row["saved"] else None,
+                "contextMessageId": row["context_message_id"] if row["saved"] else None,
+                "contextPageIndex": row["context_page_index"] if row["saved"] else None,
             }
             for row in rows
         ]
@@ -446,6 +458,11 @@ class LearningPlatform:
                 if not isinstance(value, str) or not value or len(value) > 512:
                     raise ValidationError(f"{field} must contain between 1 and 512 characters")
                 normalized[field] = value
+        page_index = event.get("pageIndex")
+        if page_index is not None:
+            if not isinstance(page_index, int) or isinstance(page_index, bool) or not 0 <= page_index <= 10_000:
+                raise ValidationError("pageIndex must be an integer between 0 and 10000")
+            normalized["pageIndex"] = page_index
         if event_type in WORD_EVENT_TYPES and "wordId" not in normalized:
             raise ValidationError(f"{event_type} requires wordId")
         return normalized

@@ -126,6 +126,7 @@ TEST(LearningSyncClient, UploadsDurableEventsAndAcknowledgesServerDuplicates) {
     event.adapterId = "ship-of-harkinian";
     event.contentVersion = "n64-ntsc-1.2-v1";
     event.wordId = "武器|ぶき";
+    event.pageIndex = 2;
     ASSERT_TRUE(seed.Enqueue(event));
 
     auto transport = std::make_unique<FakeTransport>();
@@ -142,6 +143,7 @@ TEST(LearningSyncClient, UploadsDurableEventsAndAcknowledgesServerDuplicates) {
     const auto body = nlohmann::json::parse(request.body);
     ASSERT_EQ(body["events"].size(), 1);
     EXPECT_EQ(body["events"][0]["wordId"], "武器|ぶき");
+    EXPECT_EQ(body["events"][0]["pageIndex"], 2);
     EXPECT_FALSE(body["events"][0].contains("japaneseText"));
 
     for (int tries = 0; tries < 50 && client.GetStatus().pendingEventCount != 0; tries++) {

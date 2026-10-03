@@ -112,11 +112,13 @@ class LearningPlatformTest(unittest.TestCase):
         device = self.pair_device()
         self.platform.ingest_events(
             device["deviceToken"],
-            [self.event("evt-save", "word_saved")],
+            [self.event("evt-save", "word_saved", messageId="0x1234", pageIndex=2)],
         )
         manifest = self.platform.saved_word_manifest(self.session)
         self.assertEqual(manifest["schemaVersion"], 1)
         self.assertEqual(manifest["savedTokenIds"], ["武器|ぶき"])
+        self.assertEqual(manifest["words"][0]["contextMessageId"], "0x1234")
+        self.assertEqual(manifest["words"][0]["contextPageIndex"], 2)
 
     def test_same_word_across_games_has_global_and_per_game_progress(self):
         oot = self.pair_device()

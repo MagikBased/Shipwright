@@ -44,6 +44,9 @@ nlohmann::json EventToJson(const LearningEvent& event) {
     if (!event.locationId.empty()) {
         json["locationId"] = event.locationId;
     }
+    if (event.pageIndex >= 0) {
+        json["pageIndex"] = event.pageIndex;
+    }
     return json;
 }
 

@@ -50,6 +50,8 @@ class LearningPlatformApiTest(unittest.TestCase):
             "contentVersion": "n64-ntsc-1.2-v1",
             "wordId": "武器|ぶき",
             "senseId": "weapon",
+            "messageId": "0x1034",
+            "pageIndex": 2,
         }
         ingested = self.client.post(
             "/v1/events/batch",
@@ -63,6 +65,8 @@ class LearningPlatformApiTest(unittest.TestCase):
         self.assertEqual(stats["savedWords"], 1)
         manifest = self.client.get("/v1/me/exports/saved-words").json()
         self.assertEqual(manifest["savedTokenIds"], ["武器|ぶき"])
+        self.assertEqual(manifest["words"][0]["contextMessageId"], "0x1034")
+        self.assertEqual(manifest["words"][0]["contextPageIndex"], 2)
 
     def test_api_rejects_uncontracted_dialogue_text(self):
         response = self.client.post(

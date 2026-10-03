@@ -49,7 +49,12 @@ MODEL = genanki.Model(
 )
 
 
-def stable_note_guid(lemma: str, reading: str, sense_id: str) -> str:
+def stable_note_guid(
+    lemma: str,
+    reading: str,
+    sense_id: str,
+    deck_namespace: str = "OoT JP Assist",
+) -> str:
     # Design doc 8.3: "Stable IDs should derive from lemma, reading, and
     # selected sense rather than list position. Regenerating the deck must
     # update existing notes instead of creating duplicates." genanki's
@@ -59,25 +64,44 @@ def stable_note_guid(lemma: str, reading: str, sense_id: str) -> str:
     # wording tweak to JapaneseExample/EnglishReference doesn't fork the
     # note, but a genuinely different sense does get a new note rather than
     # silently overwriting the old one under the same id.
+    # Preserve the original default-deck identities while namespacing custom
+    # exports. Otherwise importing a six-card saved deck after the full deck
+    # makes Anki merge/move those notes because both packages claim the same
+    # note and deck IDs.
     key = f"{lemma}|{reading}|{sense_id}"
+    if deck_namespace != "OoT JP Assist":
+        key = f"{deck_namespace}|{key}"
     digest = hashlib.sha256(key.encode("utf-8")).hexdigest()
     return genanki.guid_for(digest)
 
 
-def collect_unique_words(runtime_data: dict) -> dict[tuple, dict]:
+def stable_deck_id(deck_name: str) -> int:
+    if deck_name == "OoT JP Assist":
+        return 2059400001
+    digest = hashlib.sha256(f"jp-assist-deck|{deck_name}".encode("utf-8")).digest()
+    return int.from_bytes(digest[:8], "big") & 0x7FFF_FFFF_FFFF_FFFF
+
+
+def collect_unique_words(
+    runtime_data: dict,
+    preferred_contexts: dict[tuple[str, str], tuple[str, int | None]] | None = None,
+) -> dict[tuple, dict]:
     """Collapses every token occurrence across every message into one
     record per (lemma, reading, meaning) - the same identity stable_note_guid
     uses - keeping the first example sentence seen and the full list of
     message ids the word appeared in."""
     words: dict[tuple, dict] = {}
+    preferred_contexts = preferred_contexts or {}
     for key, record in runtime_data.items():
-        for page in record["pages"]:
+        message_id = record["source"]["messageId"]
+        for page_index, page in enumerate(record["pages"]):
             for token in page["tokens"]:
                 sense_id = token.get("senseId") or hashlib.sha256(
                     token.get("meaning", "").encode("utf-8")
                 ).hexdigest()[:16]
                 dictionary_reading = token.get("dictionaryReading", token["reading"])
                 identity = (token["lemma"], dictionary_reading, sense_id)
+                token_id = f"{token['lemma']}|{dictionary_reading}"
                 if identity not in words:
                     words[identity] = {
                         "surface": token["surface"],
@@ -91,20 +115,53 @@ def collect_unique_words(runtime_data: dict) -> dict[tuple, dict]:
                         "englishReference": page["english"],
                         "messageIds": set(),
                         "frequency": 0,
+                        "preferredContextMatched": False,
                     }
-                words[identity]["messageIds"].add(record["source"]["messageId"])
+                preferred = preferred_contexts.get((token_id, sense_id))
+                if preferred and not words[identity]["preferredContextMatched"]:
+                    preferred_message, preferred_page = preferred
+                    if message_id == preferred_message and (preferred_page is None or page_index == preferred_page):
+                        words[identity]["japaneseExample"] = page["japanese"]
+                        words[identity]["englishReference"] = page["english"]
+                        words[identity]["preferredContextMatched"] = True
+                words[identity]["messageIds"].add(message_id)
                 words[identity]["frequency"] += 1
     return words
 
 
-def load_saved_word_ids(progress_path: Path | None) -> set[str]:
+def load_saved_word_selection(
+    progress_path: Path | None,
+) -> tuple[
+    set[str],
+    set[tuple[str, str]] | None,
+    dict[tuple[str, str], tuple[str, int | None]],
+]:
     if progress_path is None or not progress_path.exists():
-        return set()
+        return set(), None, {}
     try:
         progress = json.loads(progress_path.read_text())
-        return set(progress.get("savedTokenIds", []))
+        saved_ids = set(progress.get("savedTokenIds", []))
+        cloud_words = progress.get("words")
+        if not isinstance(cloud_words, list) or not cloud_words:
+            return saved_ids, None, {}
+        saved_senses = set()
+        contexts = {}
+        for word in cloud_words:
+            word_id = word.get("wordId")
+            sense_id = word.get("senseId") or ""
+            if not word_id or not word.get("saved", True):
+                continue
+            saved_senses.add((word_id, sense_id))
+            message_id = word.get("contextMessageId")
+            page_index = word.get("contextPageIndex")
+            if message_id:
+                contexts[(word_id, sense_id)] = (
+                    message_id,
+                    page_index if isinstance(page_index, int) else None,
+                )
+        return saved_ids, saved_senses, contexts
     except (json.JSONDecodeError, OSError):
-        return set()
+        return set(), None, {}
 
 
 def main() -> None:
@@ -126,14 +183,26 @@ def main() -> None:
     runtime_root = json.loads(runtime_path.read_text())
     runtime_data = runtime_root.get("messages", runtime_root)
 
-    words = collect_unique_words(runtime_data)
+    saved_ids = None
+    saved_senses = None
+    preferred_contexts = {}
+    if args.progress_file:
+        saved_ids, saved_senses, preferred_contexts = load_saved_word_selection(Path(args.progress_file))
+    words = collect_unique_words(runtime_data, preferred_contexts)
 
-    saved_ids = load_saved_word_ids(Path(args.progress_file)) if args.progress_file else None
     if saved_ids is not None:
-        words = {k: v for k, v in words.items() if f"{k[0]}|{k[1]}" in saved_ids}
+        words = {
+            k: v
+            for k, v in words.items()
+            if (
+                (f"{k[0]}|{k[1]}", k[2]) in saved_senses
+                if saved_senses is not None
+                else f"{k[0]}|{k[1]}" in saved_ids
+            )
+        }
         print(f"Restricting export to {len(words)} saved word(s)")
 
-    deck = genanki.Deck(2059400001, args.deck_name)
+    deck = genanki.Deck(stable_deck_id(args.deck_name), args.deck_name)
     for (lemma, reading, sense_id), word in words.items():
         note = genanki.Note(
             model=MODEL,
@@ -148,7 +217,7 @@ def main() -> None:
                 word["note"],
                 ", ".join(sorted(word["messageIds"])),
             ],
-            guid=stable_note_guid(lemma, reading, sense_id),
+            guid=stable_note_guid(lemma, reading, sense_id, args.deck_name),
             tags=["oot-jp-assist", "defined" if word["meaning"] else "needs-definition"],
         )
         deck.add_note(note)

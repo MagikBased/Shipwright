@@ -76,4 +76,7 @@ selection should be reviewed before calling the deck complete.
 `schema/runtime_data.schema.json` documents the runtime boundary. Word identity
 is `lemma|reading`; occurrence identity additionally uses offsets. Anki note
 identity includes a stable sense ID so regenerating a deck updates existing
-notes instead of duplicating them.
+notes instead of duplicating them. Custom deck names receive separate stable
+deck and note namespaces, allowing a saved-word deck to coexist with the full
+game deck. Cloud manifests can also select the exact message and page where a
+word was saved for the card's example context.
