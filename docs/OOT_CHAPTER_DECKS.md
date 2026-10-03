@@ -24,9 +24,12 @@ first-class chapter field, and the adult portion allows some nonlinear progress.
 Each chapter therefore declares hard prerequisites separately from recommended
 ordering.
 
-A word is introduced in the earliest chapter where it is needed. Later
-occurrences become chapter tags rather than duplicate notes. The Anki hierarchy
-is:
+A deck introduces the most important vocabulary needed for its chapter after
+subtracting every word that appeared in any transitive hard prerequisite.
+Recommended ordering does not count as a prerequisite: parallel optional
+branches may both teach a shared word so either route remains self-contained.
+Later occurrences in dependent chapters become chapter tags rather than
+duplicate notes. The Anki hierarchy is:
 
 ```text
 JP Assist::Ocarina of Time::01 The Boy Without a Fairy
@@ -38,8 +41,12 @@ JP Assist::Ocarina of Time::11 The Hero of Time
 
 1. Map dialogue and location identifiers to one or more chapter ranges.
 2. Aggregate vocabulary by stable lemma, reading, and sense identity.
-3. Assign each identity to its earliest chapter and record later occurrences.
-4. Rank candidates by chapter frequency, usefulness, and learner level.
+3. For each chapter, remove identities present in any transitive hard
+   prerequisite; do not remove identities merely because they occur in a
+   numerically earlier parallel branch.
+4. Rank the remaining candidates by frequency in the chapter, then recurrence
+   across the full game corpus. Reviewers use usefulness and learner level to choose
+   from that ranked queue before publication.
 5. Write an original example and translation; do not publish extracted dialogue.
 6. Review the Japanese, sense choice, reading, translation, and spoiler level.
 7. Mark the card reviewed in catalog content and regenerate the deck.
@@ -57,6 +64,11 @@ python3 scripts/jp_assist/build_chapter_candidates.py
 It writes one ignored TSV per chapter plus `summary.json` under
 `scripts/jp_assist/out/chapter_candidates/`. These files contain dictionary
 metadata and message IDs but deliberately omit Japanese and English dialogue.
+Each TSV includes an explicit importance rank. The summary reports how many
+repeats were removed because a prerequisite already teaches them. Catalog deck
+generation independently rejects a published card that duplicates any
+transitive hard prerequisite, so an editorial mistake cannot silently create a
+redundant deck.
 Numeric ID ranges are never treated as story order implicitly: a reviewer must
 place explicit IDs or bounded ranges in the mapping and advance its status from
 `planned` to `seeded` to `reviewed`.

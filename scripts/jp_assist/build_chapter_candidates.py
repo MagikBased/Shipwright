@@ -57,6 +57,41 @@ def validate_mapping(mapping: dict[str, Any], catalog: dict[str, Any]) -> None:
             ownership[message_id] = chapter["chapterId"]
 
 
+def prerequisite_closures(catalog: dict[str, Any]) -> dict[str, set[str]]:
+    """Return every chapter's transitive hard prerequisites.
+
+    Recommended ordering is intentionally ignored: two optional branches may
+    teach the same word when neither branch is required before the other.
+    """
+    chapters = {chapter["id"]: chapter for chapter in catalog["chapters"]}
+    closures: dict[str, set[str]] = {}
+    visiting: set[str] = set()
+
+    def visit(chapter_id: str) -> set[str]:
+        if chapter_id in closures:
+            return closures[chapter_id]
+        if chapter_id in visiting:
+            raise ValueError(f"Chapter prerequisite cycle includes {chapter_id}")
+        if chapter_id not in chapters:
+            raise ValueError(f"Unknown chapter prerequisite: {chapter_id}")
+        visiting.add(chapter_id)
+        result: set[str] = set()
+        for prerequisite in chapters[chapter_id].get("prerequisites", []):
+            if prerequisite not in chapters:
+                raise ValueError(
+                    f"Chapter {chapter_id} has unknown prerequisite {prerequisite}"
+                )
+            result.add(prerequisite)
+            result.update(visit(prerequisite))
+        visiting.remove(chapter_id)
+        closures[chapter_id] = result
+        return result
+
+    for chapter_id in chapters:
+        visit(chapter_id)
+    return closures
+
+
 def collect_candidates(
     runtime_root: dict[str, Any],
     catalog: dict[str, Any],
@@ -65,6 +100,7 @@ def collect_candidates(
     validate_mapping(mapping, catalog)
     messages = runtime_root.get("messages", runtime_root)
     chapter_order = {chapter["id"]: chapter["order"] for chapter in catalog["chapters"]}
+    prerequisites = prerequisite_closures(catalog)
     message_chapter: dict[str, str] = {}
     mapped_existing: dict[str, set[str]] = defaultdict(set)
     for mapped in mapping["chapters"]:
@@ -75,8 +111,14 @@ def collect_candidates(
                 mapped_existing[chapter_id].add(message_id)
 
     occurrences: dict[tuple[str, str, str], Counter[str]] = defaultdict(Counter)
+    game_occurrences: Counter[tuple[str, str, str]] = Counter()
     metadata: dict[tuple[str, str, str], dict[str, str]] = {}
     evidence: dict[tuple[str, str, str], dict[str, set[str]]] = defaultdict(lambda: defaultdict(set))
+    for record in messages.values():
+        for page in record["pages"]:
+            for token in page["tokens"]:
+                reading = token.get("dictionaryReading", token["reading"])
+                game_occurrences[(token["lemma"], reading, token["senseId"])] += 1
     for message_id, chapter_id in message_chapter.items():
         for page in messages[message_id]["pages"]:
             for token in page["tokens"]:
@@ -93,42 +135,67 @@ def collect_candidates(
                 })
 
     published = {
-        card["corpusEvidence"]["identity"]: chapter["id"]
+        (card["corpusEvidence"]["identity"], chapter["id"])
         for chapter in catalog["chapters"]
         for card in chapter.get("sampleCards", [])
         if card.get("corpusEvidence")
     }
     by_chapter: dict[str, list[dict[str, Any]]] = {chapter["id"]: [] for chapter in catalog["chapters"]}
+    excluded_by_prerequisite: Counter[str] = Counter()
     for identity, counts in occurrences.items():
-        earliest = min(counts, key=lambda chapter_id: chapter_order[chapter_id])
         identity_text = "|".join(identity)
-        later = sorted((chapter_id for chapter_id in counts if chapter_id != earliest), key=chapter_order.get)
-        row = {
-            **metadata[identity],
-            "identity": identity_text,
-            "chapterFrequency": counts[earliest],
-            "mappedFrequency": sum(counts.values()),
-            "messageIds": sorted(evidence[identity][earliest], key=message_number),
-            "laterChapters": later,
-            "reviewStatus": "published" if published.get(identity_text) == earliest else "candidate",
-        }
-        by_chapter[earliest].append(row)
+        mapped_frequency = sum(counts.values())
+        for chapter_id in sorted(counts, key=chapter_order.get):
+            prerequisite_appearances = prerequisites[chapter_id].intersection(counts)
+            if prerequisite_appearances:
+                excluded_by_prerequisite[chapter_id] += 1
+                continue
+            later = sorted(
+                (
+                    other_id for other_id in counts
+                    if chapter_order[other_id] > chapter_order[chapter_id]
+                ),
+                key=chapter_order.get,
+            )
+            row = {
+                **metadata[identity],
+                "identity": identity_text,
+                "chapterFrequency": counts[chapter_id],
+                "mappedFrequency": mapped_frequency,
+                "gameFrequency": game_occurrences[identity],
+                "messageIds": sorted(evidence[identity][chapter_id], key=message_number),
+                "laterChapters": later,
+                "reviewStatus": (
+                    "published" if (identity_text, chapter_id) in published else "candidate"
+                ),
+            }
+            by_chapter[chapter_id].append(row)
     for rows in by_chapter.values():
-        rows.sort(key=lambda row: (-row["chapterFrequency"], row["written"], row["reading"], row["senseId"]))
+        rows.sort(key=lambda row: (
+            -row["chapterFrequency"], -row["gameFrequency"], -row["mappedFrequency"],
+            row["written"], row["reading"], row["senseId"],
+        ))
+        for rank, row in enumerate(rows, 1):
+            row["importanceRank"] = rank
 
     summary = {
-        "schemaVersion": 1,
+        "schemaVersion": 2,
         "gameId": catalog["id"],
         "sourceVariant": mapping["sourceVariant"],
         "sourceCorpusVersion": runtime_root.get("metadata", {}).get("corpusVersion"),
         "mappedMessageCount": len(message_chapter),
         "totalMessageCount": len(messages),
+        "selectionRule": (
+            "Rank by frequency in this chapter, then full-game recurrence; "
+            "exclude words appearing in any transitive hard prerequisite."
+        ),
         "chapters": [
             {
                 "chapterId": chapter["id"],
                 "mappingStatus": next(item["status"] for item in mapping["chapters"] if item["chapterId"] == chapter["id"]),
                 "mappedMessageCount": len(mapped_existing[chapter["id"]]),
                 "candidateCount": len(by_chapter[chapter["id"]]),
+                "excludedByPrerequisiteCount": excluded_by_prerequisite[chapter["id"]],
                 "publishedCount": sum(row["reviewStatus"] == "published" for row in by_chapter[chapter["id"]]),
             }
             for chapter in catalog["chapters"]
@@ -140,8 +207,8 @@ def collect_candidates(
 def write_outputs(by_chapter: dict[str, list[dict[str, Any]]], summary: dict[str, Any], out_dir: Path) -> None:
     out_dir.mkdir(parents=True, exist_ok=True)
     fields = [
-        "Identity", "Written", "Reading", "PartOfSpeech", "Meaning", "ChapterFrequency",
-        "MappedFrequency", "MessageIds", "LaterChapters", "ReviewStatus",
+        "ImportanceRank", "Identity", "Written", "Reading", "PartOfSpeech", "Meaning", "ChapterFrequency",
+        "GameFrequency", "MappedFrequency", "MessageIds", "LaterChapters", "ReviewStatus",
     ]
     for chapter in summary["chapters"]:
         chapter_id = chapter["chapterId"]
@@ -150,8 +217,8 @@ def write_outputs(by_chapter: dict[str, list[dict[str, Any]]], summary: dict[str
             writer.writerow(fields)
             for row in by_chapter[chapter_id]:
                 writer.writerow([
-                    row["identity"], row["written"], row["reading"], row["partOfSpeech"],
-                    row["meaning"], row["chapterFrequency"], row["mappedFrequency"],
+                    row["importanceRank"], row["identity"], row["written"], row["reading"], row["partOfSpeech"],
+                    row["meaning"], row["chapterFrequency"], row["gameFrequency"], row["mappedFrequency"],
                     ",".join(row["messageIds"]), ",".join(row["laterChapters"]), row["reviewStatus"],
                 ])
     (out_dir / "summary.json").write_text(
@@ -175,6 +242,7 @@ def main() -> None:
     for chapter in summary["chapters"]:
         print(
             f"{chapter['chapterId']}: {chapter['candidateCount']} candidates, "
+            f"{chapter['excludedByPrerequisiteCount']} prerequisite repeats excluded, "
             f"{chapter['publishedCount']} published ({chapter['mappingStatus']})"
         )
 

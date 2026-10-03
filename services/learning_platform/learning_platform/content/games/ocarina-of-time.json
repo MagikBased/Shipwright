@@ -9,7 +9,7 @@
   "chapterModel": {
     "kind": "progression",
     "description": "Chapters follow durable story and dungeon milestones. Later adult chapters expose prerequisites and a recommended order because some objectives can be completed nonlinearly.",
-    "assignmentRule": "A vocabulary note belongs to the earliest chapter where it is needed and is tagged with every later chapter where it appears.",
+    "assignmentRule": "Each deck teaches the most important vocabulary needed in that chapter after removing words taught by every transitive hard prerequisite. Parallel optional branches may share a word when neither branch requires the other.",
     "deckLayout": "JP Assist::Ocarina of Time::NN Chapter title"
   },
   "audio": {

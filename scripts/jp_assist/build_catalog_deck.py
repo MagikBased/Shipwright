@@ -88,6 +88,48 @@ def stable_note_guid(game_id: str, card_id: str) -> str:
     return genanki.guid_for(digest)
 
 
+def card_identity(card: dict[str, Any]) -> str:
+    return card.get("corpusEvidence", {}).get("identity") or card["id"]
+
+
+def validate_prerequisite_uniqueness(
+    game: dict[str, Any], chapter: dict[str, Any]
+) -> None:
+    """Reject cards already taught by a transitive hard prerequisite."""
+    chapters = {item["id"]: item for item in game["chapters"]}
+    prerequisites: set[str] = set()
+    visiting: set[str] = set()
+
+    def collect(chapter_id: str) -> None:
+        if chapter_id in prerequisites:
+            return
+        if chapter_id in visiting:
+            raise ValueError(f"Chapter prerequisite cycle includes {chapter_id}")
+        if chapter_id not in chapters:
+            raise ValueError(f"Unknown chapter prerequisite: {chapter_id}")
+        visiting.add(chapter_id)
+        for prerequisite in chapters[chapter_id].get("prerequisites", []):
+            collect(prerequisite)
+            prerequisites.add(prerequisite)
+        visiting.remove(chapter_id)
+
+    collect(chapter["id"])
+    previously_taught = {
+        card_identity(card)
+        for prerequisite in prerequisites
+        for card in chapters[prerequisite].get("sampleCards", [])
+    }
+    repeated = sorted(
+        card_identity(card)
+        for card in chapter.get("sampleCards", [])
+        if card_identity(card) in previously_taught
+    )
+    if repeated:
+        raise ValueError(
+            f"Chapter {chapter['id']} repeats prerequisite card(s): {', '.join(repeated)}"
+        )
+
+
 def audio_field(
     value: str | None,
     catalog_root: Path,
@@ -110,6 +152,7 @@ def build_deck(
     cards = chapter.get("sampleCards", [])
     if not cards:
         raise ValueError(f"Chapter {chapter['id']} has no reviewed cards to export")
+    validate_prerequisite_uniqueness(game, chapter)
     deck_name = (
         f"JP Assist::{game['title']}::"
         f"{chapter['order']:02d} {chapter['title']}"

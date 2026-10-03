@@ -14,6 +14,7 @@ from build_catalog_deck import (  # noqa: E402
     stable_deck_id,
     stable_note_guid,
     validate_corpus_evidence,
+    validate_prerequisite_uniqueness,
 )
 
 
@@ -43,6 +44,26 @@ class BuildCatalogDeckTest(unittest.TestCase):
         chapter = {"id": "empty", "sampleCards": []}
         with self.assertRaisesRegex(ValueError, "no reviewed cards"):
             build_deck(game, chapter)
+
+    def test_rejects_cards_already_taught_by_transitive_prerequisite(self):
+        card = {"id": "forest", "corpusEvidence": {"identity": "森|もり|forest"}}
+        game = {"chapters": [
+            {"id": "one", "sampleCards": [card]},
+            {"id": "two", "prerequisites": ["one"], "sampleCards": []},
+            {"id": "three", "prerequisites": ["two"], "sampleCards": [card]},
+        ]}
+        with self.assertRaisesRegex(ValueError, "repeats prerequisite"):
+            validate_prerequisite_uniqueness(game, game["chapters"][2])
+
+    def test_parallel_chapters_may_contain_the_same_card(self):
+        card = {"id": "water", "corpusEvidence": {"identity": "水|みず|water"}}
+        game = {"chapters": [
+            {"id": "one", "sampleCards": []},
+            {"id": "left", "prerequisites": ["one"], "sampleCards": [card]},
+            {"id": "right", "prerequisites": ["one"], "sampleCards": [card]},
+        ]}
+        validate_prerequisite_uniqueness(game, game["chapters"][1])
+        validate_prerequisite_uniqueness(game, game["chapters"][2])
 
     def test_unknown_game_and_chapter_are_rejected(self):
         with tempfile.TemporaryDirectory() as empty:
