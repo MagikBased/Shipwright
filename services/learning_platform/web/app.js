@@ -2,7 +2,8 @@ const auth = document.querySelector("#auth");
 const dashboard = document.querySelector("#dashboard");
 const notice = document.querySelector("#notice");
 const logout = document.querySelector("#logout");
-const state = { user: null, stats: null, words: [], activity: { days: [], games: [] }, devices: [], sessions: [], queue: [], reviewIndex: 0 };
+const WORD_PAGE_SIZE = 50;
+const state = { user: null, stats: null, goals: null, words: [], wordsOffset: 0, wordsHaveMore: false, wordRequestVersion: 0, activity: { days: [], games: [] }, devices: [], sessions: [], queue: [], reviewIndex: 0 };
 
 async function api(path, options = {}) {
   const response = await fetch(path, { ...options, headers: { "Content-Type": "application/json", ...(options.headers || {}) } });
@@ -14,26 +15,52 @@ function formJson(form) { return Object.fromEntries(new FormData(form).entries()
 function escapeHtml(value) { const node = document.createElement("span"); node.textContent = value ?? ""; return node.innerHTML; }
 function showNotice(message, error = false) { notice.textContent = message; notice.style.color = error ? "#ff8e8e" : ""; }
 function downloadJson(value, filename) { const link = document.createElement("a"); link.href = URL.createObjectURL(new Blob([JSON.stringify(value, null, 2)], { type: "application/json" })); link.download = filename; link.click(); URL.revokeObjectURL(link.href); }
+function confirmAction(title, message, confirmLabel = "Confirm", danger = false) {
+  const dialog = document.querySelector("#confirm-dialog"), accept = document.querySelector("#confirm-accept");
+  document.querySelector("#confirm-title").textContent = title;
+  document.querySelector("#confirm-message").textContent = message;
+  accept.textContent = confirmLabel; accept.classList.toggle("danger-button", danger);
+  dialog.showModal();
+  return new Promise(resolve => dialog.addEventListener("close", () => resolve(dialog.returnValue === "confirm"), { once: true }));
+}
 
 async function loadDashboard() {
+  let user;
   try {
-    const [user, stats, activity, goals, devices, sessions] = await Promise.all([
-      api("/v1/me"), api("/v1/me/stats"), api("/v1/me/activity"), api("/v1/me/goals"), api("/v1/me/devices"), api("/v1/me/sessions"),
+    user = await api("/v1/me");
+  } catch (_) {
+    auth.classList.remove("hidden"); dashboard.classList.add("hidden"); logout.classList.add("hidden");
+    return;
+  }
+  auth.classList.add("hidden"); dashboard.classList.remove("hidden"); logout.classList.remove("hidden");
+  dashboard.setAttribute("aria-busy", "true");
+  try {
+    const [stats, activity, goals, devices, sessions] = await Promise.all([
+      api("/v1/me/stats"), api("/v1/me/activity"), api("/v1/me/goals"), api("/v1/me/devices"), api("/v1/me/sessions"),
     ]);
-    Object.assign(state, { user, stats, activity, devices, sessions });
-    auth.classList.add("hidden"); dashboard.classList.remove("hidden"); logout.classList.remove("hidden");
+    Object.assign(state, { user, stats, activity, goals, devices, sessions });
+    document.querySelectorAll(".account-username").forEach(input => { input.value = user.email; });
     document.querySelector("#greeting").textContent = `${user.displayName}'s learning overview`;
     renderOverview(goals); renderConnections(); populateGames(); await loadWords();
-  } catch (_) { auth.classList.remove("hidden"); dashboard.classList.add("hidden"); logout.classList.add("hidden"); }
+  } catch (error) {
+    showNotice(`Your account is signed in, but some data could not be loaded: ${error.message}`, true);
+  } finally {
+    dashboard.setAttribute("aria-busy", "false");
+  }
 }
 
 function renderOverview(goals) {
-  const metrics = [[state.stats.uniqueWords,"unique words"],[state.stats.encounters,"encounters"],[state.stats.savedWords,"saved"],[state.stats.games,"games"],[state.stats.connectedDevices,"devices"]];
+  const metrics = [[state.stats.uniqueWords,"unique words"],[state.stats.savedWords,"saved"],[state.stats.dueReviews,"due reviews"],[state.stats.encounters,"encounters"],[state.stats.activityStreakDays,"day streak"],[state.stats.games,"games"]];
   document.querySelector("#stats").innerHTML = metrics.map(([value,label]) => `<div class="stat"><strong>${value}</strong><span>${label}</span></div>`).join("");
   const max = Math.max(1, ...state.activity.days.map(day => day.events + day.reviews));
-  document.querySelector("#activity-chart").innerHTML = state.activity.days.length ? state.activity.days.map(day => `<div class="activity-day" style="height:${Math.max(3,(day.events+day.reviews)/max*100)}%" title="${escapeHtml(day.date)}: ${day.events} game events, ${day.reviews} reviews"></div>`).join("") : '<p class="muted">Activity will appear after your mod syncs.</p>';
+  document.querySelector("#activity-chart").innerHTML = state.activity.days.length ? state.activity.days.map(day => { const label=`${day.date}: ${day.events} game events, ${day.reviews} reviews`; return `<div class="activity-day" role="img" aria-label="${escapeHtml(label)}" style="height:${Math.max(3,(day.events+day.reviews)/max*100)}%" title="${escapeHtml(label)}"></div>`; }).join("") : '<p class="muted">Activity will appear after your mod syncs.</p>';
   document.querySelector("#games").innerHTML = state.activity.games.length ? state.activity.games.map(game => `<div class="card-row"><div><strong>${escapeHtml(game.gameId)}</strong><small>${game.uniqueWords} words · ${game.encounters} encounters</small></div><span>${escapeHtml(game.lastSeenAt.slice(0,10))}</span></div>`).join("") : '<p class="muted">No game activity yet.</p>';
+  const stateTotal = Math.max(1, Object.values(state.stats.learningStates).reduce((sum,value) => sum + value, 0));
+  document.querySelector("#learning-states").innerHTML = ["new","learning","known","ignored"].map(label => { const value=state.stats.learningStates[label]||0; return `<div><span><strong>${label}</strong><small>${value}</small></span><progress value="${value}" max="${stateTotal}">${value}</progress></div>`; }).join("");
   const form = document.querySelector("#goals-form"); form.dailyNewWords.value = goals.dailyNewWords; form.dailyReviews.value = goals.dailyReviews; form.remindersEnabled.checked = goals.remindersEnabled;
+  document.querySelector("#goal-progress").innerHTML = [
+    ["New words", state.stats.newWordsToday, goals.dailyNewWords], ["Reviews", state.stats.reviewedToday, goals.dailyReviews],
+  ].map(([label,value,target]) => `<div><span>${label}<strong>${value} / ${target}</strong></span><progress value="${Math.min(value,target)}" max="${Math.max(target,1)}">${value} of ${target}</progress></div>`).join("");
 }
 
 function populateGames() {
@@ -42,22 +69,41 @@ function populateGames() {
   document.querySelector("#clear-game").innerHTML = options || '<option value="">No games</option>';
 }
 
-async function loadWords() {
-  const query = new URLSearchParams({ search: document.querySelector("#word-search").value, sort: document.querySelector("#word-sort").value, limit: "500" });
+async function loadWords(reset = true) {
+  const container = document.querySelector("#words");
+  const moreButton = document.querySelector("#load-more-words");
+  const requestVersion = ++state.wordRequestVersion;
+  if (reset) { state.wordsOffset = 0; state.words = []; container.innerHTML = '<p class="muted">Loading vocabulary…</p>'; }
+  container.setAttribute("aria-busy", "true"); moreButton.disabled = true;
+  const query = new URLSearchParams({ search: document.querySelector("#word-search").value, sort: document.querySelector("#word-sort").value, limit: String(WORD_PAGE_SIZE + 1), offset: String(state.wordsOffset) });
   const learningState = document.querySelector("#word-state").value; if (learningState) query.set("learningState", learningState);
   if (document.querySelector("#saved-only").checked) query.set("savedOnly", "true");
-  state.words = await api(`/v1/me/words?${query}`); renderWords();
+  try {
+    const results = await api(`/v1/me/words?${query}`);
+    if (requestVersion !== state.wordRequestVersion) return;
+    state.wordsHaveMore = results.length > WORD_PAGE_SIZE;
+    const page = results.slice(0, WORD_PAGE_SIZE);
+    state.words = reset ? page : state.words.concat(page);
+    state.wordsOffset = state.words.length;
+    renderWords();
+  } finally {
+    if (requestVersion === state.wordRequestVersion) { container.setAttribute("aria-busy", "false"); moreButton.disabled = false; }
+  }
 }
 function renderWords() {
   document.querySelector("#words").innerHTML = state.words.length ? state.words.map((word,index) => {
     const dictionary = word.dictionary || {}; const title = dictionary.written || word.wordId; const detail = [dictionary.reading, dictionary.meaning].filter(Boolean).join(" · ");
     return `<button class="word-card" data-word-index="${index}" type="button"><span><strong>${escapeHtml(title)}</strong><small>${escapeHtml(detail || word.wordId)}</small><small>${word.tags.map(tag => `#${escapeHtml(tag)}`).join(" ")}</small></span><span><span class="pill">${escapeHtml(word.learningState)}</span>${word.saved?'<span class="pill saved">saved</span>':""}<small>${word.encounterCount}×</small></span></button>`;
   }).join("") : '<p class="muted">No words match these filters.</p>';
+  document.querySelector("#load-more-words").classList.toggle("hidden", !state.wordsHaveMore);
 }
 function openWordEditor(index) {
   const word = state.words[index], form = document.querySelector("#word-editor");
   form.wordId.value = word.wordId; form.senseId.value = word.senseId || ""; form.learningState.value = word.learningState; form.tags.value = word.tags.join(", "); form.note.value = word.note;
-  document.querySelector("#editor-word").textContent = word.dictionary?.written || word.wordId; form.classList.remove("hidden"); form.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  const dictionary = word.dictionary;
+  document.querySelector("#editor-word").textContent = dictionary?.written || word.wordId;
+  document.querySelector("#editor-details").innerHTML = `<div><strong>${escapeHtml(dictionary?.reading || "No reading")}</strong><span>${escapeHtml(dictionary?.partOfSpeech || "Unclassified")}</span></div><p>${escapeHtml(dictionary?.meaning || "No dictionary definition has been imported.")}</p><p class="small muted">Games: ${escapeHtml(word.gameIds.join(", ") || "unknown")} · ${word.encounterCount} encounters · ${word.selectionCount} selections<br>First seen ${escapeHtml(word.firstSeenAt.slice(0,10))} · Last seen ${escapeHtml(word.lastSeenAt.slice(0,10))}${dictionary?.source ? `<br>Source: ${escapeHtml(dictionary.source)}${dictionary.attribution ? ` — ${escapeHtml(dictionary.attribution)}` : ""}` : ""}</p>`;
+  form.classList.remove("hidden"); form.scrollIntoView({ behavior: "smooth", block: "nearest" });
 }
 
 function renderConnections() {
@@ -92,14 +138,15 @@ async function sendToAnki() {
 document.querySelector("#tabs").addEventListener("click", async event => { const button = event.target.closest("[data-view]"); if (!button) return; document.querySelectorAll("#tabs button").forEach(item => item.classList.toggle("active", item===button)); document.querySelectorAll(".view").forEach(view => view.classList.add("hidden")); document.querySelector(`#view-${button.dataset.view}`).classList.remove("hidden"); if (button.dataset.view==="review") await loadReviewQueue(); });
 for (const [id,path] of [["login-form","/v1/auth/login"],["register-form","/v1/auth/register"]]) document.querySelector(`#${id}`).addEventListener("submit", async event => { event.preventDefault(); try { await api(path,{method:"POST",body:JSON.stringify(formJson(event.currentTarget))}); showNotice(""); await loadDashboard(); } catch(error){showNotice(error.message,true);} });
 document.querySelector("#pair-form").addEventListener("submit", async event => { event.preventDefault(); const form=event.currentTarget; try { const result=await api("/v1/device-pairings/approve",{method:"POST",body:JSON.stringify(formJson(form))}); showNotice(`${result.deviceName} is approved. Return to the game to finish connecting.`); form.reset(); } catch(error){showNotice(error.message,true);} });
-document.querySelector("#goals-form").addEventListener("submit", async event => { event.preventDefault(); const form=event.currentTarget; try { await api("/v1/me/goals",{method:"PUT",body:JSON.stringify({dailyNewWords:Number(form.dailyNewWords.value),dailyReviews:Number(form.dailyReviews.value),remindersEnabled:form.remindersEnabled.checked})}); showNotice("Goals saved."); } catch(error){showNotice(error.message,true);} });
-let searchTimer; for (const id of ["word-search","word-state","word-sort","saved-only"]) document.querySelector(`#${id}`).addEventListener("input",()=>{clearTimeout(searchTimer);searchTimer=setTimeout(()=>loadWords().catch(error=>showNotice(error.message,true)),180);});
+document.querySelector("#goals-form").addEventListener("submit", async event => { event.preventDefault(); const form=event.currentTarget; try { state.goals=await api("/v1/me/goals",{method:"PUT",body:JSON.stringify({dailyNewWords:Number(form.dailyNewWords.value),dailyReviews:Number(form.dailyReviews.value),remindersEnabled:form.remindersEnabled.checked})});renderOverview(state.goals);showNotice("Goals saved."); } catch(error){showNotice(error.message,true);} });
+let searchTimer; for (const id of ["word-search","word-state","word-sort","saved-only"]) document.querySelector(`#${id}`).addEventListener("input",()=>{clearTimeout(searchTimer);searchTimer=setTimeout(()=>loadWords(true).catch(error=>showNotice(error.message,true)),180);});
+document.querySelector("#load-more-words").addEventListener("click",()=>loadWords(false).catch(error=>showNotice(error.message,true)));
 document.querySelector("#words").addEventListener("click",event=>{const card=event.target.closest("[data-word-index]");if(card)openWordEditor(Number(card.dataset.wordIndex));}); document.querySelector("#close-editor").addEventListener("click",()=>document.querySelector("#word-editor").classList.add("hidden"));
 document.querySelector("#word-editor").addEventListener("submit",async event=>{event.preventDefault();const form=event.currentTarget;try{await api("/v1/me/words/annotation",{method:"PUT",body:JSON.stringify({wordId:form.wordId.value,senseId:form.senseId.value||null,learningState:form.learningState.value,note:form.note.value,tags:form.tags.value.split(",").map(tag=>tag.trim()).filter(Boolean)})});showNotice("Word details saved.");form.classList.add("hidden");await loadWords();}catch(error){showNotice(error.message,true);}});
 document.querySelector("#review-card").addEventListener("click",()=>renderReview(true)); document.querySelector("#review-actions").addEventListener("click",async event=>{const button=event.target.closest("[data-rating]"),card=state.queue[state.reviewIndex];if(!button||!card)return;try{await api("/v1/me/reviews",{method:"POST",body:JSON.stringify({wordId:card.wordId,senseId:card.senseId,rating:Number(button.dataset.rating)})});state.reviewIndex++;renderReview(false);}catch(error){showNotice(error.message,true);}});
 document.querySelector("#download-manifest").addEventListener("click",async()=>{try{const game=document.querySelector("#export-game").value;downloadJson(await api(`/v1/me/exports/saved-words${game?`?gameId=${encodeURIComponent(game)}`:""}`),"jp_assist_cloud_progress.json");}catch(error){showNotice(error.message,true);}}); document.querySelector("#download-account").addEventListener("click",async()=>{try{downloadJson(await api("/v1/me/exports/account"),"jp_assist_account_export.json");}catch(error){showNotice(error.message,true);}}); document.querySelector("#anki-import").addEventListener("click",()=>sendToAnki().catch(error=>showNotice(`AnkiConnect: ${error.message}`,true)));
-document.querySelector("#devices").addEventListener("click",async event=>{const button=event.target.closest(".revoke-device");if(!button)return;try{await api(`/v1/me/devices/${encodeURIComponent(button.dataset.id)}`,{method:"DELETE"});showNotice("Device access revoked.");await loadDashboard();}catch(error){showNotice(error.message,true);}}); document.querySelector("#sessions").addEventListener("click",async event=>{const button=event.target.closest(".revoke-session");if(!button)return;try{await api(`/v1/me/sessions/${encodeURIComponent(button.dataset.id)}`,{method:"DELETE"});showNotice("Session revoked.");await loadDashboard();}catch(error){showNotice(error.message,true);}});
+document.querySelector("#devices").addEventListener("click",async event=>{const button=event.target.closest(".revoke-device");if(!button)return;if(!await confirmAction("Revoke device?","This mod will no longer be able to synchronize until it is paired again.","Revoke device",true))return;try{await api(`/v1/me/devices/${encodeURIComponent(button.dataset.id)}`,{method:"DELETE"});showNotice("Device access revoked.");await loadDashboard();}catch(error){showNotice(error.message,true);}}); document.querySelector("#sessions").addEventListener("click",async event=>{const button=event.target.closest(".revoke-session");if(!button)return;if(!await confirmAction(button.textContent==="Sign out"?"Sign out this session?":"Revoke website session?","That browser will need to sign in again.",button.textContent,true))return;try{await api(`/v1/me/sessions/${encodeURIComponent(button.dataset.id)}`,{method:"DELETE"});showNotice("Session revoked.");await loadDashboard();}catch(error){showNotice(error.message,true);}});
 document.querySelector("#password-form").addEventListener("submit",async event=>{event.preventDefault();const form=event.currentTarget;try{await api("/v1/me/password",{method:"PUT",body:JSON.stringify(formJson(form))});form.reset();showNotice("Password changed. Other website sessions were revoked.");await loadDashboard();}catch(error){showNotice(error.message,true);}});
-document.querySelector("#clear-game-form").addEventListener("submit",async event=>{event.preventDefault();const gameId=event.currentTarget.gameId.value;if(!gameId||!confirm(`Permanently clear synchronized progress for ${gameId}?`))return;try{await api("/v1/me/clear-game",{method:"POST",body:JSON.stringify({gameId})});showNotice(`${gameId} progress cleared.`);await loadDashboard();}catch(error){showNotice(error.message,true);}});
-document.querySelector("#delete-account-form").addEventListener("submit",async event=>{event.preventDefault();if(!confirm("Permanently delete this account and all synchronized data?"))return;try{await api("/v1/me",{method:"DELETE",body:JSON.stringify(formJson(event.currentTarget))});showNotice("Account deleted.");await loadDashboard();}catch(error){showNotice(error.message,true);}});
+document.querySelector("#clear-game-form").addEventListener("submit",async event=>{event.preventDefault();const gameId=event.currentTarget.gameId.value;if(!gameId||!await confirmAction("Clear game progress?",`Permanently remove synchronized events and progress for ${gameId}. Notes and review history will remain.`,"Clear progress",true))return;try{await api("/v1/me/clear-game",{method:"POST",body:JSON.stringify({gameId})});showNotice(`${gameId} progress cleared.`);await loadDashboard();}catch(error){showNotice(error.message,true);}});
+document.querySelector("#delete-account-form").addEventListener("submit",async event=>{event.preventDefault();const form=event.currentTarget;if(!await confirmAction("Delete this account?","This permanently removes the account and all synchronized learning data. This cannot be undone.","Delete account",true))return;try{await api("/v1/me",{method:"DELETE",body:JSON.stringify(formJson(form))});showNotice("Account deleted.");await loadDashboard();}catch(error){showNotice(error.message,true);}});
 logout.addEventListener("click",async()=>{try{await api("/v1/auth/logout",{method:"POST"});}finally{await loadDashboard();}}); loadDashboard();

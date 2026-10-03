@@ -341,6 +341,8 @@ class LearningPlatform:
 
     def get_stats(self, session_token: str) -> dict[str, Any]:
         user = self.authenticate_session(session_token)
+        now = isoformat(self.now())
+        today = now[:10]
         with self.database.connect() as connection:
             totals = connection.execute(
                 """
@@ -361,6 +363,54 @@ class LearningPlatform:
             games = connection.execute(
                 "SELECT COUNT(DISTINCT game_id) FROM game_word_progress WHERE user_id = ?", (user["id"],)
             ).fetchone()[0]
+            due_reviews = connection.execute(
+                """
+                SELECT COUNT(*) FROM word_progress progress
+                LEFT JOIN word_annotations annotation ON annotation.user_id = progress.user_id
+                    AND annotation.word_id = progress.word_id AND annotation.sense_id = progress.sense_id
+                LEFT JOIN review_state review ON review.user_id = progress.user_id
+                    AND review.word_id = progress.word_id AND review.sense_id = progress.sense_id
+                WHERE progress.user_id = ?
+                    AND (progress.saved = 1 OR annotation.learning_state = 'learning')
+                    AND COALESCE(annotation.learning_state, 'new') != 'ignored'
+                    AND (review.due_at IS NULL OR review.due_at <= ?)
+                """,
+                (user["id"], now),
+            ).fetchone()[0]
+            reviewed_today = connection.execute(
+                "SELECT COUNT(*) FROM reviews WHERE user_id = ? AND substr(reviewed_at, 1, 10) = ?",
+                (user["id"], today),
+            ).fetchone()[0]
+            new_words_today = connection.execute(
+                "SELECT COUNT(*) FROM word_progress WHERE user_id = ? AND substr(first_seen_at, 1, 10) = ?",
+                (user["id"], today),
+            ).fetchone()[0]
+            state_rows = connection.execute(
+                """
+                SELECT COALESCE(annotation.learning_state, 'new') AS learning_state, COUNT(*) AS count
+                FROM word_progress progress
+                LEFT JOIN word_annotations annotation ON annotation.user_id = progress.user_id
+                    AND annotation.word_id = progress.word_id AND annotation.sense_id = progress.sense_id
+                WHERE progress.user_id = ? GROUP BY learning_state
+                """,
+                (user["id"],),
+            ).fetchall()
+            active_days = {
+                row[0] for row in connection.execute(
+                    """
+                    SELECT substr(occurred_at, 1, 10) FROM events WHERE user_id = ?
+                    UNION SELECT substr(reviewed_at, 1, 10) FROM reviews WHERE user_id = ?
+                    """,
+                    (user["id"], user["id"]),
+                )
+            }
+        cursor = self.now().date()
+        if cursor.isoformat() not in active_days:
+            cursor -= timedelta(days=1)
+        streak = 0
+        while cursor.isoformat() in active_days:
+            streak += 1
+            cursor -= timedelta(days=1)
         return {
             "uniqueWords": totals["unique_words"],
             "encounters": totals["encounters"],
@@ -369,6 +419,11 @@ class LearningPlatform:
             "games": games,
             "events": event_count,
             "connectedDevices": devices,
+            "dueReviews": due_reviews,
+            "reviewedToday": reviewed_today,
+            "newWordsToday": new_words_today,
+            "activityStreakDays": streak,
+            "learningStates": {row["learning_state"]: row["count"] for row in state_rows},
         }
 
     def list_word_progress(

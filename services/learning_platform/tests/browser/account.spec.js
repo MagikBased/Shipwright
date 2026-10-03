@@ -33,14 +33,30 @@ test.describe.serial("learning account", () => {
     await expect(page.locator("#dashboard")).toBeVisible();
     await openView(page, "account");
     await page.locator("#delete-account-form input[name=password]").fill("disposable safe password");
-    page.once("dialog", dialog => dialog.accept());
     await page.locator("#delete-account-form button[type=submit]").click();
+    await expect(page.locator("#confirm-dialog")).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(page.locator("#confirm-dialog")).toBeHidden();
+    await expect(page.locator("#dashboard")).toBeVisible();
+    await page.locator("#delete-account-form button[type=submit]").click();
+    await page.locator("#confirm-accept").click();
     await expect(page.locator("#auth")).toBeVisible();
+  });
+
+  test("keeps the signed-in shell visible when account data temporarily fails", async ({ page }) => {
+    await page.goto("/");
+    await page.route("**/v1/me/activity", route => route.abort("connectionrefused"));
+    await page.locator("#login-form input[name=email]").fill(EMAIL);
+    await page.locator("#login-form input[name=password]").fill(PASSWORD);
+    await page.locator("#login-form button[type=submit]").click();
+    await expect(page.locator("#dashboard")).toBeVisible();
+    await expect(page.locator("#auth")).toBeHidden();
+    await expect(page.locator("#notice")).toContainText("signed in, but some data could not be loaded");
   });
 
   test("renders overview accessibly and at supported widths", async ({ page, browser }) => {
     await login(page);
-    await expect(page.locator("#stats .stat")).toHaveCount(5);
+    await expect(page.locator("#stats .stat")).toHaveCount(6);
     await expect(page.locator("#activity-chart .activity-day")).toHaveCount(30);
     await expect(page.locator("#games")).toContainText("test-adventure-a");
     const accessibility = await new AxeBuilder({ page }).analyze();
@@ -82,11 +98,18 @@ test.describe.serial("learning account", () => {
 
   test("searches and annotates vocabulary", async ({ page }) => {
     await login(page); await openView(page, "vocabulary");
+    await expect(page.locator(".word-card")).toHaveCount(50);
+    await expect(page.locator("#load-more-words")).toBeVisible();
+    await page.locator("#load-more-words").click();
+    await expect(page.locator(".word-card")).toHaveCount(68);
+    await expect(page.locator("#load-more-words")).toBeHidden();
     await page.locator("#word-search").fill("forest");
     await expect(page.locator(".word-card")).toHaveCount(1);
     await expect(page.locator(".word-card")).toContainText("森");
     await page.locator(".word-card").click();
     const editor = page.locator("#word-editor");
+    await expect(editor.locator("#editor-details")).toContainText("Hand-authored test fixture");
+    await expect(editor.locator("#editor-details")).toContainText("test-adventure-a");
     await editor.locator("select[name=learningState]").selectOption("known");
     await editor.locator("input[name=tags]").fill("nature, tested");
     await editor.locator("textarea[name=note]").fill("Browser acceptance note");
@@ -191,10 +214,13 @@ test.describe.serial("learning account", () => {
     const pairedDevice = page.locator("#devices .card-row").filter({ hasText: "Browser paired mod" });
     await expect(pairedDevice).toBeVisible();
     await pairedDevice.locator("button").click();
+    await expect(page.locator("#confirm-dialog")).toBeVisible();
+    await page.locator("#confirm-accept").click();
     await expect(page.locator("#notice")).toContainText("Device access revoked");
     const sessionRows = page.locator("#sessions .card-row");
     expect(await sessionRows.count()).toBeGreaterThan(1);
     await sessionRows.filter({ hasText: "Website session" }).first().locator("button").click();
+    await page.locator("#confirm-accept").click();
     await expect(page.locator("#notice")).toContainText("Session revoked");
   });
 
@@ -211,14 +237,15 @@ test.describe.serial("learning account", () => {
     await openView(page, "account");
 
     await page.locator("#clear-game").selectOption("test-adventure-b");
-    page.once("dialog", dialog => dialog.accept());
     await page.locator("#clear-game-form button[type=submit]").click();
+    await expect(page.locator("#confirm-message")).toContainText("test-adventure-b");
+    await page.locator("#confirm-accept").click();
     await expect(page.locator("#notice")).toContainText("progress cleared");
 
     await openView(page, "account");
     await page.locator("#delete-account-form input[name=password]").fill("changed browser password");
-    page.once("dialog", dialog => dialog.accept());
     await page.locator("#delete-account-form button[type=submit]").click();
+    await page.locator("#confirm-accept").click();
     await expect(page.locator("#auth")).toBeVisible();
   });
 });

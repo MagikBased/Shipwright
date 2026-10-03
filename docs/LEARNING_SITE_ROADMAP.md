@@ -80,6 +80,12 @@ command against a temporary database and clean up after themselves.
 
 ## Milestone 2 — Product and visual polish
 
+Status: **in progress**. Scalable vocabulary paging, detailed word provenance,
+dashboard goal/due/streak/state summaries, accessible confirmation dialogs,
+reduced-motion support, and transient account-load handling are implemented and
+covered by the browser suite. Visual baselines, richer offline states, and the
+remaining reusable component work are still open.
+
 Turn the functional workspace into a coherent learning product.
 
 Deliverables:

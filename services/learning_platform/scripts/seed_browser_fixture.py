@@ -49,6 +49,15 @@ def seed_fixture(database_path: Path, reset: bool = False) -> dict[str, str]:
         ("橋|はし", "sense:bridge", "橋", "はし", "noun", "bridge", 4, True, game_a),
         ("橋|はし", "sense:span", "橋", "はし", "noun", "a spanning structure used as a crossing", 2, True, game_b),
     ]
+    vocabulary.extend(
+        (
+            f"試験語{number:02d}|しけんご{number:02d}", f"sense:fixture-{number:02d}",
+            f"試験語{number:02d}", f"しけんご{number:02d}", "noun",
+            f"synthetic vocabulary item {number:02d}", (number % 5) + 1, False,
+            game_a if number % 2 else game_b,
+        )
+        for number in range(1, 61)
+    )
     dictionary_entries = []
     for index, (word_id, sense_id, written, reading, part, meaning, count, saved, device) in enumerate(vocabulary):
         occurred = isoformat(now - timedelta(days=index + 1))
