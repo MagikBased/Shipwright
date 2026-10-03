@@ -154,6 +154,8 @@ conflict behavior, and local AnkiConnect recovery.
 Browser CSRF/CSP policy, local AnkiConnect boundaries, retention windows, the
 privacy inventory, and the threat model are documented in
 [security and privacy](../../docs/SECURITY_AND_PRIVACY.md).
+Release qualification and operator procedures are documented in the
+[operations runbook](../../docs/LEARNING_PLATFORM_OPERATIONS.md).
 
 Identity links are hashed at rest, purpose-bound, expiring, and single-use.
 Development captures messages in `var/dev-mailbox.jsonl`; the Compose staging

@@ -72,7 +72,9 @@ def restore_drill(backup_path: Path) -> tuple[int, str]:
         return database.schema_version(), detail
 
 
-def restore_database(database_path: Path, backup_path: Path, confirmed: bool) -> None:
+def restore_database(
+    database_path: Path, backup_path: Path, confirmed: bool, migrate: bool = True,
+) -> None:
     if not confirmed:
         raise SystemExit("Restore replaces the active database; rerun with --yes after stopping the service")
     if not backup_path.is_file():
@@ -94,10 +96,20 @@ def restore_database(database_path: Path, backup_path: Path, confirmed: bool) ->
     try:
         temporary_path.unlink()
         backup_database(backup_path, temporary_path)
-        restored = Database(temporary_path)
-        ready, detail = restored.readiness()
-        if not ready:
-            raise SystemExit(f"Restored database is not ready: {detail}")
+        if migrate:
+            restored = Database(temporary_path)
+            ready, detail = restored.readiness()
+            if not ready:
+                raise SystemExit(f"Restored database is not ready: {detail}")
+        else:
+            uri = temporary_path.resolve().as_uri() + "?mode=ro"
+            with sqlite3.connect(uri, uri=True) as restored:
+                integrity = restored.execute("PRAGMA quick_check").fetchone()[0]
+                version = restored.execute(
+                    "SELECT value FROM metadata WHERE key = 'schema_version'"
+                ).fetchone()
+            if integrity != "ok" or version is None or not str(version[0]).isdigit():
+                raise SystemExit("Preserved-schema restore failed integrity or schema validation")
         for suffix in ("-wal", "-shm"):
             stale_path = Path(str(database_path) + suffix)
             if stale_path.exists():
@@ -178,6 +190,10 @@ def main() -> None:
     restore_parser = subparsers.add_parser("restore", help="Restore and migrate a backup while the service is stopped")
     restore_parser.add_argument("backup", type=Path)
     restore_parser.add_argument("--yes", action="store_true")
+    restore_parser.add_argument(
+        "--preserve-schema", action="store_true",
+        help="restore without migrating for rollback with the matching older application",
+    )
     dictionary_parser = subparsers.add_parser(
         "import-dictionary", help="Import licensed dictionary metadata from a JSON array"
     )
@@ -236,7 +252,7 @@ def main() -> None:
         schema_version, detail = restore_drill(backup)
         print(f"Restore drill passed: {backup} (schema {schema_version}, {detail})")
     elif args.command == "restore":
-        restore_database(database_path, args.backup, args.yes)
+        restore_database(database_path, args.backup, args.yes, migrate=not args.preserve_schema)
         print(f"Restored database: {database_path}")
     elif args.command == "import-dictionary":
         try:

@@ -240,9 +240,12 @@ events, backups, and mail failures. A least-privilege sidecar creates
 integrity-checked daily backups with count retention, and the one-command
 isolated restore drill proves the newest artifact is readable and schema-ready.
 The stack and public/private metrics boundary have been exercised on the
-supported local Podman compatibility path. Migration rehearsal, load
-qualification, off-host backup policy, and the complete operator runbooks
-remain open.
+supported local Podman compatibility path. Automated qualification now covers
+eight concurrent devices, an 8,000-word account, retry deduplication, bounded
+resource use, and a 5,000-word schema-8 forward/rollback/reapply cycle without
+logical data loss. Upgrade, rollback, restore, credential-rotation, incident,
+account-request, and off-host-backup procedures are documented. A clean-machine
+rehearsal and release-candidate qualification remain open.
 
 Deliverables:
 

@@ -23,6 +23,19 @@ class DeploymentTest(unittest.TestCase):
         dockerfile = (Path(__file__).parent.parent / "Dockerfile").read_text(encoding="utf-8")
         self.assertIn("JP_ASSIST_PLATFORM_DB=/data/platform.sqlite3", dockerfile)
 
+    def test_large_account_join_indexes_are_installed(self):
+        with tempfile.TemporaryDirectory(prefix="jp-assist-indexes-") as temporary:
+            database = Database(Path(temporary) / "indexes.sqlite3")
+            with database.connect() as connection:
+                event_indexes = {
+                    row["name"] for row in connection.execute("PRAGMA index_list(events)")
+                }
+                game_indexes = {
+                    row["name"] for row in connection.execute("PRAGMA index_list(game_word_progress)")
+                }
+            self.assertIn("events_user_event_type_idx", event_indexes)
+            self.assertIn("game_word_progress_user_word_idx", game_indexes)
+
     def test_rate_limit_allows_requests_after_window_expires(self):
         clock = [100.0]
         limiter = SlidingWindowRateLimiter(clock=lambda: clock[0])
@@ -256,6 +269,26 @@ class DeploymentTest(unittest.TestCase):
             self.assertEqual(remaining, written[-2:])
             self.assertFalse(written[0].exists())
             self.assertEqual(restore_drill(written[-1]), (LATEST_SCHEMA_VERSION, "ready"))
+
+    def test_preserved_schema_restore_supports_application_rollback(self):
+        with tempfile.TemporaryDirectory(prefix="jp-assist-preserved-restore-") as temporary:
+            root = Path(temporary)
+            active = root / "active.sqlite3"
+            backup = root / "version-eight.sqlite3"
+            database = Database(active)
+            with database.connect() as connection:
+                connection.execute("UPDATE metadata SET value = '8' WHERE key = 'schema_version'")
+            backup_database(active, backup)
+            Database(active)
+
+            restore_database(active, backup, confirmed=True, migrate=False)
+            with sqlite3.connect(active) as connection:
+                version = connection.execute(
+                    "SELECT value FROM metadata WHERE key = 'schema_version'"
+                ).fetchone()[0]
+                integrity = connection.execute("PRAGMA quick_check").fetchone()[0]
+            self.assertEqual(version, "8")
+            self.assertEqual(integrity, "ok")
 
     def test_runtime_dictionary_import_excludes_dialogue(self):
         with tempfile.TemporaryDirectory(prefix="jp-assist-dictionary-") as temporary:

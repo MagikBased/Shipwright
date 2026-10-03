@@ -13,6 +13,9 @@ provider-neutral and works on a small Linux host with a public IP.
 
 The SQLite MVP intentionally runs one application worker. Scale-up and multiple
 application replicas require moving the storage layer to a server database.
+Operational procedures for upgrades, rollback, recovery, credential rotation,
+incidents, and account-data requests are in
+[the operations runbook](LEARNING_PLATFORM_OPERATIONS.md).
 
 ## Local production-shaped staging
 
@@ -173,6 +176,10 @@ docker compose run --rm app python -m learning_platform.manage \
 docker compose up -d app
 python scripts/deployment_smoke.py https://learn.example.com
 ```
+
+For application rollback to an older schema, use the separately documented
+`--preserve-schema` procedure and the matching older image. A normal restore
+always migrates the restored copy to the current schema.
 
 ## Upgrade procedure
 

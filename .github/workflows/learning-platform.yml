@@ -7,7 +7,7 @@ on:
       - ".gitleaksignore"
       - "services/learning_platform/**"
       - "scripts/jp_assist/**"
-      - "docs/LEARNING_PLATFORM_MVP.md"
+      - "docs/LEARNING_PLATFORM_*.md"
       - "docs/LEARNING_SITE_ROADMAP.md"
       - "docs/SECURITY_AND_PRIVACY.md"
   pull_request:
@@ -16,7 +16,7 @@ on:
       - ".gitleaksignore"
       - "services/learning_platform/**"
       - "scripts/jp_assist/**"
-      - "docs/LEARNING_PLATFORM_MVP.md"
+      - "docs/LEARNING_PLATFORM_*.md"
       - "docs/LEARNING_SITE_ROADMAP.md"
       - "docs/SECURITY_AND_PRIVACY.md"
 
@@ -59,6 +59,9 @@ jobs:
 
       - name: Run cross-component Anki acceptance
         run: venv/learning-platform/bin/python scripts/jp_assist/run_mvp_acceptance.py
+
+      - name: Qualify load and migration operations
+        run: services/learning_platform/scripts/qualify_operations.sh
 
       - name: Audit Python dependencies and write component SBOM
         run: |
@@ -122,6 +125,8 @@ jobs:
             services/learning_platform/var/security/python.cdx.json
             services/learning_platform/var/security/image.spdx.json
             services/learning_platform/var/security/image-vulnerabilities.json
+            services/learning_platform/var/qualification/load.json
+            services/learning_platform/var/qualification/migration.json
           if-no-files-found: error
           retention-days: 14
 

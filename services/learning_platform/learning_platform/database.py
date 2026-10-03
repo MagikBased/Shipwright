@@ -80,6 +80,8 @@ CREATE TABLE IF NOT EXISTS events (
 );
 
 CREATE INDEX IF NOT EXISTS events_user_time_idx ON events(user_id, occurred_at);
+CREATE INDEX IF NOT EXISTS events_user_event_type_idx
+    ON events(user_id, event_id, event_type);
 
 CREATE TABLE IF NOT EXISTS word_progress (
     user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -106,6 +108,9 @@ CREATE TABLE IF NOT EXISTS game_word_progress (
     last_seen_at TEXT NOT NULL,
     PRIMARY KEY (user_id, game_id, word_id, sense_id)
 );
+
+CREATE INDEX IF NOT EXISTS game_word_progress_user_word_idx
+    ON game_word_progress(user_id, word_id, sense_id, game_id);
 
 CREATE TABLE IF NOT EXISTS word_annotations (
     user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
