@@ -84,7 +84,7 @@ class DeploymentTest(unittest.TestCase):
             self.assertIn("page_index", columns)
             with migrated.connect() as connection:
                 tables = {row[0] for row in connection.execute("SELECT name FROM sqlite_master WHERE type='table'")}
-            self.assertTrue({"word_annotations", "review_state", "reviews", "learning_goals",
+            self.assertTrue({"word_annotations", "known_words", "review_state", "reviews", "learning_goals",
                              "review_collections"}.issubset(tables))
 
     def test_legacy_review_schema_gains_versioned_fsrs_projection_columns(self):

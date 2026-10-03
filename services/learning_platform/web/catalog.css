@@ -29,6 +29,88 @@
   color: var(--red);
 }
 
+.language-section,
+.known-words {
+  margin-top: 40px;
+}
+
+.section-heading {
+  align-items: end;
+  display: flex;
+  gap: 24px;
+  justify-content: space-between;
+}
+
+.section-heading h2 { margin: 6px 0 0; }
+.section-heading > p { max-width: 560px; }
+
+.language-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: 1.35fr 0.65fr;
+  margin-top: 18px;
+}
+
+.language-grid h3 { margin-top: 0; }
+
+.level-row {
+  align-items: center;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 90px minmax(100px, 1fr) 135px;
+  margin-top: 12px;
+}
+
+.level-track {
+  background: var(--panel2);
+  border-radius: 999px;
+  height: 10px;
+  overflow: hidden;
+}
+
+.level-fill { background: var(--cyan); height: 100%; }
+.level-row.unclassified .level-fill { background: var(--muted); }
+.level-value { color: var(--muted); font-size: 0.82rem; text-align: right; }
+
+.coverage-total { margin-bottom: 4px; }
+.coverage-total strong { color: var(--gold); font-size: 2.5rem; }
+.coverage-levels { display: grid; gap: 5px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.coverage-levels span { color: var(--muted); font-size: 0.8rem; }
+
+.vocabulary-filters {
+  align-items: end;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: minmax(200px, 1fr) 180px auto;
+  margin-top: 20px;
+}
+
+.vocabulary-filters label { color: var(--muted); font-size: 0.78rem; }
+.vocabulary-filters input,
+.vocabulary-filters select { display: block; margin-top: 5px; width: 100%; }
+
+.vocabulary-list {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  list-style: none;
+  padding: 0;
+}
+
+.vocabulary-list li {
+  align-items: center;
+  background: var(--panel2);
+  border-radius: 9px;
+  display: grid;
+  gap: 10px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  padding: 12px;
+}
+
+.vocabulary-word { color: var(--gold); font-size: 1.1rem; font-weight: 750; }
+.vocabulary-reading, .vocabulary-meaning { color: var(--muted); font-size: 0.8rem; }
+.known-toggle[aria-pressed="true"] { border-color: var(--cyan); color: var(--cyan); }
+
 .catalog-hero {
   align-items: start;
   display: grid;
@@ -188,9 +270,14 @@
 @media (max-width: 780px) {
   .catalog-hero,
   .catalog-explainer,
+  .language-grid,
   .pilot-grid {
     grid-template-columns: 1fr;
   }
+
+  .section-heading { align-items: start; flex-direction: column; gap: 4px; }
+  .vocabulary-filters, .vocabulary-list { grid-template-columns: 1fr; }
+  .level-row { grid-template-columns: 78px minmax(80px, 1fr) 105px; }
 
   .catalog-header {
     align-items: start;

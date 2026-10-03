@@ -135,6 +135,7 @@ class LearningPlatformApiTest(unittest.TestCase):
         self.assertEqual(listing.status_code, 200)
         self.assertEqual(listing.json()["games"][0]["id"], "ocarina-of-time")
         self.assertEqual(listing.json()["games"][0]["chapterCount"], 11)
+        self.assertEqual(listing.json()["games"][0]["languageProfile"]["uniqueWords"], 4158)
 
         response = self.client.get("/v1/catalog/games/ocarina-of-time")
         self.assertEqual(response.status_code, 200)
@@ -145,7 +146,42 @@ class LearningPlatformApiTest(unittest.TestCase):
         self.assertTrue(all(card["corpusEvidence"]["messageIds"] for card in game["chapters"][0]["sampleCards"]))
         self.assertTrue(all(card["wordAudio"] is None for card in game["chapters"][0]["sampleCards"]))
         self.assertTrue(all(card["sentenceAudio"] is None for card in game["chapters"][0]["sampleCards"]))
+        self.assertEqual(game["languageProfile"]["uniqueWords"], 4158)
+        self.assertGreater(game["languageProfile"]["uniqueByLevel"]["N5"], 0)
+        vocabulary = self.client.get(
+            "/v1/catalog/games/ocarina-of-time/vocabulary?search=森&jlptLevel=N4"
+        ).json()
+        self.assertGreater(vocabulary["total"], 0)
+        self.assertEqual(vocabulary["words"][0]["written"], "森")
         self.assertEqual(self.client.get("/v1/catalog/games/not-a-game").status_code, 404)
+
+    def test_catalog_known_words_are_global_and_drive_game_coverage(self):
+        self.client.post(
+            "/v1/auth/register",
+            json={"email": "coverage@example.com", "password": "correct horse battery", "displayName": "Coverage"},
+        )
+        initial = self.client.get("/v1/me/catalog/games/ocarina-of-time/coverage").json()
+        self.assertEqual(initial["knownWords"], 0)
+        updated = self.client.put(
+            "/v1/me/catalog/games/ocarina-of-time/known-word",
+            json={"wordId": "森|もり", "known": True}, headers=self.csrf_headers(),
+        )
+        self.assertEqual(updated.status_code, 200)
+        self.assertEqual(updated.json()["coverage"]["knownWords"], 1)
+        self.assertIn("森|もり", updated.json()["coverage"]["knownWordIds"])
+        all_games = self.client.get("/v1/me/catalog/games").json()["games"]
+        self.assertEqual(all_games[0]["knownWords"], 1)
+        archive = self.client.get("/v1/me/exports/account").json()
+        self.assertEqual(archive["knownWords"], ["森|もり"])
+        removed = self.client.put(
+            "/v1/me/catalog/games/ocarina-of-time/known-word",
+            json={"wordId": "森|もり", "known": False}, headers=self.csrf_headers(),
+        )
+        self.assertEqual(removed.json()["coverage"]["knownWords"], 0)
+        self.assertEqual(self.client.put(
+            "/v1/me/catalog/games/ocarina-of-time/known-word",
+            json={"wordId": "not-in-game", "known": True}, headers=self.csrf_headers(),
+        ).status_code, 404)
 
     def test_cookie_mutations_require_matching_csrf_token(self):
         self.client.post(

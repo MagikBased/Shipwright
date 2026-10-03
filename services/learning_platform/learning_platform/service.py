@@ -1020,6 +1020,45 @@ class LearningPlatform:
         return {"wordId": word_id, "senseId": sense_id or None, "learningState": learning_state,
                 "note": note.strip(), "tags": clean_tags, "updatedAt": now}
 
+    def known_word_ids(self, session_token: str) -> set[str]:
+        user = self.authenticate_session(session_token)
+        with self.database.connect() as connection:
+            rows = connection.execute(
+                """
+                SELECT word_id FROM known_words WHERE user_id = ?
+                UNION
+                SELECT word_id FROM word_annotations
+                WHERE user_id = ? AND learning_state = 'known'
+                """,
+                (user["id"], user["id"]),
+            ).fetchall()
+        return {row["word_id"] for row in rows}
+
+    def set_word_known(self, session_token: str, word_id: str, known: bool) -> dict[str, Any]:
+        user = self.authenticate_session(session_token)
+        if not isinstance(word_id, str) or not word_id or len(word_id) > 512:
+            raise ValidationError("wordId must contain between 1 and 512 characters")
+        now = isoformat(self.now())
+        with self.database.connect() as connection:
+            if known:
+                connection.execute(
+                    "INSERT OR IGNORE INTO known_words VALUES (?, ?, ?)",
+                    (user["id"], word_id, now),
+                )
+            else:
+                connection.execute(
+                    "DELETE FROM known_words WHERE user_id = ? AND word_id = ?",
+                    (user["id"], word_id),
+                )
+                connection.execute(
+                    """
+                    UPDATE word_annotations SET learning_state = 'learning', updated_at = ?
+                    WHERE user_id = ? AND word_id = ? AND learning_state = 'known'
+                    """,
+                    (now, user["id"], word_id),
+                )
+        return {"wordId": word_id, "known": known, "updatedAt": now}
+
     def get_goals(self, session_token: str) -> dict[str, Any]:
         user = self.authenticate_session(session_token)
         with self.database.connect() as connection:
@@ -1488,6 +1527,8 @@ class LearningPlatform:
             annotations = [dict(row) for row in connection.execute(
                 "SELECT word_id, sense_id, learning_state, note, tags_json, updated_at FROM word_annotations WHERE user_id = ?",
                 (user["id"],))]
+            known_words = [row["word_id"] for row in connection.execute(
+                "SELECT word_id FROM known_words WHERE user_id = ? ORDER BY word_id", (user["id"],))]
             reviews = [dict(row) for row in connection.execute(
                 """
                 SELECT word_id, sense_id, rating, reviewed_at, due_at, interval_days, source,
@@ -1538,10 +1579,10 @@ class LearningPlatform:
             review["sourceMetadata"] = json.loads(review.pop("source_metadata_json"))
         for audit_event in audit_events:
             audit_event["metadata"] = json.loads(audit_event.pop("metadata_json"))
-        return {"schemaVersion": 4, "exportedAt": exported_at, "user": user,
+        return {"schemaVersion": 5, "exportedAt": exported_at, "user": user,
                 "stats": self.get_stats(session_token), "goals": self.get_goals(session_token),
                 "words": self.list_word_progress(session_token, limit=1000),
-                "annotations": annotations, "reviews": reviews, "events": events,
+                "annotations": annotations, "knownWords": known_words, "reviews": reviews, "events": events,
                 "devices": self.list_devices(session_token), "sessions": self.list_sessions(session_token),
                 "pairings": pairings, "exportHistory": exports, "reviewCollections": review_collections,
                 "notificationPreferences": dict(notification_preferences) if notification_preferences else None,

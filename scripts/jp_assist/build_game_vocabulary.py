@@ -1,0 +1,102 @@
+#!/usr/bin/env python3
+"""Build a content-neutral game vocabulary index with estimated JLPT levels."""
+
+from __future__ import annotations
+
+import argparse
+import json
+from collections import Counter
+from pathlib import Path
+from typing import Any
+
+
+LEVELS = ("N5", "N4", "N3", "N2", "N1")
+
+
+def load_jlpt_index(directory: Path) -> tuple[dict[tuple[str, str], str], dict[str, str]]:
+    exact: dict[tuple[str, str], str] = {}
+    spellings: dict[str, set[str]] = {}
+    for level in LEVELS:
+        path = directory / f"{level.lower()}.json"
+        entries = json.loads(path.read_text(encoding="utf-8"))
+        for entry in entries:
+            forms = [entry["word"], *(entry.get("other_forms") or [])]
+            readings = [entry["reading"], *(entry.get("other_readings") or [])]
+            for written in forms:
+                spellings.setdefault(written, set()).add(level)
+                for reading in readings:
+                    exact.setdefault((written, reading), level)
+    unambiguous = {word: next(iter(levels)) for word, levels in spellings.items() if len(levels) == 1}
+    return exact, unambiguous
+
+
+def build(
+    runtime_path: Path, jlpt_directory: Path, game_id: str,
+    level_source_version: str = "unrecorded",
+) -> dict[str, Any]:
+    runtime = json.loads(runtime_path.read_text(encoding="utf-8"))
+    exact, unambiguous = load_jlpt_index(jlpt_directory)
+    words: dict[str, dict[str, Any]] = {}
+    for message in runtime["messages"].values():
+        for page in message["pages"]:
+            for token in page["tokens"]:
+                word_id = token["id"]
+                entry = words.setdefault(word_id, {
+                    "wordId": word_id,
+                    "written": token["lemma"],
+                    "reading": token.get("dictionaryReading") or token.get("reading") or "",
+                    "partOfSpeech": token.get("partOfSpeech") or "",
+                    "meaning": token.get("meaning") or "",
+                    "occurrenceCount": 0,
+                    "jlptLevel": None,
+                })
+                entry["occurrenceCount"] += 1
+
+    for entry in words.values():
+        key = (entry["written"], entry["reading"])
+        entry["jlptLevel"] = exact.get(key) or unambiguous.get(entry["written"])
+
+    ordered = sorted(words.values(), key=lambda item: (-item["occurrenceCount"], item["wordId"]))
+    unique_counts = Counter(entry["jlptLevel"] or "unclassified" for entry in ordered)
+    occurrence_counts = Counter()
+    for entry in ordered:
+        occurrence_counts[entry["jlptLevel"] or "unclassified"] += entry["occurrenceCount"]
+    return {
+        "schemaVersion": 1,
+        "gameId": game_id,
+        "methodology": {
+            "unit": "unique lemma and reading identities",
+            "levelSource": "OpenJLPT",
+            "levelSourceUrl": "https://github.com/evanclan/OpenJLPT",
+            "levelSourceLicense": "CC BY-SA 4.0",
+            "levelSourceVersion": level_source_version,
+            "levelStatus": "Community estimates; the modern JLPT does not publish official vocabulary lists.",
+        },
+        "summary": {
+            "uniqueWords": len(ordered),
+            "classifiedWords": len(ordered) - unique_counts["unclassified"],
+            "occurrences": sum(entry["occurrenceCount"] for entry in ordered),
+            "uniqueByLevel": {level: unique_counts[level] for level in (*LEVELS, "unclassified")},
+            "occurrencesByLevel": {level: occurrence_counts[level] for level in (*LEVELS, "unclassified")},
+        },
+        "words": ordered,
+    }
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--runtime", type=Path, default=Path("scripts/jp_assist/out/runtime_data.json"))
+    parser.add_argument("--jlpt-dir", type=Path, required=True)
+    parser.add_argument("--game-id", default="ocarina-of-time")
+    parser.add_argument("--jlpt-version", default="unrecorded", help="OpenJLPT release or commit identifier")
+    parser.add_argument("--output", type=Path, required=True)
+    args = parser.parse_args()
+    result = build(args.runtime, args.jlpt_dir, args.game_id, args.jlpt_version)
+    args.output.parent.mkdir(parents=True, exist_ok=True)
+    args.output.write_text(json.dumps(result, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+    print(f"Wrote {result['summary']['uniqueWords']} words to {args.output}")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

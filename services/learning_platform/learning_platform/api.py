@@ -103,6 +103,11 @@ class WordAnnotationRequest(ApiModel):
     tags: list[str] = Field(default_factory=list)
 
 
+class KnownWordRequest(ApiModel):
+    wordId: str
+    known: bool = True
+
+
 class GoalsRequest(ApiModel):
     dailyNewWords: StrictInt
     dailyReviews: StrictInt
@@ -320,6 +325,19 @@ def create_app(
             raise HTTPException(status_code=404, detail="Catalog game not found")
         return game
 
+    @app.get("/v1/catalog/games/{game_id}/vocabulary")
+    def catalog_vocabulary(
+        game_id: str, search: str = "", jlptLevel: str | None = None,
+        limit: int = 50, offset: int = 0,
+    ) -> dict[str, Any]:
+        try:
+            result = catalog.list_vocabulary(game_id, search, jlptLevel, limit, offset)
+        except ValueError as error:
+            raise HTTPException(status_code=422, detail=str(error)) from error
+        if result is None:
+            raise HTTPException(status_code=404, detail="Catalog vocabulary not found")
+        return result
+
     @app.post("/v1/auth/register", status_code=201)
     def register(payload: RegisterRequest, request: Request, response: Response) -> dict[str, Any]:
         result = platform.register_user(
@@ -473,6 +491,43 @@ def create_app(
             session_token(request, authorization), payload.wordId, payload.senseId,
             payload.learningState, payload.note, payload.tags,
         )
+
+    @app.get("/v1/me/catalog/games/{game_id}/coverage")
+    def catalog_coverage(
+        game_id: str, request: Request, authorization: str | None = Header(default=None),
+    ) -> dict[str, Any]:
+        token = session_token(request, authorization)
+        result = catalog.coverage(game_id, platform.known_word_ids(token))
+        if result is None:
+            raise HTTPException(status_code=404, detail="Catalog vocabulary not found")
+        return result
+
+    @app.get("/v1/me/catalog/games")
+    def catalog_coverages(
+        request: Request, authorization: str | None = Header(default=None),
+    ) -> dict[str, Any]:
+        known_word_ids = platform.known_word_ids(session_token(request, authorization))
+        games = []
+        for game in catalog.list_games():
+            coverage = catalog.coverage(game["id"], known_word_ids)
+            if coverage is not None:
+                games.append(coverage)
+        return {"games": games}
+
+    @app.put("/v1/me/catalog/games/{game_id}/known-word")
+    def update_catalog_known_word(
+        game_id: str, payload: KnownWordRequest, request: Request,
+        authorization: str | None = Header(default=None),
+    ) -> dict[str, Any]:
+        word_ids = catalog.vocabulary_word_ids(game_id)
+        if word_ids is None:
+            raise HTTPException(status_code=404, detail="Catalog vocabulary not found")
+        if payload.wordId not in word_ids:
+            raise HTTPException(status_code=404, detail="Word not found in this game")
+        token = session_token(request, authorization)
+        result = platform.set_word_known(token, payload.wordId, payload.known)
+        result["coverage"] = catalog.coverage(game_id, platform.known_word_ids(token))
+        return result
 
     @app.get("/v1/me/activity")
     def activity(

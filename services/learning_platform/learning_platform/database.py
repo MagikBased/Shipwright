@@ -2,7 +2,7 @@ import sqlite3
 from pathlib import Path
 
 
-LATEST_SCHEMA_VERSION = 9
+LATEST_SCHEMA_VERSION = 10
 
 SCHEMA = """
 PRAGMA foreign_keys = ON;
@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS metadata (
     value TEXT NOT NULL
 );
 
-INSERT OR IGNORE INTO metadata(key, value) VALUES ('schema_version', '9');
+INSERT OR IGNORE INTO metadata(key, value) VALUES ('schema_version', '10');
 
 CREATE TABLE IF NOT EXISTS users (
     id TEXT PRIMARY KEY,
@@ -122,6 +122,13 @@ CREATE TABLE IF NOT EXISTS word_annotations (
     tags_json TEXT NOT NULL DEFAULT '[]',
     updated_at TEXT NOT NULL,
     PRIMARY KEY (user_id, word_id, sense_id)
+);
+
+CREATE TABLE IF NOT EXISTS known_words (
+    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    word_id TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    PRIMARY KEY (user_id, word_id)
 );
 
 CREATE TABLE IF NOT EXISTS dictionary_entries (
@@ -309,7 +316,7 @@ class Database:
             connection.execute("UPDATE sessions SET id = lower(hex(randomblob(16))) WHERE id IS NULL")
             connection.execute("UPDATE sessions SET last_seen_at = created_at WHERE last_seen_at IS NULL")
             connection.execute("CREATE UNIQUE INDEX IF NOT EXISTS sessions_public_id_idx ON sessions(id)")
-            connection.execute("UPDATE metadata SET value = '9' WHERE key = 'schema_version'")
+            connection.execute("UPDATE metadata SET value = '10' WHERE key = 'schema_version'")
 
     @staticmethod
     def _migrate_review_schema(connection: sqlite3.Connection) -> None:

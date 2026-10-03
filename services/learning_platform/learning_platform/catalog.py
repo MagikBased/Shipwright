@@ -11,23 +11,117 @@ class GameCatalog:
 
     def __init__(self, content_root: Path | None = None):
         self.content_root = content_root or Path(__file__).resolve().parent / "content" / "games"
+        self._vocabulary = self._load_vocabulary()
         self._games = self._load_games()
 
     def list_games(self) -> list[dict[str, Any]]:
-        return [self._summary(game) for game in self._games.values()]
+        results = []
+        for game in self._games.values():
+            summary = self._summary(game)
+            vocabulary = self._vocabulary.get(game["id"])
+            if vocabulary is not None:
+                summary["languageProfile"] = deepcopy(vocabulary["summary"])
+            results.append(summary)
+        return results
 
     def get_game(self, game_id: str) -> dict[str, Any] | None:
         game = self._games.get(game_id)
-        return deepcopy(game) if game is not None else None
+        if game is None:
+            return None
+        result = deepcopy(game)
+        vocabulary = self._vocabulary.get(game_id)
+        if vocabulary is not None:
+            result["languageProfile"] = deepcopy(vocabulary["summary"])
+            result["languageProfile"]["methodology"] = deepcopy(vocabulary["methodology"])
+        return result
+
+    def list_vocabulary(
+        self, game_id: str, search: str = "", jlpt_level: str | None = None,
+        limit: int = 50, offset: int = 0,
+    ) -> dict[str, Any] | None:
+        vocabulary = self._vocabulary.get(game_id)
+        if vocabulary is None:
+            return None
+        if jlpt_level is not None and jlpt_level not in {"N5", "N4", "N3", "N2", "N1", "unclassified"}:
+            raise ValueError("jlptLevel is invalid")
+        if not 1 <= limit <= 250 or offset < 0:
+            raise ValueError("limit must be 1-250 and offset cannot be negative")
+        needle = search.strip().casefold()
+        words = vocabulary["words"]
+        if needle:
+            words = [word for word in words if any(
+                needle in str(word.get(field) or "").casefold()
+                for field in ("wordId", "written", "reading", "meaning")
+            )]
+        if jlpt_level:
+            words = [word for word in words if (word["jlptLevel"] or "unclassified") == jlpt_level]
+        return {
+            "gameId": game_id,
+            "total": len(words),
+            "limit": limit,
+            "offset": offset,
+            "words": deepcopy(words[offset:offset + limit]),
+        }
+
+    def vocabulary_word_ids(self, game_id: str) -> set[str] | None:
+        vocabulary = self._vocabulary.get(game_id)
+        if vocabulary is None:
+            return None
+        return {word["wordId"] for word in vocabulary["words"]}
+
+    def coverage(self, game_id: str, known_word_ids: set[str]) -> dict[str, Any] | None:
+        vocabulary = self._vocabulary.get(game_id)
+        if vocabulary is None:
+            return None
+        words = vocabulary["words"]
+        known = [word for word in words if word["wordId"] in known_word_ids]
+        total_by_level = vocabulary["summary"]["uniqueByLevel"]
+        known_by_level = {level: 0 for level in total_by_level}
+        for word in known:
+            known_by_level[word["jlptLevel"] or "unclassified"] += 1
+        levels = {
+            level: {
+                "known": known_by_level[level],
+                "total": total,
+                "percent": round(known_by_level[level] * 100 / total, 1) if total else 0.0,
+            }
+            for level, total in total_by_level.items()
+        }
+        total = len(words)
+        return {
+            "gameId": game_id,
+            "knownWords": len(known),
+            "totalWords": total,
+            "percentKnown": round(len(known) * 100 / total, 1) if total else 0.0,
+            "knownWordIds": [word["wordId"] for word in known],
+            "levels": levels,
+        }
 
     def _load_games(self) -> dict[str, dict[str, Any]]:
         games: dict[str, dict[str, Any]] = {}
         for path in sorted(self.content_root.glob("*.json")):
+            if path.name.endswith(".vocabulary.json"):
+                continue
             with path.open(encoding="utf-8") as source:
                 game = json.load(source)
             self._validate(game, path)
             games[game["id"]] = game
         return games
+
+    def _load_vocabulary(self) -> dict[str, dict[str, Any]]:
+        manifests: dict[str, dict[str, Any]] = {}
+        for path in sorted(self.content_root.glob("*.vocabulary.json")):
+            with path.open(encoding="utf-8") as source:
+                manifest = json.load(source)
+            game_id = manifest.get("gameId")
+            words = manifest.get("words")
+            if not isinstance(game_id, str) or not game_id or not isinstance(words, list):
+                raise ValueError(f"Vocabulary manifest in {path} is invalid")
+            word_ids = [word.get("wordId") for word in words]
+            if any(not word_id for word_id in word_ids) or len(word_ids) != len(set(word_ids)):
+                raise ValueError(f"Vocabulary manifest for {game_id} has invalid word ids")
+            manifests[game_id] = manifest
+        return manifests
 
     @staticmethod
     def _validate(game: dict[str, Any], path: Path) -> None:

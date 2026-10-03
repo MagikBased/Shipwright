@@ -21,6 +21,24 @@
         <div><span id="game-series" class="eyebrow"></span><h2 id="game-title"></h2><p id="game-summary"></p></div>
         <dl id="game-facts" class="catalog-facts"></dl>
       </div>
+      <section class="language-section" aria-labelledby="language-profile-title">
+        <div class="section-heading"><div><span class="eyebrow">LANGUAGE PROFILE</span><h2 id="language-profile-title">What level is this adventure?</h2></div><p id="language-method" class="muted"></p></div>
+        <div class="language-grid">
+          <article class="panel"><h3>Vocabulary by JLPT level</h3><p class="muted small">Unique lemma + reading pairs across the Japanese script.</p><div id="jlpt-breakdown" class="level-breakdown"></div></article>
+          <article class="panel personal-coverage"><h3>Your coverage</h3><div id="coverage-signed-out"><p>Sign in to mark words you already know and see your coverage for every game.</p><a class="button-link" href="/">Open learning account</a></div><div id="coverage-signed-in" class="hidden"><p class="coverage-total"><strong id="coverage-percent">0%</strong> known</p><p id="coverage-count" class="muted"></p><div id="coverage-levels" class="coverage-levels"></div></div></article>
+        </div>
+      </section>
+      <section class="known-words panel" aria-labelledby="known-words-title">
+        <div class="section-heading"><div><span class="eyebrow">YOUR VOCABULARY</span><h2 id="known-words-title">Mark words you already know</h2></div><p class="muted">Knowledge is global: mark a word once and it counts in every game that uses it.</p></div>
+        <form id="vocabulary-filters" class="vocabulary-filters">
+          <label>Search <input id="vocabulary-search" type="search" placeholder="Word, reading, or meaning"></label>
+          <label>JLPT level <select id="vocabulary-level"><option value="">All levels</option><option>N5</option><option>N4</option><option>N3</option><option>N2</option><option>N1</option><option value="unclassified">Unclassified</option></select></label>
+          <button type="submit">Search</button>
+        </form>
+        <p id="vocabulary-status" class="muted small" role="status"></p>
+        <ul id="vocabulary-list" class="vocabulary-list"></ul>
+        <button id="vocabulary-more" class="quiet hidden" type="button">Load more</button>
+      </section>
       <section class="catalog-explainer" aria-labelledby="deck-model-title">
         <div><span class="eyebrow">COURSE STRUCTURE</span><h2 id="deck-model-title">One journey, eleven chapter decks</h2></div>
         <p id="chapter-model"></p>

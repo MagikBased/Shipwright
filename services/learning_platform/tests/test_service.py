@@ -100,6 +100,13 @@ class LearningPlatformTest(unittest.TestCase):
         with self.assertRaises(ConflictError):
             self.platform.register_user("player@example.com", "another safe password", "Other")
 
+    def test_manual_known_words_can_be_saved_and_removed_without_game_progress(self):
+        self.assertEqual(self.platform.known_word_ids(self.session), set())
+        self.platform.set_word_known(self.session, "森|もり", True)
+        self.assertEqual(self.platform.known_word_ids(self.session), {"森|もり"})
+        self.platform.set_word_known(self.session, "森|もり", False)
+        self.assertEqual(self.platform.known_word_ids(self.session), set())
+
     def test_email_verification_is_hashed_expiring_and_single_use(self):
         self.assertFalse(self.platform.authenticate_session(self.session)["emailVerified"])
         token = self.latest_mail_token()
