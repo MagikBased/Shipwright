@@ -4,9 +4,10 @@ import json
 import re
 import sqlite3
 import uuid
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, time, timedelta, timezone
 from pathlib import Path
 from typing import Any, Callable
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from .database import Database
 from .errors import (
@@ -88,14 +89,17 @@ def require_identifier(name: str, value: Any) -> str:
 
 
 class LearningPlatform:
-    def __init__(self, database_path: str | Path, now: Callable[[], datetime] = utc_now):
+    def __init__(
+        self, database_path: str | Path, now: Callable[[], datetime] = utc_now,
+        allow_scheduler_upgrade: bool = False,
+    ):
         self.database = Database(database_path)
         self.now = now
-        self._rebuild_stale_review_states()
+        self._rebuild_stale_review_states(allow_scheduler_upgrade)
 
-    def _rebuild_stale_review_states(self) -> None:
+    def _rebuild_stale_review_states(self, allow_scheduler_upgrade: bool) -> None:
         with self.database.connect() as connection:
-            stale = connection.execute(
+            legacy = connection.execute(
                 """
                 SELECT 1
                 FROM reviews AS history
@@ -103,14 +107,21 @@ class LearningPlatform:
                   ON state.user_id = history.user_id
                  AND state.word_id = history.word_id
                  AND state.sense_id = history.sense_id
-                WHERE state.scheduler_version IS NULL OR state.scheduler_version != ?
+                WHERE state.scheduler_version IS NULL OR state.scheduler_version = 'mvp-1'
                 LIMIT 1
-                """,
+                """
+            ).fetchone()
+            if legacy is not None:
+                self._rebuild_review_states(connection)
+            unsupported = connection.execute(
+                "SELECT DISTINCT scheduler_version FROM review_state WHERE scheduler_version != ? LIMIT 1",
                 (SCHEDULER_VERSION,),
             ).fetchone()
-            if stale is None:
-                return
-            self._rebuild_review_states(connection)
+            if unsupported is not None and not allow_scheduler_upgrade:
+                raise RuntimeError(
+                    f"Review state uses {unsupported['scheduler_version']}; back up the database and run "
+                    "the explicit rebuild-reviews migration before starting this scheduler"
+                )
 
     def _rebuild_review_states(self, connection: sqlite3.Connection, user_id: str | None = None) -> int:
         where = "WHERE user_id = ?" if user_id else ""
@@ -770,28 +781,47 @@ class LearningPlatform:
         with self.database.connect() as connection:
             row = connection.execute("SELECT * FROM learning_goals WHERE user_id = ?", (user["id"],)).fetchone()
         if row is None:
-            return {"dailyNewWords": 10, "dailyReviews": 20, "remindersEnabled": False}
+            return {"dailyNewWords": 10, "dailyReviews": 20, "remindersEnabled": False, "timezone": "UTC"}
         return {"dailyNewWords": row["daily_new_words"], "dailyReviews": row["daily_reviews"],
-                "remindersEnabled": bool(row["reminders_enabled"]), "updatedAt": row["updated_at"]}
+                "remindersEnabled": bool(row["reminders_enabled"]), "timezone": row["timezone"],
+                "updatedAt": row["updated_at"]}
 
     def update_goals(
-        self, session_token: str, daily_new_words: int, daily_reviews: int, reminders_enabled: bool
+        self, session_token: str, daily_new_words: int, daily_reviews: int, reminders_enabled: bool,
+        timezone_name: str = "UTC",
     ) -> dict[str, Any]:
         user = self.authenticate_session(session_token)
         if not 0 <= daily_new_words <= 100 or not 0 <= daily_reviews <= 500:
             raise ValidationError("Daily goals are outside their supported range")
+        self._timezone(timezone_name)
         now = isoformat(self.now())
         with self.database.connect() as connection:
             connection.execute(
                 """
-                INSERT INTO learning_goals VALUES (?, ?, ?, ?, ?)
+                INSERT INTO learning_goals (
+                    user_id, daily_new_words, daily_reviews, reminders_enabled, timezone, updated_at
+                ) VALUES (?, ?, ?, ?, ?, ?)
                 ON CONFLICT(user_id) DO UPDATE SET daily_new_words = excluded.daily_new_words,
                     daily_reviews = excluded.daily_reviews, reminders_enabled = excluded.reminders_enabled,
-                    updated_at = excluded.updated_at
+                    timezone = excluded.timezone, updated_at = excluded.updated_at
                 """,
-                (user["id"], daily_new_words, daily_reviews, int(reminders_enabled), now),
+                (user["id"], daily_new_words, daily_reviews, int(reminders_enabled), timezone_name, now),
             )
         return self.get_goals(session_token)
+
+    @staticmethod
+    def _timezone(timezone_name: str) -> ZoneInfo:
+        try:
+            return ZoneInfo(timezone_name)
+        except (ZoneInfoNotFoundError, ValueError, TypeError) as error:
+            raise ValidationError("timezone must be a valid IANA timezone") from error
+
+    def _review_day(self, timezone_name: str) -> tuple[datetime, datetime]:
+        zone = self._timezone(timezone_name)
+        local_now = self.now().astimezone(zone)
+        start = datetime.combine(local_now.date(), time.min, tzinfo=zone)
+        end = datetime.combine(local_now.date() + timedelta(days=1), time.min, tzinfo=zone)
+        return start.astimezone(timezone.utc), end.astimezone(timezone.utc)
 
     def review_queue(self, session_token: str, limit: int = 20) -> list[dict[str, Any]]:
         user = self.authenticate_session(session_token)
@@ -800,6 +830,36 @@ class LearningPlatform:
         now_value = self.now()
         now = isoformat(now_value)
         with self.database.connect() as connection:
+            goals = connection.execute(
+                "SELECT daily_new_words, daily_reviews, timezone FROM learning_goals WHERE user_id = ?",
+                (user["id"],),
+            ).fetchone()
+            daily_new_words = goals["daily_new_words"] if goals else 10
+            daily_reviews = goals["daily_reviews"] if goals else 20
+            day_start, day_end = self._review_day(goals["timezone"] if goals else "UTC")
+            start_text, end_text = isoformat(day_start), isoformat(day_end)
+            new_today = connection.execute(
+                """
+                SELECT COUNT(*) FROM (
+                    SELECT word_id, sense_id, MIN(reviewed_at) AS first_review
+                    FROM reviews WHERE user_id = ? GROUP BY word_id, sense_id
+                    HAVING first_review >= ? AND first_review < ?
+                )
+                """,
+                (user["id"], start_text, end_text),
+            ).fetchone()[0]
+            established_today = connection.execute(
+                """
+                SELECT COUNT(*) FROM reviews AS current
+                WHERE current.user_id = ? AND current.reviewed_at >= ? AND current.reviewed_at < ?
+                  AND EXISTS (
+                    SELECT 1 FROM reviews AS earlier
+                    WHERE earlier.user_id = current.user_id AND earlier.word_id = current.word_id
+                      AND earlier.sense_id = current.sense_id AND earlier.reviewed_at < ?
+                  )
+                """,
+                (user["id"], start_text, end_text, start_text),
+            ).fetchone()[0]
             rows = connection.execute(
                 """
                 SELECT progress.word_id, progress.sense_id, progress.encounter_count,
@@ -807,6 +867,7 @@ class LearningPlatform:
                        review.due_at, review.interval_days, review.repetitions,
                        review.scheduler_version, review.card_state, review.step,
                        review.stability, review.difficulty, review.last_reviewed_at,
+                       buried.buried_until,
                        COALESCE(annotation.learning_state, 'new') AS learning_state
                 FROM word_progress progress
                 LEFT JOIN dictionary_entries dictionary ON dictionary.word_id = progress.word_id
@@ -815,16 +876,30 @@ class LearningPlatform:
                     AND review.word_id = progress.word_id AND review.sense_id = progress.sense_id
                 LEFT JOIN word_annotations annotation ON annotation.user_id = progress.user_id
                     AND annotation.word_id = progress.word_id AND annotation.sense_id = progress.sense_id
+                LEFT JOIN buried_cards buried ON buried.user_id = progress.user_id
+                    AND buried.word_id = progress.word_id AND buried.sense_id = progress.sense_id
                 WHERE progress.user_id = ? AND (progress.saved = 1 OR annotation.learning_state = 'learning')
                     AND COALESCE(annotation.learning_state, 'new') != 'ignored'
                     AND (review.due_at IS NULL OR review.due_at <= ?)
+                    AND (buried.buried_until IS NULL OR buried.buried_until <= ?)
                 ORDER BY COALESCE(review.due_at, progress.first_seen_at), progress.encounter_count DESC
-                LIMIT ?
+                LIMIT 1000
                 """,
-                (user["id"], now, limit),
+                (user["id"], now, now),
             ).fetchall()
         queue = []
+        remaining_new = max(0, daily_new_words - new_today)
+        remaining_reviews = max(0, daily_reviews - established_today)
         for row in rows:
+            card_state = row["card_state"]
+            if card_state is None:
+                if remaining_new <= 0:
+                    continue
+                remaining_new -= 1
+            elif card_state == 2:
+                if remaining_reviews <= 0:
+                    continue
+                remaining_reviews -= 1
             card = card_from_row(row)
             rating_previews = previews(card, now_value)
             queue.append({
@@ -838,7 +913,33 @@ class LearningPlatform:
                 "schedulerVersion": SCHEDULER_VERSION,
                 "ratingPreviews": [{**item, "dueAt": isoformat(item["dueAt"])} for item in rating_previews],
             })
+            if len(queue) >= limit:
+                break
         return queue
+
+    def bury_review(self, session_token: str, word_id: str, sense_id: str | None) -> dict[str, Any]:
+        user = self.authenticate_session(session_token)
+        sense_id = sense_id or ""
+        now = isoformat(self.now())
+        goals = self.get_goals(session_token)
+        _, day_end = self._review_day(goals["timezone"])
+        buried_until = isoformat(day_end)
+        with self.database.connect() as connection:
+            exists = connection.execute(
+                "SELECT 1 FROM word_progress WHERE user_id = ? AND word_id = ? AND sense_id = ?",
+                (user["id"], word_id, sense_id),
+            ).fetchone()
+            if exists is None:
+                raise NotFoundError("Word not found in this account")
+            connection.execute(
+                """
+                INSERT INTO buried_cards VALUES (?, ?, ?, ?, ?)
+                ON CONFLICT(user_id, word_id, sense_id) DO UPDATE SET
+                    buried_until = excluded.buried_until, created_at = excluded.created_at
+                """,
+                (user["id"], word_id, sense_id, buried_until, now),
+            )
+        return {"wordId": word_id, "senseId": sense_id or None, "buriedUntil": buried_until}
 
     def submit_review(
         self, session_token: str, word_id: str, sense_id: str | None, rating: int, source: str = "web"

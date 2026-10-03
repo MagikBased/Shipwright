@@ -89,7 +89,7 @@ class DeploymentTest(unittest.TestCase):
                     );
                 """)
             migrated = Database(path)
-            self.assertEqual(migrated.schema_version(), 4)
+            self.assertEqual(migrated.schema_version(), 5)
             expected = {"scheduler_version", "algorithm_version", "parameters_json", "desired_retention",
                         "card_state", "step", "stability", "difficulty", "scheduled_days", "elapsed_days"}
             with migrated.connect() as connection:
@@ -97,6 +97,24 @@ class DeploymentTest(unittest.TestCase):
                 review_columns = {row["name"] for row in connection.execute("PRAGMA table_info(reviews)")}
             self.assertTrue(expected.issubset(state_columns))
             self.assertTrue(expected.issubset(review_columns))
+
+    def test_version_four_goals_gain_timezone_and_bury_table(self):
+        with tempfile.TemporaryDirectory(prefix="jp-assist-day-migration-") as temporary:
+            path = Path(temporary) / "version-four.sqlite3"
+            database = Database(path)
+            with database.connect() as connection:
+                connection.execute("UPDATE metadata SET value = '4' WHERE key = 'schema_version'")
+                connection.execute("ALTER TABLE learning_goals DROP COLUMN timezone")
+                connection.execute("DROP TABLE buried_cards")
+            migrated = Database(path)
+            with migrated.connect() as connection:
+                goal_columns = {row["name"] for row in connection.execute("PRAGMA table_info(learning_goals)")}
+                buried = connection.execute(
+                    "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'buried_cards'"
+                ).fetchone()
+            self.assertEqual(migrated.schema_version(), 5)
+            self.assertIn("timezone", goal_columns)
+            self.assertIsNotNone(buried)
 
     def test_backup_and_restore_create_ready_database_and_safety_copy(self):
         with tempfile.TemporaryDirectory(prefix="jp-assist-backup-") as temporary:

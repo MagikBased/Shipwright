@@ -78,6 +78,7 @@ class GoalsRequest(ApiModel):
     dailyNewWords: StrictInt
     dailyReviews: StrictInt
     remindersEnabled: bool = False
+    timezone: str = "UTC"
 
 
 class ReviewRequest(ApiModel):
@@ -85,6 +86,11 @@ class ReviewRequest(ApiModel):
     senseId: str | None = None
     rating: StrictInt
     source: str = "web"
+
+
+class BuryReviewRequest(ApiModel):
+    wordId: str
+    senseId: str | None = None
 
 
 class PasswordRequest(ApiModel):
@@ -299,7 +305,7 @@ def create_app(
     ) -> dict[str, Any]:
         return platform.update_goals(
             session_token(request, authorization), payload.dailyNewWords,
-            payload.dailyReviews, payload.remindersEnabled,
+            payload.dailyReviews, payload.remindersEnabled, payload.timezone,
         )
 
     @app.get("/v1/me/reviews/queue")
@@ -315,6 +321,14 @@ def create_app(
         return platform.submit_review(
             session_token(request, authorization), payload.wordId, payload.senseId,
             payload.rating, payload.source,
+        )
+
+    @app.post("/v1/me/reviews/bury")
+    def bury_review(
+        payload: BuryReviewRequest, request: Request, authorization: str | None = Header(default=None)
+    ) -> dict[str, Any]:
+        return platform.bury_review(
+            session_token(request, authorization), payload.wordId, payload.senseId,
         )
 
     @app.get("/v1/me/exports/saved-words")

@@ -143,6 +143,10 @@ test.describe.serial("learning account", () => {
     await page.locator("#review-card").click();
     await expect(page.locator("#review-actions")).toBeVisible();
     await expect(page.locator("#review-actions [data-rating='3'] small")).toHaveText(/m|h|d|mo|y/);
+    const buriedMeaning = await page.locator("#review-card .meaning").textContent();
+    await page.locator("#bury-review").click();
+    await page.locator("#review-card").click();
+    await expect(page.locator("#review-card .meaning")).not.toHaveText(buriedMeaning);
     const firstMeaning = await page.locator("#review-card .meaning").textContent();
     await page.locator("#review-actions [data-rating='3']").click();
     await page.locator("#review-card").click();

@@ -143,7 +143,7 @@ def main() -> None:
         if not ready:
             raise SystemExit(1)
     elif args.command == "rebuild-reviews":
-        count = LearningPlatform(database_path).rebuild_review_states()
+        count = LearningPlatform(database_path, allow_scheduler_upgrade=True).rebuild_review_states()
         print(f"Rebuilt {count} FSRS card states in {database_path}")
     elif args.command == "backup":
         Database(database_path)

@@ -90,6 +90,16 @@ button:disabled {
   opacity: 0.76;
 }
 
+.review-actions:has(#bury-review) {
+  grid-template-columns: repeat(5, 1fr);
+}
+
+@media (max-width: 780px) {
+  .review-actions:has(#bury-review) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

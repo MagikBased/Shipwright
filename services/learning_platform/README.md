@@ -127,6 +127,11 @@ PYTHONPATH=services/learning_platform \
   python3 -m learning_platform.manage rebuild-reviews
 ```
 
+Daily new/review limits and bury-until-tomorrow use the IANA timezone saved in
+the goal settings. Learning/relearning steps are never hidden by those limits.
+See [the scheduler policy](../../docs/FSRS_SCHEDULER.md) for conformance,
+upgrade, explicit-rebuild, and rollback rules.
+
 ## Dictionary enrichment
 
 The service does not upload dialogue or silently redistribute the local game

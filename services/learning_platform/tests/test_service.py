@@ -226,6 +226,44 @@ class LearningPlatformTest(unittest.TestCase):
         self.assertEqual(state_after, state_before)
         self.assertEqual(reviews_after, reviews_before)
 
+        with self.platform.database.connect() as connection:
+            connection.execute("UPDATE review_state SET scheduler_version = 'fsrs-future'")
+        with self.assertRaisesRegex(RuntimeError, "explicit rebuild-reviews"):
+            LearningPlatform(self.platform.database.path, now=self.clock)
+        migration = LearningPlatform(
+            self.platform.database.path, now=self.clock, allow_scheduler_upgrade=True,
+        )
+        self.assertEqual(migration.rebuild_review_states(), 1)
+
+    def test_review_day_limits_burying_and_timezone_boundaries(self):
+        device = self.pair_device()
+        self.platform.ingest_events(device["deviceToken"], [
+            self.event("save-a", "word_saved", wordId="森|もり"),
+            self.event("save-b", "word_saved", wordId="橋|はし"),
+        ])
+        goals = self.platform.update_goals(self.session, 1, 0, False, "America/Chicago")
+        self.assertEqual(goals["timezone"], "America/Chicago")
+        queue = self.platform.review_queue(self.session)
+        self.assertEqual(len(queue), 1)
+        buried = self.platform.bury_review(self.session, queue[0]["wordId"], None)
+        self.assertEqual(buried["buriedUntil"], "2026-10-03T05:00:00.000Z")
+        replacement = self.platform.review_queue(self.session)
+        self.assertEqual(len(replacement), 1)
+        self.assertNotEqual(replacement[0]["wordId"], queue[0]["wordId"])
+        self.platform.submit_review(self.session, replacement[0]["wordId"], None, 3)
+        self.assertEqual(self.platform.review_queue(self.session), [])
+
+        self.clock.value += timedelta(hours=18)
+        # The buried new card returns with the new-day budget, and the short
+        # learning step remains available regardless of the review limit.
+        self.assertEqual(len(self.platform.review_queue(self.session)), 2)
+        with self.assertRaises(ValidationError):
+            self.platform.update_goals(self.session, 1, 1, False, "Not/A_Real_Zone")
+
+        self.clock.value = datetime(2026, 11, 1, 12, 0, tzinfo=timezone.utc)
+        start, end = self.platform._review_day("America/Chicago")
+        self.assertEqual(end - start, timedelta(hours=25))
+
     def test_session_password_and_per_game_clear_controls(self):
         first_device = self.pair_device()
         second_device = self.pair_game("another-game", "another-adapter")
