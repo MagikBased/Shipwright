@@ -139,6 +139,13 @@ deleted and rebuilt entirely from the immutable review log.
 
 ## Milestone 4 — Anki interoperability
 
+Status: **in progress**. Scheduling ownership is explicit and safely switched
+per collection. Browser-to-Anki synchronization now performs a read-only
+preflight, preserves stable word/sense identities and custom tags, migrates
+non-identity fields, updates stale notes, blocks duplicate identities, and is
+covered for repeat-sync idempotence and connection failures. Review-history
+feature detection/import and final recovery acceptance remain.
+
 Support two explicit modes rather than allowing competing schedulers:
 
 1. **JP Assist reviews** — JP Assist owns scheduling; Anki receives study cards

@@ -2,7 +2,7 @@ import sqlite3
 from pathlib import Path
 
 
-LATEST_SCHEMA_VERSION = 5
+LATEST_SCHEMA_VERSION = 6
 
 SCHEMA = """
 PRAGMA foreign_keys = ON;
@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS metadata (
     value TEXT NOT NULL
 );
 
-INSERT OR IGNORE INTO metadata(key, value) VALUES ('schema_version', '5');
+INSERT OR IGNORE INTO metadata(key, value) VALUES ('schema_version', '6');
 
 CREATE TABLE IF NOT EXISTS users (
     id TEXT PRIMARY KEY,
@@ -196,6 +196,17 @@ CREATE TABLE IF NOT EXISTS buried_cards (
     PRIMARY KEY (user_id, word_id, sense_id)
 );
 
+CREATE TABLE IF NOT EXISTS review_collections (
+    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    collection_id TEXT NOT NULL DEFAULT 'all',
+    review_owner TEXT NOT NULL DEFAULT 'jp_assist'
+        CHECK (review_owner IN ('jp_assist', 'anki')),
+    anki_deck TEXT NOT NULL DEFAULT 'JP Assist — Saved Words',
+    last_anki_sync_at TEXT,
+    updated_at TEXT NOT NULL,
+    PRIMARY KEY (user_id, collection_id)
+);
+
 CREATE TABLE IF NOT EXISTS export_history (
     id TEXT PRIMARY KEY,
     user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -228,7 +239,7 @@ class Database:
             goal_columns = {row["name"] for row in connection.execute("PRAGMA table_info(learning_goals)")}
             if "timezone" not in goal_columns:
                 connection.execute("ALTER TABLE learning_goals ADD COLUMN timezone TEXT NOT NULL DEFAULT 'UTC'")
-            connection.execute("UPDATE metadata SET value = '5' WHERE key = 'schema_version'")
+            connection.execute("UPDATE metadata SET value = '6' WHERE key = 'schema_version'")
 
     @staticmethod
     def _migrate_review_schema(connection: sqlite3.Connection) -> None:

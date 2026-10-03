@@ -64,7 +64,8 @@ class DeploymentTest(unittest.TestCase):
             self.assertIn("page_index", columns)
             with migrated.connect() as connection:
                 tables = {row[0] for row in connection.execute("SELECT name FROM sqlite_master WHERE type='table'")}
-            self.assertTrue({"word_annotations", "review_state", "reviews", "learning_goals"}.issubset(tables))
+            self.assertTrue({"word_annotations", "review_state", "reviews", "learning_goals",
+                             "review_collections"}.issubset(tables))
 
     def test_legacy_review_schema_gains_versioned_fsrs_projection_columns(self):
         with tempfile.TemporaryDirectory(prefix="jp-assist-review-migration-") as temporary:
@@ -89,7 +90,7 @@ class DeploymentTest(unittest.TestCase):
                     );
                 """)
             migrated = Database(path)
-            self.assertEqual(migrated.schema_version(), 5)
+            self.assertEqual(migrated.schema_version(), 6)
             expected = {"scheduler_version", "algorithm_version", "parameters_json", "desired_retention",
                         "card_state", "step", "stability", "difficulty", "scheduled_days", "elapsed_days"}
             with migrated.connect() as connection:
@@ -112,9 +113,22 @@ class DeploymentTest(unittest.TestCase):
                 buried = connection.execute(
                     "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'buried_cards'"
                 ).fetchone()
-            self.assertEqual(migrated.schema_version(), 5)
+            self.assertEqual(migrated.schema_version(), 6)
             self.assertIn("timezone", goal_columns)
             self.assertIsNotNone(buried)
+
+    def test_version_five_gains_review_collection_ownership(self):
+        with tempfile.TemporaryDirectory(prefix="jp-assist-owner-migration-") as temporary:
+            path = Path(temporary) / "version-five.sqlite3"
+            database = Database(path)
+            with database.connect() as connection:
+                connection.execute("UPDATE metadata SET value = '5' WHERE key = 'schema_version'")
+                connection.execute("DROP TABLE review_collections")
+            migrated = Database(path)
+            with migrated.connect() as connection:
+                columns = {row["name"] for row in connection.execute("PRAGMA table_info(review_collections)")}
+            self.assertEqual(migrated.schema_version(), 6)
+            self.assertTrue({"collection_id", "review_owner", "anki_deck", "last_anki_sync_at"}.issubset(columns))
 
     def test_backup_and_restore_create_ready_database_and_safety_copy(self):
         with tempfile.TemporaryDirectory(prefix="jp-assist-backup-") as temporary:

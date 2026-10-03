@@ -170,21 +170,47 @@ test.describe.serial("learning account", () => {
     expect(JSON.stringify(account).toLowerCase()).not.toContain("password_hash");
   });
 
-  test("sends stable homograph and sense identities through an AnkiConnect test double", async ({ page }) => {
+  test("preflights and idempotently synchronizes stable Anki identities", async ({ page }) => {
     const actions = [];
+    const notes = [];
+    let modelExists = false;
+    let modelFields = ["Word ID", "Word", "Reading", "Meaning", "Part of Speech", "Game"];
+    let nextNoteId = 100;
     await page.route("http://127.0.0.1:8765/**", async route => {
       if (route.request().method() === "OPTIONS") {
         await route.fulfill({ status: 204, headers: { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "content-type" } });
         return;
       }
       const request = route.request().postDataJSON(); actions.push(request);
-      const results = { createDeck: 1, modelNames: [], createModel: 1 };
-      const result = request.action === "addNotes" ? request.params.notes.map((_, index) => index + 100) : results[request.action];
+      let result = null;
+      if (request.action === "modelNames") result = modelExists ? ["JP Assist Vocabulary"] : [];
+      else if (request.action === "modelFieldNames") result = modelFields;
+      else if (request.action === "findNotes") result = notes.map(note => note.noteId);
+      else if (request.action === "notesInfo") result = notes.filter(note => request.params.notes.includes(note.noteId));
+      else if (request.action === "createDeck") result = 1;
+      else if (request.action === "createModel") { modelExists = true; modelFields = [...request.params.inOrderFields]; result = 1; }
+      else if (request.action === "modelFieldAdd") { modelFields.push(request.params.fieldName); }
+      else if (request.action === "addNotes") {
+        result = request.params.notes.map(note => {
+          const noteId = nextNoteId++;
+          notes.push({ noteId, modelName: note.modelName, tags: note.tags, fields: Object.fromEntries(Object.entries(note.fields).map(([name, value], order) => [name, { value, order }])) });
+          return noteId;
+        });
+      } else if (request.action === "updateNote") {
+        const existing = notes.find(note => note.noteId === request.params.note.id);
+        existing.tags = request.params.note.tags;
+        for (const [name, value] of Object.entries(request.params.note.fields)) existing.fields[name].value = value;
+      }
       await route.fulfill({ json: { result, error: null }, headers: { "Access-Control-Allow-Origin": "*" } });
     });
     await login(page); await openView(page, "export");
     await page.locator("#anki-import").click();
-    await expect(page.locator("#notice")).toContainText("Sent 6 new cards");
+    await expect(page.locator("#anki-preflight")).toContainText("Add");
+    await expect(page.locator("#anki-preflight")).toContainText("6");
+    await page.locator("#anki-apply").click();
+    await expect(page.locator("#notice")).toContainText("6 added, 0 updated, 0 unchanged");
+    await expect(page.locator("#anki-preflight")).toContainText("Unchanged");
+    await expect(page.locator("#anki-apply")).toBeHidden();
     const addNotes = actions.find(action => action.action === "addNotes");
     const homographs = addNotes.params.notes.filter(note => note.fields.Word === "生");
     expect(homographs).toHaveLength(2);
@@ -192,9 +218,34 @@ test.describe.serial("learning account", () => {
     const multipleSenses = addNotes.params.notes.filter(note => note.fields.Word === "橋");
     expect(multipleSenses).toHaveLength(2);
     expect(new Set(multipleSenses.map(note => note.fields["Word ID"])).size).toBe(2);
+
+    notes[0].fields.Meaning.value = "stale definition";
+    modelFields = modelFields.filter(field => field !== "Game");
+    await page.locator("#anki-import").click();
+    await expect(page.locator("#anki-preflight")).toContainText("Update");
+    await expect(page.locator("#anki-preflight")).toContainText("Field migrations");
+    await page.locator("#anki-apply").click();
+    await expect(page.locator("#notice")).toContainText("0 added, 1 updated, 5 unchanged");
+    expect(actions.some(action => action.action === "updateNote")).toBe(true);
+    expect(actions.some(action => action.action === "modelFieldAdd" && action.params.fieldName === "Game")).toBe(true);
+
+    await page.locator("#anki-owner").selectOption("anki");
+    await expect(page.locator("#confirm-dialog")).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(page.locator("#anki-owner")).toHaveValue("jp_assist");
+    await page.locator("#anki-owner").selectOption("anki");
+    await page.locator("#confirm-accept").click();
+    await expect(page.locator("#notice")).toContainText("Anki now owns scheduling");
+    await openView(page, "review");
+    await expect(page.locator("#review-owner-note")).toContainText("Anki owns scheduling");
+    await expect(page.locator("#review-card")).toContainText("Anki owns this review queue");
+    await openView(page, "export");
+    await page.locator("#anki-owner").selectOption("jp_assist");
+    await page.locator("#confirm-accept").click();
+    await expect(page.locator("#notice")).toContainText("JP Assist now owns scheduling");
   });
 
-  test("reports AnkiConnect duplicates, malformed responses, and unavailability", async ({ page }) => {
+  test("reports Anki identity conflicts, malformed responses, and unavailability", async ({ page }) => {
     let scenario = "duplicates";
     await page.route("http://127.0.0.1:8765/**", async route => {
       if (route.request().method() === "OPTIONS") {
@@ -210,13 +261,20 @@ test.describe.serial("learning account", () => {
         return;
       }
       const request = route.request().postDataJSON();
-      const defaults = { createDeck: 1, modelNames: ["JP Assist Vocabulary"] };
-      const result = request.action === "addNotes" ? request.params.notes.map((_, index) => index % 2 ? null : index + 1) : defaults[request.action];
+      const fields = Object.fromEntries(["Word ID", "Word", "Reading", "Meaning", "Part of Speech", "Game"].map((name, order) => [name, { value: name === "Word ID" ? "森|もり|sense:forest" : "", order }]));
+      const defaults = {
+        modelNames: ["JP Assist Vocabulary"],
+        modelFieldNames: Object.keys(fields),
+        findNotes: [1, 2],
+        notesInfo: [{ noteId: 1, fields, tags: ["jp-assist"] }, { noteId: 2, fields, tags: ["jp-assist"] }],
+      };
+      const result = defaults[request.action];
       await route.fulfill({ json: { result, error: null }, headers: { "Access-Control-Allow-Origin": "*" } });
     });
     await login(page); await openView(page, "export");
     await page.locator("#anki-import").click();
-    await expect(page.locator("#notice")).toContainText("duplicates skipped");
+    await expect(page.locator("#anki-preflight")).toContainText("multiple Anki notes");
+    await expect(page.locator("#anki-apply")).toBeHidden();
     scenario = "malformed";
     await page.locator("#anki-import").click();
     await expect(page.locator("#notice")).toContainText(/AnkiConnect:.*JSON/i);

@@ -264,6 +264,33 @@ class LearningPlatformTest(unittest.TestCase):
         start, end = self.platform._review_day("America/Chicago")
         self.assertEqual(end - start, timedelta(hours=25))
 
+    def test_review_owner_is_explicit_scoped_and_single_scheduler(self):
+        device = self.pair_device()
+        self.platform.ingest_events(device["deviceToken"], [self.event("owner-save", "word_saved")])
+        default = self.platform.get_review_collection(self.session)
+        self.assertEqual(default["reviewOwner"], "jp_assist")
+        with self.assertRaises(ConflictError):
+            self.platform.update_review_collection(
+                self.session, None, "anki", "JP Assist Test", confirmed=False,
+            )
+        anki_owned = self.platform.update_review_collection(
+            self.session, None, "anki", "JP Assist Test", confirmed=True,
+        )
+        self.assertEqual(anki_owned["reviewOwner"], "anki")
+        self.assertEqual(self.platform.review_queue(self.session), [])
+        with self.assertRaises(ConflictError):
+            self.platform.submit_review(self.session, "武器|ぶき", None, 3)
+
+        game_collection = self.platform.get_review_collection(self.session, "ocarina-of-time")
+        self.assertEqual(game_collection["reviewOwner"], "jp_assist")
+        synced = self.platform.mark_anki_synced(self.session)
+        self.assertIsNotNone(synced["lastAnkiSyncAt"])
+        restored = self.platform.update_review_collection(
+            self.session, None, "jp_assist", "JP Assist Test", confirmed=True,
+        )
+        self.assertEqual(restored["reviewOwner"], "jp_assist")
+        self.assertEqual(len(self.platform.review_queue(self.session)), 1)
+
     def test_session_password_and_per_game_clear_controls(self):
         first_device = self.pair_device()
         second_device = self.pair_game("another-game", "another-adapter")

@@ -93,6 +93,17 @@ class BuryReviewRequest(ApiModel):
     senseId: str | None = None
 
 
+class ReviewCollectionRequest(ApiModel):
+    gameId: str | None = None
+    reviewOwner: str
+    ankiDeck: str
+    confirmed: bool = False
+
+
+class AnkiSyncCompleteRequest(ApiModel):
+    gameId: str | None = None
+
+
 class PasswordRequest(ApiModel):
     currentPassword: str
     newPassword: str
@@ -330,6 +341,29 @@ def create_app(
         return platform.bury_review(
             session_token(request, authorization), payload.wordId, payload.senseId,
         )
+
+    @app.get("/v1/me/review-collection")
+    def review_collection(
+        request: Request, gameId: str | None = None, authorization: str | None = Header(default=None)
+    ) -> dict[str, Any]:
+        return platform.get_review_collection(session_token(request, authorization), gameId)
+
+    @app.put("/v1/me/review-collection")
+    def update_review_collection(
+        payload: ReviewCollectionRequest, request: Request,
+        authorization: str | None = Header(default=None),
+    ) -> dict[str, Any]:
+        return platform.update_review_collection(
+            session_token(request, authorization), payload.gameId, payload.reviewOwner,
+            payload.ankiDeck, payload.confirmed,
+        )
+
+    @app.post("/v1/me/review-collection/anki-synced")
+    def anki_sync_complete(
+        payload: AnkiSyncCompleteRequest, request: Request,
+        authorization: str | None = Header(default=None),
+    ) -> dict[str, Any]:
+        return platform.mark_anki_synced(session_token(request, authorization), payload.gameId)
 
     @app.get("/v1/me/exports/saved-words")
     def saved_words_export(

@@ -90,12 +90,61 @@ button:disabled {
   opacity: 0.76;
 }
 
+.owner-note {
+  color: var(--gold);
+  margin: -10px 0 18px;
+}
+
+.two-column.compact {
+  gap: 14px;
+}
+
+.button-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.anki-preflight {
+  margin-top: 16px;
+}
+
+.anki-preflight h3 {
+  margin-top: 0;
+}
+
+.preflight-counts {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(7, minmax(80px, 1fr));
+}
+
+.preflight-counts span {
+  color: var(--muted);
+  font-size: 0.75rem;
+  text-align: center;
+}
+
+.preflight-counts strong {
+  color: var(--text);
+  display: block;
+  font-size: 1.25rem;
+}
+
+.error-list {
+  color: var(--red);
+}
+
 .review-actions:has(#bury-review) {
   grid-template-columns: repeat(5, 1fr);
 }
 
 @media (max-width: 780px) {
   .review-actions:has(#bury-review) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .preflight-counts {
     grid-template-columns: repeat(2, 1fr);
   }
 }

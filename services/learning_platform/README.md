@@ -132,6 +132,11 @@ the goal settings. Learning/relearning steps are never hidden by those limits.
 See [the scheduler policy](../../docs/FSRS_SCHEDULER.md) for conformance,
 upgrade, explicit-rebuild, and rollback rules.
 
+Anki synchronization has a read-only preflight and an explicit scheduling
+owner. Repeat syncs update by stable word/sense identity rather than spelling.
+See [Anki interoperability](../../docs/ANKI_INTEROPERABILITY.md) for modes,
+conflict behavior, and local AnkiConnect recovery.
+
 ## Dictionary enrichment
 
 The service does not upload dialogue or silently redistribute the local game

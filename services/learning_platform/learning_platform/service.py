@@ -823,10 +823,86 @@ class LearningPlatform:
         end = datetime.combine(local_now.date() + timedelta(days=1), time.min, tzinfo=zone)
         return start.astimezone(timezone.utc), end.astimezone(timezone.utc)
 
+    @staticmethod
+    def _collection_id(game_id: str | None) -> str:
+        return f"game:{require_identifier('gameId', game_id)}" if game_id else "all"
+
+    def get_review_collection(self, session_token: str, game_id: str | None = None) -> dict[str, Any]:
+        user = self.authenticate_session(session_token)
+        collection_id = self._collection_id(game_id)
+        with self.database.connect() as connection:
+            row = connection.execute(
+                "SELECT * FROM review_collections WHERE user_id = ? AND collection_id = ?",
+                (user["id"], collection_id),
+            ).fetchone()
+        if row is None:
+            return {
+                "collectionId": collection_id, "gameId": game_id, "reviewOwner": "jp_assist",
+                "ankiDeck": "JP Assist — Saved Words", "lastAnkiSyncAt": None,
+            }
+        return {
+            "collectionId": collection_id, "gameId": game_id, "reviewOwner": row["review_owner"],
+            "ankiDeck": row["anki_deck"], "lastAnkiSyncAt": row["last_anki_sync_at"],
+            "updatedAt": row["updated_at"],
+        }
+
+    def update_review_collection(
+        self, session_token: str, game_id: str | None, review_owner: str,
+        anki_deck: str, confirmed: bool = False,
+    ) -> dict[str, Any]:
+        user = self.authenticate_session(session_token)
+        collection_id = self._collection_id(game_id)
+        if review_owner not in {"jp_assist", "anki"}:
+            raise ValidationError("reviewOwner must be jp_assist or anki")
+        clean_deck = anki_deck.strip()
+        if not clean_deck or len(clean_deck) > 200:
+            raise ValidationError("ankiDeck must contain between 1 and 200 characters")
+        current = self.get_review_collection(session_token, game_id)
+        owner_changed = current["reviewOwner"] != review_owner
+        if owner_changed and not confirmed:
+            raise ConflictError(
+                "Changing the review owner requires explicit confirmation because only one scheduler may own due dates"
+            )
+        now = isoformat(self.now())
+        with self.database.connect() as connection:
+            connection.execute(
+                """
+                INSERT INTO review_collections (
+                    user_id, collection_id, review_owner, anki_deck, last_anki_sync_at, updated_at
+                ) VALUES (?, ?, ?, ?, NULL, ?)
+                ON CONFLICT(user_id, collection_id) DO UPDATE SET
+                    review_owner = excluded.review_owner, anki_deck = excluded.anki_deck,
+                    updated_at = excluded.updated_at
+                """,
+                (user["id"], collection_id, review_owner, clean_deck, now),
+            )
+        return self.get_review_collection(session_token, game_id)
+
+    def mark_anki_synced(self, session_token: str, game_id: str | None = None) -> dict[str, Any]:
+        user = self.authenticate_session(session_token)
+        collection = self.get_review_collection(session_token, game_id)
+        now = isoformat(self.now())
+        with self.database.connect() as connection:
+            connection.execute(
+                """
+                INSERT INTO review_collections (
+                    user_id, collection_id, review_owner, anki_deck, last_anki_sync_at, updated_at
+                ) VALUES (?, ?, ?, ?, ?, ?)
+                ON CONFLICT(user_id, collection_id) DO UPDATE SET
+                    last_anki_sync_at = excluded.last_anki_sync_at, updated_at = excluded.updated_at
+                """,
+                (user["id"], collection["collectionId"], collection["reviewOwner"],
+                 collection["ankiDeck"], now, now),
+            )
+        return self.get_review_collection(session_token, game_id)
+
     def review_queue(self, session_token: str, limit: int = 20) -> list[dict[str, Any]]:
         user = self.authenticate_session(session_token)
         if not 1 <= limit <= 100:
             raise ValidationError("limit must be between 1 and 100")
+        collection = self.get_review_collection(session_token)
+        if collection["reviewOwner"] == "anki":
+            return []
         now_value = self.now()
         now = isoformat(now_value)
         with self.database.connect() as connection:
@@ -945,6 +1021,8 @@ class LearningPlatform:
         self, session_token: str, word_id: str, sense_id: str | None, rating: int, source: str = "web"
     ) -> dict[str, Any]:
         user = self.authenticate_session(session_token)
+        if source == "web" and self.get_review_collection(session_token)["reviewOwner"] == "anki":
+            raise ConflictError("Anki owns scheduling for this collection; review this card in Anki")
         sense_id = sense_id or ""
         if rating not in {1, 2, 3, 4}:
             raise ValidationError("rating must be 1 (again), 2 (hard), 3 (good), or 4 (easy)")
@@ -1071,6 +1149,12 @@ class LearningPlatform:
             exports = [dict(row) for row in connection.execute(
                 "SELECT export_type, game_id, word_count, created_at FROM export_history WHERE user_id = ? ORDER BY created_at",
                 (user["id"],))]
+            review_collections = [dict(row) for row in connection.execute(
+                """
+                SELECT collection_id, review_owner, anki_deck, last_anki_sync_at, updated_at
+                FROM review_collections WHERE user_id = ? ORDER BY collection_id
+                """,
+                (user["id"],))]
         for annotation in annotations:
             annotation["tags"] = json.loads(annotation.pop("tags_json"))
         for review in reviews:
@@ -1080,7 +1164,7 @@ class LearningPlatform:
                 "words": self.list_word_progress(session_token, limit=1000),
                 "annotations": annotations, "reviews": reviews, "events": events,
                 "devices": self.list_devices(session_token), "sessions": self.list_sessions(session_token),
-                "pairings": pairings, "exportHistory": exports}
+                "pairings": pairings, "exportHistory": exports, "reviewCollections": review_collections}
 
     def clear_game_progress(self, session_token: str, game_id: str) -> None:
         user = self.authenticate_session(session_token)
