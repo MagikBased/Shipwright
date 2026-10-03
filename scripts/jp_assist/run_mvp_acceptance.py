@@ -61,9 +61,13 @@ def find_server_python() -> str:
 class JsonClient:
     def __init__(self, base_url: str):
         self.base_url = base_url
+        self.cookies = http.cookiejar.CookieJar()
         self.opener = urllib.request.build_opener(
-            urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar())
+            urllib.request.HTTPCookieProcessor(self.cookies)
         )
+
+    def cookie(self, name: str) -> str | None:
+        return next((cookie.value for cookie in self.cookies if cookie.name == name), None)
 
     def request(
         self,
@@ -80,6 +84,10 @@ class JsonClient:
             headers["Content-Type"] = "application/json"
         if token:
             headers["Authorization"] = f"Bearer {token}"
+        elif method not in {"GET", "HEAD", "OPTIONS"} and self.cookie("jp_assist_session"):
+            csrf = self.cookie("jp_assist_csrf")
+            if csrf:
+                headers["X-CSRF-Token"] = csrf
         request = urllib.request.Request(self.base_url + path, data=body, headers=headers, method=method)
         try:
             response = self.opener.open(request, timeout=5)

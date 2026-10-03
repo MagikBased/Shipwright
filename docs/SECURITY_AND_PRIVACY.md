@@ -93,7 +93,32 @@ message text.
 | Destructive account action | Reauthentication or explicit confirmation, CSRF defense, audit events | Complete release threat-model review |
 | Backup disclosure | Local mode-0600 SQLite backups and no raw bearer values in the database | Add encryption/storage policy for chosen infrastructure |
 
+## Supply-chain evidence
+
+The production Dockerfile pins the Python base image by immutable multi-platform
+digest and pins every direct application dependency to an exact version. The
+browser-test dependency tree is locked by `package-lock.json`.
+
+The learning-platform workflow performs the following release checks:
+
+- `pip-audit` 2.10.1 against the production requirements and a CycloneDX JSON
+  component report;
+- `npm audit` with high severity as the failure threshold;
+- Gitleaks 8.30.1 against all Git history, downloaded with its published SHA-256
+  checksum;
+- a production image build; and
+- an SPDX JSON SBOM of the built image using a commit-pinned Anchore action.
+
+`.gitleaksignore` contains only exact finding fingerprints for reviewed
+pre-existing upstream Ship of Harkinian constants and StormLib test-key
+material. It does not suppress a path, rule, or future finding. Security reports
+and SBOMs are CI artifacts rather than committed generated files.
+
+Before a release, rerun the audits against the final commit, review the complete
+image SBOM, and record any accepted vulnerability with owner, rationale, and an
+expiry date. A clean automated result is evidence for—not a replacement for—the
+final threat-model review.
+
 This document describes the local release candidate boundary. Internet hosting
-still requires secret scanning, dependency/image auditing, an SBOM, a shared
-rate limiter where applicable, external monitoring, and infrastructure-specific
-backup and incident policies.
+still requires a shared rate limiter where applicable, external monitoring, and
+infrastructure-specific backup and incident policies.

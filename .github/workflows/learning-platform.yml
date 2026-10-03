@@ -4,28 +4,37 @@ on:
   push:
     paths:
       - ".github/workflows/learning-platform.yml"
+      - ".gitleaksignore"
       - "services/learning_platform/**"
       - "scripts/jp_assist/**"
       - "docs/LEARNING_PLATFORM_MVP.md"
       - "docs/LEARNING_SITE_ROADMAP.md"
+      - "docs/SECURITY_AND_PRIVACY.md"
   pull_request:
     paths:
       - ".github/workflows/learning-platform.yml"
+      - ".gitleaksignore"
       - "services/learning_platform/**"
       - "scripts/jp_assist/**"
       - "docs/LEARNING_PLATFORM_MVP.md"
       - "docs/LEARNING_SITE_ROADMAP.md"
+      - "docs/SECURITY_AND_PRIVACY.md"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
+
+permissions:
+  contents: read
 
 jobs:
   acceptance:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
 
       - name: Install Python dependencies
         run: |
@@ -51,9 +60,55 @@ jobs:
       - name: Run cross-component Anki acceptance
         run: venv/learning-platform/bin/python scripts/jp_assist/run_mvp_acceptance.py
 
+      - name: Audit Python dependencies and write component SBOM
+        run: |
+          venv/learning-platform/bin/pip install pip-audit==2.10.1
+          mkdir -p services/learning_platform/var/security
+          venv/learning-platform/bin/pip-audit \
+            --requirement services/learning_platform/requirements.txt \
+            --format cyclonedx-json \
+            --output services/learning_platform/var/security/python.cdx.json
+
+      - name: Audit browser-test dependencies
+        working-directory: services/learning_platform
+        run: npm audit --audit-level=high
+
+      - name: Scan repository history for secrets
+        run: |
+          curl --fail --location --silent --show-error \
+            --output /tmp/gitleaks.tar.gz \
+            https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_linux_x64.tar.gz
+          echo "551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb  /tmp/gitleaks.tar.gz" \
+            | sha256sum --check --strict
+          tar --extract --gzip --file /tmp/gitleaks.tar.gz --directory /tmp gitleaks
+          /tmp/gitleaks git --redact --no-banner --log-opts="--all"
+
+      - name: Build production image
+        run: docker build --tag jp-assist-learning-platform:test services/learning_platform
+
+      - name: Generate release-image SBOM
+        uses: anchore/sbom-action@fffec3d851af758d56fee099cf3fbf8aa8779843 # v0.24.3
+        with:
+          image: jp-assist-learning-platform:test
+          artifact-name: jp-assist-learning-platform.spdx.json
+          output-file: services/learning_platform/var/security/image.spdx.json
+          format: spdx-json
+          upload-release-assets: false
+          upload-artifact-retention: 14
+
+      - name: Upload security evidence
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: learning-platform-security-evidence
+          path: |
+            services/learning_platform/var/security/python.cdx.json
+            services/learning_platform/var/security/image.spdx.json
+          if-no-files-found: error
+          retention-days: 14
+
       - name: Upload browser failure artifacts
         if: failure()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: learning-platform-browser-failures
           path: |

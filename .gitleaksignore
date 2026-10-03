@@ -1,0 +1,28 @@
+# Reviewed upstream Ship of Harkinian constants and StormLib test key material.
+# Fingerprint-specific suppressions keep any new finding in these files visible.
+1a5632e3b5d877bf5869b642585c8973458b333f:soh/soh/Enhancements/debugger/debugSaveEditor.h:generic-api-key:755
+1a5632e3b5d877bf5869b642585c8973458b333f:soh/soh/Enhancements/debugger/debugSaveEditor.h:generic-api-key:756
+1a5632e3b5d877bf5869b642585c8973458b333f:soh/soh/Enhancements/debugger/debugSaveEditor.h:generic-api-key:949
+1a5632e3b5d877bf5869b642585c8973458b333f:soh/soh/Enhancements/debugger/debugSaveEditor.h:generic-api-key:950
+1a5632e3b5d877bf5869b642585c8973458b333f:soh/soh/Enhancements/debugger/debugSaveEditor.h:generic-api-key:951
+746c7a5303cb61555c845393377aca9fd68ce377:StormLib/src/SFileVerify.cpp:private-key:30
+8f126344a4ef22765cfa550146f89bf428e86053:soh/soh/Enhancements/cosmetics/CosmeticsEditor.cpp:generic-api-key:1405
+8f126344a4ef22765cfa550146f89bf428e86053:soh/soh/Enhancements/cosmetics/CosmeticsEditor.cpp:generic-api-key:1407
+8f126344a4ef22765cfa550146f89bf428e86053:soh/soh/Enhancements/cosmetics/CosmeticsEditor.cpp:generic-api-key:1409
+8f126344a4ef22765cfa550146f89bf428e86053:soh/soh/Enhancements/cosmetics/CosmeticsEditor.cpp:generic-api-key:1411
+8f126344a4ef22765cfa550146f89bf428e86053:soh/soh/Enhancements/cosmetics/CosmeticsEditor.cpp:generic-api-key:1413
+8f126344a4ef22765cfa550146f89bf428e86053:soh/soh/Enhancements/cosmetics/CosmeticsEditor.cpp:generic-api-key:1415
+8f126344a4ef22765cfa550146f89bf428e86053:soh/soh/Enhancements/cosmetics/CosmeticsEditor.cpp:generic-api-key:1417
+8f126344a4ef22765cfa550146f89bf428e86053:soh/soh/Enhancements/cosmetics/CosmeticsEditor.cpp:generic-api-key:1419
+8f126344a4ef22765cfa550146f89bf428e86053:soh/soh/Enhancements/debugger/debugSaveEditor.h:generic-api-key:790
+8f126344a4ef22765cfa550146f89bf428e86053:soh/soh/Enhancements/debugger/debugSaveEditor.h:generic-api-key:791
+8f126344a4ef22765cfa550146f89bf428e86053:soh/soh/Enhancements/debugger/debugSaveEditor.h:generic-api-key:984
+8f126344a4ef22765cfa550146f89bf428e86053:soh/soh/Enhancements/debugger/debugSaveEditor.h:generic-api-key:985
+8f126344a4ef22765cfa550146f89bf428e86053:soh/soh/Enhancements/debugger/debugSaveEditor.h:generic-api-key:986
+8f126344a4ef22765cfa550146f89bf428e86053:soh/soh/Enhancements/randomizer/randomizer.cpp:generic-api-key:1803
+8f126344a4ef22765cfa550146f89bf428e86053:soh/soh/Enhancements/randomizer/randomizer.cpp:generic-api-key:1804
+90823fad5af8714475be8e6beb0ad408caa29a77:soh/soh/Enhancements/randomizer/RCToRandInf.cpp:generic-api-key:814
+90823fad5af8714475be8e6beb0ad408caa29a77:soh/soh/Enhancements/randomizer/RCToRandInf.cpp:generic-api-key:815
+b3e299dbdee829c12ada556a1c3aa1f109a0e05b:StormLib/src/SFileVerify.cpp:private-key:30
+b83cd172b2a56a2867cac6b4a34400db8bf93d40:StormLib/src/SFileVerify.cpp:private-key:30
+fc7da35054a8e7a12fb6dd5dfa01082c2b049c63:StormLib/src/SFileVerify.cpp:private-key:30

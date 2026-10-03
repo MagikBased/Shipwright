@@ -200,8 +200,10 @@ responses carry a restrictive CSP and browser security headers; reviews,
 exports, and sensitive mutations are rate-limited; operational retention has an
 idempotent cleanup command; and the privacy inventory/threat model is
 documented; session management now uses independent public IDs and
-privacy-minimal browser labels. Automated supply-chain checks, image SBOM,
-privacy-boundary release tests, and the final security audit remain.
+privacy-minimal browser labels; CI audits exactly pinned direct dependencies
+and repository history, builds the digest-pinned image, and retains its SBOM;
+and explicit privacy-boundary tests cover event contracts, storage, and exports.
+Final audit findings and release-image verification remain.
 
 Deliverables:
 
