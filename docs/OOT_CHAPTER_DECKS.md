@@ -28,6 +28,14 @@ The complete reviewed card corpus is stored separately in
 `ocarina-of-time.cards.json`; `sampleCards` in the roadmap are only lightweight
 catalog previews. Export, audio, coverage, and prerequisite tools always load
 the complete card manifest.
+
+Game-specific names are maintained as separate terminology entries rather than
+ordinary sentence cards. They are excluded from the core vocabulary coverage
+target, and their glossary definitions may name the game concept. This keeps
+every reviewed sentence card's example original and useful outside the source
+game's intellectual property. Controller labels and other interface tokens are
+likewise excluded from language-learning coverage.
+
 It uses story and dungeon milestones rather than save-file names: OoT has no
 first-class chapter field, and the adult portion allows some nonlinear progress.
 Each chapter therefore declares hard prerequisites separately from recommended
@@ -129,12 +137,12 @@ license evidence, quality limitations, and commands are documented in
 
 ## All-chapter pilot
 
-Every chapter now includes a deliberately small pilot set: six cards in the
-opening chapter and five cards in each later chapter, for 56 total. Every card
-has stable corpus provenance and a newly written example sentence. The chapter
-mappings remain `seeded`, not `reviewed`: the pilot cards can be exercised now,
-while comprehensive dialogue assignment and native-speaker language review are
-still release gates.
+Every chapter has a reviewed pilot set, and the opening chapter is being
+expanded toward the core coverage gate first. Every sentence card has stable
+corpus provenance and a newly written example sentence. The chapter mappings
+remain `seeded`, not `reviewed`: the current cards can be exercised now, while
+comprehensive vocabulary selection and native-speaker language review are still
+release gates.
 
 Build an individual chapter with:
 

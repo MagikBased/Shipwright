@@ -115,6 +115,19 @@ class BuildChapterCandidatesTest(unittest.TestCase):
         self.assertEqual(first["totalTokenOccurrences"], 1)
         self.assertEqual(first["excludedInterfaceOccurrences"], 1)
 
+    def test_proper_names_do_not_inflate_core_coverage_target(self):
+        self.mapping["chapters"][0]["messageIds"].append("0x1001")
+        runtime = {"messages": {
+            "0x1000": self.message("森", "もり", "sense-forest", "forest"),
+            "0x1001": self.message("名前", "なまえ", "proper:名前|なまえ", "name"),
+        }}
+
+        by_chapter, summary = collect_candidates(runtime, self.catalog, self.mapping)
+
+        proper = next(row for row in by_chapter["one"] if row["written"] == "名前")
+        self.assertFalse(proper["coreEligible"])
+        self.assertEqual(summary["chapters"][0]["totalTokenOccurrences"], 1)
+
     def test_transitive_prerequisites_and_cycles_are_validated(self):
         catalog = {"chapters": [
             {"id": "one", "order": 1},

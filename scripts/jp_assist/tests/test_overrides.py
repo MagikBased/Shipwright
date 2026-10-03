@@ -27,6 +27,19 @@ class OverrideTest(unittest.TestCase):
         self.assertEqual(control["senseId"], "interface:c-button")
         self.assertEqual(control["partOfSpeech"], "interface label")
 
+    def test_proper_names_are_identified_and_contextual_senses_win(self):
+        proper = apply_override("サリア", "さりあ", {"meaning": "unknown"})
+        self.assertTrue(proper["senseId"].startswith("proper:"))
+        slingshot = apply_override("パチンコ", "ぱちんこ", {"meaning": "pachinko"})
+        self.assertEqual(slingshot["meaning"], "slingshot")
+        good = apply_override("よい", "よい", {"meaning": "evening"})
+        self.assertEqual(good["meaning"], "good; fine; all right")
+        buy = apply_override("かう", "かう", {"meaning": "raise an animal"})
+        self.assertEqual(buy["partOfSpeech"], "verb")
+        fruit = apply_override("実", "じつ", {"meaning": "truth"})
+        self.assertEqual(fruit["dictionaryReading"], "み")
+        self.assertEqual(fruit["senseId"], "override:実|み")
+
 
 if __name__ == "__main__":
     unittest.main()

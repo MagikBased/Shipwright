@@ -144,6 +144,7 @@ class Tokenizer:
                 dictionary_reading = self._dictionary_reading(lemma) or reading
                 sense = self._lookup_sense(lemma, dictionary_reading, normalized_pos)
             sense = apply_override(lemma, dictionary_reading, sense)
+            dictionary_reading = sense.get("dictionaryReading", dictionary_reading)
 
             start = japanese_text.find(surface, search_from)
             if start < 0:

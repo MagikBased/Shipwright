@@ -33,6 +33,8 @@ CANONICAL_IDENTITY_ALIASES = {
     ("オマエ", "おまえ", "jmdict:1002290:0"): ("お前", "おまえ", "jmdict:1002290:0"),
     ("ピー", "ぴー", "override:ピー|ぴー"): ("ッピ", "っぴ", "override:ッピ|っぴ"),
     ("ッピー", "っぴー", "override:ッピー|っぴー"): ("ッピ", "っぴ", "override:ッピ|っぴ"),
+    ("ナ", "な", "jmdict:2029110:0"): ("な", "な", "override:な|な"),
+    ("サ", "さ", "jmdict:2029120:1"): ("さ", "さ", "jmdict:2029120:1"),
 }
 
 
@@ -64,7 +66,7 @@ def token_identity(token: dict[str, Any]) -> tuple[str, str, str]:
 
 def core_eligible(identity: tuple[str, str, str]) -> bool:
     """Exclude controls/markup while retaining names and speech learners see."""
-    return not identity[2].startswith("interface:")
+    return not identity[2].startswith(("interface:", "proper:"))
 
 
 def message_number(value: str) -> int:

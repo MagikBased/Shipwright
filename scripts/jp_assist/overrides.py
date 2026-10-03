@@ -162,7 +162,47 @@ OVERRIDES: dict[tuple[str, str], dict] = {
         "partOfSpeech": "interface label",
         "senseId": "interface:c-button",
     },
+    ("z", "z"): {
+        "meaning": "Z button; targeting control label",
+        "note": "Controller interface label rather than Japanese vocabulary.",
+        "partOfSpeech": "interface label",
+        "senseId": "interface:z-button",
+    },
+    ("パチンコ", "ぱちんこ"): {
+        "meaning": "slingshot",
+        "note": "The handheld weapon sense, not the mechanical gambling game.",
+        "partOfSpeech": "noun",
+    },
+    ("よい", "よい"): {
+        "meaning": "good; fine; all right",
+        "note": "良い; not 宵 (evening).",
+        "partOfSpeech": "adjective",
+    },
+    ("かう", "かう"): {
+        "meaning": "to buy; to purchase",
+        "note": "買う, written in kana in shop choices.",
+        "partOfSpeech": "verb",
+    },
+    ("実", "じつ"): {
+        "meaning": "fruit; nut; seed",
+        "note": "The plant-fruit sense used in item names; not truth/reality.",
+        "partOfSpeech": "noun",
+        "dictionaryReading": "み",
+        "senseId": "override:実|み",
+    },
+    ("タネ", "たね"): {
+        "meaning": "seed; pit; kernel",
+        "note": "種, stylized in katakana; not offspring/issue.",
+        "partOfSpeech": "noun",
+    },
 }
+
+
+_PROPRIETARY_NOTE_MARKERS = (
+    "proper noun", "character name", "place name", "enemy name", "item name",
+    "zelda", "game-specific", "minigame name", "character/item name",
+    "enemy/people name", "enemy/soul name", "place/product name",
+)
 
 
 def apply_override(lemma: str, reading: str, sense: dict) -> dict:
@@ -171,9 +211,16 @@ def apply_override(lemma: str, reading: str, sense: dict) -> dict:
         return sense
     merged = dict(sense)
     merged["meaning"] = override["meaning"]
-    merged["senseId"] = override.get("senseId", f"override:{lemma}|{reading}")
+    is_proprietary = any(
+        marker in override.get("note", "").lower()
+        for marker in _PROPRIETARY_NOTE_MARKERS
+    )
+    default_prefix = "proper" if is_proprietary else "override"
+    merged["senseId"] = override.get("senseId", f"{default_prefix}:{lemma}|{reading}")
     if override.get("partOfSpeech"):
         merged["partOfSpeech"] = override["partOfSpeech"]
+    if override.get("dictionaryReading"):
+        merged["dictionaryReading"] = override["dictionaryReading"]
     if override.get("note"):
         merged["note"] = override["note"]
     merged["source"] = "override"
