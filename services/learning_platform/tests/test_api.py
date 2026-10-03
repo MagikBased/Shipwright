@@ -129,6 +129,7 @@ class LearningPlatformApiTest(unittest.TestCase):
         catalog_page = self.client.get("/catalog")
         self.assertEqual(catalog_page.status_code, 200)
         self.assertIn("Game catalog", catalog_page.text)
+        self.assertIn('id="catalog-tab" href="/catalog"', page.text)
 
     def test_public_catalog_exposes_ordered_oot_chapters_and_pilot_cards(self):
         listing = self.client.get("/v1/catalog/games")
