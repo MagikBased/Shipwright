@@ -93,7 +93,11 @@ OVERRIDES: dict[tuple[str, str], dict] = {
     ("いる", "いる"): {"meaning": "to exist (animate); to be; progressive auxiliary", "note": "Exact role depends on context."},
     ("よう", "よう"): {"meaning": "way/manner; seeming; so that/in order to", "note": "Exact role depends on context."},
     ("オレ", "おれ"): {"meaning": "I; me (casual/masculine)", "note": "Pronoun."},
-    ("ワシ", "わし"): {"meaning": "I; me (typically used by an older man)", "note": "First-person pronoun; not 鷲 (eagle)."},
+    ("ワシ", "わし"): {
+        "meaning": "I; me (typically used by an older man)",
+        "note": "First-person pronoun; not 鷲 (eagle).",
+        "partOfSpeech": "pronoun",
+    },
     ("じゃ", "じゃ"): {"meaning": "copula/contraction; or 'well then'", "note": "Exact role depends on context."},
     ("くる", "くる"): {"meaning": "to come", "note": "Common verb; often written 来る."},
     ("おる", "おる"): {"meaning": "to be/exist (humble or dialectal); progressive auxiliary", "note": "Exact role depends on context."},
@@ -160,6 +164,8 @@ def apply_override(lemma: str, reading: str, sense: dict) -> dict:
     merged = dict(sense)
     merged["meaning"] = override["meaning"]
     merged["senseId"] = override.get("senseId", f"override:{lemma}|{reading}")
+    if override.get("partOfSpeech"):
+        merged["partOfSpeech"] = override["partOfSpeech"]
     if override.get("note"):
         merged["note"] = override["note"]
     merged["source"] = "override"

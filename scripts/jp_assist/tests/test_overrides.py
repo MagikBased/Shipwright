@@ -16,6 +16,7 @@ class OverrideTest(unittest.TestCase):
         )
         self.assertEqual(result["meaning"], "I; me (typically used by an older man)")
         self.assertEqual(result["senseId"], "override:ワシ|わし")
+        self.assertEqual(result["partOfSpeech"], "pronoun")
         self.assertIn("not 鷲", result["note"])
 
 

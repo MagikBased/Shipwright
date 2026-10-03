@@ -127,7 +127,7 @@ class Tokenizer:
                     "lemma": lemma,
                     "reading": reading,
                     "dictionaryReading": dictionary_reading,
-                    "partOfSpeech": normalized_pos,
+                    "partOfSpeech": sense.get("partOfSpeech", normalized_pos),
                     "meaning": sense.get("meaning", ""),
                     "start": start,
                     "length": len(surface),
