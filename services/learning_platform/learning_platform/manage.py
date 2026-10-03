@@ -116,6 +116,7 @@ def main() -> None:
     subparsers.add_parser("migrate", help="Apply all supported schema migrations")
     subparsers.add_parser("rebuild-reviews", help="Rebuild derived FSRS card state from the review log")
     subparsers.add_parser("send-reminders", help="Send due-review reminders through the configured local mail transport")
+    subparsers.add_parser("cleanup", help="Remove expired credentials and bounded operational history")
     backup_parser = subparsers.add_parser("backup", help="Create a consistent online SQLite backup")
     backup_parser.add_argument("output", type=Path)
     backup_parser.add_argument("--force", action="store_true")
@@ -158,6 +159,11 @@ def main() -> None:
             f"Reminder delivery: {result['sent']} sent, {result['failed']} failed, "
             f"{result['skipped']} skipped"
         )
+    elif args.command == "cleanup":
+        result = LearningPlatform(database_path).cleanup_operational_data()
+        print("Operational cleanup: " + ", ".join(
+            f"{count} {category}" for category, count in result.items()
+        ))
     elif args.command == "backup":
         Database(database_path)
         backup_database(database_path, args.output, args.force)

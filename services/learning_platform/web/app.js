@@ -23,7 +23,10 @@ window.addEventListener("online", () => {
 });
 
 async function api(path, options = {}) {
-  const response = await fetch(path, { ...options, headers: { "Content-Type": "application/json", ...(options.headers || {}) } });
+  const csrf = document.cookie.split("; ").find(item => item.startsWith("jp_assist_csrf="))?.split("=").slice(1).join("=");
+  const headers = { "Content-Type": "application/json", ...(options.headers || {}) };
+  if (csrf && !["GET", "HEAD", "OPTIONS"].includes((options.method || "GET").toUpperCase())) headers["X-CSRF-Token"] = decodeURIComponent(csrf);
+  const response = await fetch(path, { ...options, headers });
   const body = response.status === 204 ? null : await response.json();
   if (!response.ok) throw new Error(body?.error?.message || `Request failed (${response.status})`);
   return body;
@@ -64,7 +67,7 @@ function renderOverview(goals) {
   const metrics = [[state.stats.uniqueWords,"unique words"],[state.stats.savedWords,"saved"],[state.stats.dueReviews,"due reviews"],[state.stats.encounters,"encounters"],[state.stats.activityStreakDays,"day streak"],[state.stats.games,"games"]];
   document.querySelector("#stats").innerHTML = metrics.map(([value,label]) => `<div class="stat"><strong>${value}</strong><span>${label}</span></div>`).join("");
   const max = Math.max(1, ...state.activity.days.map(day => day.events + day.reviews));
-  document.querySelector("#activity-chart").innerHTML = state.activity.days.length ? state.activity.days.map(day => { const label=`${day.date}: ${day.events} game events, ${day.reviews} reviews`; return `<div class="activity-day" role="img" aria-label="${escapeHtml(label)}" style="height:${Math.max(3,(day.events+day.reviews)/max*100)}%" title="${escapeHtml(label)}"></div>`; }).join("") : '<p class="muted">Activity will appear after your mod syncs.</p>';
+  document.querySelector("#activity-chart").innerHTML = state.activity.days.length ? state.activity.days.map(day => { const label=`${day.date}: ${day.events} game events, ${day.reviews} reviews`; const height=Math.max(1,Math.ceil((day.events+day.reviews)/max*20)); return `<div class="activity-day activity-height-${height}" role="img" aria-label="${escapeHtml(label)}" title="${escapeHtml(label)}"></div>`; }).join("") : '<p class="muted">Activity will appear after your mod syncs.</p>';
   document.querySelector("#games").innerHTML = state.activity.games.length ? state.activity.games.map(game => `<div class="card-row"><div><strong>${escapeHtml(game.gameId)}</strong><small>${game.uniqueWords} words · ${game.encounters} encounters</small></div><span>${escapeHtml(game.lastSeenAt.slice(0,10))}</span></div>`).join("") : '<p class="muted">No game activity yet.</p>';
   const stateTotal = Math.max(1, Object.values(state.stats.learningStates).reduce((sum,value) => sum + value, 0));
   document.querySelector("#learning-states").innerHTML = ["new","learning","known","ignored"].map(label => { const value=state.stats.learningStates[label]||0; return `<div><span><strong>${label}</strong><small>${value}</small></span><progress value="${value}" max="${stateTotal}">${value}</progress></div>`; }).join("");

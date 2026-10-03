@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import secrets
 from pathlib import Path
 from typing import Any
 
@@ -216,6 +217,15 @@ def create_app(
         app.add_middleware(TrustedHostMiddleware, allowed_hosts=list(settings.allowed_hosts))
 
     @app.middleware("http")
+    async def browser_security(request: Request, call_next):
+        csrf_error = _csrf_error(request)
+        response = csrf_error if csrf_error is not None else await call_next(request)
+        if request.cookies.get("jp_assist_session") and not request.cookies.get("jp_assist_csrf"):
+            _set_csrf_cookie(response, secrets.token_urlsafe(32), settings.cookie_secure)
+        _set_security_headers(response)
+        return response
+
+    @app.middleware("http")
     async def enforce_rate_limits(request: Request, call_next):
         rule = _rate_limit_rule(request, settings)
         if rule is not None:
@@ -227,7 +237,7 @@ def create_app(
                 settings.rate_limit_window_seconds,
             )
             if retry_after is not None:
-                return JSONResponse(
+                response = JSONResponse(
                     status_code=429,
                     headers={"Retry-After": str(retry_after)},
                     content={
@@ -237,6 +247,8 @@ def create_app(
                         }
                     },
                 )
+                _set_security_headers(response)
+                return response
         return await call_next(request)
 
     @app.exception_handler(PlatformError)
@@ -285,12 +297,12 @@ def create_app(
     @app.post("/v1/auth/password-reset/complete", status_code=204)
     def complete_password_reset(payload: PasswordResetRequest, response: Response) -> None:
         platform.reset_password(payload.token, payload.newPassword)
-        response.delete_cookie("jp_assist_session", path="/", samesite="lax")
+        _clear_session_cookies(response)
 
     @app.post("/v1/auth/change-email/confirm")
     def confirm_email_change(payload: TokenRequest, response: Response) -> dict[str, Any]:
         user = platform.confirm_email_change(payload.token)
-        response.delete_cookie("jp_assist_session", path="/", samesite="lax")
+        _clear_session_cookies(response)
         return user
 
     @app.post("/v1/auth/notifications/unsubscribe", status_code=204)
@@ -301,7 +313,7 @@ def create_app(
     def logout(request: Request, response: Response, authorization: str | None = Header(default=None)) -> None:
         token = session_token(request, authorization)
         platform.logout(token)
-        response.delete_cookie("jp_assist_session", path="/", samesite="lax")
+        _clear_session_cookies(response)
 
     @app.get("/v1/me")
     def me(request: Request, authorization: str | None = Header(default=None)) -> dict[str, Any]:
@@ -515,7 +527,7 @@ def create_app(
     ) -> None:
         revoked_current = platform.revoke_session(session_token(request, authorization), session_id)
         if revoked_current:
-            response.delete_cookie("jp_assist_session", path="/", samesite="lax")
+            _clear_session_cookies(response)
 
     @app.put("/v1/me/password", status_code=204)
     def change_password(
@@ -537,7 +549,7 @@ def create_app(
         authorization: str | None = Header(default=None),
     ) -> None:
         platform.delete_account(session_token(request, authorization), payload.password)
-        response.delete_cookie("jp_assist_session", path="/", samesite="lax")
+        _clear_session_cookies(response)
 
     web_root = root / "web"
     app.mount("/static", StaticFiles(directory=web_root), name="static")
@@ -559,6 +571,60 @@ def _set_session_cookie(response: Response, token: str, secure: bool) -> None:
         samesite="lax",
         path="/",
     )
+    _set_csrf_cookie(response, secrets.token_urlsafe(32), secure)
+
+
+def _set_csrf_cookie(response: Response, token: str, secure: bool) -> None:
+    response.set_cookie(
+        "jp_assist_csrf",
+        token,
+        max_age=30 * 24 * 60 * 60,
+        httponly=False,
+        secure=secure,
+        samesite="strict",
+        path="/",
+    )
+
+
+def _clear_session_cookies(response: Response) -> None:
+    response.delete_cookie("jp_assist_session", path="/", samesite="lax")
+    response.delete_cookie("jp_assist_csrf", path="/", samesite="strict")
+
+
+def _csrf_error(request: Request) -> JSONResponse | None:
+    if request.method in {"GET", "HEAD", "OPTIONS"}:
+        return None
+    if not request.cookies.get("jp_assist_session") or request.headers.get("authorization"):
+        return None
+    path = request.url.path
+    requires_session = (
+        path == "/v1/auth/logout"
+        or path == "/v1/device-pairings/approve"
+        or path.startswith("/v1/me")
+    )
+    if not requires_session:
+        return None
+    cookie_token = request.cookies.get("jp_assist_csrf", "")
+    header_token = request.headers.get("x-csrf-token", "")
+    if cookie_token and header_token and secrets.compare_digest(cookie_token, header_token):
+        return None
+    return JSONResponse(
+        status_code=403,
+        content={"error": {"code": "csrf_failed", "message": "Refresh the page and try again"}},
+    )
+
+
+def _set_security_headers(response: Response) -> None:
+    response.headers["Content-Security-Policy"] = (
+        "default-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'; "
+        "object-src 'none'; img-src 'self' data:; font-src 'self'; style-src 'self'; "
+        "script-src 'self'; connect-src 'self' http://127.0.0.1:8765"
+    )
+    response.headers["Referrer-Policy"] = "no-referrer"
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
+    response.headers["Cross-Origin-Opener-Policy"] = "same-origin"
 
 
 def _request_identity(request: Request, settings: Settings) -> str:
@@ -570,8 +636,6 @@ def _request_identity(request: Request, settings: Settings) -> str:
 
 
 def _rate_limit_rule(request: Request, settings: Settings) -> tuple[str, str, int] | None:
-    if request.method != "POST":
-        return None
     path = request.url.path
     identity = _request_identity(request, settings)
     if path in {
@@ -589,4 +653,10 @@ def _rate_limit_rule(request: Request, settings: Settings) -> tuple[str, str, in
         if authorization:
             identity = hashlib.sha256(authorization.encode("utf-8")).hexdigest()
         return "events", identity, settings.event_rate_limit
+    if path.startswith("/v1/me/reviews"):
+        return "reviews", identity, settings.event_rate_limit
+    if request.method == "GET" and path.startswith("/v1/me/exports/"):
+        return "exports", identity, settings.event_rate_limit
+    if request.method in {"POST", "PUT", "PATCH", "DELETE"} and path.startswith("/v1/me"):
+        return "account_mutation", identity, settings.auth_rate_limit
     return None

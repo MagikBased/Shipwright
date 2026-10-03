@@ -139,6 +139,27 @@ button:disabled {
   grid-template-columns: repeat(5, 1fr);
 }
 
+.activity-height-1 { height: 5%; }
+.activity-height-2 { height: 10%; }
+.activity-height-3 { height: 15%; }
+.activity-height-4 { height: 20%; }
+.activity-height-5 { height: 25%; }
+.activity-height-6 { height: 30%; }
+.activity-height-7 { height: 35%; }
+.activity-height-8 { height: 40%; }
+.activity-height-9 { height: 45%; }
+.activity-height-10 { height: 50%; }
+.activity-height-11 { height: 55%; }
+.activity-height-12 { height: 60%; }
+.activity-height-13 { height: 65%; }
+.activity-height-14 { height: 70%; }
+.activity-height-15 { height: 75%; }
+.activity-height-16 { height: 80%; }
+.activity-height-17 { height: 85%; }
+.activity-height-18 { height: 90%; }
+.activity-height-19 { height: 95%; }
+.activity-height-20 { height: 100%; }
+
 @media (max-width: 780px) {
   .review-actions:has(#bury-review) {
     grid-template-columns: repeat(2, 1fr);

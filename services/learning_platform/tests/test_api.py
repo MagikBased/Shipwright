@@ -38,6 +38,9 @@ class LearningPlatformApiTest(unittest.TestCase):
         self.client.close()
         self.temporary.cleanup()
 
+    def csrf_headers(self):
+        return {"X-CSRF-Token": self.client.cookies["jp_assist_csrf"]}
+
     def test_complete_browser_pairing_and_mod_event_flow(self):
         response = self.client.post(
             "/v1/auth/register",
@@ -54,7 +57,10 @@ class LearningPlatformApiTest(unittest.TestCase):
         self.assertEqual(pending.status_code, 428)
         self.assertEqual(pending.json()["error"]["code"], "authorization_pending")
 
-        approved = self.client.post("/v1/device-pairings/approve", json={"userCode": pairing["userCode"]})
+        approved = self.client.post(
+            "/v1/device-pairings/approve", json={"userCode": pairing["userCode"]},
+            headers=self.csrf_headers(),
+        )
         self.assertEqual(approved.status_code, 200)
         device = self.client.post("/v1/device-pairings/token", json={"deviceCode": pairing["deviceCode"]}).json()
 
@@ -112,6 +118,36 @@ class LearningPlatformApiTest(unittest.TestCase):
         page = self.client.get("/")
         self.assertEqual(page.status_code, 200)
         self.assertIn("Learn from every adventure", page.text)
+        self.assertIn("default-src 'self'", page.headers["Content-Security-Policy"])
+        self.assertEqual(page.headers["Referrer-Policy"], "no-referrer")
+        self.assertEqual(page.headers["X-Content-Type-Options"], "nosniff")
+
+    def test_cookie_mutations_require_matching_csrf_token(self):
+        self.client.post(
+            "/v1/auth/register",
+            json={"email": "csrf@example.com", "password": "correct horse battery", "displayName": "CSRF"},
+        )
+        rejected = self.client.put(
+            "/v1/me/goals", json={"dailyNewWords": 5, "dailyReviews": 10},
+        )
+        self.assertEqual(rejected.status_code, 403)
+        self.assertEqual(rejected.json()["error"]["code"], "csrf_failed")
+        rejected = self.client.put(
+            "/v1/me/goals", json={"dailyNewWords": 5, "dailyReviews": 10},
+            headers={"X-CSRF-Token": "wrong"},
+        )
+        self.assertEqual(rejected.status_code, 403)
+        accepted = self.client.put(
+            "/v1/me/goals", json={"dailyNewWords": 5, "dailyReviews": 10},
+            headers=self.csrf_headers(),
+        )
+        self.assertEqual(accepted.status_code, 200)
+
+        bearer_request = self.client.post(
+            "/v1/events/batch", json={"events": []},
+            headers={"Authorization": "Bearer invalid"},
+        )
+        self.assertNotEqual(bearer_request.status_code, 403)
 
     def test_account_learning_routes(self):
         self.client.post(
@@ -122,7 +158,10 @@ class LearningPlatformApiTest(unittest.TestCase):
             "/v1/device-pairings",
             json={"deviceName": "Test PC", "adapterId": "ship-of-harkinian", "gameId": "ocarina-of-time"},
         ).json()
-        self.client.post("/v1/device-pairings/approve", json={"userCode": pairing["userCode"]})
+        self.client.post(
+            "/v1/device-pairings/approve", json={"userCode": pairing["userCode"]},
+            headers=self.csrf_headers(),
+        )
         device = self.client.post("/v1/device-pairings/token", json={"deviceCode": pairing["deviceCode"]}).json()
         self.client.post(
             "/v1/events/batch",
@@ -134,12 +173,19 @@ class LearningPlatformApiTest(unittest.TestCase):
         annotation = self.client.put(
             "/v1/me/words/annotation",
             json={"wordId": "森|もり", "learningState": "learning", "note": "forest", "tags": ["kokiri"]},
+            headers=self.csrf_headers(),
         )
         self.assertEqual(annotation.status_code, 200)
         self.assertEqual(self.client.get("/v1/me/words?learningState=learning").json()[0]["tags"], ["kokiri"])
-        self.assertEqual(self.client.put("/v1/me/goals", json={"dailyNewWords": 5, "dailyReviews": 15}).status_code, 200)
+        self.assertEqual(self.client.put(
+            "/v1/me/goals", json={"dailyNewWords": 5, "dailyReviews": 15},
+            headers=self.csrf_headers(),
+        ).status_code, 200)
         self.assertEqual(len(self.client.get("/v1/me/reviews/queue").json()), 1)
-        self.assertEqual(self.client.post("/v1/me/reviews", json={"wordId": "森|もり", "rating": 3}).status_code, 200)
+        self.assertEqual(self.client.post(
+            "/v1/me/reviews", json={"wordId": "森|もり", "rating": 3},
+            headers=self.csrf_headers(),
+        ).status_code, 200)
         archive = self.client.get("/v1/me/exports/account").json()
         self.assertEqual(archive["annotations"][0]["note"], "forest")
         self.assertEqual(len(archive["reviews"]), 1)
@@ -172,6 +218,33 @@ class LearningPlatformApiTest(unittest.TestCase):
             self.assertEqual(second.status_code, 429)
             self.assertEqual(second.json()["error"]["code"], "rate_limited")
             self.assertIn("Retry-After", second.headers)
+
+    def test_rate_limits_cover_exports_and_account_mutations(self):
+        settings = Settings(
+            database_path=str(Path(self.temporary.name) / "expanded-limits.sqlite3"),
+            production=False,
+            cookie_secure=False,
+            allowed_hosts=("*",),
+            trust_proxy_headers=False,
+            rate_limit_window_seconds=60,
+            auth_rate_limit=1,
+            pairing_rate_limit=1,
+            event_rate_limit=1,
+        )
+        with TestClient(create_app(settings=settings)) as client:
+            client.post(
+                "/v1/auth/register",
+                json={"email": "limits@example.com", "password": "correct horse battery", "displayName": "Limits"},
+            )
+            self.assertEqual(client.get("/v1/me/exports/account").status_code, 200)
+            self.assertEqual(client.get("/v1/me/exports/account").status_code, 429)
+            csrf = {"X-CSRF-Token": client.cookies["jp_assist_csrf"]}
+            self.assertEqual(client.put(
+                "/v1/me/goals", json={"dailyNewWords": 4, "dailyReviews": 8}, headers=csrf,
+            ).status_code, 200)
+            self.assertEqual(client.put(
+                "/v1/me/goals", json={"dailyNewWords": 5, "dailyReviews": 10}, headers=csrf,
+            ).status_code, 429)
 
     def test_production_disables_interactive_api_docs(self):
         settings = Settings(

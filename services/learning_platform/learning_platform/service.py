@@ -1656,6 +1656,32 @@ class LearningPlatform:
                     self._audit(connection, candidate["id"], "review_reminder_sent", {"dueCount": due})
         return {"sent": sent, "failed": failed, "skipped": skipped}
 
+    def cleanup_operational_data(self) -> dict[str, int]:
+        """Remove expired credentials and bounded operational history."""
+        now = isoformat(self.now())
+        consumed_cutoff = isoformat(self.now() - timedelta(days=7))
+        delivery_cutoff = isoformat(self.now() - timedelta(days=120))
+        audit_cutoff = isoformat(self.now() - timedelta(days=365))
+        statements = {
+            "sessions": ("DELETE FROM sessions WHERE expires_at <= ?", (now,)),
+            "pairings": ("DELETE FROM pairings WHERE expires_at <= ?", (now,)),
+            "actionTokens": (
+                "DELETE FROM action_tokens WHERE expires_at <= ? OR "
+                "(consumed_at IS NOT NULL AND consumed_at <= ?)",
+                (now, consumed_cutoff),
+            ),
+            "notificationDeliveries": (
+                "DELETE FROM notification_deliveries WHERE created_at <= ?", (delivery_cutoff,),
+            ),
+            "auditEvents": ("DELETE FROM audit_events WHERE occurred_at <= ?", (audit_cutoff,)),
+        }
+        removed: dict[str, int] = {}
+        with self.database.connect() as connection:
+            connection.execute("BEGIN IMMEDIATE")
+            for category, (statement, arguments) in statements.items():
+                removed[category] = connection.execute(statement, arguments).rowcount
+        return removed
+
     def _review_reminder_email(
         self, recipient: str, due: int, unsubscribe_token: str, test: bool = False,
     ) -> OutboundEmail:

@@ -456,6 +456,27 @@ class LearningPlatformTest(unittest.TestCase):
         self.assertEqual(words[0]["encounterCount"], 3)
         self.assertEqual(words[0]["gameIds"], ["another-game"])
 
+    def test_operational_cleanup_applies_documented_retention_windows(self):
+        user_id = self.platform.authenticate_session(self.session)["id"]
+        self.platform.start_pairing("Expired PC", "ship-of-harkinian", "ocarina-of-time")
+        with self.platform.database.connect() as connection:
+            connection.execute(
+                "INSERT INTO notification_deliveries VALUES (?, ?, ?, ?, ?)",
+                ("old-delivery", user_id, "review_reminder", "2026-10-02", "2026-10-02T12:00:00.000Z"),
+            )
+        self.clock.value += timedelta(days=400)
+        removed = self.platform.cleanup_operational_data()
+        self.assertGreaterEqual(removed["sessions"], 1)
+        self.assertGreaterEqual(removed["pairings"], 1)
+        self.assertGreaterEqual(removed["actionTokens"], 1)
+        self.assertEqual(removed["notificationDeliveries"], 1)
+        self.assertGreaterEqual(removed["auditEvents"], 1)
+        with self.platform.database.connect() as connection:
+            for table in (
+                "sessions", "pairings", "action_tokens", "notification_deliveries", "audit_events",
+            ):
+                self.assertEqual(connection.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0], 0)
+
 
 if __name__ == "__main__":
     unittest.main()

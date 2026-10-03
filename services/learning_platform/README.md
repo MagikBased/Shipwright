@@ -138,6 +138,10 @@ owner. Repeat syncs update by stable word/sense identity rather than spelling.
 See [Anki interoperability](../../docs/ANKI_INTEROPERABILITY.md) for modes,
 conflict behavior, and local AnkiConnect recovery.
 
+Browser CSRF/CSP policy, local AnkiConnect boundaries, retention windows, the
+privacy inventory, and the threat model are documented in
+[security and privacy](../../docs/SECURITY_AND_PRIVACY.md).
+
 Identity links are hashed at rest, purpose-bound, expiring, and single-use.
 Development captures messages in `var/dev-mailbox.jsonl`; the Compose staging
 stack captures SMTP in Mailpit at `http://127.0.0.1:8025`. See
