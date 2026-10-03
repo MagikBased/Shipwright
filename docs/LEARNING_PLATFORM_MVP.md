@@ -19,8 +19,11 @@ corpus.
    in batches whenever the service is available.
 6. The service deduplicates retries transactionally and updates per-word
    encounter, selection, and saved state.
-7. The player views aggregate statistics and downloads a saved-word manifest.
-8. A local command combines that manifest with `runtime_data.json` and produces
+7. The player views activity, manages vocabulary states/notes/tags, sets goals,
+   and can use the built-in MVP review queue.
+8. The player downloads a saved-word manifest or sends licensed dictionary
+   metadata directly to local Anki through AnkiConnect.
+9. A local command combines that manifest with `runtime_data.json` and produces
    the existing stable-GUID `.apkg` deck.
 
 This slice is implemented. Ship of Harkinian has an opt-in account section in
@@ -64,8 +67,10 @@ payload to learning events without a separate content licensing decision.
   move this secret behind each operating system's credential store without
   changing the pairing or event APIs.
 
-Email verification, password recovery, third-party login, administration, and
-rate limiting are deployment requirements after the local MVP proves the
+The account UI supports password changes, device and website-session
+revocation, full personal-data export, per-game progress clearing, and account
+deletion. Email verification, password recovery, third-party login, and
+administration remain deployment requirements after the local MVP proves the
 workflow.
 
 The release scaffold now supplies HTTPS termination, explicit host validation,
@@ -90,9 +95,10 @@ Initial event types:
 - `study_mode_opened`
 
 Encounter and selection counts are additive. Save state uses event time with a
-deterministic event-ID tie breaker. Review answers are deliberately absent:
-the first MVP tracks play and exports to Anki; a later milestone will introduce
-append-only FSRS review logs and make the scheduling owner explicit.
+deterministic event-ID tie breaker. Website review answers are append-only and
+feed an MVP spaced-review state table. This is not presented as exact FSRS or
+Anki scheduling compatibility; the immutable answer history leaves that future
+migration possible.
 
 ## Portable mod boundary
 
@@ -127,11 +133,22 @@ where the save occurred. The local Anki builder joins those identifiers to the
 player's local corpus, so cards use the dialogue context that prompted the save
 without uploading either language's text.
 
+## Implemented account expansion
+
+- Search/filter/sort vocabulary library and per-game activity.
+- Notes, tags, and new/learning/known/ignored states.
+- Daily goals and a stored reminder preference.
+- Append-only reviews with an MVP due queue.
+- Direct browser-to-local-Anki AnkiConnect export.
+- Licensed dictionary metadata import that strips game dialogue.
+- Complete personal-data export and account/privacy controls.
+
 ## Deferred deliberately
 
-- Bidirectional Anki scheduling or direct AnkiWeb credentials.
-- AnkiConnect desktop bridge.
-- Website FSRS reviews and review-history import.
+- Exact FSRS scheduling and bidirectional Anki review-history reconciliation.
+- Direct AnkiWeb credentials (the current handoff is local AnkiConnect only).
+- Actual reminder delivery; the account currently stores preference and goals.
+- Email verification and password recovery.
 - Public content packs containing copyrighted dialogue.
 - Social features, leaderboards, or public profiles.
 

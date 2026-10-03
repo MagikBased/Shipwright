@@ -8,7 +8,7 @@ from fastapi import FastAPI, Header, Request, Response
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.trustedhost import TrustedHostMiddleware
-from pydantic import BaseModel, StrictInt
+from pydantic import BaseModel, Field, StrictInt
 
 from .config import Settings
 from .database import LATEST_SCHEMA_VERSION
@@ -66,6 +66,40 @@ class EventBatchRequest(ApiModel):
     events: list[EventRequest]
 
 
+class WordAnnotationRequest(ApiModel):
+    wordId: str
+    senseId: str | None = None
+    learningState: str = "new"
+    note: str = ""
+    tags: list[str] = Field(default_factory=list)
+
+
+class GoalsRequest(ApiModel):
+    dailyNewWords: StrictInt
+    dailyReviews: StrictInt
+    remindersEnabled: bool = False
+
+
+class ReviewRequest(ApiModel):
+    wordId: str
+    senseId: str | None = None
+    rating: StrictInt
+    source: str = "web"
+
+
+class PasswordRequest(ApiModel):
+    currentPassword: str
+    newPassword: str
+
+
+class DeleteAccountRequest(ApiModel):
+    password: str
+
+
+class ClearGameRequest(ApiModel):
+    gameId: str
+
+
 def model_dict(model: BaseModel) -> dict[str, Any]:
     # Pydantic 2 renamed dict() to model_dump(); support both so the small MVP
     # is friendly to distributions that still package Pydantic 1.
@@ -104,7 +138,7 @@ def create_app(
     rate_limiter = rate_limiter or SlidingWindowRateLimiter()
     app = FastAPI(
         title="JP Assist Learning Platform",
-        version="0.1.0",
+        version="0.2.0",
         docs_url=None if settings.production else "/docs",
         redoc_url=None if settings.production else "/redoc",
         openapi_url=None if settings.production else "/openapi.json",
@@ -226,13 +260,107 @@ def create_app(
     def words(
         request: Request,
         savedOnly: bool = False,
+        search: str = "",
+        gameId: str | None = None,
+        learningState: str | None = None,
+        sort: str = "frequency",
+        limit: int = 250,
+        offset: int = 0,
         authorization: str | None = Header(default=None),
     ) -> list[dict[str, Any]]:
-        return platform.list_word_progress(session_token(request, authorization), savedOnly)
+        return platform.list_word_progress(
+            session_token(request, authorization), savedOnly, search, gameId, learningState, sort, limit, offset
+        )
+
+    @app.put("/v1/me/words/annotation")
+    def update_word_annotation(
+        payload: WordAnnotationRequest,
+        request: Request,
+        authorization: str | None = Header(default=None),
+    ) -> dict[str, Any]:
+        return platform.update_word_annotation(
+            session_token(request, authorization), payload.wordId, payload.senseId,
+            payload.learningState, payload.note, payload.tags,
+        )
+
+    @app.get("/v1/me/activity")
+    def activity(
+        request: Request, days: int = 30, authorization: str | None = Header(default=None)
+    ) -> dict[str, Any]:
+        return platform.activity(session_token(request, authorization), days)
+
+    @app.get("/v1/me/goals")
+    def goals(request: Request, authorization: str | None = Header(default=None)) -> dict[str, Any]:
+        return platform.get_goals(session_token(request, authorization))
+
+    @app.put("/v1/me/goals")
+    def update_goals(
+        payload: GoalsRequest, request: Request, authorization: str | None = Header(default=None)
+    ) -> dict[str, Any]:
+        return platform.update_goals(
+            session_token(request, authorization), payload.dailyNewWords,
+            payload.dailyReviews, payload.remindersEnabled,
+        )
+
+    @app.get("/v1/me/reviews/queue")
+    def review_queue(
+        request: Request, limit: int = 20, authorization: str | None = Header(default=None)
+    ) -> list[dict[str, Any]]:
+        return platform.review_queue(session_token(request, authorization), limit)
+
+    @app.post("/v1/me/reviews")
+    def submit_review(
+        payload: ReviewRequest, request: Request, authorization: str | None = Header(default=None)
+    ) -> dict[str, Any]:
+        return platform.submit_review(
+            session_token(request, authorization), payload.wordId, payload.senseId,
+            payload.rating, payload.source,
+        )
 
     @app.get("/v1/me/exports/saved-words")
-    def saved_words_export(request: Request, authorization: str | None = Header(default=None)) -> dict[str, Any]:
-        return platform.saved_word_manifest(session_token(request, authorization))
+    def saved_words_export(
+        request: Request, gameId: str | None = None, authorization: str | None = Header(default=None)
+    ) -> dict[str, Any]:
+        return platform.saved_word_manifest(session_token(request, authorization), gameId)
+
+    @app.get("/v1/me/exports/account")
+    def account_export(request: Request, authorization: str | None = Header(default=None)) -> dict[str, Any]:
+        return platform.account_export(session_token(request, authorization))
+
+    @app.get("/v1/me/sessions")
+    def sessions(request: Request, authorization: str | None = Header(default=None)) -> list[dict[str, Any]]:
+        return platform.list_sessions(session_token(request, authorization))
+
+    @app.delete("/v1/me/sessions/{session_id}", status_code=204)
+    def revoke_session(
+        session_id: str, request: Request, response: Response,
+        authorization: str | None = Header(default=None),
+    ) -> None:
+        revoked_current = platform.revoke_session(session_token(request, authorization), session_id)
+        if revoked_current:
+            response.delete_cookie("jp_assist_session", path="/", samesite="lax")
+
+    @app.put("/v1/me/password", status_code=204)
+    def change_password(
+        payload: PasswordRequest, request: Request, authorization: str | None = Header(default=None)
+    ) -> None:
+        platform.change_password(
+            session_token(request, authorization), payload.currentPassword, payload.newPassword
+        )
+
+    @app.post("/v1/me/clear-game", status_code=204)
+    def clear_game(
+        payload: ClearGameRequest, request: Request, authorization: str | None = Header(default=None)
+    ) -> None:
+        platform.clear_game_progress(session_token(request, authorization), payload.gameId)
+
+    @app.delete("/v1/me", status_code=204)
+    def delete_account(
+        payload: DeleteAccountRequest, request: Request, response: Response,
+        authorization: str | None = Header(default=None),
+    ) -> None:
+        platform.delete_account(session_token(request, authorization), payload.password)
+        response.delete_cookie("jp_assist_session", path="/", samesite="lax")
 
     web_root = root / "web"
     app.mount("/static", StaticFiles(directory=web_root), name="static")

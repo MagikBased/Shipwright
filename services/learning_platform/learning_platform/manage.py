@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import sqlite3
 import tempfile
@@ -8,6 +9,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from .database import Database, LATEST_SCHEMA_VERSION
+from .service import LearningPlatform
 
 
 def default_database_path() -> Path:
@@ -72,6 +74,38 @@ def restore_database(database_path: Path, backup_path: Path, confirmed: bool) ->
             temporary_path.unlink()
 
 
+def dictionary_entries_from_runtime(path: Path, source: str, attribution: str) -> list[dict]:
+    try:
+        runtime = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as error:
+        raise SystemExit(f"Could not read runtime corpus: {error}") from error
+    messages = runtime.get("messages") if isinstance(runtime, dict) else None
+    if not isinstance(messages, dict):
+        raise SystemExit("Runtime corpus must contain a messages object")
+    entries: dict[tuple[str, str], dict] = {}
+    for message in messages.values():
+        if not isinstance(message, dict):
+            continue
+        for page in message.get("pages", []):
+            for token in page.get("tokens", []):
+                word_id = token.get("id")
+                written = token.get("lemma")
+                if not word_id or not written:
+                    continue
+                sense_id = token.get("senseId", "")
+                entries[(word_id, sense_id)] = {
+                    "wordId": word_id,
+                    "senseId": sense_id,
+                    "written": written,
+                    "reading": token.get("dictionaryReading", token.get("reading", "")),
+                    "partOfSpeech": token.get("partOfSpeech", ""),
+                    "meaning": token.get("meaning", ""),
+                    "source": source,
+                    "attribution": attribution,
+                }
+    return list(entries.values())
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Manage the JP Assist learning-platform database")
     parser.add_argument("--database", type=Path, default=None, help="Database path (or JP_ASSIST_PLATFORM_DB)")
@@ -84,6 +118,16 @@ def main() -> None:
     restore_parser = subparsers.add_parser("restore", help="Restore and migrate a backup while the service is stopped")
     restore_parser.add_argument("backup", type=Path)
     restore_parser.add_argument("--yes", action="store_true")
+    dictionary_parser = subparsers.add_parser(
+        "import-dictionary", help="Import licensed dictionary metadata from a JSON array"
+    )
+    dictionary_parser.add_argument("input", type=Path)
+    runtime_dictionary_parser = subparsers.add_parser(
+        "import-runtime-dictionary", help="Import only dictionary fields from a local runtime corpus"
+    )
+    runtime_dictionary_parser.add_argument("input", type=Path)
+    runtime_dictionary_parser.add_argument("--source", required=True)
+    runtime_dictionary_parser.add_argument("--attribution", required=True)
     args = parser.parse_args()
 
     database_path = args.database or default_database_path()
@@ -104,6 +148,19 @@ def main() -> None:
     elif args.command == "restore":
         restore_database(database_path, args.backup, args.yes)
         print(f"Restored database: {database_path}")
+    elif args.command == "import-dictionary":
+        try:
+            entries = json.loads(args.input.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as error:
+            raise SystemExit(f"Could not read dictionary JSON: {error}") from error
+        if not isinstance(entries, list):
+            raise SystemExit("Dictionary JSON must contain an array of entries")
+        count = LearningPlatform(database_path).import_dictionary_entries(entries)
+        print(f"Imported {count} dictionary entries into {database_path}")
+    elif args.command == "import-runtime-dictionary":
+        entries = dictionary_entries_from_runtime(args.input, args.source, args.attribution)
+        count = LearningPlatform(database_path).import_dictionary_entries(entries)
+        print(f"Imported {count} content-neutral dictionary entries into {database_path}")
 
 
 if __name__ == "__main__":

@@ -2,7 +2,7 @@ import sqlite3
 from pathlib import Path
 
 
-LATEST_SCHEMA_VERSION = 2
+LATEST_SCHEMA_VERSION = 3
 
 SCHEMA = """
 PRAGMA foreign_keys = ON;
@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS metadata (
     value TEXT NOT NULL
 );
 
-INSERT OR IGNORE INTO metadata(key, value) VALUES ('schema_version', '2');
+INSERT OR IGNORE INTO metadata(key, value) VALUES ('schema_version', '3');
 
 CREATE TABLE IF NOT EXISTS users (
     id TEXT PRIMARY KEY,
@@ -102,6 +102,80 @@ CREATE TABLE IF NOT EXISTS game_word_progress (
     last_seen_at TEXT NOT NULL,
     PRIMARY KEY (user_id, game_id, word_id, sense_id)
 );
+
+CREATE TABLE IF NOT EXISTS word_annotations (
+    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    word_id TEXT NOT NULL,
+    sense_id TEXT NOT NULL DEFAULT '',
+    learning_state TEXT NOT NULL DEFAULT 'new'
+        CHECK (learning_state IN ('new', 'learning', 'known', 'ignored')),
+    note TEXT NOT NULL DEFAULT '',
+    tags_json TEXT NOT NULL DEFAULT '[]',
+    updated_at TEXT NOT NULL,
+    PRIMARY KEY (user_id, word_id, sense_id)
+);
+
+CREATE TABLE IF NOT EXISTS dictionary_entries (
+    word_id TEXT NOT NULL,
+    sense_id TEXT NOT NULL DEFAULT '',
+    written TEXT NOT NULL,
+    reading TEXT NOT NULL DEFAULT '',
+    part_of_speech TEXT NOT NULL DEFAULT '',
+    meaning TEXT NOT NULL DEFAULT '',
+    source TEXT NOT NULL DEFAULT '',
+    attribution TEXT NOT NULL DEFAULT '',
+    updated_at TEXT NOT NULL,
+    PRIMARY KEY (word_id, sense_id)
+);
+
+CREATE TABLE IF NOT EXISTS review_state (
+    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    word_id TEXT NOT NULL,
+    sense_id TEXT NOT NULL DEFAULT '',
+    due_at TEXT NOT NULL,
+    interval_days REAL NOT NULL DEFAULT 0,
+    ease REAL NOT NULL DEFAULT 2.5,
+    repetitions INTEGER NOT NULL DEFAULT 0,
+    lapses INTEGER NOT NULL DEFAULT 0,
+    last_reviewed_at TEXT,
+    PRIMARY KEY (user_id, word_id, sense_id)
+);
+
+CREATE INDEX IF NOT EXISTS review_state_due_idx ON review_state(user_id, due_at);
+
+CREATE TABLE IF NOT EXISTS reviews (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    word_id TEXT NOT NULL,
+    sense_id TEXT NOT NULL DEFAULT '',
+    rating INTEGER NOT NULL CHECK (rating BETWEEN 1 AND 4),
+    reviewed_at TEXT NOT NULL,
+    due_at TEXT NOT NULL,
+    interval_days REAL NOT NULL,
+    ease REAL NOT NULL,
+    source TEXT NOT NULL DEFAULT 'web'
+);
+
+CREATE INDEX IF NOT EXISTS reviews_user_time_idx ON reviews(user_id, reviewed_at);
+
+CREATE TABLE IF NOT EXISTS learning_goals (
+    user_id TEXT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+    daily_new_words INTEGER NOT NULL DEFAULT 10,
+    daily_reviews INTEGER NOT NULL DEFAULT 20,
+    reminders_enabled INTEGER NOT NULL DEFAULT 0,
+    updated_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS export_history (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    export_type TEXT NOT NULL,
+    game_id TEXT,
+    word_count INTEGER NOT NULL,
+    created_at TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS export_history_user_time_idx ON export_history(user_id, created_at);
 """
 
 
@@ -120,7 +194,7 @@ class Database:
             event_columns = {row["name"] for row in connection.execute("PRAGMA table_info(events)")}
             if "page_index" not in event_columns:
                 connection.execute("ALTER TABLE events ADD COLUMN page_index INTEGER")
-            connection.execute("UPDATE metadata SET value = '2' WHERE key = 'schema_version'")
+            connection.execute("UPDATE metadata SET value = '3' WHERE key = 'schema_version'")
 
     @staticmethod
     def _schema_version(connection: sqlite3.Connection) -> int:

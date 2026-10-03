@@ -96,6 +96,49 @@ Content-Type: application/json
 The same `(device, eventId)` may be sent repeatedly. It is counted once and is
 reported in `duplicateEventIds` on retries.
 
+## Account features
+
+After signing in, the website provides:
+
+- an overview with activity and per-game totals;
+- a searchable vocabulary library with saved/new/learning/known/ignored state,
+  personal tags, and notes;
+- an MVP spaced-review queue with append-only review history;
+- daily new-word and review goals (the reminder preference is stored, but this
+  release does not send notifications);
+- saved-word and complete-account JSON exports;
+- mod-device and website-session revocation, password changes, per-game data
+  clearing, and account deletion.
+
+The scheduler is intentionally an MVP scheduler, not an exact FSRS or Anki
+scheduling implementation. Its history model is designed so a later scheduler
+can replay prior answers instead of discarding them.
+
+## Dictionary enrichment
+
+The service does not upload dialogue or silently redistribute the local game
+corpus. An operator can import separately licensed, content-neutral dictionary
+metadata. A generic import is a JSON array with `wordId`, `senseId`, `written`,
+`reading`, `partOfSpeech`, `meaning`, `source`, and `attribution` fields:
+
+```bash
+PYTHONPATH=services/learning_platform \
+  python3 -m learning_platform.manage import-dictionary dictionary.json
+```
+
+For this repository's locally generated `runtime_data.json`, the specialized
+command extracts only token dictionary fields and explicitly drops Japanese
+and English dialogue. Supply truthful source and attribution text matching the
+dictionary/content licenses used to generate your corpus:
+
+```bash
+PYTHONPATH=services/learning_platform \
+  python3 -m learning_platform.manage import-runtime-dictionary \
+  scripts/jp_assist/out/runtime_data.json \
+  --source "Local JP Assist dictionary build" \
+  --attribution "See the dictionary licenses used by this deployment"
+```
+
 ## Anki handoff
 
 Use **Download saved words** on the dashboard. The downloaded JSON is accepted
@@ -122,6 +165,12 @@ the resulting package:
 ```bash
 python scripts/jp_assist/export_saved_deck.py
 ```
+
+The Export page also offers an optional direct AnkiConnect handoff. Anki and
+AnkiConnect must be running on the same computer, and AnkiConnect must allow
+the learning site's origin. The browser talks to `127.0.0.1:8765` directly;
+the service never receives Anki credentials or review data from that action.
+Only cards with server-side dictionary metadata are sent by this direct path.
 
 ## Tests
 

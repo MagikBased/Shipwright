@@ -7,11 +7,15 @@ from unittest.mock import patch
 
 from learning_platform.config import Settings
 from learning_platform.database import Database, LATEST_SCHEMA_VERSION
-from learning_platform.manage import backup_database, restore_database
+from learning_platform.manage import backup_database, dictionary_entries_from_runtime, restore_database
 from learning_platform.rate_limit import SlidingWindowRateLimiter
 
 
 class DeploymentTest(unittest.TestCase):
+    def test_container_defaults_to_writable_data_volume(self):
+        dockerfile = (Path(__file__).parent.parent / "Dockerfile").read_text(encoding="utf-8")
+        self.assertIn("JP_ASSIST_PLATFORM_DB=/data/platform.sqlite3", dockerfile)
+
     def test_rate_limit_allows_requests_after_window_expires(self):
         clock = [100.0]
         limiter = SlidingWindowRateLimiter(clock=lambda: clock[0])
@@ -58,6 +62,9 @@ class DeploymentTest(unittest.TestCase):
             with migrated.connect() as connection:
                 columns = {row["name"] for row in connection.execute("PRAGMA table_info(events)")}
             self.assertIn("page_index", columns)
+            with migrated.connect() as connection:
+                tables = {row[0] for row in connection.execute("SELECT name FROM sqlite_master WHERE type='table'")}
+            self.assertTrue({"word_annotations", "review_state", "reviews", "learning_goals"}.issubset(tables))
 
     def test_backup_and_restore_create_ready_database_and_safety_copy(self):
         with tempfile.TemporaryDirectory(prefix="jp-assist-backup-") as temporary:
@@ -81,6 +88,21 @@ class DeploymentTest(unittest.TestCase):
                     "before",
                 )
             self.assertEqual(len(list(root.glob("active.sqlite3.pre-restore-*"))), 1)
+
+    def test_runtime_dictionary_import_excludes_dialogue(self):
+        with tempfile.TemporaryDirectory(prefix="jp-assist-dictionary-") as temporary:
+            path = Path(temporary) / "runtime.json"
+            path.write_text(
+                '{"messages":{"0x1":{"pages":[{"japanese":"秘密の台詞","english":"private line",'
+                '"tokens":[{"id":"森|もり","senseId":"sense:1","lemma":"森",'
+                '"dictionaryReading":"もり","partOfSpeech":"noun","meaning":"forest"}]}]}}}',
+                encoding="utf-8",
+            )
+            entries = dictionary_entries_from_runtime(path, "test", "test attribution")
+            self.assertEqual(entries[0]["meaning"], "forest")
+            self.assertNotIn("japanese", entries[0])
+            self.assertNotIn("english", entries[0])
+            self.assertNotIn("private line", str(entries))
 
 
 if __name__ == "__main__":

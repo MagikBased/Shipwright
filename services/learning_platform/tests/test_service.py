@@ -160,6 +160,55 @@ class LearningPlatformTest(unittest.TestCase):
             )
         self.assertEqual(self.platform.get_stats(self.session)["events"], 0)
 
+    def test_vocabulary_metadata_annotations_filters_and_dictionary(self):
+        device = self.pair_device()
+        self.platform.ingest_events(device["deviceToken"], [self.event("evt-word", count=4)])
+        self.assertEqual(self.platform.import_dictionary_entries([{
+            "wordId": "武器|ぶき", "written": "武器", "reading": "ぶき", "partOfSpeech": "noun",
+            "meaning": "weapon", "source": "test", "attribution": "Test data",
+        }]), 1)
+        updated = self.platform.update_word_annotation(
+            self.session, "武器|ぶき", None, "learning", "Remember this", ["equipment", "noun"]
+        )
+        self.assertEqual(updated["learningState"], "learning")
+        words = self.platform.list_word_progress(
+            self.session, search="weapon", learning_state="learning", sort="alphabetical"
+        )
+        self.assertEqual(words[0]["dictionary"]["written"], "武器")
+        self.assertEqual(words[0]["tags"], ["equipment", "noun"])
+
+    def test_goals_reviews_activity_and_account_export(self):
+        device = self.pair_device()
+        self.platform.ingest_events(device["deviceToken"], [self.event("evt-save", "word_saved")])
+        goals = self.platform.update_goals(self.session, 5, 25, True)
+        self.assertEqual(goals["dailyReviews"], 25)
+        self.assertEqual(len(self.platform.review_queue(self.session)), 1)
+        review = self.platform.submit_review(self.session, "武器|ぶき", None, 3)
+        self.assertGreaterEqual(review["intervalDays"], 1)
+        self.assertEqual(self.platform.review_queue(self.session), [])
+        self.assertEqual(self.platform.activity(self.session)["games"][0]["gameId"], "ocarina-of-time")
+        export = self.platform.account_export(self.session)
+        self.assertEqual(len(export["reviews"]), 1)
+        self.assertNotIn("password", str(export).lower())
+
+    def test_session_password_and_per_game_clear_controls(self):
+        first_device = self.pair_device()
+        second_device = self.pair_game("another-game", "another-adapter")
+        self.platform.ingest_events(first_device["deviceToken"], [self.event("evt-first", count=2)])
+        self.platform.ingest_events(second_device["deviceToken"], [{
+            **self.event("evt-second", count=3), "gameId": "another-game", "adapterId": "another-adapter",
+        }])
+        other_session = self.platform.login("player@example.com", "correct horse battery")["token"]
+        self.assertEqual(len(self.platform.list_sessions(self.session)), 2)
+        self.platform.change_password(self.session, "correct horse battery", "a safer changed password")
+        with self.assertRaises(AuthenticationError):
+            self.platform.authenticate_session(other_session)
+        self.assertEqual(self.platform.login("player@example.com", "a safer changed password")["user"]["displayName"], "Player")
+        self.platform.clear_game_progress(self.session, "ocarina-of-time")
+        words = self.platform.list_word_progress(self.session)
+        self.assertEqual(words[0]["encounterCount"], 3)
+        self.assertEqual(words[0]["gameIds"], ["another-game"])
+
 
 if __name__ == "__main__":
     unittest.main()

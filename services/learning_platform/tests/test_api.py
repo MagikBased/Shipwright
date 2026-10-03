@@ -2,6 +2,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from learning_platform.database import LATEST_SCHEMA_VERSION
+
 try:
     from fastapi.testclient import TestClient
     from learning_platform.api import create_app
@@ -106,10 +108,41 @@ class LearningPlatformApiTest(unittest.TestCase):
         readiness = self.client.get("/readyz")
         self.assertEqual(readiness.status_code, 200)
         self.assertEqual(readiness.json()["status"], "ready")
-        self.assertEqual(readiness.json()["schemaVersion"], 2)
+        self.assertEqual(readiness.json()["schemaVersion"], LATEST_SCHEMA_VERSION)
         page = self.client.get("/")
         self.assertEqual(page.status_code, 200)
-        self.assertIn("Turn game dialogue", page.text)
+        self.assertIn("Learn from every adventure", page.text)
+
+    def test_account_learning_routes(self):
+        self.client.post(
+            "/v1/auth/register",
+            json={"email": "learner@example.com", "password": "correct horse battery", "displayName": "Learner"},
+        )
+        pairing = self.client.post(
+            "/v1/device-pairings",
+            json={"deviceName": "Test PC", "adapterId": "ship-of-harkinian", "gameId": "ocarina-of-time"},
+        ).json()
+        self.client.post("/v1/device-pairings/approve", json={"userCode": pairing["userCode"]})
+        device = self.client.post("/v1/device-pairings/token", json={"deviceCode": pairing["deviceCode"]}).json()
+        self.client.post(
+            "/v1/events/batch",
+            json={"events": [{"eventId": "saved", "type": "word_saved", "occurredAt": "2026-10-02T12:00:00Z",
+                              "gameId": "ocarina-of-time", "adapterId": "ship-of-harkinian",
+                              "contentVersion": "v1", "wordId": "森|もり"}]},
+            headers={"Authorization": f"Bearer {device['deviceToken']}"},
+        )
+        annotation = self.client.put(
+            "/v1/me/words/annotation",
+            json={"wordId": "森|もり", "learningState": "learning", "note": "forest", "tags": ["kokiri"]},
+        )
+        self.assertEqual(annotation.status_code, 200)
+        self.assertEqual(self.client.get("/v1/me/words?learningState=learning").json()[0]["tags"], ["kokiri"])
+        self.assertEqual(self.client.put("/v1/me/goals", json={"dailyNewWords": 5, "dailyReviews": 15}).status_code, 200)
+        self.assertEqual(len(self.client.get("/v1/me/reviews/queue").json()), 1)
+        self.assertEqual(self.client.post("/v1/me/reviews", json={"wordId": "森|もり", "rating": 3}).status_code, 200)
+        archive = self.client.get("/v1/me/exports/account").json()
+        self.assertEqual(archive["annotations"][0]["note"], "forest")
+        self.assertEqual(len(archive["reviews"]), 1)
 
     def test_auth_rate_limit_returns_retry_after(self):
         database_path = Path(self.temporary.name) / "limited.sqlite3"
