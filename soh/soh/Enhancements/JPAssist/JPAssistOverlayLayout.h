@@ -31,6 +31,66 @@ struct OverlayLayout {
     float scale = 1.0f;
 };
 
+struct OverlayDragResult {
+    float x = 0.0f;
+    float y = 0.0f;
+    bool snappedX = false;
+    bool snappedY = false;
+    float guideX = 0.0f;
+    float guideY = 0.0f;
+};
+
+inline OverlayDragResult JPAssistOverlay_ApplyDragModifiers(
+    float startX, float startY, float deltaX, float deltaY, float windowWidth, float windowHeight, float workX,
+    float workY, float workWidth, float workHeight, bool constrainAxis, bool snapToAnchors, float snapThreshold) {
+    OverlayDragResult result = { startX + deltaX, startY + deltaY };
+    const bool horizontalMovement = std::fabs(deltaX) >= std::fabs(deltaY);
+    if (constrainAxis) {
+        if (horizontalMovement) {
+            result.y = startY;
+        } else {
+            result.x = startX;
+        }
+    }
+
+    const float maximumX = workX + std::max(workWidth - windowWidth, 0.0f);
+    const float maximumY = workY + std::max(workHeight - windowHeight, 0.0f);
+    result.x = std::clamp(result.x, workX, maximumX);
+    result.y = std::clamp(result.y, workY, maximumY);
+
+    const auto snap = [](float value, const float positions[3], const float guides[3], float threshold,
+                         bool& snapped, float& guide) {
+        float nearestDistance = threshold + 1.0f;
+        float nearest = value;
+        for (int i = 0; i < 3; ++i) {
+            const float distance = std::fabs(value - positions[i]);
+            if (distance <= threshold && distance < nearestDistance) {
+                nearest = positions[i];
+                nearestDistance = distance;
+                guide = guides[i];
+                snapped = true;
+            }
+        }
+        return nearest;
+    };
+
+    if (snapToAnchors) {
+        const float xPositions[3] = { workX, workX + (workWidth - windowWidth) * 0.5f, maximumX };
+        const float xGuides[3] = { workX, workX + workWidth * 0.5f, workX + workWidth };
+        const float yPositions[3] = { workY, workY + (workHeight - windowHeight) * 0.5f, maximumY };
+        const float yGuides[3] = { workY, workY + workHeight * 0.5f, workY + workHeight };
+        if (!constrainAxis || horizontalMovement) {
+            result.x = snap(result.x, xPositions, xGuides, std::max(snapThreshold, 0.0f), result.snappedX,
+                            result.guideX);
+        }
+        if (!constrainAxis || !horizontalMovement) {
+            result.y = snap(result.y, yPositions, yGuides, std::max(snapThreshold, 0.0f), result.snappedY,
+                            result.guideY);
+        }
+    }
+    return result;
+}
+
 inline OverlayLayout JPAssistOverlay_ComputeLayout(float workX, float workY, float workWidth, float workHeight,
                                                     float requestedScale) {
     const float scale = std::isfinite(requestedScale) ? std::clamp(requestedScale, 0.7f, 1.5f) : 1.0f;

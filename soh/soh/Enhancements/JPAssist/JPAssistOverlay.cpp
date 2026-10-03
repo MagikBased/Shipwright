@@ -294,16 +294,36 @@ class JPAssistOverlayWindow final : public Ship::GuiWindow {
         if (!mDraggingWindow && overDragStrip && ImGui::IsMouseClicked(ImGuiMouseButton_Left) &&
             !ImGui::IsAnyItemActive()) {
             mDraggingWindow = true;
+            mDragStartWindowPos = windowPos;
+            mDragStartMousePos = ImGui::GetIO().MousePos;
         }
         if (!ImGui::IsMouseDown(ImGuiMouseButton_Left)) {
             mDraggingWindow = false;
         }
         if (mDraggingWindow) {
             ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeAll);
-            ImGui::SetWindowPos(ImVec2(windowPos.x + ImGui::GetIO().MouseDelta.x,
-                                       windowPos.y + ImGui::GetIO().MouseDelta.y));
+            const ImGuiIO& io = ImGui::GetIO();
+            const OverlayDragResult drag = JPAssistOverlay_ApplyDragModifiers(
+                mDragStartWindowPos.x, mDragStartWindowPos.y, io.MousePos.x - mDragStartMousePos.x,
+                io.MousePos.y - mDragStartMousePos.y, windowSize.x, windowSize.y, mWorkPos.x, mWorkPos.y,
+                mWorkSize.x, mWorkSize.y, io.KeyShift, io.KeyCtrl, 20.0f * mFrameScale);
+            ImGui::SetWindowPos(ImVec2(drag.x, drag.y));
+
+            ImDrawList* foreground = ImGui::GetForegroundDrawList();
+            const ImU32 guideColor = ImGui::GetColorU32(ImVec4(0.35f, 0.78f, 1.0f, 0.75f));
+            if (drag.snappedX) {
+                foreground->AddLine(ImVec2(drag.guideX, mWorkPos.y),
+                                    ImVec2(drag.guideX, mWorkPos.y + mWorkSize.y), guideColor,
+                                    std::max(mFrameScale, 1.0f));
+            }
+            if (drag.snappedY) {
+                foreground->AddLine(ImVec2(mWorkPos.x, drag.guideY),
+                                    ImVec2(mWorkPos.x + mWorkSize.x, drag.guideY), guideColor,
+                                    std::max(mFrameScale, 1.0f));
+            }
         } else if (overDragStrip) {
             ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeAll);
+            ImGui::SetTooltip("Drag to move | Shift: lock axis | Ctrl: snap");
         }
 
         // A small grip makes the otherwise titleless draggable area discoverable.
@@ -598,6 +618,8 @@ class JPAssistOverlayWindow final : public Ship::GuiWindow {
     bool mHasPlacementProfile = false;
     bool mStoredGeometryValid = false;
     bool mDraggingWindow = false;
+    ImVec2 mDragStartWindowPos = ImVec2(0.0f, 0.0f);
+    ImVec2 mDragStartMousePos = ImVec2(0.0f, 0.0f);
     ImVec2 mWorkPos = ImVec2(0.0f, 0.0f);
     ImVec2 mWorkSize = ImVec2(0.0f, 0.0f);
     ImVec2 mLastPersistedPos = ImVec2(0.0f, 0.0f);

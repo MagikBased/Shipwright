@@ -119,4 +119,42 @@ TEST(JPAssistOverlayLayout, ClassifiesIndependentDialoguePlacementProfiles) {
               JPAssist::OverlayPlacementProfile::NoDialogue);
 }
 
+TEST(JPAssistOverlayLayout, ShiftConstrainsDragToDominantAxis) {
+    const JPAssist::OverlayDragResult horizontal = JPAssist::JPAssistOverlay_ApplyDragModifiers(
+        100.0f, 100.0f, 200.0f, 20.0f, 800.0f, 120.0f, 0.0f, 0.0f, 1920.0f, 1080.0f, true, false, 20.0f);
+    EXPECT_FLOAT_EQ(horizontal.x, 300.0f);
+    EXPECT_FLOAT_EQ(horizontal.y, 100.0f);
+
+    const JPAssist::OverlayDragResult vertical = JPAssist::JPAssistOverlay_ApplyDragModifiers(
+        100.0f, 100.0f, 20.0f, 200.0f, 800.0f, 120.0f, 0.0f, 0.0f, 1920.0f, 1080.0f, true, false, 20.0f);
+    EXPECT_FLOAT_EQ(vertical.x, 100.0f);
+    EXPECT_FLOAT_EQ(vertical.y, 300.0f);
+}
+
+TEST(JPAssistOverlayLayout, ControlSnapsDragToViewportCenterAndEdges) {
+    const JPAssist::OverlayDragResult centered = JPAssist::JPAssistOverlay_ApplyDragModifiers(
+        0.0f, 100.0f, 472.0f, 17.0f, 1000.0f, 130.0f, 0.0f, 0.0f, 1920.0f, 1080.0f, false, true, 20.0f);
+    EXPECT_FLOAT_EQ(centered.x, 460.0f);
+    EXPECT_FLOAT_EQ(centered.y, 117.0f);
+    EXPECT_TRUE(centered.snappedX);
+    EXPECT_FALSE(centered.snappedY);
+    EXPECT_FLOAT_EQ(centered.guideX, 960.0f);
+
+    const JPAssist::OverlayDragResult bottomRight = JPAssist::JPAssistOverlay_ApplyDragModifiers(
+        0.0f, 0.0f, 910.0f, 940.0f, 1000.0f, 130.0f, 0.0f, 0.0f, 1920.0f, 1080.0f, false, true, 20.0f);
+    EXPECT_FLOAT_EQ(bottomRight.x, 920.0f);
+    EXPECT_FLOAT_EQ(bottomRight.y, 950.0f);
+    EXPECT_TRUE(bottomRight.snappedX);
+    EXPECT_TRUE(bottomRight.snappedY);
+}
+
+TEST(JPAssistOverlayLayout, AxisConstraintOnlySnapsAlongMovementAxis) {
+    const JPAssist::OverlayDragResult result = JPAssist::JPAssistOverlay_ApplyDragModifiers(
+        0.0f, 9.0f, 472.0f, 12.0f, 1000.0f, 130.0f, 0.0f, 0.0f, 1920.0f, 1080.0f, true, true, 20.0f);
+    EXPECT_FLOAT_EQ(result.x, 460.0f);
+    EXPECT_FLOAT_EQ(result.y, 9.0f);
+    EXPECT_TRUE(result.snappedX);
+    EXPECT_FALSE(result.snappedY);
+}
+
 } // namespace
