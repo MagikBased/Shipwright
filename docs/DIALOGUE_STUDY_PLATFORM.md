@@ -75,7 +75,8 @@ stable. Portable code should not assume an N64 text ID, Shipwright `MessageConte
   they would touch. Using target rather than animated bounds prevents jitter.
   The player can drag the small top grip or resize from the window edges.
   Shift constrains a drag to its dominant axis; Ctrl snaps it to viewport
-  edges and center lines with visible alignment guides. SoH persists
+  edges and center lines. Faint center guides remain visible while Ctrl is
+  held, and the active snap guide brightens. SoH persists
   normalized geometry independently for upper-dialogue,
   lower-dialogue, and no-dialogue placements, while enforcing a readable
   minimum size and clamping restored layouts to the current viewport.

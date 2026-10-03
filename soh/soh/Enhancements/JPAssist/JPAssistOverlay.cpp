@@ -291,8 +291,11 @@ class JPAssistOverlayWindow final : public Ship::GuiWindow {
         const bool overDragStrip = ImGui::IsMouseHoveringRect(
             windowPos, ImVec2(windowPos.x + windowSize.x, windowPos.y + dragHeight), false);
 
-        if (!mDraggingWindow && overDragStrip && ImGui::IsMouseClicked(ImGuiMouseButton_Left) &&
-            !ImGui::IsAnyItemActive()) {
+        // This titleless window owns its narrow drag strip. Do not gate a new
+        // drag on ImGui's global active-item state: a child scrollbar or the
+        // previous interaction can otherwise leave the grip unusable until
+        // some unrelated item receives focus.
+        if (!mDraggingWindow && overDragStrip && ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
             mDraggingWindow = true;
             mDragStartWindowPos = windowPos;
             mDragStartMousePos = ImGui::GetIO().MousePos;
@@ -310,15 +313,24 @@ class JPAssistOverlayWindow final : public Ship::GuiWindow {
             ImGui::SetWindowPos(ImVec2(drag.x, drag.y));
 
             ImDrawList* foreground = ImGui::GetForegroundDrawList();
-            const ImU32 guideColor = ImGui::GetColorU32(ImVec4(0.35f, 0.78f, 1.0f, 0.75f));
+            const ImU32 idleGuideColor = ImGui::GetColorU32(ImVec4(0.35f, 0.78f, 1.0f, 0.22f));
+            const ImU32 activeGuideColor = ImGui::GetColorU32(ImVec4(0.35f, 0.78f, 1.0f, 0.90f));
+            if (io.KeyCtrl) {
+                const float centerX = mWorkPos.x + mWorkSize.x * 0.5f;
+                const float centerY = mWorkPos.y + mWorkSize.y * 0.5f;
+                foreground->AddLine(ImVec2(centerX, mWorkPos.y), ImVec2(centerX, mWorkPos.y + mWorkSize.y),
+                                    idleGuideColor, std::max(mFrameScale, 1.0f));
+                foreground->AddLine(ImVec2(mWorkPos.x, centerY), ImVec2(mWorkPos.x + mWorkSize.x, centerY),
+                                    idleGuideColor, std::max(mFrameScale, 1.0f));
+            }
             if (drag.snappedX) {
                 foreground->AddLine(ImVec2(drag.guideX, mWorkPos.y),
-                                    ImVec2(drag.guideX, mWorkPos.y + mWorkSize.y), guideColor,
+                                    ImVec2(drag.guideX, mWorkPos.y + mWorkSize.y), activeGuideColor,
                                     std::max(mFrameScale, 1.0f));
             }
             if (drag.snappedY) {
                 foreground->AddLine(ImVec2(mWorkPos.x, drag.guideY),
-                                    ImVec2(mWorkPos.x + mWorkSize.x, drag.guideY), guideColor,
+                                    ImVec2(mWorkPos.x + mWorkSize.x, drag.guideY), activeGuideColor,
                                     std::max(mFrameScale, 1.0f));
             }
         } else if (overDragStrip) {
