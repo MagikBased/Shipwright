@@ -3,6 +3,7 @@
 #include "JPAssistNativeHighlight.h"
 
 #include <algorithm>
+#include <cctype>
 #include <cfloat>
 #include <memory>
 #include <mutex>
@@ -188,19 +189,20 @@ class JPAssistOverlayWindow final : public Ship::GuiWindow {
         DrawSectionSeparator(sectionHeight, separatorGutter);
         ImGui::BeginChild("JPAssistDefinitionSection", ImVec2(definitionWidth, sectionHeight), false,
                           ImGuiWindowFlags_NoScrollWithMouse);
-        if (!token.partOfSpeech.empty()) {
+        const std::string metadata = BuildMetadataLabel(token);
+        if (!metadata.empty()) {
+            const float headerLeft = ImGui::GetCursorScreenPos().x;
             const float headerRight = ImGui::GetCursorScreenPos().x + ImGui::GetContentRegionAvail().x;
-            const float partOfSpeechWidth = ImGui::CalcTextSize(token.partOfSpeech.c_str()).x;
-            const float partOfSpeechX = headerRight - partOfSpeechWidth;
-            ImGui::SetCursorScreenPos(ImVec2(partOfSpeechX, ImGui::GetCursorScreenPos().y));
-            ImGui::TextDisabled("%s", token.partOfSpeech.c_str());
+            const float metadataWidth = ImGui::CalcTextSize(metadata.c_str()).x;
+            if (metadataWidth <= headerRight - headerLeft) {
+                ImGui::SetCursorScreenPos(ImVec2(headerRight - metadataWidth, ImGui::GetCursorScreenPos().y));
+            }
+            ImGui::PushTextWrapPos(headerRight);
+            ImGui::TextDisabled("%s", metadata.c_str());
+            ImGui::PopTextWrapPos();
         }
         ImGui::PushTextWrapPos(0.0f);
         ImGui::TextUnformatted(token.meaning.empty() ? "Definition pending review" : token.meaning.c_str());
-        if (!token.note.empty()) {
-            ImGui::Spacing();
-            ImGui::TextColored(ImVec4(0.70f, 0.78f, 0.88f, 1.0f), "%s", token.note.c_str());
-        }
         ImGui::PopTextWrapPos();
         ApplyPendingStudyScroll();
         ImGui::EndChild();
@@ -208,6 +210,20 @@ class JPAssistOverlayWindow final : public Ship::GuiWindow {
     }
 
   private:
+    static std::string BuildMetadataLabel(const StudyToken& token) {
+        std::string label = token.partOfSpeech;
+        if (!label.empty() && static_cast<unsigned char>(label.front()) < 0x80) {
+            label.front() = static_cast<char>(std::toupper(static_cast<unsigned char>(label.front())));
+        }
+        if (!token.note.empty()) {
+            if (!label.empty()) {
+                label += " - ";
+            }
+            label += token.note;
+        }
+        return label;
+    }
+
     void DrawSectionSeparator(float height, float gutter) const {
         ImGui::SameLine(0.0f, 0.0f);
         const ImVec2 position = ImGui::GetCursorScreenPos();
