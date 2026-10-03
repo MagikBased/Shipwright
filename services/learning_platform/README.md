@@ -96,6 +96,14 @@ an arbitrary occurrence elsewhere in the game. A custom deck name also gets
 its own stable Anki namespace: repeated imports update that named deck without
 merging it into the complete `OoT JP Assist` deck.
 
+After downloading the manifest, the normal one-command path automatically
+finds the newest download, builds the deck from the local corpus, and validates
+the resulting package:
+
+```bash
+python scripts/jp_assist/export_saved_deck.py
+```
+
 ## Tests
 
 Core tests use only the Python standard library:
@@ -103,4 +111,12 @@ Core tests use only the Python standard library:
 ```bash
 PYTHONPATH=services/learning_platform \
   python3 -m unittest discover -s services/learning_platform/tests -v
+```
+
+The cross-component acceptance test starts a temporary localhost server and
+database, executes the complete pairing and retry-safe event flow, exports a
+manifest, builds the deck twice, and verifies its context and stable note IDs:
+
+```bash
+python scripts/jp_assist/run_mvp_acceptance.py
 ```

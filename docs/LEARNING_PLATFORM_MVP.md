@@ -33,6 +33,9 @@ Remote service URLs require HTTPS; cleartext HTTP is accepted only for the
 loopback development service. Pairing state and device credentials are bound
 to the service URL that issued them, so editing the URL requires an explicit
 disconnect/re-pair and cannot silently forward a token to another host.
+The complete boundary can be exercised without real player data using
+`python scripts/jp_assist/run_mvp_acceptance.py`; it starts an ephemeral HTTP
+service and database and validates the resulting Anki package and stable IDs.
 
 ## Privacy and copyright boundary
 

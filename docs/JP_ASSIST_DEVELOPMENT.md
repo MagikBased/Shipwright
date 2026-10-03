@@ -35,6 +35,11 @@ boundary so deferred testing can start from a known point.
   statistics, and a server-generated saved-word manifest for the existing
   stable-GUID Anki builder. Extracted dialogue remains local. See
   `LEARNING_PLATFORM_MVP.md` and `services/learning_platform/README.md`.
+- A disposable end-to-end MVP acceptance runner covers a real localhost HTTP
+  service, account/device pairing, retry deduplication, contextual saved-word
+  export, package validation, and stable Anki IDs. A one-command saved-deck
+  exporter discovers the newest browser download and rejects stale empty
+  manifests by default.
 
 ## Latest local corpus build
 

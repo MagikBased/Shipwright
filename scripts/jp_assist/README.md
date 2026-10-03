@@ -61,6 +61,28 @@ python scripts/jp_assist/build_anki_deck.py \
   --deck-name "OoT JP Assist — Saved Words"
 ```
 
+For a manifest downloaded from the learning website, the shorter command finds
+the newest `jp_assist_cloud_progress*.json` in `~/Downloads`, builds the saved
+deck, rejects an unexpectedly empty manifest, and validates the package:
+
+```bash
+python scripts/jp_assist/export_saved_deck.py
+```
+
+Pass the manifest path explicitly if it is stored elsewhere. Use
+`--runtime-data` if the local corpus is not at `scripts/jp_assist/out/runtime_data.json`.
+
+To exercise the complete MVP across a temporary real HTTP server and database,
+including device pairing, duplicate event delivery, manifest download,
+contextual deck generation, and stable Anki IDs:
+
+```bash
+python scripts/jp_assist/run_mvp_acceptance.py
+```
+
+The acceptance run uses only temporary data and does not access the player's
+account, game progress, or normal Anki output.
+
 `package_local.py` stages a checksummed personal bundle under ignored `out/`
 and can install the runtime corpus and Test Lab scenarios into a specific Ship
 directory. It does not package a font: supported Shipwright builds already
