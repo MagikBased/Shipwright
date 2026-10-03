@@ -1,5 +1,8 @@
 # Learning Platform MVP
 
+The post-MVP work and release gates are maintained in
+[`LEARNING_SITE_ROADMAP.md`](LEARNING_SITE_ROADMAP.md).
+
 ## Outcome
 
 The MVP gives JP Assist and future recompilation mods one optional account for

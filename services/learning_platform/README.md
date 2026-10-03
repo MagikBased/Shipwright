@@ -5,6 +5,10 @@ described in [`docs/LEARNING_PLATFORM_MVP.md`](../../docs/LEARNING_PLATFORM_MVP.
 It is intentionally separate from the Shipwright build: the game can be
 developed and used without running this optional service.
 
+The path from the current MVP to a polished, deployment-ready local release is
+tracked in
+[`docs/LEARNING_SITE_ROADMAP.md`](../../docs/LEARNING_SITE_ROADMAP.md).
+
 ## Run locally
 
 From the repository root:
