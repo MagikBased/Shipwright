@@ -15,7 +15,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Protocol
 
-from build_catalog_deck import DEFAULT_CATALOG_ROOT, load_game, select_chapter
+from build_catalog_deck import DEFAULT_CATALOG_ROOT, load_game, reviewed_cards, select_chapter
 
 
 DEFAULT_OUT_DIR = Path(__file__).parent / "out" / "catalog_audio"
@@ -79,7 +79,7 @@ def stage_audio(
 ) -> dict[str, Any]:
     target = out_dir / game["id"] / chapter["id"]
     entries = []
-    for card in chapter.get("sampleCards", []):
+    for card in reviewed_cards(chapter):
         entry = {
             "cardId": card["id"],
             "wordId": f"{card['written']}|{card['reading']}",

@@ -5,6 +5,7 @@
   "series": "The Legend of Zelda",
   "platform": "Ship of Harkinian",
   "status": "in-development",
+  "cardManifest": "ocarina-of-time.cards.json",
   "summary": "A progression-aware Japanese vocabulary course organized around the major stages of the adventure.",
   "chapterModel": {
     "kind": "progression",
@@ -372,18 +373,6 @@
           "sentenceJapanese": "巨大な樹の根元に石の扉があった。",
           "sentenceEnglish": "There was a stone door at the foot of the giant tree.",
           "corpusEvidence": {"identity": "樹|き|jmdict:1534520:0", "messageIds": ["0x0080"]},
-          "wordAudio": null,
-          "sentenceAudio": null
-        },
-        {
-          "id": "アイテム|あいてむ|item",
-          "written": "アイテム",
-          "reading": "あいてむ",
-          "partOfSpeech": "noun",
-          "meaning": "item",
-          "sentenceJapanese": "旅に必要なアイテムを箱に集めた。",
-          "sentenceEnglish": "The traveler gathered the items needed for the journey in a chest.",
-          "corpusEvidence": {"identity": "アイテム|あいてむ|jmdict:1014200:0", "messageIds": ["0x0030"]},
           "wordAudio": null,
           "sentenceAudio": null
         }

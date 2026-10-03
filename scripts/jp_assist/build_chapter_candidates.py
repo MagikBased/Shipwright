@@ -27,6 +27,26 @@ DEFAULT_OUT_DIR = Path(__file__).parent / "out" / "chapter_candidates"
 CORE_COVERAGE_TARGET_PERCENT = 80.0
 
 
+def reviewed_cards(chapter: dict[str, Any]) -> list[dict[str, Any]]:
+    return chapter.get("reviewedCards", chapter.get("sampleCards", []))
+
+
+def load_catalog(path: Path) -> dict[str, Any]:
+    catalog = json.loads(path.read_text(encoding="utf-8"))
+    manifest_name = catalog.get("cardManifest")
+    if not manifest_name:
+        return catalog
+    manifest = json.loads((path.parent / manifest_name).read_text(encoding="utf-8"))
+    if manifest.get("gameId") != catalog.get("id"):
+        raise ValueError("Card manifest and catalog game ids do not match")
+    cards_by_chapter = {
+        item["chapterId"]: item["cards"] for item in manifest.get("chapters", [])
+    }
+    for chapter in catalog["chapters"]:
+        chapter["reviewedCards"] = cards_by_chapter.get(chapter["id"], [])
+    return catalog
+
+
 def message_number(value: str) -> int:
     return int(value, 0)
 
@@ -138,7 +158,7 @@ def collect_candidates(
     published = {
         (card["corpusEvidence"]["identity"], chapter["id"])
         for chapter in catalog["chapters"]
-        for card in chapter.get("sampleCards", [])
+        for card in reviewed_cards(chapter)
         if card.get("corpusEvidence")
     }
     by_chapter: dict[str, list[dict[str, Any]]] = {chapter["id"]: [] for chapter in catalog["chapters"]}
@@ -284,7 +304,7 @@ def main() -> None:
     parser.add_argument("--out-dir", type=Path, default=DEFAULT_OUT_DIR)
     args = parser.parse_args()
     runtime = json.loads(args.runtime_data.read_text(encoding="utf-8"))
-    catalog = json.loads(args.catalog.read_text(encoding="utf-8"))
+    catalog = load_catalog(args.catalog)
     mapping = json.loads(args.mapping.read_text(encoding="utf-8"))
     by_chapter, summary = collect_candidates(runtime, catalog, mapping)
     write_outputs(by_chapter, summary, args.out_dir)

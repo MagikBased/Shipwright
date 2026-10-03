@@ -1,0 +1,1444 @@
+{
+  "schemaVersion": 1,
+  "gameId": "ocarina-of-time",
+  "chapters": [
+    {
+      "chapterId": "01-boy-without-a-fairy",
+      "cards": [
+        {
+          "id": "森|もり|forest",
+          "written": "森",
+          "reading": "もり",
+          "partOfSpeech": "noun",
+          "meaning": "forest",
+          "sentenceJapanese": "深い森では、古い精霊が旅人の道を守っている。",
+          "sentenceEnglish": "In the deep forest, an ancient spirit guards the traveler's path.",
+          "corpusEvidence": {
+            "identity": "森|もり|jmdict:1362490:0",
+            "messageIds": [
+              "0x0080"
+            ]
+          },
+          "wordAudio": null,
+          "sentenceAudio": null
+        },
+        {
+          "id": "妖精|ようせい|fairy",
+          "written": "妖精",
+          "reading": "ようせい",
+          "partOfSpeech": "noun",
+          "meaning": "fairy; sprite",
+          "sentenceJapanese": "小さな妖精が月明かりの道を照らした。",
+          "sentenceEnglish": "A tiny fairy lit the moonlit path.",
+          "corpusEvidence": {
+            "identity": "妖精|ようせい|jmdict:1545330:0",
+            "messageIds": [
+              "0x0030",
+              "0x004a"
+            ]
+          },
+          "wordAudio": null,
+          "sentenceAudio": null
+        },
+        {
+          "id": "剣|けん|sword",
+          "written": "剣",
+          "reading": "けん",
+          "partOfSpeech": "noun",
+          "meaning": "sword",
+          "sentenceJapanese": "若い騎士は石の台から古い剣を持ち上げた。",
+          "sentenceEnglish": "The young knight lifted an old sword from the stone pedestal.",
+          "corpusEvidence": {
+            "identity": "剣|けん|jmdict:1256750:0",
+            "messageIds": [
+              "0x00a4",
+              "0x1030",
+              "0x1032"
+            ]
+          },
+          "wordAudio": null,
+          "sentenceAudio": null
+        },
+        {
+          "id": "盾|たて|shield",
+          "written": "盾",
+          "reading": "たて",
+          "partOfSpeech": "noun",
+          "meaning": "shield",
+          "sentenceJapanese": "木の盾には森を守る紋章が刻まれている。",
+          "sentenceEnglish": "The wooden shield bears a crest that protects the forest.",
+          "corpusEvidence": {
+            "identity": "盾|たて|jmdict:1341840:0",
+            "messageIds": [
+              "0x004c",
+              "0x1030",
+              "0x1032"
+            ]
+          },
+          "wordAudio": null,
+          "sentenceAudio": null
+        },
+        {
+          "id": "勇気|ゆうき|courage",
+          "written": "勇気",
+          "reading": "ゆうき",
+          "partOfSpeech": "noun",
+          "meaning": "courage; bravery",
+          "sentenceJapanese": "勇気があれば、暗い洞窟にも進める。",
+          "sentenceEnglish": "With courage, you can venture into a dark cavern.",
+          "corpusEvidence": {
+            "identity": "勇気|ゆうき|jmdict:1539740:0",
+            "messageIds": [
+              "0x0141",
+              "0x1016"
+            ]
+          },
+          "wordAudio": null,
+          "sentenceAudio": null
+        },
+        {
+          "id": "精霊|せいれい|spirit",
+          "written": "精霊",
+          "reading": "せいれい",
+          "partOfSpeech": "noun",
+          "meaning": "spirit; soul",
+          "sentenceJapanese": "泉の精霊は、静かな歌で傷ついた旅人を癒やした。",
+          "sentenceEnglish": "The spirit of the spring healed the wounded traveler with a quiet song.",
+          "corpusEvidence": {
+            "identity": "精霊|せいれい|jmdict:1380230:0",
+            "messageIds": [
+              "0x0080"
+            ]
+          },
+          "wordAudio": null,
+          "sentenceAudio": null
+        },
+        {
+          "id": "の|の|possessive-particle",
+          "written": "の",
+          "reading": "の",
+          "partOfSpeech": "particle",
+          "meaning": "indicates possession or association",
+          "sentenceJapanese": "森の奥に古い塔がある。",
+          "sentenceEnglish": "There is an old tower deep in the forest.",
+          "corpusEvidence": {
+            "identity": "の|の|jmdict:1469800:0",
+            "messageIds": [
+              "0x0007"
+            ]
+          },
+          "wordAudio": null,
+          "sentenceAudio": null
+        },
+        {
+          "id": "に|に|time-place-particle",
+          "written": "に",
+          "reading": "に",
+          "partOfSpeech": "particle",
+          "meaning": "at; in; on; to",
+          "sentenceJapanese": "夕暮れに旅人は村に着いた。",
+          "sentenceEnglish": "At dusk, the traveler arrived at the village.",
+          "corpusEvidence": {
+            "identity": "に|に|jmdict:2028990:0",
+            "messageIds": [
+              "0x0030"
+            ]
+          },
+          "wordAudio": null,
+          "sentenceAudio": null
+        },
+        {
+          "id": "を|を|object-particle",
+          "written": "を",
+          "reading": "を",
+          "partOfSpeech": "particle",
+          "meaning": "marks the direct object of an action",
+          "sentenceJapanese": "騎士は重い門を開けた。",
+          "sentenceEnglish": "The knight opened the heavy gate.",
+          "corpusEvidence": {
+            "identity": "を|を|jmdict:2029010:0",
+            "messageIds": [
+              "0x0007"
+            ]
+          },
+          "wordAudio": null,
+          "sentenceAudio": null
+        },
+        {
+          "id": "て|て|te-form-connector",
+          "written": "て",
+          "reading": "て",
+          "partOfSpeech": "particle",
+          "meaning": "connects actions or indicates doing something by a means",
+          "sentenceJapanese": "松明を持って洞窟へ入った。",
+          "sentenceEnglish": "The traveler entered the cavern carrying a torch.",
+          "corpusEvidence": {
+            "identity": "て|て|override:て|て",
+            "messageIds": [
+              "0x002f"
+            ]
+          },
+          "wordAudio": null,
+          "sentenceAudio": null
+        },
+        {
+          "id": "た|た|past-auxiliary",
+          "written": "た",
+          "reading": "た",
+          "partOfSpeech": "auxiliary verb",
+          "meaning": "marks a past or completed action",
+          "sentenceJapanese": "夜明け前に竜が目を覚ました。",
+          "sentenceEnglish": "The dragon awoke before dawn.",
+          "corpusEvidence": {
+            "identity": "た|た|override:た|た",
+            "messageIds": [
+              "0x002f"
+            ]
+          },
+          "wordAudio": null,
+          "sentenceAudio": null
+        },
+        {
+          "id": "だ|だ|plain-copula",
+          "written": "だ",
+          "reading": "だ",
+          "partOfSpeech": "auxiliary verb",
+          "meaning": "plain copula; to be",
+          "sentenceJapanese": "あれは伝説の剣だ。",
+          "sentenceEnglish": "That is a legendary sword.",
+          "corpusEvidence": {
+            "identity": "だ|だ|override:だ|だ",
+            "messageIds": [
+              "0x0007"
+            ]
+          },
+          "wordAudio": null,
+          "sentenceAudio": null
+        },
+        {
+          "id": "で|で|location-particle",
+          "written": "で",
+          "reading": "で",
+          "partOfSpeech": "particle",
+          "meaning": "at; in; marks where an action occurs",
+          "sentenceJapanese": "古い城で宝箱を見つけた。",
+          "sentenceEnglish": "The traveler found a treasure chest in the old castle.",
+          "corpusEvidence": {
+            "identity": "で|で|jmdict:2028980:0",
+            "messageIds": [
+              "0x0030"
+            ]
+          },
+          "wordAudio": null,
+          "sentenceAudio": null
+        },
+        {
+          "id": "は|は|topic-particle",
+          "written": "は",
+          "reading": "は",
+          "partOfSpeech": "particle",
+          "meaning": "marks the topic of a sentence",
+          "sentenceJapanese": "この森は夜になると道が変わる。",
+          "sentenceEnglish": "The paths in this forest change when night falls.",
+          "corpusEvidence": {
+            "identity": "は|は|jmdict:2028920:0",
+            "messageIds": [
+              "0x0030"
+            ]
+          },
+          "wordAudio": null,
+          "sentenceAudio": null
+        },
+        {
+          "id": "する|する|do",
+          "written": "する",
+          "reading": "する",
+          "partOfSpeech": "verb",
+          "meaning": "to do; to carry out",
+          "sentenceJapanese": "旅人は夜までに支度をする。",
+          "sentenceEnglish": "The traveler prepares before nightfall.",
+          "corpusEvidence": {
+            "identity": "する|する|jmdict:1157170:0",
+            "messageIds": [
+              "0x002f"
+            ]
+          },
+          "wordAudio": null,
+          "sentenceAudio": null
+        },
+        {
+          "id": "が|が|subject-particle",
+          "written": "が",
+          "reading": "が",
+          "partOfSpeech": "particle",
+          "meaning": "marks the subject of a sentence",
+          "sentenceJapanese": "谷の向こうで鐘が鳴った。",
+          "sentenceEnglish": "A bell rang beyond the valley.",
+          "corpusEvidence": {
+            "identity": "が|が|jmdict:2028930:0",
+            "messageIds": [
+              "0x002f"
+            ]
+          },
+          "wordAudio": null,
+          "sentenceAudio": null
+        },
+        {
+          "id": "と|と|quotation-particle",
+          "written": "と",
+          "reading": "と",
+          "partOfSpeech": "particle",
+          "meaning": "marks a quotation, accompaniment, or pairing",
+          "sentenceJapanese": "魔法使いは「扉よ、開け」と唱えた。",
+          "sentenceEnglish": "The mage chanted, ‘O door, open.’",
+          "corpusEvidence": {
+            "identity": "と|と|override:と|と",
+            "messageIds": [
+              "0x002f"
+            ]
+          },
+          "wordAudio": null,
+          "sentenceAudio": null
+        },
+        {
+          "id": "ない|ない|negative-auxiliary",
+          "written": "ない",
+          "reading": "ない",
+          "partOfSpeech": "adjective / auxiliary verb",
+          "meaning": "not; indicates negation",
+          "sentenceJapanese": "この道に危険はない。",
+          "sentenceEnglish": "There is no danger on this road.",
+          "corpusEvidence": {
+            "identity": "ない|ない|override:ない|ない",
+            "messageIds": [
+              "0x00d0"
+            ]
+          },
+          "wordAudio": null,
+          "sentenceAudio": null
+        },
+        {
+          "id": "よ|よ|emphasis-particle",
+          "written": "よ",
+          "reading": "よ",
+          "partOfSpeech": "particle",
+          "meaning": "adds emphasis or supplies new information",
+          "sentenceJapanese": "夜の森は危ないよ。",
+          "sentenceEnglish": "The forest is dangerous at night, you know.",
+          "corpusEvidence": {
+            "identity": "よ|よ|override:よ|よ",
+            "messageIds": [
+              "0x0083"
+            ]
+          },
+          "wordAudio": null,
+          "sentenceAudio": null
+        },
+        {
+          "id": "ます|ます|polite-auxiliary",
+          "written": "ます",
+          "reading": "ます",
+          "partOfSpeech": "auxiliary verb",
+          "meaning": "marks polite speech",
+          "sentenceJapanese": "明日の朝、旅に出ます。",
+          "sentenceEnglish": "I will set out on my journey tomorrow morning.",
+          "corpusEvidence": {
+            "identity": "ます|ます|jmdict:2210290:0",
+            "messageIds": [
+              "0x0030"
+            ]
+          },
+          "wordAudio": null,
+          "sentenceAudio": null
+        },
+        {
+          "id": "ルピー|るぴー|rupee",
+          "written": "ルピー",
+          "reading": "るぴー",
+          "partOfSpeech": "noun",
+          "meaning": "rupee; a unit of currency",
+          "sentenceJapanese": "商人は十ルピーで薬草を売った。",
+          "sentenceEnglish": "The merchant sold the medicinal herb for ten rupees.",
+          "corpusEvidence": {
+            "identity": "ルピー|るぴー|jmdict:2075330:0",
+            "messageIds": [
+              "0x006f"
+            ]
+          },
+          "wordAudio": null,
+          "sentenceAudio": null
+        },
+        {
+          "id": "も|も|also-particle",
+          "written": "も",
+          "reading": "も",
+          "partOfSpeech": "particle",
+          "meaning": "also; too; even",
+          "sentenceJapanese": "魔法の鍵も袋に入れた。",
+          "sentenceEnglish": "The traveler put the magic key in the bag too.",
+          "corpusEvidence": {
+            "identity": "も|も|override:も|も",
+            "messageIds": [
+              "0x004c"
+            ]
+          },
+          "wordAudio": null,
+          "sentenceAudio": null
+        },
+        {
+          "id": "から|から|from-particle",
+          "written": "から",
+          "reading": "から",
+          "partOfSpeech": "particle",
+          "meaning": "from; since",
+          "sentenceJapanese": "古い塔から青い光が見えた。",
+          "sentenceEnglish": "A blue light was visible from the old tower.",
+          "corpusEvidence": {
+            "identity": "から|から|jmdict:1002980:0",
+            "messageIds": [
+              "0x0030"
+            ]
+          },
+          "wordAudio": null,
+          "sentenceAudio": null
+        },
+        {
+          "id": "てる|てる|contracted-progressive",
+          "written": "てる",
+          "reading": "てる",
+          "partOfSpeech": "auxiliary verb",
+          "meaning": "casual contraction of ている; indicates an ongoing or resulting state",
+          "sentenceJapanese": "門の前で兵士が待ってる。",
+          "sentenceEnglish": "A soldier is waiting in front of the gate.",
+          "corpusEvidence": {
+            "identity": "てる|てる|override:てる|てる",
+            "messageIds": [
+              "0x0102"
+            ]
+          },
+          "wordAudio": null,
+          "sentenceAudio": null
+        },
+        {
+          "id": "お|お|polite-prefix",
+          "written": "お",
+          "reading": "お",
+          "partOfSpeech": "prefix",
+          "meaning": "honorific or polite prefix",
+          "sentenceJapanese": "お城の門までご案内します。",
+          "sentenceEnglish": "I will guide you as far as the castle gate.",
+          "corpusEvidence": {
+            "identity": "お|お|override:お|お",
+            "messageIds": [
+              "0x031e"
+            ]
+          },
+          "wordAudio": null,
+          "sentenceAudio": null
+        },
+        {
+          "id": "か|か|question-particle",
+          "written": "か",
+          "reading": "か",
+          "partOfSpeech": "particle",
+          "meaning": "marks a question or alternative",
+          "sentenceJapanese": "この古い橋を渡れるか。",
+          "sentenceEnglish": "Can you cross this old bridge?",
+          "corpusEvidence": {
+            "identity": "か|か|override:か|か",
+            "messageIds": [
+              "0x006b"
+            ]
+          },
+          "wordAudio": null,
+          "sentenceAudio": null
+        },
+        {
+          "id": "この|この|this",
+          "written": "この",
+          "reading": "この",
+          "partOfSpeech": "adnominal",
+          "meaning": "this",
+          "sentenceJapanese": "この地図には秘密の道が描かれている。",
+          "sentenceEnglish": "A secret path is drawn on this map.",
+          "corpusEvidence": {
+            "identity": "この|この|override:この|この",
+            "messageIds": [
+              "0x0101"
+            ]
+          },
+          "wordAudio": null,
+          "sentenceAudio": null
+        },
+        {
+          "id": "樹|き|tree",
+          "written": "樹",
+          "reading": "き",
+          "partOfSpeech": "noun",
+          "meaning": "tree; shrub; bush",
+          "sentenceJapanese": "巨大な樹の根元に石の扉があった。",
+          "sentenceEnglish": "There was a stone door at the foot of the giant tree.",
+          "corpusEvidence": {
+            "identity": "樹|き|jmdict:1534520:0",
+            "messageIds": [
+              "0x0080"
+            ]
+          },
+          "wordAudio": null,
+          "sentenceAudio": null
+        },
+        {
+          "id": "アイテム|あいてむ|item",
+          "written": "アイテム",
+          "reading": "あいてむ",
+          "partOfSpeech": "noun",
+          "meaning": "item",
+          "sentenceJapanese": "旅に必要なアイテムを箱に集めた。",
+          "sentenceEnglish": "The traveler gathered the items needed for the journey in a chest.",
+          "corpusEvidence": {
+            "identity": "アイテム|あいてむ|jmdict:1014200:0",
+            "messageIds": [
+              "0x0030"
+            ]
+          },
+          "wordAudio": null,
+          "sentenceAudio": null
+        }
+      ]
+    },
+    {
+      "chapterId": "02-princess-of-destiny",
+      "cards": [
+        {
+          "id": "姫|ひめ|princess",
+          "written": "姫",
+          "reading": "ひめ",
+          "partOfSpeech": "noun",
+          "meaning": "princess; noble young woman",
+          "sentenceJapanese": "姫は星空の下で旅人に秘密の地図を渡した。",
+          "sentenceEnglish": "The princess gave the traveler a secret map beneath the starry sky.",
+          "corpusEvidence": {
+            "identity": "姫|ひめ|jmdict:1602150:0",
+            "messageIds": [
+              "0x0142"
+            ]
+          },
+          "wordAudio": null,
+          "sentenceAudio": null
+        },
+        {
+          "id": "会う|あう|meet",
+          "written": "会う",
+          "reading": "あう",
+          "partOfSpeech": "verb",
+          "meaning": "to meet; to encounter",
+          "sentenceJapanese": "旅人は城へ向かう道で不思議な少女に会った。",
+          "sentenceEnglish": "The traveler met a mysterious girl on the road to the castle.",
+          "corpusEvidence": {
+            "identity": "会う|あう|jmdict:1198180:0",
+            "messageIds": [
+              "0x0142"
+            ]
+          },
+          "wordAudio": null,
+          "sentenceAudio": null
+        },
+        {
+          "id": "牧場|ぼくじょう|ranch",
+          "written": "牧場",
+          "reading": "ぼくじょう",
+          "partOfSpeech": "noun",
+          "meaning": "ranch; livestock farm",
+          "sentenceJapanese": "丘の牧場では白い馬が風のように走っている。",
+          "sentenceEnglish": "At the ranch on the hill, a white horse runs like the wind.",
+          "corpusEvidence": {
+            "identity": "牧場|ぼくじょう|jmdict:1584250:0",
+            "messageIds": [
+              "0x0143"
+            ]
+          },
+          "wordAudio": null,
+          "sentenceAudio": null
+        },
+        {
+          "id": "運命|うんめい|destiny",
+          "written": "運命",
+          "reading": "うんめい",
+          "partOfSpeech": "noun",
+          "meaning": "fate; destiny",
+          "sentenceJapanese": "若い旅人は自分の運命を知るために旅に出た。",
+          "sentenceEnglish": "The young traveler set out to discover their destiny.",
+          "corpusEvidence": {
+            "identity": "運命|うんめい|jmdict:1173030:0",
+            "messageIds": [
+              "0x2064"
+            ]
+          },
+          "wordAudio": null,
+          "sentenceAudio": null
+        },
+        {
+          "id": "手紙|てがみ|letter",
+          "written": "手紙",
+          "reading": "てがみ",
+          "partOfSpeech": "noun",
+          "meaning": "letter; note",
+          "sentenceJapanese": "兵士は王からの手紙を大切に届けた。",
+          "sentenceEnglish": "The soldier carefully delivered a letter from the king.",
+          "corpusEvidence": {
+            "identity": "手紙|てがみ|jmdict:1327720:0",
+            "messageIds": [
+              "0x0069"
+            ]
+          },
+          "wordAudio": null,
+          "sentenceAudio": null
+        }
+      ]
+    },
+    {
+      "chapterId": "03-gorons-ruby",
+      "cards": [
+        {
+          "id": "山|やま|mountain",
+          "written": "山",
+          "reading": "やま",
+          "partOfSpeech": "noun",
+          "meaning": "mountain; hill",
+          "sentenceJapanese": "高い山の頂上には、火を守る民が住んでいる。",
+          "sentenceEnglish": "People who guard the flame live at the summit of the high mountain.",
+          "corpusEvidence": {
+            "identity": "山|やま|jmdict:1302680:0",
+            "messageIds": [
+              "0x300d"
+            ]
+          },
+          "wordAudio": null,
+          "sentenceAudio": null
+        },
+        {
+          "id": "岩|いわ|rock",
+          "written": "岩",
+          "reading": "いわ",
+          "partOfSpeech": "noun",
+          "meaning": "rock; boulder",
+          "sentenceJapanese": "巨大な岩が洞窟への道をふさいでいた。",
+          "sentenceEnglish": "A gigantic boulder blocked the path to the cavern.",
+          "corpusEvidence": {
+            "identity": "岩|いわ|jmdict:1217270:0",
+            "messageIds": [
+              "0x3014"
+            ]
+          },
+          "wordAudio": null,
+          "sentenceAudio": null
+        },
+        {
+          "id": "洞窟|どうくつ|cavern",
+          "written": "洞窟",
+          "reading": "どうくつ",
+          "partOfSpeech": "noun",
+          "meaning": "cavern; cave",
+          "sentenceJapanese": "洞窟の奥から怪物の低い声が聞こえた。",
+          "sentenceEnglish": "A monster's low voice echoed from deep inside the cavern.",
+          "corpusEvidence": {
+            "identity": "洞窟|どうくつ|jmdict:1453860:0",
+            "messageIds": [
+              "0x3008"
+            ]
+          },
+          "wordAudio": null,
+          "sentenceAudio": null
+        },
+        {
+          "id": "炎|ほのお|flame",
+          "written": "炎",
+          "reading": "ほのお",
+          "partOfSpeech": "noun",
+          "meaning": "flame; blaze",
+          "sentenceJapanese": "魔法の炎が暗い部屋を赤く照らした。",
+          "sentenceEnglish": "A magical flame illuminated the dark chamber in red.",
+          "corpusEvidence": {
+            "identity": "炎|ほのお|jmdict:1177070:0",
+            "messageIds": [
+              "0x0146"
+            ]
+          },
+          "wordAudio": null,
+          "sentenceAudio": null
+        },
+        {
+          "id": "バクダン|ばくだん|bomb",
+          "written": "バクダン",
+          "reading": "ばくだん",
+          "partOfSpeech": "noun",
+          "meaning": "bomb",
+          "sentenceJapanese": "旅人はバクダンで古い壁に穴を開けた。",
+          "sentenceEnglish": "The traveler used a bomb to open a hole in the old wall.",
+          "corpusEvidence": {
+            "identity": "バクダン|ばくだん|jmdict:1475870:0",
+            "messageIds": [
+              "0x300d"
+            ]
+          },
+          "wordAudio": null,
+          "sentenceAudio": null
+        },
+        {
+          "id": "墓|はか|tomb",
+          "written": "墓",
+          "reading": "はか",
+          "partOfSpeech": "noun",
+          "meaning": "grave; tomb",
+          "sentenceJapanese": "名もない騎士の墓には白い花が供えられていた。",
+          "sentenceEnglish": "White flowers had been placed on the tomb of a nameless knight.",
+          "corpusEvidence": {
+            "identity": "墓|はか|jmdict:1514840:0",
+            "messageIds": [
+              "0x5014"
+            ]
+          },
+          "wordAudio": null,
+          "sentenceAudio": null
+        }
+      ]
+    },
+    {
+      "chapterId": "04-zoras-sapphire",
+      "cards": [
+        {
+          "id": "川|かわ|river",
+          "written": "川",
+          "reading": "かわ",
+          "partOfSpeech": "noun",
+          "meaning": "river; stream",
+          "sentenceJapanese": "旅人は川の流れに沿って北の谷へ進んだ。",
+          "sentenceEnglish": "The traveler followed the river's current toward the northern valley.",
+          "corpusEvidence": {
+            "identity": "川|かわ|jmdict:1390020:0",
+            "messageIds": [
+              "0x4003"
+            ]
+          },
+          "wordAudio": null,
+          "sentenceAudio": null
+        },
+        {
+          "id": "湖|みずうみ|lake",
+          "written": "湖",
+          "reading": "みずうみ",
+          "partOfSpeech": "noun",
+          "meaning": "lake",
+          "sentenceJapanese": "静かな湖の底に忘れられた神殿が眠っている。",
+          "sentenceEnglish": "A forgotten temple sleeps at the bottom of the quiet lake.",
+          "corpusEvidence": {
+            "identity": "湖|みずうみ|jmdict:1267280:0",
+            "messageIds": [
+              "0x4003"
+            ]
+          },
+          "wordAudio": null,
+          "sentenceAudio": null
+        },
+        {
+          "id": "水|みず|water",
+          "written": "水",
+          "reading": "みず",
+          "partOfSpeech": "noun",
+          "meaning": "water",
+          "sentenceJapanese": "清らかな水を飲むと、疲れた体に力が戻った。",
+          "sentenceEnglish": "Drinking the pure water restored strength to the weary body.",
+          "corpusEvidence": {
+            "identity": "水|みず|jmdict:1371260:0",
+            "messageIds": [
+              "0x4003"
+            ]
+          },
+          "wordAudio": null,
+          "sentenceAudio": null
+        },
+        {
+          "id": "滝|たき|waterfall",
+          "written": "滝",
+          "reading": "たき",
+          "partOfSpeech": "noun",
+          "meaning": "waterfall",
+          "sentenceJapanese": "大きな滝の裏には秘密の入口が隠されていた。",
+          "sentenceEnglish": "A secret entrance was hidden behind the great waterfall.",
+          "corpusEvidence": {
+            "identity": "滝|たき|jmdict:1415520:0",
+            "messageIds": [
+              "0x4007"
+            ]
+          },
+          "wordAudio": null,
+          "sentenceAudio": null
+        },
+        {
+          "id": "潜水|せんすい|diving",
+          "written": "潜水",
+          "reading": "せんすい",
+          "partOfSpeech": "noun",
+          "meaning": "diving; going underwater",
+          "sentenceJapanese": "若い旅人は泉で潜水の技を練習した。",
+          "sentenceEnglish": "The young traveler practiced diving in the spring.",
+          "corpusEvidence": {
+            "identity": "潜水|せんすい|jmdict:1391330:0",
+            "messageIds": [
+              "0x4007"
+            ]
+          },
+          "wordAudio": null,
+          "sentenceAudio": null
+        }
+      ]
+    },
+    {
+      "chapterId": "05-door-of-time",
+      "cards": [
+        {
+          "id": "扉|とびら|door",
+          "written": "扉",
+          "reading": "とびら",
+          "partOfSpeech": "noun",
+          "meaning": "door; gate",
+          "sentenceJapanese": "古い呪文を唱えると、聖なる扉がゆっくり開いた。",
+          "sentenceEnglish": "When the ancient spell was recited, the sacred door slowly opened.",
+          "corpusEvidence": {
+            "identity": "扉|とびら|jmdict:1483380:0",
+            "messageIds": [
+              "0x0200"
+            ]
+          },
+          "wordAudio": null,
+          "sentenceAudio": null
+        },
+        {
+          "id": "開く|ひらく|open",
+          "written": "開く",
+          "reading": "ひらく",
+          "partOfSpeech": "verb",
+          "meaning": "to open; to unseal",
+          "sentenceJapanese": "古い歌を奏でると、石の門が静かに開いた。",
+          "sentenceEnglish": "When the ancient song was played, the stone gate quietly opened.",
+          "corpusEvidence": {
+            "identity": "開く|ひらく|jmdict:1202440:0",
+            "messageIds": [
+              "0x020c"
+            ]
+          },
+          "wordAudio": null,
+          "sentenceAudio": null
+        },
+        {
+          "id": "伝説|でんせつ|legend",
+          "written": "伝説",
+          "reading": "でんせつ",
+          "partOfSpeech": "noun",
+          "meaning": "legend; tradition",
+          "sentenceJapanese": "村の長老は失われた剣の伝説を語った。",
+          "sentenceEnglish": "The village elder told the legend of a lost sword.",
+          "corpusEvidence": {
+            "identity": "伝説|でんせつ|jmdict:1442100:0",
+            "messageIds": [
+              "0x202a"
+            ]
+          },
+          "wordAudio": null,
+          "sentenceAudio": null
+        },
+        {
+          "id": "王家|おうけ|royal-family",
+          "written": "王家",
+          "reading": "おうけ",
+          "partOfSpeech": "noun",
+          "meaning": "royal family",
+          "sentenceJapanese": "王家の紋章は金色の門に刻まれていた。",
+          "sentenceEnglish": "The royal family's crest was carved into the golden gate.",
+          "corpusEvidence": {
+            "identity": "王家|おうけ|jmdict:1181440:0",
+            "messageIds": [
+              "0x0214"
+            ]
+          },
+          "wordAudio": null,
+          "sentenceAudio": null
+        },
+        {
+          "id": "歴史|れきし|history",
+          "written": "歴史",
+          "reading": "れきし",
+          "partOfSpeech": "noun",
+          "meaning": "history",
+          "sentenceJapanese": "壁の文字には王国の長い歴史が記されていた。",
+          "sentenceEnglish": "The writing on the wall recorded the kingdom's long history.",
+          "corpusEvidence": {
+            "identity": "歴史|れきし|jmdict:1558050:0",
+            "messageIds": [
+              "0x0208"
+            ]
+          },
+          "wordAudio": null,
+          "sentenceAudio": null
+        }
+      ]
+    },
+    {
+      "chapterId": "06-forest-awakens",
+      "cards": [
+        {
+          "id": "目覚める|めざめる|awaken",
+          "written": "目覚める",
+          "reading": "めざめる",
+          "partOfSpeech": "verb",
+          "meaning": "to awaken; to wake up",
+          "sentenceJapanese": "長い眠りから目覚めると、森の姿は変わっていた。",
+          "sentenceEnglish": "Upon awakening from a long sleep, the forest had changed.",
+          "corpusEvidence": {
+            "identity": "目覚める|めざめる|jmdict:1535350:0",
+            "messageIds": [
+              "0x106a"
+            ]
+          },
+          "wordAudio": null,
+          "sentenceAudio": null
+        },
+        {
+          "id": "賢者|けんじゃ|sage",
+          "written": "賢者",
+          "reading": "けんじゃ",
+          "partOfSpeech": "noun",
+          "meaning": "sage; wise person",
+          "sentenceJapanese": "森の賢者は静かな祈りで古い力を呼び戻した。",
+          "sentenceEnglish": "The forest sage restored an ancient power with a quiet prayer.",
+          "corpusEvidence": {
+            "identity": "賢者|けんじゃ|jmdict:1260280:0",
+            "messageIds": [
+              "0x106a"
+            ]
+          },
+          "wordAudio": null,
+          "sentenceAudio": null
+        },
+        {
+          "id": "弓|ゆみ|bow",
+          "written": "弓",
+          "reading": "ゆみ",
+          "partOfSpeech": "noun",
+          "meaning": "bow; archery bow",
+          "sentenceJapanese": "狩人は弓を引き、遠くの的を狙った。",
+          "sentenceEnglish": "The hunter drew the bow and aimed at a distant target.",
+          "corpusEvidence": {
+            "identity": "弓|ゆみ|jmdict:1228490:0",
+            "messageIds": [
+              "0x1057"
+            ]
+          },
+          "wordAudio": null,
+          "sentenceAudio": null
+        },
+        {
+          "id": "救う|すくう|save",
+          "written": "救う",
+          "reading": "すくう",
+          "partOfSpeech": "verb",
+          "meaning": "to save; to rescue",
+          "sentenceJapanese": "勇者は呪いから森の民を救うと誓った。",
+          "sentenceEnglish": "The hero vowed to save the forest people from the curse.",
+          "corpusEvidence": {
+            "identity": "救う|すくう|jmdict:1229060:0",
+            "messageIds": [
+              "0x1066"
+            ]
+          },
+          "wordAudio": null,
+          "sentenceAudio": null
+        },
+        {
+          "id": "大人|おとな|adult",
+          "written": "大人",
+          "reading": "おとな",
+          "partOfSpeech": "noun",
+          "meaning": "adult; grown-up",
+          "sentenceJapanese": "少年は旅を続け、立派な大人の騎士になった。",
+          "sentenceEnglish": "The boy continued his journey and became a fine adult knight.",
+          "corpusEvidence": {
+            "identity": "大人|おとな|jmdict:1414170:0",
+            "messageIds": [
+              "0x1063"
+            ]
+          },
+          "wordAudio": null,
+          "sentenceAudio": null
+        }
+      ]
+    },
+    {
+      "chapterId": "07-fire-sage",
+      "cards": [
+        {
+          "id": "火口|かこう|crater",
+          "written": "火口",
+          "reading": "かこう",
+          "partOfSpeech": "noun",
+          "meaning": "crater; caldera",
+          "sentenceJapanese": "火口から立ち上る煙が空を灰色に染めた。",
+          "sentenceEnglish": "Smoke rising from the crater stained the sky gray.",
+          "corpusEvidence": {
+            "identity": "火口|かこう|jmdict:1193860:0",
+            "messageIds": [
+              "0x0323"
+            ]
+          },
+          "wordAudio": null,
+          "sentenceAudio": null
+        },
+        {
+          "id": "溶岩|ようがん|lava",
+          "written": "溶岩",
+          "reading": "ようがん",
+          "partOfSpeech": "noun",
+          "meaning": "lava",
+          "sentenceJapanese": "赤い溶岩の上では、石の足場だけが安全だった。",
+          "sentenceEnglish": "Above the red lava, only the stone platforms were safe.",
+          "corpusEvidence": {
+            "identity": "溶岩|ようがん|jmdict:1546120:0",
+            "messageIds": [
+              "0x0115"
+            ]
+          },
+          "wordAudio": null,
+          "sentenceAudio": null
+        },
+        {
+          "id": "牢屋|ろうや|jail",
+          "written": "牢屋",
+          "reading": "ろうや",
+          "partOfSpeech": "noun",
+          "meaning": "jail; prison cell",
+          "sentenceJapanese": "捕らわれた戦士たちは暗い牢屋で助けを待っていた。",
+          "sentenceEnglish": "The captured warriors waited for help in the dark prison cell.",
+          "corpusEvidence": {
+            "identity": "牢屋|ろうや|jmdict:1560930:0",
+            "messageIds": [
+              "0x021c"
+            ]
+          },
+          "wordAudio": null,
+          "sentenceAudio": null
+        },
+        {
+          "id": "ハンマー|はんまー|hammer",
+          "written": "ハンマー",
+          "reading": "はんまー",
+          "partOfSpeech": "noun",
+          "meaning": "hammer",
+          "sentenceJapanese": "重いハンマーで柱を打つと、隠れた道が現れた。",
+          "sentenceEnglish": "When the heavy hammer struck the pillar, a hidden path appeared.",
+          "corpusEvidence": {
+            "identity": "ハンマー|はんまー|jmdict:1096910:0",
+            "messageIds": [
+              "0x3035"
+            ]
+          },
+          "wordAudio": null,
+          "sentenceAudio": null
+        },
+        {
+          "id": "邪竜|じゃりゅう|evil-dragon",
+          "written": "邪竜",
+          "reading": "じゃりゅう",
+          "partOfSpeech": "noun",
+          "meaning": "evil dragon",
+          "sentenceJapanese": "邪竜は炎を吐きながら山の上を飛んだ。",
+          "sentenceEnglish": "The evil dragon flew over the mountain while breathing fire.",
+          "corpusEvidence": {
+            "identity": "邪竜|じゃりゅう|override:邪竜|じゃりゅう",
+            "messageIds": [
+              "0x3039"
+            ]
+          },
+          "wordAudio": null,
+          "sentenceAudio": null
+        }
+      ]
+    },
+    {
+      "chapterId": "08-beneath-the-ice",
+      "cards": [
+        {
+          "id": "氷|こおり|ice",
+          "written": "氷",
+          "reading": "こおり",
+          "partOfSpeech": "noun",
+          "meaning": "ice",
+          "sentenceJapanese": "青い氷の壁が洞窟の奥への道を閉ざしていた。",
+          "sentenceEnglish": "A wall of blue ice blocked the way deeper into the cavern.",
+          "corpusEvidence": {
+            "identity": "氷|こおり|jmdict:1488840:0",
+            "messageIds": [
+              "0x4019"
+            ]
+          },
+          "wordAudio": null,
+          "sentenceAudio": null
+        },
+        {
+          "id": "凍る|こおる|freeze",
+          "written": "凍る",
+          "reading": "こおる",
+          "partOfSpeech": "verb",
+          "meaning": "to freeze; to become frozen",
+          "sentenceJapanese": "夜になると泉が凍り、月の光を映した。",
+          "sentenceEnglish": "At night the spring froze and reflected the moonlight.",
+          "corpusEvidence": {
+            "identity": "凍る|こおる|jmdict:1593100:0",
+            "messageIds": [
+              "0x0197"
+            ]
+          },
+          "wordAudio": null,
+          "sentenceAudio": null
+        },
+        {
+          "id": "神殿|しんでん|temple",
+          "written": "神殿",
+          "reading": "しんでん",
+          "partOfSpeech": "noun",
+          "meaning": "temple; sacred place",
+          "sentenceJapanese": "湖の下に眠る神殿には古い水の仕掛けが残っていた。",
+          "sentenceEnglish": "Ancient water mechanisms remained in the temple sleeping beneath the lake.",
+          "corpusEvidence": {
+            "identity": "神殿|しんでん|jmdict:1364770:0",
+            "messageIds": [
+              "0x4037"
+            ]
+          },
+          "wordAudio": null,
+          "sentenceAudio": null
+        },
+        {
+          "id": "冷たい|つめたい|cold",
+          "written": "冷たい",
+          "reading": "つめたい",
+          "partOfSpeech": "adjective",
+          "meaning": "cold; chilly; icy",
+          "sentenceJapanese": "冷たい風が谷を抜け、旅人の頬を刺した。",
+          "sentenceEnglish": "A cold wind swept through the valley and stung the traveler's cheeks.",
+          "corpusEvidence": {
+            "identity": "冷たい|つめたい|jmdict:1556730:0",
+            "messageIds": [
+              "0x005d"
+            ]
+          },
+          "wordAudio": null,
+          "sentenceAudio": null
+        },
+        {
+          "id": "呪い|のろい|curse",
+          "written": "呪い",
+          "reading": "のろい",
+          "partOfSpeech": "noun",
+          "meaning": "curse; spell",
+          "sentenceJapanese": "邪悪な呪いが泉を凍らせ、谷から春を奪った。",
+          "sentenceEnglish": "An evil curse froze the spring and stole springtime from the valley.",
+          "corpusEvidence": {
+            "identity": "呪い|のろい|jmdict:1330100:0",
+            "messageIds": [
+              "0x4037"
+            ]
+          },
+          "wordAudio": null,
+          "sentenceAudio": null
+        },
+        {
+          "id": "息|いき|breath",
+          "written": "息",
+          "reading": "いき",
+          "partOfSpeech": "noun",
+          "meaning": "breath; breathing",
+          "sentenceJapanese": "水の中では長く息を止められない。",
+          "sentenceEnglish": "You cannot hold your breath for long underwater.",
+          "corpusEvidence": {
+            "identity": "息|いき|jmdict:1404320:0",
+            "messageIds": [
+              "0x401d"
+            ]
+          },
+          "wordAudio": null,
+          "sentenceAudio": null
+        }
+      ]
+    },
+    {
+      "chapterId": "09-darkness-beneath-kakariko",
+      "cards": [
+        {
+          "id": "復活|ふっかつ|revival",
+          "written": "復活",
+          "reading": "ふっかつ",
+          "partOfSpeech": "noun",
+          "meaning": "revival; restoration",
+          "sentenceJapanese": "封じられた怪物の復活を止めるため、鐘を鳴らした。",
+          "sentenceEnglish": "The bell was rung to stop the sealed monster's revival.",
+          "corpusEvidence": {
+            "identity": "復活|ふっかつ|jmdict:1500700:0",
+            "messageIds": [
+              "0x0629"
+            ]
+          },
+          "wordAudio": null,
+          "sentenceAudio": null
+        },
+        {
+          "id": "井戸|いど|well",
+          "written": "井戸",
+          "reading": "いど",
+          "partOfSpeech": "noun",
+          "meaning": "water well",
+          "sentenceJapanese": "枯れた井戸の底から不思議な声が聞こえた。",
+          "sentenceEnglish": "A mysterious voice came from the bottom of the dry well.",
+          "corpusEvidence": {
+            "identity": "井戸|いど|jmdict:1160330:0",
+            "messageIds": [
+              "0x5085"
+            ]
+          },
+          "wordAudio": null,
+          "sentenceAudio": null
+        },
+        {
+          "id": "闇|やみ|darkness",
+          "written": "闇",
+          "reading": "やみ",
+          "partOfSpeech": "noun",
+          "meaning": "darkness; the dark",
+          "sentenceJapanese": "封じられた闇が井戸の底から村へ広がった。",
+          "sentenceEnglish": "Sealed darkness spread from the bottom of the well into the village.",
+          "corpusEvidence": {
+            "identity": "闇|やみ|jmdict:1154910:0",
+            "messageIds": [
+              "0x501c"
+            ]
+          },
+          "wordAudio": null,
+          "sentenceAudio": null
+        },
+        {
+          "id": "真実|しんじつ|truth",
+          "written": "真実",
+          "reading": "しんじつ",
+          "partOfSpeech": "noun",
+          "meaning": "truth; reality",
+          "sentenceJapanese": "賢い魔術師だけが王の言葉に隠された真実を見抜いた。",
+          "sentenceEnglish": "Only the wise mage perceived the truth hidden in the king's words.",
+          "corpusEvidence": {
+            "identity": "真実|しんじつ|jmdict:1363780:0",
+            "messageIds": [
+              "0x5087"
+            ]
+          },
+          "wordAudio": null,
+          "sentenceAudio": null
+        },
+        {
+          "id": "怪物|かいぶつ|monster",
+          "written": "怪物",
+          "reading": "かいぶつ",
+          "partOfSpeech": "noun",
+          "meaning": "monster",
+          "sentenceJapanese": "影の怪物は光を恐れて地下へ逃げた。",
+          "sentenceEnglish": "The shadow monster feared the light and fled underground.",
+          "corpusEvidence": {
+            "identity": "怪物|かいぶつ|jmdict:1200330:0",
+            "messageIds": [
+              "0x0601"
+            ]
+          },
+          "wordAudio": null,
+          "sentenceAudio": null
+        }
+      ]
+    },
+    {
+      "chapterId": "10-spirit-of-the-desert",
+      "cards": [
+        {
+          "id": "宝|たから|treasure",
+          "written": "宝",
+          "reading": "たから",
+          "partOfSpeech": "noun",
+          "meaning": "treasure",
+          "sentenceJapanese": "盗賊は砂の神殿に眠る宝の話を聞いた。",
+          "sentenceEnglish": "The bandit heard a tale of treasure sleeping in the desert temple.",
+          "corpusEvidence": {
+            "identity": "宝|たから|jmdict:1516160:0",
+            "messageIds": [
+              "0x6024"
+            ]
+          },
+          "wordAudio": null,
+          "sentenceAudio": null
+        },
+        {
+          "id": "盗賊|とうぞく|bandit",
+          "written": "盗賊",
+          "reading": "とうぞく",
+          "partOfSpeech": "noun",
+          "meaning": "thief; robber; bandit",
+          "sentenceJapanese": "素早い盗賊は見張りの鍵を奪って姿を消した。",
+          "sentenceEnglish": "The swift bandit stole the guard's key and vanished.",
+          "corpusEvidence": {
+            "identity": "盗賊|とうぞく|jmdict:1448470:0",
+            "messageIds": [
+              "0x606a"
+            ]
+          },
+          "wordAudio": null,
+          "sentenceAudio": null
+        },
+        {
+          "id": "砦|とりで|fortress",
+          "written": "砦",
+          "reading": "とりで",
+          "partOfSpeech": "noun",
+          "meaning": "fort; fortress; stronghold",
+          "sentenceJapanese": "砂の砦は高い壁と鋭い見張りに守られていた。",
+          "sentenceEnglish": "The desert fortress was protected by high walls and vigilant guards.",
+          "corpusEvidence": {
+            "identity": "砦|とりで|jmdict:1295240:0",
+            "messageIds": [
+              "0x6065"
+            ]
+          },
+          "wordAudio": null,
+          "sentenceAudio": null
+        },
+        {
+          "id": "銀|ぎん|silver",
+          "written": "銀",
+          "reading": "ぎん",
+          "partOfSpeech": "noun",
+          "meaning": "silver",
+          "sentenceJapanese": "鍛冶屋は銀を使って王子の腕輪を作った。",
+          "sentenceEnglish": "The blacksmith used silver to craft a bracelet for the prince.",
+          "corpusEvidence": {
+            "identity": "銀|ぎん|jmdict:1595090:0",
+            "messageIds": [
+              "0x6024"
+            ]
+          },
+          "wordAudio": null,
+          "sentenceAudio": null
+        },
+        {
+          "id": "魂|たましい|soul",
+          "written": "魂",
+          "reading": "たましい",
+          "partOfSpeech": "noun",
+          "meaning": "soul; spirit",
+          "sentenceJapanese": "砂の神殿には過去を忘れない魂が眠っている。",
+          "sentenceEnglish": "A soul that remembers the past sleeps within the desert temple.",
+          "corpusEvidence": {
+            "identity": "魂|たましい|jmdict:1579170:0",
+            "messageIds": [
+              "0x6005"
+            ]
+          },
+          "wordAudio": null,
+          "sentenceAudio": null
+        }
+      ]
+    },
+    {
+      "chapterId": "11-hero-of-time",
+      "cards": [
+        {
+          "id": "結界|けっかい|barrier",
+          "written": "結界",
+          "reading": "けっかい",
+          "partOfSpeech": "noun",
+          "meaning": "magical or sacred barrier",
+          "sentenceJapanese": "三人の魔法使いが杖を掲げると、城を囲む結界が消えた。",
+          "sentenceEnglish": "When three mages raised their staffs, the barrier surrounding the castle vanished.",
+          "corpusEvidence": {
+            "identity": "結界|けっかい|jmdict:2020220:0",
+            "messageIds": [
+              "0x70e0"
+            ]
+          },
+          "wordAudio": null,
+          "sentenceAudio": null
+        },
+        {
+          "id": "野望|やぼう|ambition",
+          "written": "野望",
+          "reading": "やぼう",
+          "partOfSpeech": "noun",
+          "meaning": "ambition; aspiration",
+          "sentenceJapanese": "王の野望は国中に長い争いをもたらした。",
+          "sentenceEnglish": "The king's ambition brought a long conflict across the realm.",
+          "corpusEvidence": {
+            "identity": "野望|やぼう|jmdict:1537650:0",
+            "messageIds": [
+              "0x707e"
+            ]
+          },
+          "wordAudio": null,
+          "sentenceAudio": null
+        },
+        {
+          "id": "光|ひかり|light",
+          "written": "光",
+          "reading": "ひかり",
+          "partOfSpeech": "noun",
+          "meaning": "light",
+          "sentenceJapanese": "朝の光が差し込み、暗い塔の階段を照らした。",
+          "sentenceEnglish": "Morning light streamed in and illuminated the dark tower's stairs.",
+          "corpusEvidence": {
+            "identity": "光|ひかり|jmdict:1272780:0",
+            "messageIds": [
+              "0x7084"
+            ]
+          },
+          "wordAudio": null,
+          "sentenceAudio": null
+        },
+        {
+          "id": "封印|ふういん|seal",
+          "written": "封印",
+          "reading": "ふういん",
+          "partOfSpeech": "noun",
+          "meaning": "seal; magical sealing",
+          "sentenceJapanese": "賢者たちは闇の力を聖なる場所に封印した。",
+          "sentenceEnglish": "The sages sealed the power of darkness in a sacred place.",
+          "corpusEvidence": {
+            "identity": "封印|ふういん|jmdict:1499610:0",
+            "messageIds": [
+              "0x706c"
+            ]
+          },
+          "wordAudio": null,
+          "sentenceAudio": null
+        },
+        {
+          "id": "消える|きえる|vanish",
+          "written": "消える",
+          "reading": "きえる",
+          "partOfSpeech": "verb",
+          "meaning": "to vanish; to disappear",
+          "sentenceJapanese": "最後の鐘が鳴ると、空を覆う黒い雲が消えた。",
+          "sentenceEnglish": "When the final bell rang, the black clouds covering the sky vanished.",
+          "corpusEvidence": {
+            "identity": "消える|きえる|jmdict:1350040:0",
+            "messageIds": [
+              "0x7084"
+            ]
+          },
+          "wordAudio": null,
+          "sentenceAudio": null
+        }
+      ]
+    }
+  ]
+}

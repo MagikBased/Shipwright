@@ -68,7 +68,24 @@ def load_game(game_id: str, catalog_root: Path = DEFAULT_CATALOG_ROOT) -> dict[s
     path = catalog_root / f"{game_id}.json"
     if not path.is_file():
         raise ValueError(f"Unknown catalog game: {game_id}")
-    return json.loads(path.read_text(encoding="utf-8"))
+    game = json.loads(path.read_text(encoding="utf-8"))
+    manifest_name = game.get("cardManifest")
+    if manifest_name:
+        manifest_path = catalog_root / manifest_name
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        if manifest.get("gameId") != game_id:
+            raise ValueError(f"Card manifest game id does not match {game_id}")
+        cards_by_chapter = {
+            item["chapterId"]: item["cards"] for item in manifest.get("chapters", [])
+        }
+        for chapter in game["chapters"]:
+            chapter["reviewedCards"] = cards_by_chapter.get(chapter["id"], [])
+    return game
+
+
+def reviewed_cards(chapter: dict[str, Any]) -> list[dict[str, Any]]:
+    """Return the complete reviewed corpus, falling back for legacy fixtures."""
+    return chapter.get("reviewedCards", chapter.get("sampleCards", []))
 
 
 def select_chapter(game: dict[str, Any], chapter_selector: str) -> dict[str, Any]:
@@ -83,8 +100,10 @@ def stable_deck_id(game_id: str, chapter_id: str) -> int:
     return int.from_bytes(digest[:8], "big") & 0x7FFF_FFFF_FFFF_FFFF
 
 
-def stable_note_guid(game_id: str, card_id: str) -> str:
-    digest = hashlib.sha256(f"jp-assist-catalog|{game_id}|{card_id}".encode()).hexdigest()
+def stable_note_guid(game_id: str, chapter_id: str, card_id: str) -> str:
+    digest = hashlib.sha256(
+        f"jp-assist-catalog|{game_id}|{chapter_id}|{card_id}".encode()
+    ).hexdigest()
     return genanki.guid_for(digest)
 
 
@@ -117,11 +136,11 @@ def validate_prerequisite_uniqueness(
     previously_taught = {
         card_identity(card)
         for prerequisite in prerequisites
-        for card in chapters[prerequisite].get("sampleCards", [])
+        for card in reviewed_cards(chapters[prerequisite])
     }
     repeated = sorted(
         card_identity(card)
-        for card in chapter.get("sampleCards", [])
+        for card in reviewed_cards(chapter)
         if card_identity(card) in previously_taught
     )
     if repeated:
@@ -149,7 +168,7 @@ def build_deck(
     chapter: dict[str, Any],
     catalog_root: Path = DEFAULT_CATALOG_ROOT,
 ) -> tuple[genanki.Deck, list[str]]:
-    cards = chapter.get("sampleCards", [])
+    cards = reviewed_cards(chapter)
     if not cards:
         raise ValueError(f"Chapter {chapter['id']} has no reviewed cards to export")
     validate_prerequisite_uniqueness(game, chapter)
@@ -174,7 +193,7 @@ def build_deck(
                 chapter["id"],
                 card["id"],
             ],
-            guid=stable_note_guid(game["id"], card["id"]),
+            guid=stable_note_guid(game["id"], chapter["id"], card["id"]),
             tags=["jp-assist", game["id"], chapter["id"], "reviewed"],
         )
         deck.add_note(note)
@@ -195,7 +214,7 @@ def validate_corpus_evidence(chapter: dict[str, Any], runtime_root: dict[str, An
         for page in record["pages"]
         if page.get("english", "").strip()
     }
-    for card in chapter.get("sampleCards", []):
+    for card in reviewed_cards(chapter):
         evidence = card.get("corpusEvidence")
         if not evidence:
             raise ValueError(f"Reviewed card {card['id']} has no corpus evidence")
@@ -262,14 +281,14 @@ def main() -> None:
             "CardId", "Written", "Reading", "PartOfSpeech", "Meaning",
             "SentenceJapanese", "SentenceEnglish", "WordAudio", "SentenceAudio",
         ])
-        for card in chapter["sampleCards"]:
+        for card in reviewed_cards(chapter):
             writer.writerow([
                 card["id"], card["written"], card["reading"], card["partOfSpeech"],
                 card["meaning"], card["sentenceJapanese"], card["sentenceEnglish"],
                 card.get("wordAudio") or "", card.get("sentenceAudio") or "",
             ])
 
-    print(f"Wrote {len(chapter['sampleCards'])} reviewed note(s) to {package_path}")
+    print(f"Wrote {len(reviewed_cards(chapter))} reviewed note(s) to {package_path}")
     print(f"Wrote review TSV to {tsv_path}")
     if not media_files:
         print("Audio: none (the deck remains fully usable)")

@@ -13,6 +13,7 @@ from build_catalog_deck import (  # noqa: E402
     select_chapter,
     stable_deck_id,
     stable_note_guid,
+    reviewed_cards,
     validate_corpus_evidence,
     validate_prerequisite_uniqueness,
 )
@@ -23,23 +24,41 @@ class BuildCatalogDeckTest(unittest.TestCase):
         game = load_game("ocarina-of-time")
         self.assertEqual(
             sum(chapter["deck"]["reviewedCardCount"] for chapter in game["chapters"]),
-            sum(len(chapter["sampleCards"]) for chapter in game["chapters"]),
+            sum(len(reviewed_cards(chapter)) for chapter in game["chapters"]),
         )
         for chapter in game["chapters"]:
             deck, media = build_deck(game, chapter)
-            self.assertEqual(len(deck.notes), chapter["deck"]["reviewedCardCount"])
+            self.assertEqual(len(deck.notes), len(reviewed_cards(chapter)))
             self.assertEqual(media, [])
             self.assertTrue(all(note.fields[6:8] == ["", ""] for note in deck.notes))
             self.assertTrue(all(note.fields[8] == chapter["id"] for note in deck.notes))
+
+    def test_complete_manifest_is_distinct_from_public_previews(self):
+        game = load_game("ocarina-of-time")
+        opening = game["chapters"][0]
+        self.assertGreater(len(reviewed_cards(opening)), len(opening["sampleCards"]))
+        self.assertEqual(len(reviewed_cards(opening)), opening["deck"]["reviewedCardCount"])
+        self.assertIn(
+            "アイテム|あいてむ|item",
+            {card["id"] for card in reviewed_cards(opening)},
+        )
 
     def test_identities_are_stable_and_chapter_scoped(self):
         self.assertEqual(
             stable_deck_id("ocarina-of-time", "01-boy-without-a-fairy"),
             stable_deck_id("ocarina-of-time", "01-boy-without-a-fairy"),
         )
+        self.assertEqual(
+            stable_note_guid("ocarina-of-time", "one", "森|もり|forest"),
+            stable_note_guid("ocarina-of-time", "one", "森|もり|forest"),
+        )
         self.assertNotEqual(
-            stable_note_guid("ocarina-of-time", "森|もり|forest"),
-            stable_note_guid("another-game", "森|もり|forest"),
+            stable_note_guid("ocarina-of-time", "one", "森|もり|forest"),
+            stable_note_guid("ocarina-of-time", "two", "森|もり|forest"),
+        )
+        self.assertNotEqual(
+            stable_note_guid("ocarina-of-time", "one", "森|もり|forest"),
+            stable_note_guid("another-game", "one", "森|もり|forest"),
         )
 
     def test_chapter_without_reviewed_content_refuses_empty_package(self):

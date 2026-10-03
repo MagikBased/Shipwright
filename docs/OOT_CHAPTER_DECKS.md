@@ -15,10 +15,19 @@ The examples must not reproduce or lightly rewrite game dialogue. Extracted game
 text can be used locally to determine which vocabulary belongs in a chapter, but
 published cards use newly written examples.
 
+Anki note GUIDs are stable across regeneration and scoped by game, chapter, and
+card identity. Chapter scope is required because parallel optional branches may
+legitimately contain the same vocabulary; importing both packages must not move
+or overwrite a note from the other branch.
+
 ## Chapter model
 
 The canonical machine-readable roadmap is
 `services/learning_platform/learning_platform/content/games/ocarina-of-time.json`.
+The complete reviewed card corpus is stored separately in
+`ocarina-of-time.cards.json`; `sampleCards` in the roadmap are only lightweight
+catalog previews. Export, audio, coverage, and prerequisite tools always load
+the complete card manifest.
 It uses story and dungeon milestones rather than save-file names: OoT has no
 first-class chapter field, and the adult portion allows some nonlinear progress.
 Each chapter therefore declares hard prerequisites separately from recommended
