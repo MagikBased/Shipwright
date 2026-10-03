@@ -40,6 +40,16 @@ class OverrideTest(unittest.TestCase):
         self.assertEqual(fruit["dictionaryReading"], "み")
         self.assertEqual(fruit["senseId"], "override:実|み")
 
+    def test_interface_and_inflection_overrides_correct_homographs(self):
+        button = apply_override("ボタン", "ぼたん", {"meaning": "tree peony"})
+        buy = apply_override("買える", "かえる", {"meaning": "to return home"})
+        middle = apply_override("中", "なか", {"meaning": "medium"})
+        defeated = apply_override("倒す", "たおす", {"meaning": "to recline a seat"})
+        self.assertEqual(button["meaning"], "button; control button")
+        self.assertEqual(buy["meaning"], "can buy; to be able to purchase")
+        self.assertEqual(middle["partOfSpeech"], "suffix")
+        self.assertEqual(defeated["meaning"], "to defeat; to knock down; to bring down")
+
 
 if __name__ == "__main__":
     unittest.main()

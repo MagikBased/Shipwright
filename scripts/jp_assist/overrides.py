@@ -195,6 +195,31 @@ OVERRIDES: dict[tuple[str, str], dict] = {
         "note": "種, stylized in katakana; not offspring/issue.",
         "partOfSpeech": "noun",
     },
+    ("倒す", "たおす"): {
+        "meaning": "to defeat; to knock down; to bring down",
+        "note": "The combat/defeat sense used for enemies.",
+        "partOfSpeech": "verb",
+    },
+    ("ボタン", "ぼたん"): {
+        "meaning": "button; control button",
+        "note": "The interface-control sense, not the peony flower.",
+        "partOfSpeech": "noun",
+    },
+    ("買える", "かえる"): {
+        "meaning": "can buy; to be able to purchase",
+        "note": "Potential form of 買う, not 帰る (to return home).",
+        "partOfSpeech": "verb",
+    },
+    ("中", "なか"): {
+        "meaning": "during; while; in the middle of",
+        "note": "The 中 suffix marking an ongoing state or activity.",
+        "partOfSpeech": "suffix",
+    },
+    ("モード", "もーど"): {
+        "meaning": "mode; operating state or interface screen",
+        "note": "The interface/operating-mode sense.",
+        "partOfSpeech": "noun",
+    },
 }
 
 
