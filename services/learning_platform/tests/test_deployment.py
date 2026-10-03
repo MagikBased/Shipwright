@@ -166,6 +166,43 @@ class DeploymentTest(unittest.TestCase):
             self.assertIn("email_verified_at", user_columns)
             self.assertTrue({"action_tokens", "notification_preferences", "notification_deliveries", "audit_events"}.issubset(tables))
 
+    def test_version_eight_sessions_gain_private_metadata_and_public_ids(self):
+        with tempfile.TemporaryDirectory(prefix="jp-assist-session-migration-") as temporary:
+            path = Path(temporary) / "version-eight.sqlite3"
+            database = Database(path)
+            with database.connect() as connection:
+                connection.execute("DROP TABLE sessions")
+                connection.execute(
+                    """
+                    CREATE TABLE sessions (
+                        token_hash TEXT PRIMARY KEY,
+                        user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                        created_at TEXT NOT NULL,
+                        expires_at TEXT NOT NULL
+                    )
+                    """
+                )
+                connection.execute(
+                    "INSERT INTO users VALUES (?, ?, ?, ?, ?, ?, ?)",
+                    ("user", "session@example.test", "Session", b"salt", b"hash", "2026-01-01T00:00:00.000Z", None),
+                )
+                connection.execute(
+                    "INSERT INTO sessions VALUES (?, ?, ?, ?)",
+                    ("secret-hash", "user", "2026-01-01T00:00:00.000Z", "2026-02-01T00:00:00.000Z"),
+                )
+                connection.execute("UPDATE metadata SET value = '8' WHERE key = 'schema_version'")
+            migrated = Database(path)
+            with migrated.connect() as connection:
+                columns = {row["name"] for row in connection.execute("PRAGMA table_info(sessions)")}
+                row = connection.execute("SELECT * FROM sessions").fetchone()
+                indexes = {item["name"] for item in connection.execute("PRAGMA index_list(sessions)")}
+            self.assertEqual(migrated.schema_version(), LATEST_SCHEMA_VERSION)
+            self.assertTrue({"id", "last_seen_at", "user_agent"}.issubset(columns))
+            self.assertEqual(len(row["id"]), 32)
+            self.assertEqual(row["last_seen_at"], row["created_at"])
+            self.assertEqual(row["user_agent"], "")
+            self.assertIn("sessions_public_id_idx", indexes)
+
     def test_backup_and_restore_create_ready_database_and_safety_copy(self):
         with tempfile.TemporaryDirectory(prefix="jp-assist-backup-") as temporary:
             root = Path(temporary)

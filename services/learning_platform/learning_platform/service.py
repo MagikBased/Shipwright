@@ -193,7 +193,9 @@ class LearningPlatform:
             ),
         )
 
-    def register_user(self, email: str, password: str, display_name: str) -> dict[str, Any]:
+    def register_user(
+        self, email: str, password: str, display_name: str, session_label: str = "",
+    ) -> dict[str, Any]:
         normalized_email = self._validate_email(email)
         clean_name = display_name.strip()
         if not clean_name or len(clean_name) > 80:
@@ -227,10 +229,10 @@ class LearningPlatform:
         )
         return {
             "user": self._public_user(user_id, normalized_email, clean_name, None),
-            "token": self._new_session(user_id), "verificationEmailSent": mail_sent,
+            "token": self._new_session(user_id, session_label), "verificationEmailSent": mail_sent,
         }
 
-    def login(self, email: str, password: str) -> dict[str, Any]:
+    def login(self, email: str, password: str, session_label: str = "") -> dict[str, Any]:
         normalized_email = self._validate_email(email)
         with self.database.connect() as connection:
             row = connection.execute("SELECT * FROM users WHERE email = ?", (normalized_email,)).fetchone()
@@ -240,7 +242,7 @@ class LearningPlatform:
             "user": self._public_user(
                 row["id"], row["email"], row["display_name"], row["email_verified_at"],
             ),
-            "token": self._new_session(row["id"]),
+            "token": self._new_session(row["id"], session_label),
         }
 
     def authenticate_session(self, token: str) -> dict[str, Any]:
@@ -248,7 +250,8 @@ class LearningPlatform:
         with self.database.connect() as connection:
             row = connection.execute(
                 """
-                SELECT users.id, users.email, users.display_name, users.email_verified_at
+                SELECT users.id, users.email, users.display_name, users.email_verified_at,
+                       sessions.last_seen_at
                 FROM sessions JOIN users ON users.id = sessions.user_id
                 WHERE sessions.token_hash = ? AND sessions.expires_at > ?
                 """,
@@ -256,6 +259,12 @@ class LearningPlatform:
             ).fetchone()
         if row is None:
             raise AuthenticationError("The session is missing, expired, or invalid")
+        if self._seconds_since(row["last_seen_at"]) >= 300:
+            with self.database.connect() as connection:
+                connection.execute(
+                    "UPDATE sessions SET last_seen_at = ? WHERE token_hash = ?",
+                    (now, token_hash(token)),
+                )
         return self._public_user(
             row["id"], row["email"], row["display_name"], row["email_verified_at"],
         )
@@ -1424,17 +1433,21 @@ class LearningPlatform:
         current_hash = token_hash(session_token)
         with self.database.connect() as connection:
             rows = connection.execute(
-                "SELECT token_hash, created_at, expires_at FROM sessions WHERE user_id = ? ORDER BY created_at DESC",
+                "SELECT id, token_hash, created_at, expires_at, last_seen_at, user_agent "
+                "FROM sessions WHERE user_id = ? ORDER BY created_at DESC",
                 (user["id"],),
             ).fetchall()
-        return [{"id": row["token_hash"][:16], "createdAt": row["created_at"],
-                 "expiresAt": row["expires_at"], "current": row["token_hash"] == current_hash} for row in rows]
+        return [{
+            "id": row["id"], "createdAt": row["created_at"], "expiresAt": row["expires_at"],
+            "lastSeenAt": row["last_seen_at"], "label": row["user_agent"] or "Unknown browser",
+            "current": row["token_hash"] == current_hash,
+        } for row in rows]
 
     def revoke_session(self, session_token: str, session_id: str) -> bool:
         user = self.authenticate_session(session_token)
         with self.database.connect() as connection:
             row = connection.execute(
-                "SELECT token_hash FROM sessions WHERE user_id = ? AND substr(token_hash, 1, 16) = ?",
+                "SELECT token_hash FROM sessions WHERE user_id = ? AND id = ?",
                 (user["id"], session_id),
             ).fetchone()
             if row is None:
@@ -1815,13 +1828,19 @@ class LearningPlatform:
             self._audit(connection, user_id, f"{purpose}_email_sent")
         return True
 
-    def _new_session(self, user_id: str) -> str:
+    def _new_session(self, user_id: str, session_label: str = "") -> str:
         token = new_bearer_token()
         now = self.now()
+        clean_label = " ".join(session_label.split())[:160]
         with self.database.connect() as connection:
             connection.execute(
-                "INSERT INTO sessions VALUES (?, ?, ?, ?)",
-                (token_hash(token), user_id, isoformat(now), isoformat(now + timedelta(days=30))),
+                "INSERT INTO sessions "
+                "(token_hash, user_id, id, created_at, expires_at, last_seen_at, user_agent) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?)",
+                (
+                    token_hash(token), user_id, str(uuid.uuid4()), isoformat(now),
+                    isoformat(now + timedelta(days=30)), isoformat(now), clean_label,
+                ),
             )
         return token
 

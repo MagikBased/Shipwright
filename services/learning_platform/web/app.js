@@ -42,6 +42,7 @@ async function loadDashboard() {
     return;
   }
   auth.classList.add("hidden"); dashboard.classList.remove("hidden"); logout.classList.remove("hidden");
+  dashboard.inert = true;
   dashboard.setAttribute("aria-busy", "true");
   document.querySelector("#stats").innerHTML = skeletonCards(6);
   document.querySelector("#games").innerHTML = skeletonCards(2);
@@ -60,6 +61,7 @@ async function loadDashboard() {
     setConnectionStatus("Some account data could not be loaded.", true);
   } finally {
     dashboard.setAttribute("aria-busy", "false");
+    dashboard.inert = false;
   }
 }
 
@@ -123,7 +125,7 @@ function openWordEditor(index) {
 
 function renderConnections() {
   document.querySelector("#devices").innerHTML = state.devices.length ? state.devices.map(device => `<div class="card-row"><div><strong>${escapeHtml(device.deviceName)}</strong><small>${escapeHtml(device.gameId)} · last seen ${escapeHtml(device.lastSeenAt.slice(0,10))}</small></div><button class="quiet revoke-device" data-id="${escapeHtml(device.id)}">Revoke</button></div>`).join("") : '<p class="muted">No connected mods yet.</p>';
-  document.querySelector("#sessions").innerHTML = state.sessions.map(session => `<div class="card-row"><div><strong>${session.current?"This session":"Website session"}</strong><small>Created ${escapeHtml(session.createdAt.slice(0,10))} · expires ${escapeHtml(session.expiresAt.slice(0,10))}</small></div><button class="quiet revoke-session" data-id="${escapeHtml(session.id)}">${session.current?"Sign out":"Revoke"}</button></div>`).join("");
+  document.querySelector("#sessions").innerHTML = state.sessions.map(session => `<div class="card-row"><div><strong>${session.current?"This session":escapeHtml(session.label)}</strong><small>Last used ${escapeHtml(session.lastSeenAt.slice(0,10))} · expires ${escapeHtml(session.expiresAt.slice(0,10))}</small></div><button class="quiet revoke-session" data-id="${escapeHtml(session.id)}">${session.current?"Sign out":"Revoke"}</button></div>`).join("");
 }
 
 function renderAccountSettings() {

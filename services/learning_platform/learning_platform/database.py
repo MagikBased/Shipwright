@@ -2,7 +2,7 @@ import sqlite3
 from pathlib import Path
 
 
-LATEST_SCHEMA_VERSION = 8
+LATEST_SCHEMA_VERSION = 9
 
 SCHEMA = """
 PRAGMA foreign_keys = ON;
@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS metadata (
     value TEXT NOT NULL
 );
 
-INSERT OR IGNORE INTO metadata(key, value) VALUES ('schema_version', '8');
+INSERT OR IGNORE INTO metadata(key, value) VALUES ('schema_version', '9');
 
 CREATE TABLE IF NOT EXISTS users (
     id TEXT PRIMARY KEY,
@@ -27,8 +27,11 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE TABLE IF NOT EXISTS sessions (
     token_hash TEXT PRIMARY KEY,
     user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    id TEXT NOT NULL UNIQUE,
     created_at TEXT NOT NULL,
-    expires_at TEXT NOT NULL
+    expires_at TEXT NOT NULL,
+    last_seen_at TEXT NOT NULL,
+    user_agent TEXT NOT NULL DEFAULT ''
 );
 
 CREATE TABLE IF NOT EXISTS pairings (
@@ -291,7 +294,17 @@ class Database:
             user_columns = {row["name"] for row in connection.execute("PRAGMA table_info(users)")}
             if "email_verified_at" not in user_columns:
                 connection.execute("ALTER TABLE users ADD COLUMN email_verified_at TEXT")
-            connection.execute("UPDATE metadata SET value = '8' WHERE key = 'schema_version'")
+            session_columns = {row["name"] for row in connection.execute("PRAGMA table_info(sessions)")}
+            if "id" not in session_columns:
+                connection.execute("ALTER TABLE sessions ADD COLUMN id TEXT")
+            if "last_seen_at" not in session_columns:
+                connection.execute("ALTER TABLE sessions ADD COLUMN last_seen_at TEXT")
+            if "user_agent" not in session_columns:
+                connection.execute("ALTER TABLE sessions ADD COLUMN user_agent TEXT NOT NULL DEFAULT ''")
+            connection.execute("UPDATE sessions SET id = lower(hex(randomblob(16))) WHERE id IS NULL")
+            connection.execute("UPDATE sessions SET last_seen_at = created_at WHERE last_seen_at IS NULL")
+            connection.execute("CREATE UNIQUE INDEX IF NOT EXISTS sessions_public_id_idx ON sessions(id)")
+            connection.execute("UPDATE metadata SET value = '9' WHERE key = 'schema_version'")
 
     @staticmethod
     def _migrate_review_schema(connection: sqlite3.Connection) -> None:

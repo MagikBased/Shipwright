@@ -86,6 +86,10 @@ class LearningPlatformApiTest(unittest.TestCase):
 
         stats = self.client.get("/v1/me/stats").json()
         self.assertEqual(stats["savedWords"], 1)
+        sessions = self.client.get("/v1/me/sessions").json()
+        self.assertEqual(sessions[0]["label"], "testclient")
+        self.assertNotIn("token", sessions[0])
+        self.assertEqual(len(sessions[0]["id"]), 36)
         manifest = self.client.get("/v1/me/exports/saved-words").json()
         self.assertEqual(manifest["savedTokenIds"], ["武器|ぶき"])
         self.assertEqual(manifest["words"][0]["contextMessageId"], "0x1034")

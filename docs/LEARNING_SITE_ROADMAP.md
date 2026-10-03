@@ -199,7 +199,8 @@ Status: **in progress**. Cookie mutations now use double-submit CSRF protection;
 responses carry a restrictive CSP and browser security headers; reviews,
 exports, and sensitive mutations are rate-limited; operational retention has an
 idempotent cleanup command; and the privacy inventory/threat model is
-documented. Session recognition, automated supply-chain checks, image SBOM,
+documented; session management now uses independent public IDs and
+privacy-minimal browser labels. Automated supply-chain checks, image SBOM,
 privacy-boundary release tests, and the final security audit remain.
 
 Deliverables:

@@ -12,6 +12,11 @@ matching `jp_assist_csrf` cookie and `X-CSRF-Token` header. A request carrying a
 explicit `Authorization` header does not use this browser-CSRF mechanism; this
 keeps the device API independent from browser cookies.
 
+The account session list uses a separate random public session ID, a normalized
+browser user-agent label capped at 160 characters, and created/last-seen/expiry
+times. It never exposes a full or partial token hash and deliberately does not
+store client IP addresses.
+
 Responses set a Content Security Policy that allows scripts, styles, images,
 fonts, forms, and frames only where the site needs them. The sole extra network
 destination is `http://127.0.0.1:8765`, the local AnkiConnect endpoint. The
@@ -77,7 +82,7 @@ message text.
 
 | Threat | Current control | Remaining release work |
 | --- | --- | --- |
-| Stolen website session | Hashed 30-day token, `HttpOnly` cookie, revocation, password/reset invalidation | Add recognizable session metadata and verify rotation policy |
+| Stolen website session | Hashed 30-day token, `HttpOnly` cookie, independent public session ID, privacy-minimal browser label, revocation, password/reset invalidation | Verify rotation policy in the final audit |
 | Cross-site request forgery | Double-submit token on cookie-authenticated mutations; SameSite cookies | Continue negative tests as routes are added |
 | Pairing-code guessing | Short expiry, one-time claim, rate limit, explicit account approval | Load-test shared limiter topology |
 | Device-token theft | Hashed storage, per-device scope, revocation | Document adapter-side secret storage |

@@ -275,14 +275,16 @@ def create_app(
         }
 
     @app.post("/v1/auth/register", status_code=201)
-    def register(payload: RegisterRequest, response: Response) -> dict[str, Any]:
-        result = platform.register_user(payload.email, payload.password, payload.displayName)
+    def register(payload: RegisterRequest, request: Request, response: Response) -> dict[str, Any]:
+        result = platform.register_user(
+            payload.email, payload.password, payload.displayName, _session_label(request),
+        )
         _set_session_cookie(response, result["token"], settings.cookie_secure)
         return result
 
     @app.post("/v1/auth/login")
-    def login(payload: LoginRequest, response: Response) -> dict[str, Any]:
-        result = platform.login(payload.email, payload.password)
+    def login(payload: LoginRequest, request: Request, response: Response) -> dict[str, Any]:
+        result = platform.login(payload.email, payload.password, _session_label(request))
         _set_session_cookie(response, result["token"], settings.cookie_secure)
         return result
 
@@ -633,6 +635,10 @@ def _request_identity(request: Request, settings: Settings) -> str:
         if forwarded:
             return forwarded
     return request.client.host if request.client is not None else "unknown"
+
+
+def _session_label(request: Request) -> str:
+    return " ".join(request.headers.get("user-agent", "").split())[:160]
 
 
 def _rate_limit_rule(request: Request, settings: Settings) -> tuple[str, str, int] | None:

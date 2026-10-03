@@ -11,6 +11,7 @@ async function login(page, password = PASSWORD) {
   await page.locator("#login-form input[name=password]").fill(password);
   await page.locator("#login-form button[type=submit]").click();
   await expect(page.locator("#dashboard")).toBeVisible();
+  await expect(page.locator("#dashboard")).toHaveAttribute("aria-busy", "false");
 }
 
 async function openView(page, name) {
@@ -400,7 +401,7 @@ test.describe.serial("learning account", () => {
     await expect(page.locator("#notice")).toContainText("Device access revoked");
     const sessionRows = page.locator("#sessions .card-row");
     expect(await sessionRows.count()).toBeGreaterThan(1);
-    await sessionRows.filter({ hasText: "Website session" }).first().locator("button").click();
+    await sessionRows.locator("button", { hasText: "Revoke" }).first().click();
     await page.locator("#confirm-accept").click();
     await expect(page.locator("#notice")).toContainText("Session revoked");
   });

@@ -76,6 +76,22 @@ class LearningPlatformTest(unittest.TestCase):
         return result
 
     def test_register_login_and_logout(self):
+        with self.platform.database.connect() as connection:
+            initial_seen = connection.execute(
+                "SELECT last_seen_at FROM sessions WHERE token_hash = ?", (token_hash(self.session),),
+            ).fetchone()[0]
+        self.clock.value += timedelta(minutes=4)
+        self.platform.authenticate_session(self.session)
+        with self.platform.database.connect() as connection:
+            self.assertEqual(connection.execute(
+                "SELECT last_seen_at FROM sessions WHERE token_hash = ?", (token_hash(self.session),),
+            ).fetchone()[0], initial_seen)
+        self.clock.value += timedelta(minutes=2)
+        self.platform.authenticate_session(self.session)
+        with self.platform.database.connect() as connection:
+            self.assertNotEqual(connection.execute(
+                "SELECT last_seen_at FROM sessions WHERE token_hash = ?", (token_hash(self.session),),
+            ).fetchone()[0], initial_seen)
         logged_in = self.platform.login("PLAYER@example.com", "correct horse battery")
         self.assertEqual(logged_in["user"]["displayName"], "Player")
         self.platform.logout(logged_in["token"])
