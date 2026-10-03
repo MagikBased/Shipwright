@@ -14,15 +14,15 @@
       "messageRanges": [{"first": "0x1001", "last": "0x104d"}],
       "note": "Opening forest, equipment, Great Deku Tree, and immediate post-dungeon messages. Seed mapping requires source review before the chapter is marked complete."
     },
-    {"chapterId": "02-princess-of-destiny", "status": "planned", "messageIds": [], "messageRanges": []},
-    {"chapterId": "03-gorons-ruby", "status": "planned", "messageIds": [], "messageRanges": []},
-    {"chapterId": "04-zoras-sapphire", "status": "planned", "messageIds": [], "messageRanges": []},
-    {"chapterId": "05-door-of-time", "status": "planned", "messageIds": [], "messageRanges": []},
-    {"chapterId": "06-forest-awakens", "status": "planned", "messageIds": [], "messageRanges": []},
-    {"chapterId": "07-fire-sage", "status": "planned", "messageIds": [], "messageRanges": []},
-    {"chapterId": "08-beneath-the-ice", "status": "planned", "messageIds": [], "messageRanges": []},
-    {"chapterId": "09-darkness-beneath-kakariko", "status": "planned", "messageIds": [], "messageRanges": []},
-    {"chapterId": "10-spirit-of-the-desert", "status": "planned", "messageIds": [], "messageRanges": []},
-    {"chapterId": "11-hero-of-time", "status": "planned", "messageIds": [], "messageRanges": []}
+    {"chapterId": "02-princess-of-destiny", "status": "seeded", "messageIds": ["0x0069", "0x0142", "0x0143", "0x0144", "0x1096"], "messageRanges": [], "note": "Pilot card evidence only; broader castle and market dialogue assignment remains under review."},
+    {"chapterId": "03-gorons-ruby", "status": "seeded", "messageIds": ["0x0146", "0x3008", "0x300d", "0x3014"], "messageRanges": [], "note": "Pilot card evidence only; broader mountain and cavern dialogue assignment remains under review."},
+    {"chapterId": "04-zoras-sapphire", "status": "seeded", "messageIds": ["0x4003", "0x4007", "0x4014", "0x401d"], "messageRanges": [], "note": "Pilot card evidence only; broader river and Zora dialogue assignment remains under review."},
+    {"chapterId": "05-door-of-time", "status": "seeded", "messageIds": ["0x0200", "0x0208", "0x020c", "0x0214", "0x202a"], "messageRanges": [], "note": "Pilot card evidence only; broader castle escape and sacred-realm dialogue assignment remains under review."},
+    {"chapterId": "06-forest-awakens", "status": "seeded", "messageIds": ["0x1057", "0x1063", "0x1066", "0x106a"], "messageRanges": [], "note": "Pilot card evidence only; broader adult forest dialogue assignment remains under review."},
+    {"chapterId": "07-fire-sage", "status": "seeded", "messageIds": ["0x0115", "0x021c", "0x0323", "0x3035", "0x3039"], "messageRanges": [], "note": "Pilot card evidence only; broader Fire Temple dialogue assignment remains under review."},
+    {"chapterId": "08-beneath-the-ice", "status": "seeded", "messageIds": ["0x005d", "0x0197", "0x2071", "0x4012", "0x4019"], "messageRanges": [], "note": "Pilot card evidence only; broader ice and Water Temple dialogue assignment remains under review."},
+    {"chapterId": "09-darkness-beneath-kakariko", "status": "seeded", "messageIds": ["0x0601", "0x0629", "0x5014", "0x5085", "0x5087"], "messageRanges": [], "note": "Pilot card evidence only; broader well and Shadow Temple dialogue assignment remains under review."},
+    {"chapterId": "10-spirit-of-the-desert", "status": "seeded", "messageIds": ["0x6004", "0x6005", "0x6024", "0x6065", "0x606a"], "messageRanges": [], "note": "Pilot card evidence only; broader fortress and Spirit Temple dialogue assignment remains under review."},
+    {"chapterId": "11-hero-of-time", "status": "seeded", "messageIds": ["0x706c", "0x706f", "0x707e", "0x7084", "0x70e0"], "messageRanges": [], "note": "Pilot card evidence only; broader final-castle and ending dialogue assignment remains under review."}
   ]
 }

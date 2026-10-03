@@ -82,18 +82,34 @@ clips for review and never changes the catalog automatically. Installation,
 license evidence, quality limitations, and commands are documented in
 [`KOKORO_TTS.md`](KOKORO_TTS.md). `none` remains the default provider.
 
-## Chapter 1 vertical slice
+## All-chapter pilot
 
-Chapter 1 currently includes a deliberately small set of reviewed pilot cards.
-Build it with:
+Every chapter now includes a deliberately small pilot set: six cards in the
+opening chapter and five cards in each later chapter, for 56 total. Every card
+has stable corpus provenance and a newly written example sentence. The chapter
+mappings remain `seeded`, not `reviewed`: the pilot cards can be exercised now,
+while comprehensive dialogue assignment and native-speaker language review are
+still release gates.
+
+Build an individual chapter with:
 
 ```bash
 python3 scripts/jp_assist/build_catalog_deck.py --chapter 1 --require-corpus-evidence
 ```
 
+To produce all eleven local pilot decks:
+
+```bash
+for chapter in $(seq 1 11); do
+  python3 scripts/jp_assist/build_catalog_deck.py \
+    --chapter "$chapter" --require-corpus-evidence \
+    --output-prefix "oot_chapter_$(printf '%02d' "$chapter")_pilot"
+done
+```
+
 This writes an `.apkg` and review TSV under `scripts/jp_assist/out/`. The package
-is text-only until reviewed audio is supplied. Planned chapters refuse to export
-an empty package. Each published card cites only a stable corpus identity and
+is text-only until reviewed audio is supplied. Empty chapters refuse to export
+a package. Each published card cites only a stable corpus identity and
 message IDs; generation verifies those references against the local corpus while
 keeping extracted dialogue out of the catalog. The same gate normalizes and
 compares every Japanese and English example against every extracted page and

@@ -18,16 +18,15 @@ from build_catalog_deck import (  # noqa: E402
 
 
 class BuildCatalogDeckTest(unittest.TestCase):
-    def test_chapter_one_builds_reviewed_text_only_notes(self):
+    def test_every_chapter_builds_reviewed_text_only_notes(self):
         game = load_game("ocarina-of-time")
-        chapter = select_chapter(game, "1")
-
-        deck, media = build_deck(game, chapter)
-
-        self.assertEqual(len(deck.notes), chapter["deck"]["reviewedCardCount"])
-        self.assertEqual(media, [])
-        self.assertTrue(all(note.fields[6:8] == ["", ""] for note in deck.notes))
-        self.assertTrue(all(note.fields[8] == chapter["id"] for note in deck.notes))
+        self.assertEqual(sum(chapter["deck"]["reviewedCardCount"] for chapter in game["chapters"]), 56)
+        for chapter in game["chapters"]:
+            deck, media = build_deck(game, chapter)
+            self.assertEqual(len(deck.notes), chapter["deck"]["reviewedCardCount"])
+            self.assertEqual(media, [])
+            self.assertTrue(all(note.fields[6:8] == ["", ""] for note in deck.notes))
+            self.assertTrue(all(note.fields[8] == chapter["id"] for note in deck.notes))
 
     def test_identities_are_stable_and_chapter_scoped(self):
         self.assertEqual(
@@ -41,7 +40,7 @@ class BuildCatalogDeckTest(unittest.TestCase):
 
     def test_chapter_without_reviewed_content_refuses_empty_package(self):
         game = load_game("ocarina-of-time")
-        chapter = select_chapter(game, "2")
+        chapter = {"id": "empty", "sampleCards": []}
         with self.assertRaisesRegex(ValueError, "no reviewed cards"):
             build_deck(game, chapter)
 
