@@ -158,6 +158,39 @@ void ExitStudyMode() {
     SPDLOG_INFO("[JPAssist] Study Mode exited");
 }
 
+// Dialogue callbacks stop entirely once the native textbox disappears. Keep
+// teardown in one idempotent path so settings resets, save/scene teardown,
+// forced textbox closure, and the ordinary closing state cannot leave an
+// input-less overlay behind.
+void ClearDialogueRuntimeState() {
+    ExitStudyMode();
+    // Hide defensively even when the manager already believed Study Mode was
+    // inactive. The render-side overlay is intentionally independent and a
+    // prior interrupted frame may otherwise have left it visible.
+    JPAssist::JPAssistOverlay_Hide();
+    sTrackedTextId = 0xFFFF;
+    sLastMsgMode = MSGMODE_NONE;
+    sCurrentPageIndex = 0;
+    sNativePageTracker.Reset();
+    sFrozenChoiceValid = false;
+    sFrozenChoiceTextId = 0xFFFF;
+    sFrozenChoicePageIndex = -1;
+    sQueuedTestButtons = 0;
+    sQueuedTestStickY = 0;
+    sQueuedTestHasStickY = false;
+}
+
+void MaintainDialogueRuntimeState() {
+    const bool enabled = CVarGetInteger(CVAR_ENHANCEMENT("JPAssist.Enabled"), 1) != 0;
+    // Message_Update returns before OnDialogMessage when msgLength is zero,
+    // even if a forced reset left msgMode carrying its previous value.
+    const bool dialogueActive = gPlayState != nullptr && gPlayState->msgCtx.msgLength != 0 &&
+                                gPlayState->msgCtx.msgMode != MSGMODE_NONE;
+    if (!enabled || !dialogueActive) {
+        ClearDialogueRuntimeState();
+    }
+}
+
 // Called whenever sSelectedTokenIndex changes (entering Study Mode counts as
 // the first selection). Records one encounter for the newly-selected token -
 // deliberately not called from DrawStudyCard, which runs every frame Study
@@ -351,7 +384,7 @@ void OnDialogMessage() {
     // below runs means msgMode/textId state isn't even observed, so
     // there's nothing left to clean up if the player re-enables mid-message.
     if (!CVarGetInteger(CVAR_ENHANCEMENT("JPAssist.Enabled"), 1)) {
-        JPAssist::JPAssistOverlay_Hide();
+        ClearDialogueRuntimeState();
         return;
     }
 
@@ -423,11 +456,9 @@ void OnDialogMessage() {
 
     if (msgMode == MSGMODE_TEXT_CLOSING && sLastMsgMode != MSGMODE_TEXT_CLOSING) {
         SPDLOG_INFO("[JPAssist] Dialogue closed: textId {:#x}", sTrackedTextId);
-        ExitStudyMode();
-        sTrackedTextId = 0xFFFF;
-        sNativePageTracker.Reset();
+        ClearDialogueRuntimeState();
         GetOverlay()->ClearNotifications();
-        JPAssist::JPAssistOverlay_Hide();
+        return;
     }
 
     sLastMsgMode = msgMode;
@@ -572,6 +603,15 @@ void RegisterJPAssist() {
                     "with missing glyphs");
     }
     GameInteractor::Instance->RegisterGameHook<GameInteractor::OnDialogMessage>(OnDialogMessage);
+    // OnDialogMessage is not invoked after a textbox is removed, so this
+    // frame hook owns fail-safe cleanup for settings resets and forced exits.
+    GameInteractor::Instance->RegisterGameHook<GameInteractor::OnGameFrameUpdate>(MaintainDialogueRuntimeState);
+    GameInteractor::Instance->RegisterGameHook<GameInteractor::OnSceneInit>([](int16_t) {
+        ClearDialogueRuntimeState();
+    });
+    GameInteractor::Instance->RegisterGameHook<GameInteractor::OnExitGame>([](int32_t) {
+        ClearDialogueRuntimeState();
+    });
     RegisterJPAssistMenu();
     Ship::Context::GetRawInstance()->GetConsole()->AddCommand(
         "jpassist_history", { JPAssistHistoryCommand, "Lists JP Assist's recent dialogue history." });
