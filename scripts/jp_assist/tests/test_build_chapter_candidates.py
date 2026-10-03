@@ -88,6 +88,18 @@ class BuildChapterCandidatesTest(unittest.TestCase):
         self.assertEqual([row["written"] for row in by_chapter["one"]], ["水", "森"])
         self.assertEqual(by_chapter["one"][0]["gameFrequency"], 2)
 
+    def test_styled_katakana_particle_counts_toward_canonical_card(self):
+        runtime = {"messages": {
+            "0x1000": self.message("よ", "よ", "override:よ|よ", "emphasis"),
+            "0x2000": self.message("ヨ", "よ", "override:ヨ|よ", "emphasis"),
+        }}
+
+        by_chapter, _ = collect_candidates(runtime, self.catalog, self.mapping)
+
+        rows = [row for row in by_chapter["one"] if row["written"] == "よ"]
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0]["gameFrequency"], 2)
+
     def test_transitive_prerequisites_and_cycles_are_validated(self):
         catalog = {"chapters": [
             {"id": "one", "order": 1},

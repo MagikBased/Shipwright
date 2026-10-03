@@ -25,6 +25,11 @@ DEFAULT_CATALOG = (
 DEFAULT_MAPPING = Path(__file__).parent / "chapter_mapping" / "ocarina-of-time.json"
 DEFAULT_OUT_DIR = Path(__file__).parent / "out" / "chapter_candidates"
 CORE_COVERAGE_TARGET_PERCENT = 80.0
+CANONICAL_IDENTITY_ALIASES = {
+    # Dialogue sometimes uses katakana for emphasis. It remains one learnable
+    # particle rather than becoming a second card solely because of styling.
+    ("ヨ", "よ", "override:ヨ|よ"): ("よ", "よ", "override:よ|よ"),
+}
 
 
 def reviewed_cards(chapter: dict[str, Any]) -> list[dict[str, Any]]:
@@ -45,6 +50,12 @@ def load_catalog(path: Path) -> dict[str, Any]:
     for chapter in catalog["chapters"]:
         chapter["reviewedCards"] = cards_by_chapter.get(chapter["id"], [])
     return catalog
+
+
+def token_identity(token: dict[str, Any]) -> tuple[str, str, str]:
+    reading = token.get("dictionaryReading", token["reading"])
+    identity = (token["lemma"], reading, token["senseId"])
+    return CANONICAL_IDENTITY_ALIASES.get(identity, identity)
 
 
 def message_number(value: str) -> int:
@@ -138,18 +149,16 @@ def collect_candidates(
     for record in messages.values():
         for page in record["pages"]:
             for token in page["tokens"]:
-                reading = token.get("dictionaryReading", token["reading"])
-                game_occurrences[(token["lemma"], reading, token["senseId"])] += 1
+                game_occurrences[token_identity(token)] += 1
     for message_id, chapter_id in message_chapter.items():
         for page in messages[message_id]["pages"]:
             for token in page["tokens"]:
-                reading = token.get("dictionaryReading", token["reading"])
-                identity = (token["lemma"], reading, token["senseId"])
+                identity = token_identity(token)
                 occurrences[identity][chapter_id] += 1
                 evidence[identity][chapter_id].add(message_id)
                 metadata.setdefault(identity, {
-                    "written": token["lemma"],
-                    "reading": reading,
+                    "written": identity[0],
+                    "reading": identity[1],
                     "senseId": token["senseId"],
                     "partOfSpeech": token["partOfSpeech"],
                     "meaning": token["meaning"],
