@@ -1,6 +1,7 @@
 services:
   app:
     build: .
+    image: ${JP_ASSIST_APP_IMAGE:-jp-assist-learning-platform:local}
     restart: unless-stopped
     env_file: ${JP_ASSIST_ENV_FILE:-.env}
     environment:
@@ -24,6 +25,28 @@ services:
       timeout: 5s
       start_period: 10s
       retries: 3
+
+  backup:
+    image: ${JP_ASSIST_APP_IMAGE:-jp-assist-learning-platform:local}
+    restart: unless-stopped
+    env_file: ${JP_ASSIST_ENV_FILE:-.env}
+    environment:
+      JP_ASSIST_PLATFORM_DB: /data/platform.sqlite3
+      JP_ASSIST_BACKUP_DIR: /backups
+    depends_on:
+      app:
+        condition: service_healthy
+    command:
+      - sh
+      - -c
+      - >-
+        while true; do
+          python -m learning_platform.manage backup-scheduled;
+          sleep "$${JP_ASSIST_BACKUP_INTERVAL_SECONDS:-86400}";
+        done
+    volumes:
+      - platform-data:/data:ro
+      - platform-backups:/backups
 
   mailpit:
     image: ghcr.io/axllent/mailpit:v1.31.3@sha256:13de4ffbd28f3089be6dff32afbc8210edb5a593d738fa877ae7272cc73aeb67

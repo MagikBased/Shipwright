@@ -236,10 +236,13 @@ now starts the app, Caddy HTTPS proxy, persistent SQLite volumes, Mailpit,
 Prometheus, and a provisioned Grafana operations dashboard. Correlated JSON
 request/audit logs omit request content and credentials; private metrics cover
 traffic, latency, failures, ingestion, readiness, database size, retained
-events, backups, and mail failures. The stack and public/private metrics
-boundary have been exercised on the supported local Podman compatibility path.
-Scheduled backup/restore drills, migration rehearsal, load qualification, and
-the complete operator runbooks remain open.
+events, backups, and mail failures. A least-privilege sidecar creates
+integrity-checked daily backups with count retention, and the one-command
+isolated restore drill proves the newest artifact is readable and schema-ready.
+The stack and public/private metrics boundary have been exercised on the
+supported local Podman compatibility path. Migration rehearsal, load
+qualification, off-host backup policy, and the complete operator runbooks
+remain open.
 
 Deliverables:
 

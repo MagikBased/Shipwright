@@ -34,8 +34,8 @@ game's `jp_assist_sync.json` and upload automatically after reconnection.
 
 Set `JP_ASSIST_COOKIE_SECURE=1` behind HTTPS in any non-local deployment. The
 included production scaffold supplies HTTPS termination, rate limiting, and
-backup tooling. An open public beta still requires an operational backup
-schedule, external monitoring, and a real transactional-email provider.
+scheduled local backups. An open public beta still requires encrypted off-host
+backup storage, external monitoring, and a real transactional-email provider.
 
 ## Production deployment scaffold
 
@@ -55,9 +55,10 @@ services/learning_platform/scripts/staging.sh up
 ```
 
 This starts HTTPS, persistent data, local email capture, private Prometheus
-metrics, and the provisioned Grafana operations dashboard. Use
-`scripts/staging.sh status`, `logs`, `smoke`, and `down` for its lifecycle. See
-the deployment guide for URLs and the local-certificate note.
+metrics, daily retained backups, and the provisioned Grafana operations
+dashboard. Use `scripts/staging.sh status`, `logs`, `smoke`, `backup`,
+`restore-drill`, and `down` for its lifecycle. See the deployment guide for
+URLs and the local-certificate note.
 
 Useful non-container database commands are also available:
 

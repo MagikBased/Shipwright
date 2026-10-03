@@ -102,11 +102,17 @@ EOF
     smoke)
         smoke
         ;;
+    backup)
+        run_compose exec -T app python -m learning_platform.manage backup-scheduled
+        ;;
+    restore-drill)
+        run_compose exec -T app python -m learning_platform.manage restore-drill
+        ;;
     config)
         run_compose config
         ;;
     *)
-        echo "Usage: $0 {up|down|status|logs [service...]|smoke|config}" >&2
+        echo "Usage: $0 {up|down|status|logs [service...]|smoke|backup|restore-drill|config}" >&2
         exit 2
         ;;
 esac

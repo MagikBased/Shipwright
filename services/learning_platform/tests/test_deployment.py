@@ -2,12 +2,19 @@ import os
 import sqlite3
 import tempfile
 import unittest
+from datetime import datetime, timezone
 from pathlib import Path
 from unittest.mock import patch
 
 from learning_platform.config import Settings
 from learning_platform.database import Database, LATEST_SCHEMA_VERSION
-from learning_platform.manage import backup_database, dictionary_entries_from_runtime, restore_database
+from learning_platform.manage import (
+    backup_database,
+    dictionary_entries_from_runtime,
+    restore_database,
+    restore_drill,
+    scheduled_backup,
+)
 from learning_platform.rate_limit import SlidingWindowRateLimiter
 
 
@@ -225,6 +232,30 @@ class DeploymentTest(unittest.TestCase):
                     "before",
                 )
             self.assertEqual(len(list(root.glob("active.sqlite3.pre-restore-*"))), 1)
+
+    def test_scheduled_backup_retention_and_isolated_restore_drill(self):
+        with tempfile.TemporaryDirectory(prefix="jp-assist-scheduled-backup-") as temporary:
+            root = Path(temporary)
+            active = root / "active.sqlite3"
+            backups = root / "backups"
+            database = Database(active)
+            with database.connect() as connection:
+                connection.execute("INSERT INTO metadata VALUES ('sentinel', 'restorable')")
+
+            written = []
+            for second in range(4):
+                output, _ = scheduled_backup(
+                    active,
+                    backups,
+                    retain=2,
+                    now=datetime(2026, 10, 3, 12, 0, second, tzinfo=timezone.utc),
+                )
+                written.append(output)
+
+            remaining = sorted(backups.glob("platform-*.sqlite3"))
+            self.assertEqual(remaining, written[-2:])
+            self.assertFalse(written[0].exists())
+            self.assertEqual(restore_drill(written[-1]), (LATEST_SCHEMA_VERSION, "ready"))
 
     def test_runtime_dictionary_import_excludes_dialogue(self):
         with tempfile.TemporaryDirectory(prefix="jp-assist-dictionary-") as temporary:

@@ -25,7 +25,8 @@ def backup_database(source_path: Path, output_path: Path, overwrite: bool = Fals
     if output_path.exists() and not overwrite:
         raise SystemExit(f"Backup already exists: {output_path}")
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    with sqlite3.connect(source_path) as source, sqlite3.connect(output_path) as destination:
+    source_uri = source_path.resolve().as_uri() + "?mode=ro"
+    with sqlite3.connect(source_uri, uri=True) as source, sqlite3.connect(output_path) as destination:
         source.backup(destination)
         destination.commit()
         journal_mode = destination.execute("PRAGMA journal_mode=DELETE").fetchone()[0]
@@ -38,6 +39,37 @@ def backup_database(source_path: Path, output_path: Path, overwrite: bool = Fals
         output_path.chmod(0o600)
     except OSError:
         pass
+
+
+def scheduled_backup(
+    source_path: Path,
+    output_directory: Path,
+    retain: int,
+    now: datetime | None = None,
+) -> tuple[Path, list[Path]]:
+    if retain < 1:
+        raise SystemExit("Backup retention must be at least one file")
+    timestamp = (now or datetime.now(timezone.utc)).astimezone(timezone.utc)
+    output_path = output_directory / f"platform-{timestamp.strftime('%Y%m%dT%H%M%S%fZ')}.sqlite3"
+    backup_database(source_path, output_path)
+    backups = sorted(output_directory.glob("platform-*.sqlite3"), reverse=True)
+    removed = backups[retain:]
+    for path in removed:
+        path.unlink()
+    return output_path, removed
+
+
+def restore_drill(backup_path: Path) -> tuple[int, str]:
+    if not backup_path.is_file():
+        raise SystemExit(f"Backup not found: {backup_path}")
+    with tempfile.TemporaryDirectory(prefix="jp-assist-restore-drill-") as temporary:
+        restored_path = Path(temporary) / "restored.sqlite3"
+        restore_database(restored_path, backup_path, confirmed=True)
+        database = Database(restored_path)
+        ready, detail = database.readiness()
+        if not ready:
+            raise SystemExit(f"Restore drill failed: {detail}")
+        return database.schema_version(), detail
 
 
 def restore_database(database_path: Path, backup_path: Path, confirmed: bool) -> None:
@@ -124,6 +156,25 @@ def main() -> None:
     backup_parser = subparsers.add_parser("backup", help="Create a consistent online SQLite backup")
     backup_parser.add_argument("output", type=Path)
     backup_parser.add_argument("--force", action="store_true")
+    scheduled_backup_parser = subparsers.add_parser(
+        "backup-scheduled", help="Create a timestamped backup and enforce count retention"
+    )
+    scheduled_backup_parser.add_argument(
+        "--directory", type=Path,
+        default=Path(os.environ.get("JP_ASSIST_BACKUP_DIR", "/backups")),
+    )
+    scheduled_backup_parser.add_argument(
+        "--retain", type=int,
+        default=int(os.environ.get("JP_ASSIST_BACKUP_RETAIN_COUNT", "14")),
+    )
+    restore_drill_parser = subparsers.add_parser(
+        "restore-drill", help="Restore the newest backup into an isolated temporary database"
+    )
+    restore_drill_parser.add_argument("backup", type=Path, nargs="?")
+    restore_drill_parser.add_argument(
+        "--directory", type=Path,
+        default=Path(os.environ.get("JP_ASSIST_BACKUP_DIR", "/backups")),
+    )
     restore_parser = subparsers.add_parser("restore", help="Restore and migrate a backup while the service is stopped")
     restore_parser.add_argument("backup", type=Path)
     restore_parser.add_argument("--yes", action="store_true")
@@ -169,9 +220,21 @@ def main() -> None:
             f"{count} {category}" for category, count in result.items()
         ))
     elif args.command == "backup":
-        Database(database_path)
         backup_database(database_path, args.output, args.force)
         print(f"Wrote backup: {args.output}")
+    elif args.command == "backup-scheduled":
+        output, removed = scheduled_backup(database_path, args.directory, args.retain)
+        print(f"Wrote scheduled backup: {output}")
+        print(f"Pruned {len(removed)} expired backup(s); retaining at most {args.retain}")
+    elif args.command == "restore-drill":
+        backup = args.backup
+        if backup is None:
+            backups = sorted(args.directory.glob("platform-*.sqlite3"), reverse=True)
+            if not backups:
+                raise SystemExit(f"No scheduled backups found in {args.directory}")
+            backup = backups[0]
+        schema_version, detail = restore_drill(backup)
+        print(f"Restore drill passed: {backup} (schema {schema_version}, {detail})")
     elif args.command == "restore":
         restore_database(database_path, args.backup, args.yes)
         print(f"Restored database: {database_path}")

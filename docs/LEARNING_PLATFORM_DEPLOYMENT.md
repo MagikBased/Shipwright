@@ -35,6 +35,8 @@ public deployment.
 services/learning_platform/scripts/staging.sh status
 services/learning_platform/scripts/staging.sh logs app
 services/learning_platform/scripts/staging.sh smoke
+services/learning_platform/scripts/staging.sh backup
+services/learning_platform/scripts/staging.sh restore-drill
 services/learning_platform/scripts/staging.sh down
 ```
 
@@ -82,6 +84,8 @@ API path, for example `https://learn.example.com`.
 | `JP_ASSIST_TRUST_PROXY_HEADERS` | Uses Caddy's forwarded client address | `1` behind bundled Caddy |
 | `JP_ASSIST_STRUCTURED_LOGS` | Emits content-neutral JSON request/audit logs | `1` |
 | `JP_ASSIST_BACKUP_DIR` | Directory inspected for backup metrics | `/backups` |
+| `JP_ASSIST_BACKUP_INTERVAL_SECONDS` | Delay between automatic backup attempts | `86400` |
+| `JP_ASSIST_BACKUP_RETAIN_COUNT` | Newest automatic backups kept locally | `14` |
 | `JP_ASSIST_BIND_ADDRESS` | Address used for public HTTP/HTTPS bindings | `0.0.0.0` public, `127.0.0.1` local staging |
 | `JP_ASSIST_RATE_LIMIT_WINDOW_SECONDS` | Sliding rate-limit window | `60` |
 | `JP_ASSIST_AUTH_RATE_LIMIT` | Registrations/login attempts per IP/window | `20` |
@@ -129,6 +133,21 @@ docker compose exec app python -m learning_platform.manage migrate
 
 ## Backup and restore
 
+The Compose `backup` sidecar makes an online backup immediately after startup
+and then once per configured interval. It mounts the live data volume read-only,
+checks SQLite integrity on every copy, uses single-file journal mode, and keeps
+only the configured number of `platform-*.sqlite3` files. Trigger and validate
+one manually with:
+
+```bash
+services/learning_platform/scripts/staging.sh backup
+services/learning_platform/scripts/staging.sh restore-drill
+```
+
+The drill restores the newest artifact into an isolated temporary database,
+runs supported migrations, checks schema compatibility and SQLite integrity,
+then removes the temporary copy. It never replaces the active database.
+
 Create an online, transactionally consistent SQLite backup:
 
 ```bash
@@ -167,9 +186,9 @@ python scripts/deployment_smoke.py https://learn.example.com
 ## Remaining public-beta requirements
 
 The deployment scaffold supplies HTTPS, host validation, rate limits, health
-checks, migrations, manual backups, structured logs, and local monitoring.
-Before advertising an open public service, add an operational backup schedule
-with restore drills, external uptime/error monitoring, a real email provider,
-an abuse/contact process, and a published privacy policy. These require
-deployment-specific infrastructure and organizational choices and are
-intentionally not guessed by the repository scaffold.
+checks, migrations, scheduled local backups with restore drills, structured
+logs, and local monitoring. Before advertising an open public service, copy
+backups to encrypted off-host storage, add external uptime/error monitoring, a
+real email provider, an abuse/contact process, and a published privacy policy.
+These require deployment-specific infrastructure and organizational choices
+and are intentionally not guessed by the repository scaffold.
