@@ -46,6 +46,21 @@ JP Assist::Ocarina of Time::11 The Hero of Time
 8. Optionally generate and review audio, then add only repository-relative media
    paths to `wordAudio` and `sentenceAudio`.
 
+The committed non-text mapping lives at
+`scripts/jp_assist/chapter_mapping/ocarina-of-time.json`. Generate local review
+queues from the private corpus with:
+
+```bash
+python3 scripts/jp_assist/build_chapter_candidates.py
+```
+
+It writes one ignored TSV per chapter plus `summary.json` under
+`scripts/jp_assist/out/chapter_candidates/`. These files contain dictionary
+metadata and message IDs but deliberately omit Japanese and English dialogue.
+Numeric ID ranges are never treated as story order implicitly: a reviewer must
+place explicit IDs or bounded ranges in the mapping and advance its status from
+`planned` to `seeded` to `reviewed`.
+
 The catalog must distinguish `planned`, `pilot`, and `ready`; it must not present
 an automatically extracted or unreviewed vocabulary list as a finished course.
 
@@ -62,18 +77,25 @@ context. A provider adapter must output deterministic media names and may only
 populate the existing optional fields. This keeps deck identities unchanged if
 audio is added or replaced.
 
+The first opt-in adapter is the locally run Apache-licensed Kokoro stack. It stages
+clips for review and never changes the catalog automatically. Installation,
+license evidence, quality limitations, and commands are documented in
+[`KOKORO_TTS.md`](KOKORO_TTS.md). `none` remains the default provider.
+
 ## Chapter 1 vertical slice
 
 Chapter 1 currently includes a deliberately small set of reviewed pilot cards.
 Build it with:
 
 ```bash
-python3 scripts/jp_assist/build_catalog_deck.py --chapter 1
+python3 scripts/jp_assist/build_catalog_deck.py --chapter 1 --require-corpus-evidence
 ```
 
 This writes an `.apkg` and review TSV under `scripts/jp_assist/out/`. The package
 is text-only until reviewed audio is supplied. Planned chapters refuse to export
-an empty package.
+an empty package. Each published card cites only a stable corpus identity and
+message IDs; generation verifies those references against the local corpus while
+keeping extracted dialogue out of the catalog.
 
 ## Expansion and release gates
 

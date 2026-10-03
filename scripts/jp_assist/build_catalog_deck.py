@@ -21,6 +21,7 @@ REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_CATALOG_ROOT = (
     REPOSITORY_ROOT / "services" / "learning_platform" / "learning_platform" / "content" / "games"
 )
+DEFAULT_RUNTIME_DATA = Path(__file__).parent / "out" / "runtime_data.json"
 MODEL_ID = 1607000011
 
 MODEL = genanki.Model(
@@ -137,17 +138,55 @@ def build_deck(
     return deck, media_files
 
 
+def validate_corpus_evidence(chapter: dict[str, Any], runtime_root: dict[str, Any]) -> None:
+    messages = runtime_root.get("messages", runtime_root)
+    for card in chapter.get("sampleCards", []):
+        evidence = card.get("corpusEvidence")
+        if not evidence:
+            raise ValueError(f"Reviewed card {card['id']} has no corpus evidence")
+        expected = evidence["identity"]
+        found = False
+        for message_id in evidence.get("messageIds", []):
+            record = messages.get(message_id)
+            if record is None:
+                raise ValueError(f"Reviewed card {card['id']} cites missing message {message_id}")
+            for page in record["pages"]:
+                for token in page["tokens"]:
+                    reading = token.get("dictionaryReading", token["reading"])
+                    actual = f"{token['lemma']}|{reading}|{token['senseId']}"
+                    found = found or actual == expected
+        if not found:
+            raise ValueError(f"Reviewed card {card['id']} has stale corpus evidence")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--game", default="ocarina-of-time", help="Catalog game id")
     parser.add_argument("--chapter", default="1", help="Chapter number or id")
     parser.add_argument("--catalog-root", type=Path, default=DEFAULT_CATALOG_ROOT)
+    parser.add_argument(
+        "--runtime-data", type=Path, default=DEFAULT_RUNTIME_DATA,
+        help="Local corpus used to verify non-text card provenance when present",
+    )
+    parser.add_argument(
+        "--require-corpus-evidence", action="store_true",
+        help="Fail instead of warning if the local runtime corpus is unavailable",
+    )
     parser.add_argument("--out-dir", type=Path, default=Path(__file__).parent / "out")
     parser.add_argument("--output-prefix", default=None)
     args = parser.parse_args()
 
     game = load_game(args.game, args.catalog_root)
     chapter = select_chapter(game, args.chapter)
+    if args.runtime_data.is_file():
+        validate_corpus_evidence(
+            chapter, json.loads(args.runtime_data.read_text(encoding="utf-8"))
+        )
+        print(f"Verified card provenance against {args.runtime_data}")
+    elif args.require_corpus_evidence:
+        raise ValueError(f"Runtime corpus is required but missing: {args.runtime_data}")
+    else:
+        print(f"Warning: corpus provenance not verified; file is missing: {args.runtime_data}")
     deck, media_files = build_deck(game, chapter, args.catalog_root)
     args.out_dir.mkdir(parents=True, exist_ok=True)
     prefix = args.output_prefix or f"{game['id']}_{chapter['order']:02d}"

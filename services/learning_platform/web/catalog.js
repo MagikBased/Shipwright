@@ -98,7 +98,7 @@ async function loadCatalog() {
     facts.append(
       fact("Chapters", String(game.chapters.length)),
       fact("Reviewed pilot cards", String(reviewed)),
-      fact("Audio", game.audio.status === "not-generated" ? "Optional · not generated" : game.audio.status),
+      fact("Audio", game.audio.status === "optional-not-generated" ? "Optional · not generated" : game.audio.status),
       fact("Deck status", "In development")
     );
     const names = new Map(game.chapters.map(chapter => [chapter.id, `${String(chapter.order).padStart(2, "0")} ${chapter.title}`]));

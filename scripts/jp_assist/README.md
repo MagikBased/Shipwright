@@ -34,6 +34,9 @@ python scripts/jp_assist/align_dialogue.py
 python scripts/jp_assist/tokenize_dialogue.py
 python scripts/jp_assist/validate_corpus.py
 python scripts/jp_assist/build_anki_deck.py
+python scripts/jp_assist/build_chapter_candidates.py
+python scripts/jp_assist/build_catalog_deck.py --chapter 1 --require-corpus-evidence
+python scripts/jp_assist/generate_catalog_audio.py --chapter 1 --provider none
 python scripts/jp_assist/validate_anki.py scripts/jp_assist/out/oot_jp_assist.apkg
 python scripts/jp_assist/package_local.py --install-dir build-cmake/soh
 ```
@@ -140,6 +143,16 @@ JP Assist reuses.
 `overrides.py` is the human-review layer for correcting tokenization, readings,
 definitions, and game-specific usages. Dictionary output is a draft; sense
 selection should be reviewed before calling the deck complete.
+
+## Public chapter decks
+
+The ordinary local deck above may contain extracted dialogue and must remain
+private. Public catalog decks instead use the reviewed original examples in the
+website's game catalog. `build_chapter_candidates.py` joins the private corpus to
+the committed non-text chapter mapping and emits ignored review queues without
+dialogue. `build_catalog_deck.py` verifies each published card's identity and
+message-ID provenance before creating a text-only or optionally audio-enhanced
+package. See `docs/OOT_CHAPTER_DECKS.md` for the full workflow.
 
 ## Data contract
 

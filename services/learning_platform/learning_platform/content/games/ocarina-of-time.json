@@ -14,8 +14,9 @@
   },
   "audio": {
     "mode": "optional",
-    "status": "not-generated",
+    "status": "optional-not-generated",
     "provider": null,
+    "supportedProviders": ["none", "kokoro-local"],
     "description": "Decks remain fully usable without audio. Only reviewed, commercially usable local or free generation may populate the optional word and sentence audio fields."
   },
   "chapters": [
@@ -44,6 +45,7 @@
           "meaning": "forest",
           "sentenceJapanese": "深い森では、古い精霊が旅人の道を守っている。",
           "sentenceEnglish": "In the deep forest, an ancient spirit guards the traveler's path.",
+          "corpusEvidence": {"identity": "森|もり|jmdict:1362490:0", "messageIds": ["0x0080"]},
           "wordAudio": null,
           "sentenceAudio": null
         },
@@ -55,6 +57,7 @@
           "meaning": "fairy; sprite",
           "sentenceJapanese": "小さな妖精が月明かりの道を照らした。",
           "sentenceEnglish": "A tiny fairy lit the moonlit path.",
+          "corpusEvidence": {"identity": "妖精|ようせい|jmdict:1545330:0", "messageIds": ["0x0030", "0x004a"]},
           "wordAudio": null,
           "sentenceAudio": null
         },
@@ -66,6 +69,7 @@
           "meaning": "sword",
           "sentenceJapanese": "若い騎士は石の台から古い剣を持ち上げた。",
           "sentenceEnglish": "The young knight lifted an old sword from the stone pedestal.",
+          "corpusEvidence": {"identity": "剣|けん|jmdict:1256750:0", "messageIds": ["0x00a4", "0x1030", "0x1032"]},
           "wordAudio": null,
           "sentenceAudio": null
         },
@@ -77,6 +81,7 @@
           "meaning": "shield",
           "sentenceJapanese": "木の盾には森を守る紋章が刻まれている。",
           "sentenceEnglish": "The wooden shield bears a crest that protects the forest.",
+          "corpusEvidence": {"identity": "盾|たて|jmdict:1341840:0", "messageIds": ["0x004c", "0x1030", "0x1032"]},
           "wordAudio": null,
           "sentenceAudio": null
         },
@@ -88,17 +93,19 @@
           "meaning": "courage; bravery",
           "sentenceJapanese": "勇気があれば、暗い洞窟にも進める。",
           "sentenceEnglish": "With courage, you can venture into a dark cavern.",
+          "corpusEvidence": {"identity": "勇気|ゆうき|jmdict:1539740:0", "messageIds": ["0x0141", "0x1016"]},
           "wordAudio": null,
           "sentenceAudio": null
         },
         {
-          "id": "目覚める|めざめる|awaken",
-          "written": "目覚める",
-          "reading": "めざめる",
-          "partOfSpeech": "verb",
-          "meaning": "to awaken",
-          "sentenceJapanese": "朝の鐘が鳴ると、眠っていた守り手が目覚めた。",
-          "sentenceEnglish": "When the morning bell rang, the sleeping guardian awoke.",
+          "id": "精霊|せいれい|spirit",
+          "written": "精霊",
+          "reading": "せいれい",
+          "partOfSpeech": "noun",
+          "meaning": "spirit; soul",
+          "sentenceJapanese": "泉の精霊は、静かな歌で傷ついた旅人を癒やした。",
+          "sentenceEnglish": "The spirit of the spring healed the wounded traveler with a quiet song.",
+          "corpusEvidence": {"identity": "精霊|せいれい|jmdict:1380230:0", "messageIds": ["0x0080"]},
           "wordAudio": null,
           "sentenceAudio": null
         }

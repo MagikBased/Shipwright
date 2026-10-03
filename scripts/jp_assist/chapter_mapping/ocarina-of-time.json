@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "gameId": "ocarina-of-time",
+  "sourceVariant": "N64_NTSC_12",
+  "description": "Non-text provenance used to assign corpus vocabulary to its earliest learning chapter.",
+  "chapters": [
+    {
+      "chapterId": "01-boy-without-a-fairy",
+      "status": "seeded",
+      "messageIds": [
+        "0x0030", "0x004a", "0x004c", "0x0080", "0x0089", "0x009f",
+        "0x00a4", "0x0141"
+      ],
+      "messageRanges": [{"first": "0x1001", "last": "0x104d"}],
+      "note": "Opening forest, equipment, Great Deku Tree, and immediate post-dungeon messages. Seed mapping requires source review before the chapter is marked complete."
+    },
+    {"chapterId": "02-princess-of-destiny", "status": "planned", "messageIds": [], "messageRanges": []},
+    {"chapterId": "03-gorons-ruby", "status": "planned", "messageIds": [], "messageRanges": []},
+    {"chapterId": "04-zoras-sapphire", "status": "planned", "messageIds": [], "messageRanges": []},
+    {"chapterId": "05-door-of-time", "status": "planned", "messageIds": [], "messageRanges": []},
+    {"chapterId": "06-forest-awakens", "status": "planned", "messageIds": [], "messageRanges": []},
+    {"chapterId": "07-fire-sage", "status": "planned", "messageIds": [], "messageRanges": []},
+    {"chapterId": "08-beneath-the-ice", "status": "planned", "messageIds": [], "messageRanges": []},
+    {"chapterId": "09-darkness-beneath-kakariko", "status": "planned", "messageIds": [], "messageRanges": []},
+    {"chapterId": "10-spirit-of-the-desert", "status": "planned", "messageIds": [], "messageRanges": []},
+    {"chapterId": "11-hero-of-time", "status": "planned", "messageIds": [], "messageRanges": []}
+  ]
+}

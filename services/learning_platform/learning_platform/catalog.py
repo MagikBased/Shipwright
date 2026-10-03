@@ -48,6 +48,16 @@ class GameCatalog:
             references = chapter.get("prerequisites", []) + chapter.get("recommendedAfter", [])
             if any(reference not in known for reference in references):
                 raise ValueError(f"Catalog game {game_id} has an unknown chapter reference")
+            cards = chapter.get("sampleCards", [])
+            if chapter.get("deck", {}).get("reviewedCardCount") != len(cards):
+                raise ValueError(f"Catalog chapter {chapter['id']} reviewed card count is stale")
+            card_ids = [card.get("id") for card in cards]
+            if len(card_ids) != len(set(card_ids)) or any(not value for value in card_ids):
+                raise ValueError(f"Catalog chapter {chapter['id']} card ids must be unique")
+            for card in cards:
+                evidence = card.get("corpusEvidence", {})
+                if not evidence.get("identity") or not evidence.get("messageIds"):
+                    raise ValueError(f"Catalog card {card['id']} has no corpus evidence")
 
     @staticmethod
     def _summary(game: dict[str, Any]) -> dict[str, Any]:
