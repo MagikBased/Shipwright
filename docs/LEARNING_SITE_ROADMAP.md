@@ -48,8 +48,9 @@ Known intentional limitations:
 - The current scheduler is not exact FSRS.
 - Reminder preference is stored but notifications are not delivered.
 - Email verification and password recovery are absent.
-- Browser workflows, responsive layouts, accessibility, and visual regressions
-  are not yet covered by automated acceptance tests.
+- Chromium browser workflows, responsive layouts, accessibility, recovery
+  states, and visual regressions have deterministic automated coverage;
+  Firefox and WebKit qualification remains part of the release-candidate gate.
 - AnkiConnect currently exports cards but does not reconcile review history.
 
 ## Milestone 1 — Account acceptance harness
@@ -80,11 +81,11 @@ command against a temporary database and clean up after themselves.
 
 ## Milestone 2 — Product and visual polish
 
-Status: **in progress**. Scalable vocabulary paging, detailed word provenance,
+Status: **complete**. Scalable vocabulary paging, detailed word provenance,
 dashboard goal/due/streak/state summaries, accessible confirmation dialogs,
-reduced-motion support, and transient account-load handling are implemented and
-covered by the browser suite. Visual baselines, richer offline states, and the
-remaining reusable component work are still open.
+reduced-motion support, reusable UI utilities, skeleton/busy/offline/retry
+states, and pinned-browser visual baselines are implemented and covered by the
+browser suite.
 
 Turn the functional workspace into a coherent learning product.
 

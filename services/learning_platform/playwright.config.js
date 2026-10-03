@@ -4,7 +4,7 @@ const { resolve } = require("node:path");
 
 const repositoryPython = resolve(__dirname, "../../venv/learning-platform/bin/python");
 const python = process.env.JP_ASSIST_TEST_PYTHON || (existsSync(repositoryPython) ? repositoryPython : "python3");
-const chromium = process.env.JP_ASSIST_TEST_CHROMIUM || (existsSync("/usr/bin/chromium") ? "/usr/bin/chromium" : undefined);
+const chromium = process.env.JP_ASSIST_TEST_CHROMIUM;
 
 module.exports = defineConfig({
   testDir: "./tests/browser",
@@ -17,6 +17,7 @@ module.exports = defineConfig({
   use: {
     baseURL: "http://127.0.0.1:18766",
     browserName: "chromium",
+    viewport: { width: 1440, height: 900 },
     launchOptions: chromium ? { executablePath: chromium } : {},
     screenshot: "only-on-failure",
     trace: "retain-on-failure",

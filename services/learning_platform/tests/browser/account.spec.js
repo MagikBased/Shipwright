@@ -52,6 +52,11 @@ test.describe.serial("learning account", () => {
     await expect(page.locator("#dashboard")).toBeVisible();
     await expect(page.locator("#auth")).toBeHidden();
     await expect(page.locator("#notice")).toContainText("signed in, but some data could not be loaded");
+    await expect(page.locator("#connection-status")).toContainText("Some account data could not be loaded");
+    await page.unroute("**/v1/me/activity");
+    await page.locator("#connection-status button").click();
+    await expect(page.locator("#connection-status")).toBeHidden();
+    await expect(page.locator("#stats .stat")).toHaveCount(6);
   });
 
   test("renders overview accessibly and at supported widths", async ({ page, browser }) => {
@@ -82,6 +87,21 @@ test.describe.serial("learning account", () => {
       await openView(page, view);
       const accessibility = await new AxeBuilder({ page }).analyze();
       expect(accessibility.violations.filter(item => ["critical", "serious"].includes(item.impact)), view).toEqual([]);
+    }
+  });
+
+  test("matches the primary-view visual baselines", async ({ page }) => {
+    await login(page);
+    const masks = [page.locator("#sessions"), page.locator("#devices small")];
+    for (const view of ["overview", "vocabulary", "review", "export", "connections", "account"]) {
+      await openView(page, view);
+      await expect(page).toHaveScreenshot(`${view}.png`, {
+        animations: "disabled",
+        caret: "hide",
+        fullPage: false,
+        mask: masks,
+        maskColor: "#101b24",
+      });
     }
   });
 

@@ -1,9 +1,25 @@
+import { confirmAction, downloadJson, escapeHtml, setBusy, showNotice, skeletonCards } from "./ui.js";
+
 const auth = document.querySelector("#auth");
 const dashboard = document.querySelector("#dashboard");
-const notice = document.querySelector("#notice");
 const logout = document.querySelector("#logout");
 const WORD_PAGE_SIZE = 50;
 const state = { user: null, stats: null, goals: null, words: [], wordsOffset: 0, wordsHaveMore: false, wordRequestVersion: 0, activity: { days: [], games: [] }, devices: [], sessions: [], queue: [], reviewIndex: 0 };
+const connectionStatus = document.querySelector("#connection-status");
+
+function setConnectionStatus(message = "", retry = false) {
+  connectionStatus.querySelector("span").textContent = message;
+  const button = connectionStatus.querySelector("button");
+  button.classList.toggle("hidden", !retry);
+  button.onclick = retry ? () => loadDashboard() : null;
+  connectionStatus.classList.toggle("hidden", !message);
+}
+
+window.addEventListener("offline", () => setConnectionStatus("You are offline. Changes that need the account service will wait until the connection returns."));
+window.addEventListener("online", () => {
+  setConnectionStatus("Connection restored. Refreshing account data…");
+  loadDashboard().catch(() => {});
+});
 
 async function api(path, options = {}) {
   const response = await fetch(path, { ...options, headers: { "Content-Type": "application/json", ...(options.headers || {}) } });
@@ -12,17 +28,6 @@ async function api(path, options = {}) {
   return body;
 }
 function formJson(form) { return Object.fromEntries(new FormData(form).entries()); }
-function escapeHtml(value) { const node = document.createElement("span"); node.textContent = value ?? ""; return node.innerHTML; }
-function showNotice(message, error = false) { notice.textContent = message; notice.style.color = error ? "#ff8e8e" : ""; }
-function downloadJson(value, filename) { const link = document.createElement("a"); link.href = URL.createObjectURL(new Blob([JSON.stringify(value, null, 2)], { type: "application/json" })); link.download = filename; link.click(); URL.revokeObjectURL(link.href); }
-function confirmAction(title, message, confirmLabel = "Confirm", danger = false) {
-  const dialog = document.querySelector("#confirm-dialog"), accept = document.querySelector("#confirm-accept");
-  document.querySelector("#confirm-title").textContent = title;
-  document.querySelector("#confirm-message").textContent = message;
-  accept.textContent = confirmLabel; accept.classList.toggle("danger-button", danger);
-  dialog.showModal();
-  return new Promise(resolve => dialog.addEventListener("close", () => resolve(dialog.returnValue === "confirm"), { once: true }));
-}
 
 async function loadDashboard() {
   let user;
@@ -34,6 +39,9 @@ async function loadDashboard() {
   }
   auth.classList.add("hidden"); dashboard.classList.remove("hidden"); logout.classList.remove("hidden");
   dashboard.setAttribute("aria-busy", "true");
+  document.querySelector("#stats").innerHTML = skeletonCards(6);
+  document.querySelector("#games").innerHTML = skeletonCards(2);
+  document.querySelector("#learning-states").innerHTML = skeletonCards(4);
   try {
     const [stats, activity, goals, devices, sessions] = await Promise.all([
       api("/v1/me/stats"), api("/v1/me/activity"), api("/v1/me/goals"), api("/v1/me/devices"), api("/v1/me/sessions"),
@@ -42,8 +50,10 @@ async function loadDashboard() {
     document.querySelectorAll(".account-username").forEach(input => { input.value = user.email; });
     document.querySelector("#greeting").textContent = `${user.displayName}'s learning overview`;
     renderOverview(goals); renderConnections(); populateGames(); await loadWords();
+    if (navigator.onLine) setConnectionStatus();
   } catch (error) {
     showNotice(`Your account is signed in, but some data could not be loaded: ${error.message}`, true);
+    setConnectionStatus("Some account data could not be loaded.", true);
   } finally {
     dashboard.setAttribute("aria-busy", "false");
   }
@@ -73,7 +83,7 @@ async function loadWords(reset = true) {
   const container = document.querySelector("#words");
   const moreButton = document.querySelector("#load-more-words");
   const requestVersion = ++state.wordRequestVersion;
-  if (reset) { state.wordsOffset = 0; state.words = []; container.innerHTML = '<p class="muted">Loading vocabulary…</p>'; }
+  if (reset) { state.wordsOffset = 0; state.words = []; container.innerHTML = skeletonCards(6); }
   container.setAttribute("aria-busy", "true"); moreButton.disabled = true;
   const query = new URLSearchParams({ search: document.querySelector("#word-search").value, sort: document.querySelector("#word-sort").value, limit: String(WORD_PAGE_SIZE + 1), offset: String(state.wordsOffset) });
   const learningState = document.querySelector("#word-state").value; if (learningState) query.set("learningState", learningState);
@@ -136,17 +146,17 @@ async function sendToAnki() {
 }
 
 document.querySelector("#tabs").addEventListener("click", async event => { const button = event.target.closest("[data-view]"); if (!button) return; document.querySelectorAll("#tabs button").forEach(item => item.classList.toggle("active", item===button)); document.querySelectorAll(".view").forEach(view => view.classList.add("hidden")); document.querySelector(`#view-${button.dataset.view}`).classList.remove("hidden"); if (button.dataset.view==="review") await loadReviewQueue(); });
-for (const [id,path] of [["login-form","/v1/auth/login"],["register-form","/v1/auth/register"]]) document.querySelector(`#${id}`).addEventListener("submit", async event => { event.preventDefault(); try { await api(path,{method:"POST",body:JSON.stringify(formJson(event.currentTarget))}); showNotice(""); await loadDashboard(); } catch(error){showNotice(error.message,true);} });
-document.querySelector("#pair-form").addEventListener("submit", async event => { event.preventDefault(); const form=event.currentTarget; try { const result=await api("/v1/device-pairings/approve",{method:"POST",body:JSON.stringify(formJson(form))}); showNotice(`${result.deviceName} is approved. Return to the game to finish connecting.`); form.reset(); } catch(error){showNotice(error.message,true);} });
-document.querySelector("#goals-form").addEventListener("submit", async event => { event.preventDefault(); const form=event.currentTarget; try { state.goals=await api("/v1/me/goals",{method:"PUT",body:JSON.stringify({dailyNewWords:Number(form.dailyNewWords.value),dailyReviews:Number(form.dailyReviews.value),remindersEnabled:form.remindersEnabled.checked})});renderOverview(state.goals);showNotice("Goals saved."); } catch(error){showNotice(error.message,true);} });
+for (const [id,path] of [["login-form","/v1/auth/login"],["register-form","/v1/auth/register"]]) document.querySelector(`#${id}`).addEventListener("submit", async event => { event.preventDefault(); const form=event.currentTarget, button=form.querySelector("button[type=submit]"); setBusy(button,true,id==="login-form"?"Signing in…":"Creating account…"); try { await api(path,{method:"POST",body:JSON.stringify(formJson(form))}); showNotice(""); await loadDashboard(); } catch(error){showNotice(error.message,true);} finally { setBusy(button,false); } });
+document.querySelector("#pair-form").addEventListener("submit", async event => { event.preventDefault(); const form=event.currentTarget, button=form.querySelector("button[type=submit]"); setBusy(button,true,"Pairing…"); try { const result=await api("/v1/device-pairings/approve",{method:"POST",body:JSON.stringify(formJson(form))}); showNotice(`${result.deviceName} is approved. Return to the game to finish connecting.`); form.reset(); } catch(error){showNotice(error.message,true);} finally { setBusy(button,false); } });
+document.querySelector("#goals-form").addEventListener("submit", async event => { event.preventDefault(); const form=event.currentTarget, button=form.querySelector("button[type=submit]"); setBusy(button,true,"Saving…"); try { state.goals=await api("/v1/me/goals",{method:"PUT",body:JSON.stringify({dailyNewWords:Number(form.dailyNewWords.value),dailyReviews:Number(form.dailyReviews.value),remindersEnabled:form.remindersEnabled.checked})});renderOverview(state.goals);showNotice("Goals saved."); } catch(error){showNotice(error.message,true);} finally { setBusy(button,false); } });
 let searchTimer; for (const id of ["word-search","word-state","word-sort","saved-only"]) document.querySelector(`#${id}`).addEventListener("input",()=>{clearTimeout(searchTimer);searchTimer=setTimeout(()=>loadWords(true).catch(error=>showNotice(error.message,true)),180);});
 document.querySelector("#load-more-words").addEventListener("click",()=>loadWords(false).catch(error=>showNotice(error.message,true)));
 document.querySelector("#words").addEventListener("click",event=>{const card=event.target.closest("[data-word-index]");if(card)openWordEditor(Number(card.dataset.wordIndex));}); document.querySelector("#close-editor").addEventListener("click",()=>document.querySelector("#word-editor").classList.add("hidden"));
-document.querySelector("#word-editor").addEventListener("submit",async event=>{event.preventDefault();const form=event.currentTarget;try{await api("/v1/me/words/annotation",{method:"PUT",body:JSON.stringify({wordId:form.wordId.value,senseId:form.senseId.value||null,learningState:form.learningState.value,note:form.note.value,tags:form.tags.value.split(",").map(tag=>tag.trim()).filter(Boolean)})});showNotice("Word details saved.");form.classList.add("hidden");await loadWords();}catch(error){showNotice(error.message,true);}});
-document.querySelector("#review-card").addEventListener("click",()=>renderReview(true)); document.querySelector("#review-actions").addEventListener("click",async event=>{const button=event.target.closest("[data-rating]"),card=state.queue[state.reviewIndex];if(!button||!card)return;try{await api("/v1/me/reviews",{method:"POST",body:JSON.stringify({wordId:card.wordId,senseId:card.senseId,rating:Number(button.dataset.rating)})});state.reviewIndex++;renderReview(false);}catch(error){showNotice(error.message,true);}});
-document.querySelector("#download-manifest").addEventListener("click",async()=>{try{const game=document.querySelector("#export-game").value;downloadJson(await api(`/v1/me/exports/saved-words${game?`?gameId=${encodeURIComponent(game)}`:""}`),"jp_assist_cloud_progress.json");}catch(error){showNotice(error.message,true);}}); document.querySelector("#download-account").addEventListener("click",async()=>{try{downloadJson(await api("/v1/me/exports/account"),"jp_assist_account_export.json");}catch(error){showNotice(error.message,true);}}); document.querySelector("#anki-import").addEventListener("click",()=>sendToAnki().catch(error=>showNotice(`AnkiConnect: ${error.message}`,true)));
+document.querySelector("#word-editor").addEventListener("submit",async event=>{event.preventDefault();const form=event.currentTarget,button=form.querySelector("button[type=submit]");setBusy(button,true,"Saving…");try{await api("/v1/me/words/annotation",{method:"PUT",body:JSON.stringify({wordId:form.wordId.value,senseId:form.senseId.value||null,learningState:form.learningState.value,note:form.note.value,tags:form.tags.value.split(",").map(tag=>tag.trim()).filter(Boolean)})});showNotice("Word details saved.");form.classList.add("hidden");await loadWords();}catch(error){showNotice(error.message,true);}finally{setBusy(button,false);}});
+document.querySelector("#review-card").addEventListener("click",()=>renderReview(true)); document.querySelector("#review-actions").addEventListener("click",async event=>{const button=event.target.closest("[data-rating]"),card=state.queue[state.reviewIndex];if(!button||!card)return;setBusy(button,true,"Saving…");try{await api("/v1/me/reviews",{method:"POST",body:JSON.stringify({wordId:card.wordId,senseId:card.senseId,rating:Number(button.dataset.rating)})});state.reviewIndex++;renderReview(false);}catch(error){showNotice(error.message,true);setBusy(button,false);}});
+document.querySelector("#download-manifest").addEventListener("click",async event=>{const button=event.currentTarget;setBusy(button,true,"Preparing…");try{const game=document.querySelector("#export-game").value;downloadJson(await api(`/v1/me/exports/saved-words${game?`?gameId=${encodeURIComponent(game)}`:""}`),"jp_assist_cloud_progress.json");}catch(error){showNotice(error.message,true);}finally{setBusy(button,false);}}); document.querySelector("#download-account").addEventListener("click",async event=>{const button=event.currentTarget;setBusy(button,true,"Preparing…");try{downloadJson(await api("/v1/me/exports/account"),"jp_assist_account_export.json");}catch(error){showNotice(error.message,true);}finally{setBusy(button,false);}}); document.querySelector("#anki-import").addEventListener("click",async event=>{const button=event.currentTarget;setBusy(button,true,"Sending…");try{await sendToAnki();}catch(error){showNotice(`AnkiConnect: ${error.message}`,true);}finally{setBusy(button,false);}});
 document.querySelector("#devices").addEventListener("click",async event=>{const button=event.target.closest(".revoke-device");if(!button)return;if(!await confirmAction("Revoke device?","This mod will no longer be able to synchronize until it is paired again.","Revoke device",true))return;try{await api(`/v1/me/devices/${encodeURIComponent(button.dataset.id)}`,{method:"DELETE"});showNotice("Device access revoked.");await loadDashboard();}catch(error){showNotice(error.message,true);}}); document.querySelector("#sessions").addEventListener("click",async event=>{const button=event.target.closest(".revoke-session");if(!button)return;if(!await confirmAction(button.textContent==="Sign out"?"Sign out this session?":"Revoke website session?","That browser will need to sign in again.",button.textContent,true))return;try{await api(`/v1/me/sessions/${encodeURIComponent(button.dataset.id)}`,{method:"DELETE"});showNotice("Session revoked.");await loadDashboard();}catch(error){showNotice(error.message,true);}});
-document.querySelector("#password-form").addEventListener("submit",async event=>{event.preventDefault();const form=event.currentTarget;try{await api("/v1/me/password",{method:"PUT",body:JSON.stringify(formJson(form))});form.reset();showNotice("Password changed. Other website sessions were revoked.");await loadDashboard();}catch(error){showNotice(error.message,true);}});
+document.querySelector("#password-form").addEventListener("submit",async event=>{event.preventDefault();const form=event.currentTarget,button=form.querySelector("button[type=submit]");setBusy(button,true,"Changing…");try{await api("/v1/me/password",{method:"PUT",body:JSON.stringify(formJson(form))});form.reset();showNotice("Password changed. Other website sessions were revoked.");await loadDashboard();}catch(error){showNotice(error.message,true);}finally{setBusy(button,false);}});
 document.querySelector("#clear-game-form").addEventListener("submit",async event=>{event.preventDefault();const gameId=event.currentTarget.gameId.value;if(!gameId||!await confirmAction("Clear game progress?",`Permanently remove synchronized events and progress for ${gameId}. Notes and review history will remain.`,"Clear progress",true))return;try{await api("/v1/me/clear-game",{method:"POST",body:JSON.stringify({gameId})});showNotice(`${gameId} progress cleared.`);await loadDashboard();}catch(error){showNotice(error.message,true);}});
 document.querySelector("#delete-account-form").addEventListener("submit",async event=>{event.preventDefault();const form=event.currentTarget;if(!await confirmAction("Delete this account?","This permanently removes the account and all synchronized learning data. This cannot be undone.","Delete account",true))return;try{await api("/v1/me",{method:"DELETE",body:JSON.stringify(formJson(form))});showNotice("Account deleted.");await loadDashboard();}catch(error){showNotice(error.message,true);}});
 logout.addEventListener("click",async()=>{try{await api("/v1/auth/logout",{method:"POST"});}finally{await loadDashboard();}}); loadDashboard();

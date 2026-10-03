@@ -58,6 +58,8 @@ graphs/
 .extracted-assets.json
 
 !OTRExporter/assets/**/*.png
+!services/learning_platform/tests/browser/account.spec.js-snapshots/
+!services/learning_platform/tests/browser/account.spec.js-snapshots/*.png
 
 # Docs
 !docs/tutorial/

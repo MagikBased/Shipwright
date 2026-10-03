@@ -194,12 +194,15 @@ and failed-response logs under the ignored `var/` directory on failures:
 ```bash
 cd services/learning_platform
 npm install
+npx playwright install chromium
 npm run test:browser
 ```
 
 Use `JP_ASSIST_TEST_PYTHON` or `JP_ASSIST_TEST_CHROMIUM` to select different
-executables. If there is no system Chromium, install Playwright's copy with
-`npx playwright install chromium`.
+executables. The pinned Playwright Chromium is the default so local and CI
+visual baselines use the same rendering engine. Set
+`JP_ASSIST_TEST_CHROMIUM=/usr/bin/chromium` only for an intentional system-
+browser run.
 
 The fixture can also be generated independently for manual inspection. The
 `--reset` flag deletes only the exact database path supplied:
