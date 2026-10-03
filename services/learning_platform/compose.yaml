@@ -1,0 +1,45 @@
+services:
+  app:
+    build: .
+    restart: unless-stopped
+    env_file: ${JP_ASSIST_ENV_FILE:-.env}
+    environment:
+      JP_ASSIST_PLATFORM_DB: /data/platform.sqlite3
+    volumes:
+      - platform-data:/data
+      - platform-backups:/backups
+    expose:
+      - "8766"
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8766/readyz', timeout=3)"
+      interval: 30s
+      timeout: 5s
+      start_period: 10s
+      retries: 3
+
+  caddy:
+    image: caddy:2.10-alpine
+    restart: unless-stopped
+    depends_on:
+      app:
+        condition: service_healthy
+    environment:
+      JP_ASSIST_DOMAIN: ${JP_ASSIST_DOMAIN:?Set JP_ASSIST_DOMAIN in .env}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+
+volumes:
+  platform-data:
+  platform-backups:
+  caddy-data:
+  caddy-config:

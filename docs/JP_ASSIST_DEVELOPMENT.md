@@ -40,6 +40,11 @@ boundary so deferred testing can start from a known point.
   export, package validation, and stable Anki IDs. A one-command saved-deck
   exporter discovers the newest browser download and rejects stale empty
   manifests by default.
+- A provider-neutral single-host deployment scaffold supplies an unprivileged
+  application image, automatic Caddy HTTPS, persistent volumes, production
+  configuration validation, endpoint rate limits, readiness checks, database
+  compatibility checks, safe backup/restore commands, and a deployment smoke
+  test. Public launch still requires a domain and deployment-owner operations.
 
 ## Latest local corpus build
 

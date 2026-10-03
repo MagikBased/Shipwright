@@ -68,6 +68,13 @@ Email verification, password recovery, third-party login, administration, and
 rate limiting are deployment requirements after the local MVP proves the
 workflow.
 
+The release scaffold now supplies HTTPS termination, explicit host validation,
+endpoint-specific in-process rate limits, health/readiness checks, versioned
+schema startup, and consistent backup/restore commands. Email verification,
+password recovery, external monitoring, and operational backup scheduling
+remain deployment-owner requirements before an open public beta. See
+`LEARNING_PLATFORM_DEPLOYMENT.md`.
+
 ## Event contract
 
 Every upload contains a client-generated `eventId`. Its identity is scoped to

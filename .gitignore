@@ -64,6 +64,8 @@ graphs/
 
 # Per-user configuration
 .python-version
+services/learning_platform/.env
+services/learning_platform/backups/
 
 
 ## Ignore Visual Studio temporary files, build results, and

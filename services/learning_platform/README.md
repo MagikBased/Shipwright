@@ -29,9 +29,28 @@ the local website, and approve the device. Offline events are retained in the
 game's `jp_assist_sync.json` and upload automatically after reconnection.
 
 Set `JP_ASSIST_COOKIE_SECURE=1` behind HTTPS in any non-local deployment. The
-MVP is not production-ready until HTTPS termination, email verification,
-password recovery, rate limiting, backups, monitoring, and deployment secrets
-are configured.
+included production scaffold supplies HTTPS termination, rate limiting, and
+backup tooling. An open public beta still requires email verification,
+password recovery, an operational backup schedule, and external monitoring.
+
+## Production deployment scaffold
+
+The included `Dockerfile`, `compose.yaml`, `.env.example`, and Caddy
+configuration provide a single-host HTTPS deployment with persistent SQLite
+storage, health checks, host validation, and basic endpoint-specific rate
+limits. See
+[`docs/LEARNING_PLATFORM_DEPLOYMENT.md`](../../docs/LEARNING_PLATFORM_DEPLOYMENT.md)
+for configuration, migrations, backup/restore, upgrades, and the deployment
+smoke test.
+
+Useful non-container database commands are also available:
+
+```bash
+PYTHONPATH=services/learning_platform \
+  python3 -m learning_platform.manage status
+PYTHONPATH=services/learning_platform \
+  python3 -m learning_platform.manage backup /secure/path/platform.sqlite3
+```
 
 ## Pairing protocol
 

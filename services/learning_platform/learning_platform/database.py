@@ -2,6 +2,8 @@ import sqlite3
 from pathlib import Path
 
 
+LATEST_SCHEMA_VERSION = 2
+
 SCHEMA = """
 PRAGMA foreign_keys = ON;
 
@@ -109,11 +111,48 @@ class Database:
         if self.path != ":memory:":
             Path(self.path).parent.mkdir(parents=True, exist_ok=True)
         with self.connect() as connection:
+            existing_version = self._schema_version(connection)
+            if existing_version > LATEST_SCHEMA_VERSION:
+                raise RuntimeError(
+                    f"Database schema {existing_version} is newer than supported schema {LATEST_SCHEMA_VERSION}"
+                )
             connection.executescript(SCHEMA)
             event_columns = {row["name"] for row in connection.execute("PRAGMA table_info(events)")}
             if "page_index" not in event_columns:
                 connection.execute("ALTER TABLE events ADD COLUMN page_index INTEGER")
             connection.execute("UPDATE metadata SET value = '2' WHERE key = 'schema_version'")
+
+    @staticmethod
+    def _schema_version(connection: sqlite3.Connection) -> int:
+        metadata_exists = connection.execute(
+            "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'metadata'"
+        ).fetchone()
+        if metadata_exists is None:
+            return 0
+        row = connection.execute("SELECT value FROM metadata WHERE key = 'schema_version'").fetchone()
+        if row is None:
+            return 0
+        try:
+            return int(row[0])
+        except (TypeError, ValueError) as error:
+            raise RuntimeError("Database schema version is invalid") from error
+
+    def schema_version(self) -> int:
+        with self.connect() as connection:
+            return self._schema_version(connection)
+
+    def readiness(self) -> tuple[bool, str]:
+        try:
+            with self.connect() as connection:
+                version = self._schema_version(connection)
+                integrity = connection.execute("PRAGMA quick_check(1)").fetchone()[0]
+            if version != LATEST_SCHEMA_VERSION:
+                return False, f"schema {version}, expected {LATEST_SCHEMA_VERSION}"
+            if integrity != "ok":
+                return False, f"database integrity check failed: {integrity}"
+            return True, "ready"
+        except (OSError, sqlite3.Error, RuntimeError) as error:
+            return False, str(error)
 
     def connect(self) -> sqlite3.Connection:
         connection = sqlite3.connect(self.path, timeout=10.0)

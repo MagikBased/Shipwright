@@ -5,16 +5,31 @@ from pathlib import Path
 try:
     from fastapi.testclient import TestClient
     from learning_platform.api import create_app
+    from learning_platform.config import Settings
+    from learning_platform.rate_limit import SlidingWindowRateLimiter
 except ImportError:  # Core service tests remain runnable without web dependencies.
     TestClient = None
     create_app = None
+    Settings = None
+    SlidingWindowRateLimiter = None
 
 
 @unittest.skipIf(TestClient is None, "FastAPI development dependencies are not installed")
 class LearningPlatformApiTest(unittest.TestCase):
     def setUp(self):
         self.temporary = tempfile.TemporaryDirectory(prefix="jp-assist-platform-api-")
-        app = create_app(Path(self.temporary.name) / "api.sqlite3")
+        settings = Settings(
+            database_path=str(Path(self.temporary.name) / "api.sqlite3"),
+            production=False,
+            cookie_secure=False,
+            allowed_hosts=("*",),
+            trust_proxy_headers=False,
+            rate_limit_window_seconds=60,
+            auth_rate_limit=20,
+            pairing_rate_limit=180,
+            event_rate_limit=180,
+        )
+        app = create_app(settings=settings)
         self.client = TestClient(app)
 
     def tearDown(self):
@@ -88,9 +103,58 @@ class LearningPlatformApiTest(unittest.TestCase):
 
     def test_website_and_health_are_served(self):
         self.assertEqual(self.client.get("/healthz").json(), {"status": "ok"})
+        readiness = self.client.get("/readyz")
+        self.assertEqual(readiness.status_code, 200)
+        self.assertEqual(readiness.json()["status"], "ready")
+        self.assertEqual(readiness.json()["schemaVersion"], 2)
         page = self.client.get("/")
         self.assertEqual(page.status_code, 200)
         self.assertIn("Turn game dialogue", page.text)
+
+    def test_auth_rate_limit_returns_retry_after(self):
+        database_path = Path(self.temporary.name) / "limited.sqlite3"
+        settings = Settings(
+            database_path=str(database_path),
+            production=False,
+            cookie_secure=False,
+            allowed_hosts=("*",),
+            trust_proxy_headers=False,
+            rate_limit_window_seconds=60,
+            auth_rate_limit=1,
+            pairing_rate_limit=0,
+            event_rate_limit=0,
+        )
+        clock_value = [100.0]
+        limiter = SlidingWindowRateLimiter(clock=lambda: clock_value[0])
+        with TestClient(create_app(settings=settings, rate_limiter=limiter)) as client:
+            first = client.post(
+                "/v1/auth/login",
+                json={"email": "missing@example.com", "password": "correct horse battery"},
+            )
+            self.assertEqual(first.status_code, 401)
+            second = client.post(
+                "/v1/auth/login",
+                json={"email": "missing@example.com", "password": "correct horse battery"},
+            )
+            self.assertEqual(second.status_code, 429)
+            self.assertEqual(second.json()["error"]["code"], "rate_limited")
+            self.assertIn("Retry-After", second.headers)
+
+    def test_production_disables_interactive_api_docs(self):
+        settings = Settings(
+            database_path=str(Path(self.temporary.name) / "production.sqlite3"),
+            production=True,
+            cookie_secure=True,
+            allowed_hosts=("testserver", "127.0.0.1"),
+            trust_proxy_headers=True,
+            rate_limit_window_seconds=60,
+            auth_rate_limit=20,
+            pairing_rate_limit=180,
+            event_rate_limit=180,
+        )
+        with TestClient(create_app(settings=settings)) as client:
+            self.assertEqual(client.get("/readyz").status_code, 200)
+            self.assertEqual(client.get("/docs").status_code, 404)
 
 
 if __name__ == "__main__":
