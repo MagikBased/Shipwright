@@ -52,3 +52,13 @@ TEST(MessageParser, SplitsJapanesePagesAndDetectsChoice) {
     EXPECT_TRUE(result.pages[1].isChoice);
     EXPECT_EQ(result.pages[1].choiceCount, 2);
 }
+
+TEST(MessageParser, JapaneseSfxConsumesOneWideOperand) {
+    const uint16_t message[] = { MESSAGE_SFX_JPN, 0x686D, MESSAGE_BOX_BREAK_JPN, 0x836E, MESSAGE_END_JPN };
+    const auto result = JPAssist::MessageParser_Parse(reinterpret_cast<const char*>(message), sizeof(message),
+                                                       LANGUAGE_JPN);
+
+    // Consuming a second wide unit would swallow the adjacent box break.
+    ASSERT_EQ(result.pages.size(), 2);
+    EXPECT_EQ(result.pages[1].unitOffset, 3U);
+}

@@ -115,7 +115,10 @@ _JPN_OPERAND_LENGTHS = {
     MESSAGE_TEXT_SPEED_JPN: 1,
     MESSAGE_HIGHSCORE_JPN: 1,
     MESSAGE_FADE2_JPN: 2,
-    MESSAGE_SFX_JPN: 2,
+    # Japanese messages store the complete sound ID in one u16 operand.
+    # Treating it like the English two-byte stream skips the following
+    # control code and leaks that control's operand into normalized text.
+    MESSAGE_SFX_JPN: 1,
     MESSAGE_BACKGROUND_JPN: 3,
 }
 

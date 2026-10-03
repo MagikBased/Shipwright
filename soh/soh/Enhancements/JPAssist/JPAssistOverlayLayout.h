@@ -50,38 +50,42 @@ inline OverlayLayout JPAssistOverlay_PlaceAroundDialogue(OverlayLayout layout, f
     const float dialogueTop = workY + std::clamp(dialogueTopNormalized, 0.0f, 1.0f) * safeHeight;
     const float dialogueBottom = workY + std::clamp(dialogueBottomNormalized, 0.0f, 1.0f) * safeHeight;
     const float gap = 12.0f * layout.scale;
-
-    // Keep the familiar bottom placement unless the native textbox touches
-    // the card's breathing room. Upper and middle textboxes therefore leave
-    // the card where the player already expects it.
-    if (layout.y >= dialogueBottom + gap || layout.y + layout.height <= dialogueTop - gap) {
-        return layout;
-    }
-
-    // For a lower textbox, center the card in the unobstructed band above it.
-    // Reserving the upper fifth avoids OoT's hearts and action-button HUD.
-    const float hudSafeTop = workY + safeHeight * 0.22f;
-    const float upperBandBottom = dialogueTop - gap;
-    if (upperBandBottom - hudSafeTop >= layout.height) {
-        layout.y = hudSafeTop + (upperBandBottom - hudSafeTop - layout.height) * 0.5f;
-        return layout;
-    }
-
-    // Small windows may not have a full HUD-safe band. Prefer whichever side
-    // of the textbox can contain the card, then clamp as a final fallback.
+    const float edgeMargin = std::max(workBottom - (layout.y + layout.height), 0.0f);
+    const float topEdgeY = workY + edgeMargin;
+    const float bottomEdgeY = workBottom - edgeMargin - layout.height;
     const float aboveY = dialogueTop - gap - layout.height;
-    if (aboveY >= workY) {
-        layout.y = aboveY;
-        return layout;
-    }
-
     const float belowY = dialogueBottom + gap;
-    if (belowY + layout.height <= workBottom) {
-        layout.y = belowY;
-        return layout;
+    const bool aboveFits = aboveY >= topEdgeY;
+    const bool belowFits = belowY + layout.height <= workBottom - edgeMargin;
+    const float dialogueCenter = (dialogueTop + dialogueBottom) * 0.5f;
+    const float workCenter = workY + safeHeight * 0.5f;
+
+    // Keep the study card visually attached to the dialogue it explains.
+    // Lower textboxes prefer the immediately adjacent space above; upper
+    // textboxes prefer the immediately adjacent space below.
+    if (dialogueCenter >= workCenter) {
+        if (aboveFits) {
+            layout.y = aboveY;
+            return layout;
+        }
+        if (belowFits) {
+            layout.y = belowY;
+            return layout;
+        }
+    } else {
+        if (belowFits) {
+            layout.y = belowY;
+            return layout;
+        }
+        if (aboveFits) {
+            layout.y = aboveY;
+            return layout;
+        }
     }
 
-    layout.y = std::clamp(layout.y, workY, std::max(workY, workBottom - layout.height));
+    // A very short viewport may fit neither adjacent position. Snap to the
+    // screen edge opposite the dialogue instead of floating in the middle.
+    layout.y = dialogueCenter >= workCenter ? topEdgeY : bottomEdgeY;
     return layout;
 }
 

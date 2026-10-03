@@ -62,8 +62,10 @@ class JPAssistOverlayWindow final : public Ship::GuiWindow {
     }
 
     void InitElement() override {
-        mFast3dGui = std::dynamic_pointer_cast<Fast::Fast3dGui>(
-            Ship::Context::GetRawInstance()->GetWindow()->GetGui());
+        // The GUI owns this window during normal operation. Do not retain the
+        // GUI through this process-lifetime overlay handle: doing so delays
+        // Gui destruction until static teardown, after the logger is gone.
+        mFast3dGui = dynamic_cast<Fast::Fast3dGui*>(Ship::Context::GetRawInstance()->GetWindow()->GetGui().get());
         if (mFast3dGui == nullptr) {
             return;
         }
@@ -414,7 +416,7 @@ class JPAssistOverlayWindow final : public Ship::GuiWindow {
 
     OverlayState mFrameState;
     float mFrameScale = 1.0f;
-    std::shared_ptr<Fast::Fast3dGui> mFast3dGui;
+    Fast::Fast3dGui* mFast3dGui = nullptr;
 };
 
 std::shared_ptr<JPAssistOverlayWindow> sWindow;

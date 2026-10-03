@@ -85,8 +85,11 @@ int JapaneseControlCodeOperandLength(uint16_t code, bool* isPageBoundary, bool* 
         case MESSAGE_HIGHSCORE_JPN:
             return 1;
         case MESSAGE_FADE2_JPN:
-        case MESSAGE_SFX_JPN:
             return 2;
+        case MESSAGE_SFX_JPN:
+            // The Japanese stream stores the complete sound ID in one u16
+            // operand; unlike the English byte stream, it does not use two.
+            return 1;
         case MESSAGE_BACKGROUND_JPN:
             return 3;
         default:

@@ -63,27 +63,40 @@ TEST(JPAssistOverlayLayout, HandlesMinimalWorkArea) {
     EXPECT_LE(layout.y + layout.height, 21.0f);
 }
 
-TEST(JPAssistOverlayLayout, MovesAboveLowerDialogueWithHudClearance) {
+TEST(JPAssistOverlayLayout, AnchorsImmediatelyAboveLowerDialogue) {
     constexpr float height = 1080.0f;
     constexpr float dialogueTop = 142.0f / 240.0f;
     constexpr float dialogueBottom = 206.0f / 240.0f;
-    const JPAssist::OverlayLayout baseline =
-        JPAssist::JPAssistOverlay_ComputeLayout(0.0f, 0.0f, 1920.0f, height, 1.0f);
     const JPAssist::OverlayLayout layout = JPAssist::JPAssistOverlay_ComputeAdaptiveLayout(
         0.0f, 0.0f, 1920.0f, height, 1.0f, true, dialogueTop, dialogueBottom);
 
-    EXPECT_LT(layout.y, baseline.y);
-    EXPECT_GE(layout.y, height * 0.22f);
-    EXPECT_LE(layout.y + layout.height, dialogueTop * height - 12.0f);
+    EXPECT_FLOAT_EQ(layout.y + layout.height, dialogueTop * height - 12.0f);
 }
 
-TEST(JPAssistOverlayLayout, KeepsBottomPlacementForUpperDialogue) {
-    const JPAssist::OverlayLayout baseline =
-        JPAssist::JPAssistOverlay_ComputeLayout(0.0f, 0.0f, 1920.0f, 1080.0f, 1.0f);
+TEST(JPAssistOverlayLayout, AnchorsImmediatelyBelowUpperDialogue) {
     const JPAssist::OverlayLayout layout = JPAssist::JPAssistOverlay_ComputeAdaptiveLayout(
         0.0f, 0.0f, 1920.0f, 1080.0f, 1.0f, true, 38.0f / 240.0f, 102.0f / 240.0f);
 
+    EXPECT_FLOAT_EQ(layout.y, 102.0f / 240.0f * 1080.0f + 12.0f);
+}
+
+TEST(JPAssistOverlayLayout, KeepsBottomScreenEdgeWithoutDialogue) {
+    const JPAssist::OverlayLayout baseline =
+        JPAssist::JPAssistOverlay_ComputeLayout(0.0f, 0.0f, 1920.0f, 1080.0f, 1.0f);
+    const JPAssist::OverlayLayout layout = JPAssist::JPAssistOverlay_ComputeAdaptiveLayout(
+        0.0f, 0.0f, 1920.0f, 1080.0f, 1.0f, false, 0.0f, 0.0f);
+
     EXPECT_FLOAT_EQ(layout.y, baseline.y);
+}
+
+TEST(JPAssistOverlayLayout, UsesOppositeScreenEdgeWhenAdjacentSpaceDoesNotFit) {
+    const JPAssist::OverlayLayout baseline =
+        JPAssist::JPAssistOverlay_ComputeLayout(0.0f, 0.0f, 640.0f, 300.0f, 1.0f);
+    const JPAssist::OverlayLayout layout = JPAssist::JPAssistOverlay_ComputeAdaptiveLayout(
+        0.0f, 0.0f, 640.0f, 300.0f, 1.0f, true, 80.0f / 300.0f, 250.0f / 300.0f);
+
+    const float edgeMargin = 300.0f - (baseline.y + baseline.height);
+    EXPECT_FLOAT_EQ(layout.y, edgeMargin);
 }
 
 TEST(JPAssistOverlayLayout, IgnoresInvalidDialogueBounds) {
