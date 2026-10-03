@@ -95,7 +95,9 @@ This writes an `.apkg` and review TSV under `scripts/jp_assist/out/`. The packag
 is text-only until reviewed audio is supplied. Planned chapters refuse to export
 an empty package. Each published card cites only a stable corpus identity and
 message IDs; generation verifies those references against the local corpus while
-keeping extracted dialogue out of the catalog.
+keeping extracted dialogue out of the catalog. The same gate normalizes and
+compares every Japanese and English example against every extracted page and
+rejects an exact corpus sentence.
 
 ## Expansion and release gates
 

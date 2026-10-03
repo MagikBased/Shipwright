@@ -56,12 +56,15 @@ class BuildCatalogDeckTest(unittest.TestCase):
     def test_corpus_evidence_is_bound_to_message_and_stable_identity(self):
         chapter = {"sampleCards": [{
             "id": "森|もり|forest",
+            "sentenceJapanese": "深い森を歩く。",
+            "sentenceEnglish": "Walk through the deep forest.",
             "corpusEvidence": {
                 "identity": "森|もり|jmdict:forest",
                 "messageIds": ["0x1000"],
             },
         }]}
-        runtime = {"messages": {"0x1000": {"pages": [{"tokens": [{
+        runtime = {"messages": {"0x1000": {"pages": [{
+            "japanese": "ゲームの台詞。", "english": "Game dialogue.", "tokens": [{
             "lemma": "森", "reading": "もり", "dictionaryReading": "もり",
             "senseId": "jmdict:forest",
         }]}]}}}
@@ -73,10 +76,26 @@ class BuildCatalogDeckTest(unittest.TestCase):
     def test_corpus_evidence_rejects_missing_message(self):
         chapter = {"sampleCards": [{
             "id": "森|もり|forest",
+            "sentenceJapanese": "深い森を歩く。",
+            "sentenceEnglish": "Walk through the deep forest.",
             "corpusEvidence": {"identity": "森|もり|sense", "messageIds": ["0x9999"]},
         }]}
         with self.assertRaisesRegex(ValueError, "missing message"):
             validate_corpus_evidence(chapter, {"messages": {}})
+
+    def test_corpus_evidence_rejects_copied_example_sentence(self):
+        chapter = {"sampleCards": [{
+            "id": "森|もり|forest",
+            "sentenceJapanese": " ゲームの 台詞。",
+            "sentenceEnglish": "Original translation.",
+            "corpusEvidence": {"identity": "森|もり|sense", "messageIds": ["0x1000"]},
+        }]}
+        runtime = {"messages": {"0x1000": {"pages": [{
+            "japanese": "ゲームの台詞。", "english": "Game dialogue.",
+            "tokens": [{"lemma": "森", "reading": "もり", "senseId": "sense"}],
+        }]}}}
+        with self.assertRaisesRegex(ValueError, "copies a corpus sentence"):
+            validate_corpus_evidence(chapter, runtime)
 
 
 if __name__ == "__main__":

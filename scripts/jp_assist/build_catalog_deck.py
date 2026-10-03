@@ -140,6 +140,18 @@ def build_deck(
 
 def validate_corpus_evidence(chapter: dict[str, Any], runtime_root: dict[str, Any]) -> None:
     messages = runtime_root.get("messages", runtime_root)
+    corpus_japanese = {
+        "".join(page.get("japanese", "").split())
+        for record in messages.values()
+        for page in record["pages"]
+        if page.get("japanese", "").strip()
+    }
+    corpus_english = {
+        " ".join(page.get("english", "").split()).casefold()
+        for record in messages.values()
+        for page in record["pages"]
+        if page.get("english", "").strip()
+    }
     for card in chapter.get("sampleCards", []):
         evidence = card.get("corpusEvidence")
         if not evidence:
@@ -157,6 +169,10 @@ def validate_corpus_evidence(chapter: dict[str, Any], runtime_root: dict[str, An
                     found = found or actual == expected
         if not found:
             raise ValueError(f"Reviewed card {card['id']} has stale corpus evidence")
+        japanese_example = "".join(card["sentenceJapanese"].split())
+        english_example = " ".join(card["sentenceEnglish"].split()).casefold()
+        if japanese_example in corpus_japanese or english_example in corpus_english:
+            raise ValueError(f"Reviewed card {card['id']} copies a corpus sentence")
 
 
 def main() -> None:
