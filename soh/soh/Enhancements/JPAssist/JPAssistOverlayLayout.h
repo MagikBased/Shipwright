@@ -5,6 +5,24 @@
 
 namespace JPAssist {
 
+enum class OverlayPlacementProfile {
+    NoDialogue,
+    UpperDialogue,
+    LowerDialogue,
+};
+
+inline OverlayPlacementProfile JPAssistOverlay_ClassifyPlacement(bool hasDialogueBounds,
+                                                                  float dialogueTopNormalized,
+                                                                  float dialogueBottomNormalized) {
+    if (!hasDialogueBounds || !std::isfinite(dialogueTopNormalized) ||
+        !std::isfinite(dialogueBottomNormalized) || dialogueBottomNormalized <= dialogueTopNormalized) {
+        return OverlayPlacementProfile::NoDialogue;
+    }
+    return (dialogueTopNormalized + dialogueBottomNormalized) * 0.5f < 0.5f
+               ? OverlayPlacementProfile::UpperDialogue
+               : OverlayPlacementProfile::LowerDialogue;
+}
+
 struct OverlayLayout {
     float x = 0.0f;
     float y = 0.0f;

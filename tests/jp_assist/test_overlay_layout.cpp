@@ -108,4 +108,15 @@ TEST(JPAssistOverlayLayout, IgnoresInvalidDialogueBounds) {
     EXPECT_FLOAT_EQ(layout.y, baseline.y);
 }
 
+TEST(JPAssistOverlayLayout, ClassifiesIndependentDialoguePlacementProfiles) {
+    EXPECT_EQ(JPAssist::JPAssistOverlay_ClassifyPlacement(false, 0.0f, 0.0f),
+              JPAssist::OverlayPlacementProfile::NoDialogue);
+    EXPECT_EQ(JPAssist::JPAssistOverlay_ClassifyPlacement(true, 0.10f, 0.35f),
+              JPAssist::OverlayPlacementProfile::UpperDialogue);
+    EXPECT_EQ(JPAssist::JPAssistOverlay_ClassifyPlacement(true, 0.65f, 0.90f),
+              JPAssist::OverlayPlacementProfile::LowerDialogue);
+    EXPECT_EQ(JPAssist::JPAssistOverlay_ClassifyPlacement(true, NAN, 0.90f),
+              JPAssist::OverlayPlacementProfile::NoDialogue);
+}
+
 } // namespace

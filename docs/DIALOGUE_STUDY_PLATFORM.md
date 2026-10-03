@@ -73,6 +73,10 @@ stable. Portable code should not assume an N64 text ID, Shipwright `MessageConte
   normalized viewport coordinates, preserves the normal bottom placement when
   clear, and moves the card into the HUD-safe band above a lower textbox when
   they would touch. Using target rather than animated bounds prevents jitter.
+  The player can drag the small top grip or resize from the window edges. SoH
+  persists normalized geometry independently for upper-dialogue,
+  lower-dialogue, and no-dialogue placements, while enforcing a readable
+  minimum size and clamping restored layouts to the current viewport.
 - Controller glyphs: the SoH overlay maps its semantic actions and glyphs to
   the game's native button art. A future adapter can supply different art
   without changing study-state or layout policy.

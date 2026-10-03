@@ -504,6 +504,13 @@ void RegisterJPAssistMenu() {
     SohGui::mSohMenu->AddWidget(path, "Study card opacity: %.2f", WIDGET_CVAR_SLIDER_FLOAT)
         .CVar(CVAR_ENHANCEMENT("JPAssist.CardOpacity"))
         .Options(UIWidgets::FloatSliderOptions().Min(0.40f).Max(1.0f).Step(0.05f).DefaultValue(0.92f).Format("%.2f"));
+    SohGui::mSohMenu->AddWidget(path, "Reset study card layouts", WIDGET_BUTTON)
+        .Callback([](WidgetInfo&) {
+            CVarClearBlock(CVAR_ENHANCEMENT("JPAssist.Layout."));
+            Ship::Context::GetRawInstance()->GetWindow()->GetGui()->SaveConsoleVariablesNextFrame();
+        })
+        .Options(UIWidgets::ButtonOptions().Tooltip(
+            "Forget the mouse-adjusted upper, lower, and no-dialogue card layouts and return to automatic placement."));
     SohGui::mSohMenu->AddWidget(path, "Open JP Assist Test Lab", WIDGET_WINDOW_BUTTON)
         .CVar(CVAR_WINDOW("JPAssistTestLab"))
         .WindowName("JP Assist Test Lab")

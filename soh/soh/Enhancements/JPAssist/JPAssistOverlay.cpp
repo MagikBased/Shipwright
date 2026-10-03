@@ -5,8 +5,10 @@
 #include <algorithm>
 #include <cctype>
 #include <cfloat>
+#include <cmath>
 #include <memory>
 #include <mutex>
+#include <string>
 
 #include <fast/Fast3dGui.h>
 #include <imgui.h>
@@ -57,10 +59,9 @@ class JPAssistOverlayWindow final : public Ship::GuiWindow {
   public:
     JPAssistOverlayWindow()
         : GuiWindow("", true, "JP Assist Overlay", ImVec2(-1, -1),
-                    ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoMove |
+                    ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoDocking |
                         ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing |
-                        ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoScrollbar |
-                        ImGuiWindowFlags_NoScrollWithMouse) {
+                        ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse) {
     }
 
     void InitElement() override {
@@ -116,12 +117,13 @@ class JPAssistOverlayWindow final : public Ship::GuiWindow {
         const OverlayLayout layout = JPAssistOverlay_ComputeAdaptiveLayout(
             viewport->WorkPos.x, viewport->WorkPos.y, viewport->WorkSize.x, viewport->WorkSize.y,
             CVarGetFloat(CVAR_ENHANCEMENT("JPAssist.CardScale"), 1.0f), hasNativeBounds, nativeTop, nativeBottom);
+        const OverlayPlacementProfile profile =
+            JPAssistOverlay_ClassifyPlacement(hasNativeBounds, nativeTop, nativeBottom);
         const float scale = layout.scale;
         mFrameScale = scale;
-
         ImGui::SetNextWindowViewport(viewport->ID);
-        ImGui::SetNextWindowPos(ImVec2(layout.x, layout.y), ImGuiCond_Always);
-        ImGui::SetNextWindowSize(ImVec2(layout.width, layout.height), ImGuiCond_Always);
+        PrepareGeometry(*viewport, profile, layout);
+        ImGui::SetNextWindowSizeConstraints(MinimumWindowSize(*viewport, scale), viewport->WorkSize);
         ImGui::PushStyleColor(ImGuiCol_WindowBg,
                               ImVec4(0.035f, 0.045f, 0.065f,
                                      CVarGetFloat(CVAR_ENHANCEMENT("JPAssist.CardOpacity"), 0.92f)));
@@ -136,6 +138,7 @@ class JPAssistOverlayWindow final : public Ship::GuiWindow {
     }
 
     void DrawElement() override {
+        HandleMouseDrag();
         ImFont* japaneseFont = OTRGlobals::Instance != nullptr ? OTRGlobals::Instance->fontJapanese : nullptr;
         if (japaneseFont != nullptr) {
             ImGui::PushFont(japaneseFont);
@@ -149,6 +152,7 @@ class JPAssistOverlayWindow final : public Ship::GuiWindow {
         ImGui::SetWindowFontScale(mFrameScale);
         if (mFrameState.studyPage.tokens.empty()) {
             ImGui::TextUnformatted("No reviewed token data is available for this page.");
+            PersistGeometryAfterInteraction();
             restoreFont();
             return;
         }
@@ -206,10 +210,144 @@ class JPAssistOverlayWindow final : public Ship::GuiWindow {
         ImGui::PopTextWrapPos();
         ApplyPendingStudyScroll();
         ImGui::EndChild();
+        PersistGeometryAfterInteraction();
         restoreFont();
     }
 
   private:
+    static const char* PlacementProfileName(OverlayPlacementProfile profile) {
+        switch (profile) {
+            case OverlayPlacementProfile::UpperDialogue:
+                return "UpperDialogue";
+            case OverlayPlacementProfile::LowerDialogue:
+                return "LowerDialogue";
+            case OverlayPlacementProfile::NoDialogue:
+            default:
+                return "NoDialogue";
+        }
+    }
+
+    static std::string GeometryCVar(OverlayPlacementProfile profile, const char* field) {
+        return std::string(CVAR_ENHANCEMENT("JPAssist.Layout.")) + PlacementProfileName(profile) + "." + field;
+    }
+
+    static ImVec2 MinimumWindowSize(const ImGuiViewport& viewport, float scale) {
+        return ImVec2(std::min(680.0f * scale, viewport.WorkSize.x),
+                      std::min(120.0f * scale, viewport.WorkSize.y));
+    }
+
+    static bool NearlyEqual(const ImVec2& lhs, const ImVec2& rhs, float tolerance = 0.5f) {
+        return std::fabs(lhs.x - rhs.x) <= tolerance && std::fabs(lhs.y - rhs.y) <= tolerance;
+    }
+
+    void PrepareGeometry(const ImGuiViewport& viewport, OverlayPlacementProfile profile,
+                         const OverlayLayout& automaticLayout) {
+        const std::string validKey = GeometryCVar(profile, "Valid");
+        const bool storedGeometryValid = CVarGetInteger(validKey.c_str(), 0) != 0;
+        const bool profileChanged = !mHasPlacementProfile || profile != mPlacementProfile;
+        const bool viewportChanged = !NearlyEqual(mWorkPos, viewport.WorkPos) ||
+                                     !NearlyEqual(mWorkSize, viewport.WorkSize);
+        const bool storedStateChanged = storedGeometryValid != mStoredGeometryValid;
+
+        mPlacementProfile = profile;
+        mHasPlacementProfile = true;
+        mWorkPos = viewport.WorkPos;
+        mWorkSize = viewport.WorkSize;
+        mStoredGeometryValid = storedGeometryValid;
+
+        if (!profileChanged && !viewportChanged && !storedStateChanged) {
+            return;
+        }
+
+        const ImVec2 minimumSize = MinimumWindowSize(viewport, automaticLayout.scale);
+        ImVec2 size(automaticLayout.width, automaticLayout.height);
+        ImVec2 position(automaticLayout.x, automaticLayout.y);
+        if (storedGeometryValid) {
+            const float widthRatio = std::clamp(CVarGetFloat(GeometryCVar(profile, "Width").c_str(),
+                                                             size.x / std::max(viewport.WorkSize.x, 1.0f)),
+                                                0.0f, 1.0f);
+            const float heightRatio = std::clamp(CVarGetFloat(GeometryCVar(profile, "Height").c_str(),
+                                                              size.y / std::max(viewport.WorkSize.y, 1.0f)),
+                                                 0.0f, 1.0f);
+            size.x = std::clamp(widthRatio * viewport.WorkSize.x, minimumSize.x, viewport.WorkSize.x);
+            size.y = std::clamp(heightRatio * viewport.WorkSize.y, minimumSize.y, viewport.WorkSize.y);
+
+            const float xRatio = std::clamp(CVarGetFloat(GeometryCVar(profile, "X").c_str(), 0.5f), 0.0f, 1.0f);
+            const float yRatio = std::clamp(CVarGetFloat(GeometryCVar(profile, "Y").c_str(), 0.5f), 0.0f, 1.0f);
+            position.x = viewport.WorkPos.x + xRatio * std::max(viewport.WorkSize.x - size.x, 0.0f);
+            position.y = viewport.WorkPos.y + yRatio * std::max(viewport.WorkSize.y - size.y, 0.0f);
+        }
+
+        ImGui::SetNextWindowPos(position, ImGuiCond_Always);
+        ImGui::SetNextWindowSize(size, ImGuiCond_Always);
+        mLastPersistedPos = position;
+        mLastPersistedSize = size;
+    }
+
+    void HandleMouseDrag() {
+        const ImVec2 windowPos = ImGui::GetWindowPos();
+        const ImVec2 windowSize = ImGui::GetWindowSize();
+        const float dragHeight = std::max(10.0f * mFrameScale, 8.0f);
+        const bool overDragStrip = ImGui::IsMouseHoveringRect(
+            windowPos, ImVec2(windowPos.x + windowSize.x, windowPos.y + dragHeight), false);
+
+        if (!mDraggingWindow && overDragStrip && ImGui::IsMouseClicked(ImGuiMouseButton_Left) &&
+            !ImGui::IsAnyItemActive()) {
+            mDraggingWindow = true;
+        }
+        if (!ImGui::IsMouseDown(ImGuiMouseButton_Left)) {
+            mDraggingWindow = false;
+        }
+        if (mDraggingWindow) {
+            ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeAll);
+            ImGui::SetWindowPos(ImVec2(windowPos.x + ImGui::GetIO().MouseDelta.x,
+                                       windowPos.y + ImGui::GetIO().MouseDelta.y));
+        } else if (overDragStrip) {
+            ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeAll);
+        }
+
+        // A small grip makes the otherwise titleless draggable area discoverable.
+        const float gripWidth = 28.0f * mFrameScale;
+        const float gripY = windowPos.y + 4.0f * mFrameScale;
+        ImGui::GetWindowDrawList()->AddLine(
+            ImVec2(windowPos.x + (windowSize.x - gripWidth) * 0.5f, gripY),
+            ImVec2(windowPos.x + (windowSize.x + gripWidth) * 0.5f, gripY),
+            ImGui::GetColorU32(ImGuiCol_Separator), std::max(mFrameScale, 1.0f));
+    }
+
+    void PersistGeometryAfterInteraction() {
+        ImVec2 size = ImGui::GetWindowSize();
+        ImVec2 position = ImGui::GetWindowPos();
+        size.x = std::clamp(size.x, 1.0f, mWorkSize.x);
+        size.y = std::clamp(size.y, 1.0f, mWorkSize.y);
+        const ImVec2 clampedPosition(
+            std::clamp(position.x, mWorkPos.x, mWorkPos.x + std::max(mWorkSize.x - size.x, 0.0f)),
+            std::clamp(position.y, mWorkPos.y, mWorkPos.y + std::max(mWorkSize.y - size.y, 0.0f)));
+        if (!NearlyEqual(position, clampedPosition, 0.01f)) {
+            position = clampedPosition;
+            ImGui::SetWindowPos(position);
+        }
+
+        if (ImGui::IsMouseDown(ImGuiMouseButton_Left) ||
+            (NearlyEqual(position, mLastPersistedPos) && NearlyEqual(size, mLastPersistedSize))) {
+            return;
+        }
+
+        const float movableWidth = std::max(mWorkSize.x - size.x, 1.0f);
+        const float movableHeight = std::max(mWorkSize.y - size.y, 1.0f);
+        CVarSetFloat(GeometryCVar(mPlacementProfile, "X").c_str(),
+                     std::clamp((position.x - mWorkPos.x) / movableWidth, 0.0f, 1.0f));
+        CVarSetFloat(GeometryCVar(mPlacementProfile, "Y").c_str(),
+                     std::clamp((position.y - mWorkPos.y) / movableHeight, 0.0f, 1.0f));
+        CVarSetFloat(GeometryCVar(mPlacementProfile, "Width").c_str(), size.x / std::max(mWorkSize.x, 1.0f));
+        CVarSetFloat(GeometryCVar(mPlacementProfile, "Height").c_str(), size.y / std::max(mWorkSize.y, 1.0f));
+        CVarSetInteger(GeometryCVar(mPlacementProfile, "Valid").c_str(), 1);
+        Ship::Context::GetRawInstance()->GetWindow()->GetGui()->SaveConsoleVariablesNextFrame();
+        mStoredGeometryValid = true;
+        mLastPersistedPos = position;
+        mLastPersistedSize = size;
+    }
+
     static std::string BuildMetadataLabel(const StudyToken& token) {
         std::string label = token.partOfSpeech;
         if (!label.empty() && static_cast<unsigned char>(label.front()) < 0x80) {
@@ -254,26 +392,31 @@ class JPAssistOverlayWindow final : public Ship::GuiWindow {
         ImFont* font = ImGui::GetFont();
         const float baseFontSize = ImGui::GetFontSize();
         const float horizontalPadding = 4.0f * mFrameScale;
+        const float verticalPadding = 5.0f * mFrameScale;
         const float usableWidth = std::max(available.x - horizontalPadding * 2.0f, 1.0f);
+        const float usableHeight = std::max(available.y - verticalPadding * 2.0f, 1.0f);
         const bool showFurigana = !token.reading.empty() && token.reading != token.surface;
 
         const ImVec2 baseSurfaceSize = ImGui::CalcTextSize(token.surface.c_str());
-        float surfaceScale = 2.15f;
-        if (baseSurfaceSize.x > 0.0f) {
-            surfaceScale = std::min(surfaceScale, usableWidth / baseSurfaceSize.x);
-        }
-        surfaceScale = std::max(surfaceScale, 0.85f);
-        const float surfaceFontSize = baseFontSize * surfaceScale;
-        const ImVec2 surfaceSize(baseSurfaceSize.x * surfaceScale, baseSurfaceSize.y * surfaceScale);
-
         ImVec2 readingSize(0.0f, 0.0f);
         if (showFurigana) {
             readingSize = font->CalcTextSizeA(baseFontSize, FLT_MAX, usableWidth, token.reading.c_str());
         }
 
         const float furiganaGap = showFurigana ? 2.0f * mFrameScale : 0.0f;
+        float surfaceScale = 2.15f;
+        if (baseSurfaceSize.x > 0.0f) {
+            surfaceScale = std::min(surfaceScale, usableWidth / baseSurfaceSize.x);
+        }
+        if (baseSurfaceSize.y > 0.0f) {
+            const float surfaceHeightAvailable = std::max(usableHeight - readingSize.y - furiganaGap, 1.0f);
+            surfaceScale = std::min(surfaceScale, surfaceHeightAvailable / baseSurfaceSize.y);
+        }
+        surfaceScale = std::max(surfaceScale, 0.1f);
+        const float surfaceFontSize = baseFontSize * surfaceScale;
+        const ImVec2 surfaceSize(baseSurfaceSize.x * surfaceScale, baseSurfaceSize.y * surfaceScale);
         const float contentHeight = readingSize.y + furiganaGap + surfaceSize.y;
-        const float y = start.y + std::max((available.y - contentHeight) * 0.5f, 0.0f);
+        const float y = start.y + verticalPadding + std::max((usableHeight - contentHeight) * 0.5f, 0.0f);
         ImDrawList* drawList = ImGui::GetWindowDrawList();
 
         float surfaceY = y;
@@ -451,6 +594,14 @@ class JPAssistOverlayWindow final : public Ship::GuiWindow {
 
     OverlayState mFrameState;
     float mFrameScale = 1.0f;
+    OverlayPlacementProfile mPlacementProfile = OverlayPlacementProfile::NoDialogue;
+    bool mHasPlacementProfile = false;
+    bool mStoredGeometryValid = false;
+    bool mDraggingWindow = false;
+    ImVec2 mWorkPos = ImVec2(0.0f, 0.0f);
+    ImVec2 mWorkSize = ImVec2(0.0f, 0.0f);
+    ImVec2 mLastPersistedPos = ImVec2(0.0f, 0.0f);
+    ImVec2 mLastPersistedSize = ImVec2(0.0f, 0.0f);
     Fast::Fast3dGui* mFast3dGui = nullptr;
 };
 
