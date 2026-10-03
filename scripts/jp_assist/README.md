@@ -30,6 +30,7 @@ For individual stages or troubleshooting:
 ```bash
 python scripts/jp_assist/extract_dialogue.py --help
 python scripts/jp_assist/extract_dialogue.py --o2r /path/to/oot.o2r
+python scripts/jp_assist/align_dialogue.py
 python scripts/jp_assist/tokenize_dialogue.py
 python scripts/jp_assist/validate_corpus.py
 python scripts/jp_assist/build_anki_deck.py
@@ -51,6 +52,53 @@ jp_assist/test_scenarios.json
 
 Ship of Harkinian's application-directory lookup then finds it at startup.
 The exact application data directory varies by installation.
+
+## Review Japanese/English alignment
+
+The extractor cannot assume that the same numeric ID or page number represents
+the same content in both language tables. `align_dialogue.py` accepts only
+structurally compatible same-ID pairs automatically. It writes suspicious
+pairs to ignored local files:
+
+```text
+scripts/jp_assist/out/alignment_review.html
+scripts/jp_assist/out/alignment_review.tsv
+```
+
+Review the Japanese line and nearby English candidates, then add the numeric
+mapping to `alignment/<variant>.json`. Never copy dialogue into that committed
+file. A one-English-message override can omit `pageMap` when page counts match:
+
+```json
+"0x1000": {
+  "status": "reviewed",
+  "englishMessageIds": ["0x1001"],
+  "japaneseHash": "<JapaneseHash from alignment_review.tsv>",
+  "englishHashes": {
+    "0x1001": "<CandidateEnglishHash from alignment_review.tsv>"
+  },
+  "note": "Reviewed against the local archive"
+}
+```
+
+For split/combined entries, list every English ID and provide one mapping for
+each Japanese page:
+
+```json
+"pageMap": [
+  { "japanesePageIndex": 0, "englishMessageId": "0x1001", "englishPageIndex": 0 },
+  { "japanesePageIndex": 1, "englishMessageId": "0x1002", "englishPageIndex": 0 }
+]
+```
+
+Use `"status": "unresolved"` plus the TSV's `japaneseHash` to record that a
+pair was reviewed but has no safe English equivalent. Unresolved entries retain
+Japanese study tokens while showing “Translation unavailable”; they never fall
+back to a same-ID guess.
+Reviewed mappings are bound to the local source hashes printed in the TSV; a
+changed archive fails the build instead of silently reusing a stale mapping.
+`validate_corpus.py --strict` treats every unresolved alignment as a release
+failure, while the normal development build reports them without stopping.
 
 To export only words saved with C-Right in Study Mode:
 

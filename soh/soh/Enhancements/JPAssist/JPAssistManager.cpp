@@ -316,8 +316,12 @@ void RecordHistoryForOpenedMessage(uint16_t textId) {
     // and English dialogue remains in the game's local corpus/history.
     JPAssist::LearningSync_RecordDialogueEvent("dialogue_seen", textId, 0);
     std::string text;
-    if (const JPAssist::StudyPage* page = JPAssist::StudyRepository_FindPage(textId, 0);
-        page != nullptr && !page->english.empty()) {
+    if (const JPAssist::StudyPage* page = JPAssist::StudyRepository_FindPage(textId, 0); page != nullptr) {
+        // An empty corpus translation is intentional: the build-time
+        // aligner found a suspicious JP/EN pair and suppressed it pending
+        // review. Falling back to the same raw English textId here would
+        // reintroduce the exact incorrect translation the alignment layer
+        // is protecting the overlay and history from.
         text = page->english;
     } else {
         const char* segment = nullptr;

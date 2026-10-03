@@ -24,7 +24,10 @@ def main() -> None:
 
     scripts = Path(__file__).parent
     run(scripts, "extract_dialogue.py", "--oot-o2r", args.oot_o2r, "--variant", args.variant)
-    run(scripts, "tokenize_dialogue.py")
+    extracted = str(scripts / "out" / f"{args.variant}.json")
+    manifest = str(scripts / "alignment" / f"{args.variant}.json")
+    run(scripts, "align_dialogue.py", "--extracted", extracted, "--manifest", manifest)
+    run(scripts, "tokenize_dialogue.py", "--extracted", extracted)
     validation_args = ["--strict"] if args.strict else []
     run(scripts, "validate_corpus.py", *validation_args)
     run(scripts, "build_anki_deck.py")

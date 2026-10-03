@@ -74,7 +74,14 @@ Opening Study Mode should preserve:
 - The actor and conversation state.
 - The game's logical dialogue progression.
 
-Japanese and English messages do not always use identical page breaks. The first implementation may map pages by page index and clamp to the last available page. The corpus can later include explicit page-alignment metadata for exceptions.
+Japanese and English message IDs and page breaks are not reliably one-to-one.
+The Japanese ID remains the canonical runtime and progress identity. A
+variant-specific, build-time alignment manifest maps it to zero, one, or
+multiple English IDs and maps every Japanese page explicitly. Compatible
+same-ID pairs are accepted automatically; structurally suspicious pairs are
+shown in an ignored local HTML/TSV review report and have English suppressed
+until reviewed. Runtime code never guesses a nearby ID, and it never clamps a
+different page count to the final page.
 
 The native dialogue remains Japanese. The English reference is presented only inside Study Mode and never changes Ship of Harkinian's global language setting.
 
@@ -328,10 +335,13 @@ SudachiPy or MeCab with a suitable dictionary are reasonable offline tokenizer c
 
 ```json
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "source": {
     "variant": "N64_NTSC_12",
     "messageId": "0x1001",
+    "japaneseMessageId": "0x1001",
+    "englishMessageIds": ["0x1002"],
+    "alignmentStatus": "reviewed",
     "japaneseHash": "…",
     "englishHash": "…"
   },
@@ -339,6 +349,7 @@ SudachiPy or MeCab with a suitable dictionary are reasonable offline tokenizer c
     {
       "japanese": "…",
       "english": "…",
+      "englishSource": { "messageId": "0x1002", "pageIndex": 0 },
       "tokens": [
         {
           "id": "会う|あう|verb-1",
@@ -358,6 +369,11 @@ SudachiPy or MeCab with a suitable dictionary are reasonable offline tokenizer c
 ```
 
 Offsets should be Unicode code-point or normalized-text offsets, never raw UTF-8 byte indexes.
+
+The committed alignment manifest contains only numeric IDs, page indexes,
+status, and optional reviewer notes. It must never contain extracted dialogue.
+Generated alignment data includes source provenance and hashes so a future ROM
+variant or corpus rebuild cannot silently reuse the wrong mapping.
 
 ### 7.4 Dictionary licensing
 
@@ -649,7 +665,7 @@ Built as `scripts/jp_assist/{extract_dialogue,message_codes,tokenize_dialogue,ov
 | Risk | Mitigation |
 |---|---|
 | Language switch corrupts message state | Prototype first; decouple logical message state from presentation |
-| JP/EN page breaks do not align | Page-index fallback plus reviewed alignment metadata |
+| JP/EN IDs or page breaks do not align | Variant-specific reviewed ID/page manifest; unresolved English is suppressed |
 | Tokenization is linguistically poor | Offline tokenizer plus manual override layer |
 | Wrong dictionary sense | Use English line and human review; keep alternate senses expandable |
 | Randomizer text has no Japanese equivalent | Mark unsupported and retain current display |

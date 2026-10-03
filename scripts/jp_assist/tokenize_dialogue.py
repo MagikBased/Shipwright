@@ -54,8 +54,8 @@ def english_part_of_speech(sudachi_pos: str) -> str:
     return _POS_MAP.get(sudachi_pos, sudachi_pos)
 
 
-SCHEMA_VERSION = 1
-PIPELINE_VERSION = "2"
+SCHEMA_VERSION = 2
+PIPELINE_VERSION = "3"
 
 
 def sha256_hex(data: bytes) -> str:
@@ -68,7 +68,7 @@ def is_internal_message_id_echo(text_id: int, japanese_text: str, english_text: 
     japanese_id = japanese_text.strip().translate(fullwidth).lower()
     english_id = english_text.strip().lower()
     expected = f"{text_id:04x}"
-    return japanese_id == expected and english_id == expected
+    return japanese_id == expected and (not english_id or english_id == expected)
 
 
 class Tokenizer:
@@ -196,22 +196,51 @@ class Tokenizer:
         return self._persistent_cache[cache_key]
 
 
-def build_runtime_record(text_id: int, entry: dict, tokenizer: Tokenizer) -> dict | None:
+def build_runtime_record(
+    text_id: int,
+    entry: dict,
+    tokenizer: Tokenizer,
+    extracted: dict,
+    alignment: dict,
+) -> dict | None:
     jpn_raw = bytes.fromhex(entry["japanese"]["raw"]) if entry.get("japanese") else b""
-    eng_raw = bytes.fromhex(entry["english"]["raw"]) if entry.get("english") else b""
+    if not jpn_raw:
+        return None
 
-    jpn_pages = parse_japanese(jpn_raw) if jpn_raw else []
-    eng_pages = parse_english(eng_raw) if eng_raw else []
-    page_count = max(len(jpn_pages), len(eng_pages))
+    alignment_entry = alignment["messages"].get(f"{text_id:#06x}")
+    if alignment_entry is None:
+        raise ValueError(f"No dialogue alignment record for {text_id:#06x}")
+
+    english_ids = [int(value, 0) for value in alignment_entry.get("englishMessageIds", [])]
+    english_raw_by_id = {}
+    english_pages_by_id = {}
+    for english_id in english_ids:
+        english_entry = extracted.get(f"{english_id:#06x}", {}).get("english")
+        if not english_entry:
+            raise ValueError(f"Aligned English message {english_id:#06x} is absent")
+        raw = bytes.fromhex(english_entry["raw"])
+        english_raw_by_id[english_id] = raw
+        english_pages_by_id[english_id] = parse_english(raw)
+
+    page_map = {
+        item["japanesePageIndex"]: (int(item["englishMessageId"], 0), item["englishPageIndex"])
+        for item in alignment_entry.get("pageMap", [])
+    }
+    jpn_pages = parse_japanese(jpn_raw)
 
     pages = []
-    for i in range(page_count):
-        # Page-index mapping fallback (design doc 4.2): clamp to the last
-        # available page on either side if JP/EN page counts don't match.
-        jpn_page = jpn_pages[min(i, len(jpn_pages) - 1)] if jpn_pages else None
-        eng_page = eng_pages[min(i, len(eng_pages) - 1)] if eng_pages else None
+    for i, jpn_page in enumerate(jpn_pages):
+        english_source = None
+        eng_page = None
+        if i in page_map:
+            english_id, english_page_index = page_map[i]
+            eng_page = english_pages_by_id[english_id][english_page_index]
+            english_source = {
+                "messageId": f"{english_id:#06x}",
+                "pageIndex": english_page_index,
+            }
 
-        jpn_text = jpn_page.text if jpn_page else ""
+        jpn_text = jpn_page.text
         eng_text = eng_page.text if eng_page else ""
 
         internal_id_echo = is_internal_message_id_echo(text_id, jpn_text, eng_text)
@@ -221,6 +250,7 @@ def build_runtime_record(text_id: int, entry: dict, tokenizer: Tokenizer) -> dic
                 "english": eng_text,
                 "isChoice": bool(jpn_page and jpn_page.is_choice) or bool(eng_page and eng_page.is_choice),
                 "choiceCount": (jpn_page.choice_count if jpn_page else 0) or (eng_page.choice_count if eng_page else 0),
+                "englishSource": english_source,
                 "tokens": tokenizer.tokenize_page(jpn_text, eng_text)
                 if jpn_text.strip() and not internal_id_echo
                 else [],
@@ -235,12 +265,17 @@ def build_runtime_record(text_id: int, entry: dict, tokenizer: Tokenizer) -> dic
         return None
 
     return {
-        "schemaVersion": 1,
+        "schemaVersion": SCHEMA_VERSION,
         "source": {
             "variant": entry["variant"],
             "messageId": f"{text_id:#06x}",
-            "japaneseHash": sha256_hex(jpn_raw) if jpn_raw else None,
-            "englishHash": sha256_hex(eng_raw) if eng_raw else None,
+            "japaneseMessageId": f"{text_id:#06x}",
+            "englishMessageIds": [f"{value:#06x}" for value in english_ids],
+            "alignmentStatus": alignment_entry["status"],
+            "alignmentConfidence": alignment_entry["confidence"],
+            "japaneseHash": sha256_hex(jpn_raw),
+            "englishHash": sha256_hex(b"\x00".join(english_raw_by_id.values())) if english_raw_by_id else None,
+            "englishHashes": [sha256_hex(english_raw_by_id[value]) for value in english_ids],
         },
         "pages": pages,
     }
@@ -249,6 +284,7 @@ def build_runtime_record(text_id: int, entry: dict, tokenizer: Tokenizer) -> dic
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--extracted", default=None, help="Path to extract_dialogue.py's output JSON")
+    parser.add_argument("--alignment", default=None, help="Path to align_dialogue.py's output JSON")
     parser.add_argument(
         "--text-id",
         action="append",
@@ -262,6 +298,11 @@ def main() -> None:
     out_dir.mkdir(parents=True, exist_ok=True)
     extracted_path = Path(args.extracted) if args.extracted else out_dir / "N64_NTSC_12.json"
     extracted = json.loads(extracted_path.read_text())
+    alignment_path = Path(args.alignment) if args.alignment else out_dir / "dialogue_alignment.json"
+    alignment = json.loads(alignment_path.read_text())
+    extracted_variants = {entry["variant"] for entry in extracted.values()}
+    if extracted_variants != {alignment.get("variant")}:
+        raise ValueError(f"Alignment variant {alignment.get('variant')} does not match {sorted(extracted_variants)}")
 
     # The archive ends with internal font/debug/sentinel records (0xFFFC+
     # rather than player-facing dialogue). Including the font glyph table as
@@ -279,7 +320,7 @@ def main() -> None:
 
     runtime_messages = {}
     for index, (key, entry) in enumerate(entries.items(), start=1):
-        record = build_runtime_record(entry["textId"], entry, tokenizer)
+        record = build_runtime_record(entry["textId"], entry, tokenizer, extracted, alignment)
         if record is not None:
             runtime_messages[key] = record
         if index % 100 == 0 or index == len(entries):
@@ -289,9 +330,12 @@ def main() -> None:
     source_digest = sha256_hex(extracted_path.read_bytes())
     pipeline_digest = sha256_hex(b"".join(
         (Path(__file__).read_bytes(), (Path(__file__).parent / "message_codes.py").read_bytes(),
-         (Path(__file__).parent / "overrides.py").read_bytes())
+         (Path(__file__).parent / "overrides.py").read_bytes(), alignment_path.read_bytes())
     ))
     corpus_version = f"{extracted_path.stem}-{PIPELINE_VERSION}-{source_digest[:8]}-{pipeline_digest[:8]}"
+    alignment_counts = {"exact": 0, "reviewed": 0, "unresolved": 0}
+    for record in runtime_messages.values():
+        alignment_counts[record["source"]["alignmentStatus"]] += 1
     runtime_data = {
         "metadata": {
             "schemaVersion": SCHEMA_VERSION,
@@ -299,6 +343,7 @@ def main() -> None:
             "corpusVersion": corpus_version,
             "generatedAt": datetime.datetime.now(datetime.timezone.utc).isoformat(),
             "messageCount": len(runtime_messages),
+            "alignmentCounts": alignment_counts,
         },
         "messages": runtime_messages,
     }

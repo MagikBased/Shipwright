@@ -72,6 +72,20 @@ def main() -> None:
         source = record.get("source", {})
         if source.get("messageId", "").lower() != key.lower():
             errors.append(f"{key}: source.messageId does not match its map key")
+        if source.get("japaneseMessageId", "").lower() != key.lower():
+            errors.append(f"{key}: source.japaneseMessageId does not match its map key")
+        alignment_status = source.get("alignmentStatus")
+        totals[f"alignment_{alignment_status}"] += 1
+        english_ids = source.get("englishMessageIds", [])
+        english_hashes = source.get("englishHashes", [])
+        if len(english_ids) != len(english_hashes):
+            errors.append(f"{key}: englishMessageIds and englishHashes have different lengths")
+        if alignment_status == "unresolved" and english_ids:
+            errors.append(f"{key}: unresolved alignment must not select English messages")
+        if alignment_status == "unresolved":
+            warnings.append(f"{key}: English alignment is unresolved and intentionally suppressed")
+        if alignment_status in ("exact", "reviewed") and not english_ids:
+            errors.append(f"{key}: resolved alignment has no English message ID")
         for language in ("japanese", "english"):
             digest = source.get(f"{language}Hash")
             if digest is not None and not _HASH_RE.fullmatch(digest):
@@ -84,7 +98,12 @@ def main() -> None:
             totals["pages"] += 1
             japanese = page.get("japanese", "")
             english = page.get("english", "")
-            if bool(japanese.strip()) != bool(english.strip()):
+            english_source = page.get("englishSource")
+            if english_source and english_source.get("messageId") not in english_ids:
+                errors.append(f"{key} page {page_index}: English source is not declared by the message")
+            if alignment_status == "unresolved" and (english.strip() or english_source is not None):
+                errors.append(f"{key} page {page_index}: unresolved alignment leaked English text")
+            if alignment_status != "unresolved" and bool(japanese.strip()) != bool(english.strip()):
                 warnings.append(f"{key} page {page_index}: only one language contains text")
             unexpected = {ch for ch in japanese if not is_expected_japanese_char(ch)}
             if unexpected:
@@ -142,6 +161,16 @@ def main() -> None:
     for token_id, item in sorted(missing_definitions.items(), key=lambda pair: -pair[1]["count"]):
         warnings.append(f"{token_id}: missing definition in {item['count']} occurrence(s)")
 
+    expected_alignment_counts = {
+        "exact": totals["alignment_exact"],
+        "reviewed": totals["alignment_reviewed"],
+        "unresolved": totals["alignment_unresolved"],
+    }
+    if metadata and metadata.get("alignmentCounts") != expected_alignment_counts:
+        errors.append(
+            f"metadata.alignmentCounts is {metadata.get('alignmentCounts')}, expected {expected_alignment_counts}"
+        )
+
     review_path.parent.mkdir(parents=True, exist_ok=True)
     with review_path.open("w", newline="", encoding="utf-8") as review_file:
         fields = ["VocabularyId", "Surface", "Lemma", "Reading", "PartOfSpeech", "Occurrences",
@@ -167,6 +196,10 @@ def main() -> None:
         coverage = (defined / totals["tokens"] * 100) if totals["tokens"] else 100.0
         report.write(f"- Definition coverage: {defined}/{totals['tokens']} ({coverage:.2f}%)\n")
         report.write(f"- Unique definitions needing review: {len(missing_definitions)}\n")
+        report.write(
+            f"- Dialogue alignment: {totals['alignment_exact']} exact, "
+            f"{totals['alignment_reviewed']} reviewed, {totals['alignment_unresolved']} unresolved\n"
+        )
         report.write(f"- Errors: {len(errors)}\n- Review warnings: {len(warnings)}\n\n")
         report.write("## Errors\n\n")
         report.write("\n".join(f"- {item}" for item in errors) or "None")

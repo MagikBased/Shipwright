@@ -7,13 +7,22 @@
   "properties": {
     "metadata": {
       "type": "object",
-      "required": ["schemaVersion", "pipelineVersion", "corpusVersion", "messageCount"],
+      "required": ["schemaVersion", "pipelineVersion", "corpusVersion", "messageCount", "alignmentCounts"],
       "properties": {
-        "schemaVersion": { "const": 1 },
+        "schemaVersion": { "const": 2 },
         "pipelineVersion": { "type": "string" },
         "corpusVersion": { "type": "string", "minLength": 1 },
         "generatedAt": { "type": "string" },
-        "messageCount": { "type": "integer", "minimum": 0 }
+        "messageCount": { "type": "integer", "minimum": 0 },
+        "alignmentCounts": {
+          "type": "object",
+          "required": ["exact", "reviewed", "unresolved"],
+          "properties": {
+            "exact": { "type": "integer", "minimum": 0 },
+            "reviewed": { "type": "integer", "minimum": 0 },
+            "unresolved": { "type": "integer", "minimum": 0 }
+          }
+        }
       },
       "additionalProperties": true
     },
@@ -28,15 +37,27 @@
       "type": "object",
       "required": ["schemaVersion", "source", "pages"],
       "properties": {
-        "schemaVersion": { "const": 1 },
+        "schemaVersion": { "const": 2 },
         "source": {
           "type": "object",
-          "required": ["variant", "messageId"],
+          "required": ["variant", "messageId", "japaneseMessageId", "englishMessageIds", "alignmentStatus", "alignmentConfidence", "japaneseHash", "englishHash", "englishHashes"],
           "properties": {
             "variant": { "type": "string" },
             "messageId": { "type": "string", "pattern": "^0x[0-9a-fA-F]{4}$" },
+            "japaneseMessageId": { "type": "string", "pattern": "^0x[0-9a-fA-F]{4}$" },
+            "englishMessageIds": {
+              "type": "array",
+              "items": { "type": "string", "pattern": "^0x[0-9a-fA-F]{4}$" },
+              "uniqueItems": true
+            },
+            "alignmentStatus": { "enum": ["exact", "reviewed", "unresolved"] },
+            "alignmentConfidence": { "type": "integer", "minimum": 0, "maximum": 100 },
             "japaneseHash": { "type": ["string", "null"] },
-            "englishHash": { "type": ["string", "null"] }
+            "englishHash": { "type": ["string", "null"] },
+            "englishHashes": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
           }
         },
         "pages": {
@@ -47,12 +68,20 @@
     },
     "page": {
       "type": "object",
-      "required": ["japanese", "english", "isChoice", "choiceCount", "tokens"],
+      "required": ["japanese", "english", "isChoice", "choiceCount", "englishSource", "tokens"],
       "properties": {
         "japanese": { "type": "string" },
         "english": { "type": "string" },
         "isChoice": { "type": "boolean" },
         "choiceCount": { "type": "integer", "minimum": 0 },
+        "englishSource": {
+          "type": ["object", "null"],
+          "properties": {
+            "messageId": { "type": "string", "pattern": "^0x[0-9a-fA-F]{4}$" },
+            "pageIndex": { "type": "integer", "minimum": 0 }
+          },
+          "required": ["messageId", "pageIndex"]
+        },
         "tokens": { "type": "array", "items": { "$ref": "#/$defs/token" } }
       }
     },

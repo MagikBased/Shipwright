@@ -46,8 +46,9 @@ bool StudyRepository_IsCorpusLoaded();
 const std::string& StudyRepository_GetCorpusVersion();
 const std::string& StudyRepository_GetLoadError();
 
-// Returns nullptr when the message/page has no reviewed corpus data. Page
-// indices are clamped to support the design's JP/EN page-alignment fallback.
+// Returns nullptr when the message/page has no reviewed corpus data. Runtime
+// pages follow the Japanese message; English page provenance is resolved by
+// the build-time alignment manifest rather than guessed here.
 const StudyPage* StudyRepository_FindPage(uint16_t textId, int pageIndex);
 size_t StudyRepository_GetPageCount(uint16_t textId);
 
