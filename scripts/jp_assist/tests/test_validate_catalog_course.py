@@ -26,6 +26,11 @@ class ValidateCatalogCourseTest(unittest.TestCase):
             "chapterModel": {"coreCoverageTargetPercent": 80},
             "chapters": [{
                 "id": "one", "prerequisites": [], "reviewedCards": [first],
+                "terminology": [{
+                    "id": "forest-name", "corpusEvidence": {
+                        "identity": "森|もり|proper:forest", "messageIds": ["0x0001"],
+                    },
+                }],
                 "deck": {"reviewedCardCount": 1, "status": "pilot", "downloadAvailable": False},
             }],
         }
@@ -33,6 +38,7 @@ class ValidateCatalogCourseTest(unittest.TestCase):
         report = audit_course(game, summary)
         self.assertEqual(report["issues"], [])
         self.assertEqual(report["readyChapterCount"], 0)
+        self.assertEqual(report["terminologyCount"], 1)
 
     def test_strict_audit_reports_readiness_and_duplicate_examples(self):
         first = card("森|もり|forest", "同じ文。")

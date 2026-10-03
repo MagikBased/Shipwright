@@ -13,9 +13,11 @@ from build_catalog_deck import (  # noqa: E402
     select_chapter,
     stable_deck_id,
     stable_note_guid,
+    terminology_entries,
     reviewed_cards,
     validate_corpus_evidence,
     validate_prerequisite_uniqueness,
+    validate_terminology_evidence,
 )
 
 
@@ -41,6 +43,10 @@ class BuildCatalogDeckTest(unittest.TestCase):
         self.assertIn(
             "アイテム|あいてむ|item",
             {card["id"] for card in reviewed_cards(opening)},
+        )
+        self.assertEqual(
+            {entry["written"] for entry in terminology_entries(opening)},
+            {"デク", "コキリ"},
         )
 
     def test_identities_are_stable_and_chapter_scoped(self):
@@ -138,6 +144,22 @@ class BuildCatalogDeckTest(unittest.TestCase):
         }]}}}
         with self.assertRaisesRegex(ValueError, "copies a corpus sentence"):
             validate_corpus_evidence(chapter, runtime)
+
+    def test_terminology_evidence_is_bound_to_a_stable_identity(self):
+        chapter = {"terminology": [{
+            "id": "name", "written": "名前", "reading": "なまえ",
+            "meaning": "name",
+            "corpusEvidence": {
+                "identity": "名前|なまえ|proper:name", "messageIds": ["0x1000"],
+            },
+        }]}
+        runtime = {"messages": {"0x1000": {"pages": [{"tokens": [{
+            "lemma": "名前", "reading": "なまえ", "senseId": "proper:name",
+        }]}]}}}
+        validate_terminology_evidence(chapter, runtime)
+        runtime["messages"]["0x1000"]["pages"][0]["tokens"][0]["senseId"] = "changed"
+        with self.assertRaisesRegex(ValueError, "stale corpus evidence"):
+            validate_terminology_evidence(chapter, runtime)
 
 
 if __name__ == "__main__":

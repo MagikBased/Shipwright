@@ -75,17 +75,24 @@ def load_game(game_id: str, catalog_root: Path = DEFAULT_CATALOG_ROOT) -> dict[s
         manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
         if manifest.get("gameId") != game_id:
             raise ValueError(f"Card manifest game id does not match {game_id}")
-        cards_by_chapter = {
-            item["chapterId"]: item["cards"] for item in manifest.get("chapters", [])
+        content_by_chapter = {
+            item["chapterId"]: item for item in manifest.get("chapters", [])
         }
         for chapter in game["chapters"]:
-            chapter["reviewedCards"] = cards_by_chapter.get(chapter["id"], [])
+            content = content_by_chapter.get(chapter["id"], {})
+            chapter["reviewedCards"] = content.get("cards", [])
+            chapter["terminology"] = content.get("terminology", [])
     return game
 
 
 def reviewed_cards(chapter: dict[str, Any]) -> list[dict[str, Any]]:
     """Return the complete reviewed corpus, falling back for legacy fixtures."""
     return chapter.get("reviewedCards", chapter.get("sampleCards", []))
+
+
+def terminology_entries(chapter: dict[str, Any]) -> list[dict[str, Any]]:
+    """Return game-specific glossary entries kept outside ordinary cards."""
+    return chapter.get("terminology", [])
 
 
 def select_chapter(game: dict[str, Any], chapter_selector: str) -> dict[str, Any]:
@@ -235,6 +242,31 @@ def validate_corpus_evidence(chapter: dict[str, Any], runtime_root: dict[str, An
         english_example = " ".join(card["sentenceEnglish"].split()).casefold()
         if japanese_example in corpus_japanese or english_example in corpus_english:
             raise ValueError(f"Reviewed card {card['id']} copies a corpus sentence")
+
+
+def validate_terminology_evidence(
+    chapter: dict[str, Any], runtime_root: dict[str, Any],
+) -> None:
+    messages = runtime_root.get("messages", runtime_root)
+    for entry in terminology_entries(chapter):
+        evidence = entry.get("corpusEvidence")
+        if not evidence:
+            raise ValueError(f"Terminology entry {entry['id']} has no corpus evidence")
+        expected = evidence["identity"]
+        found = False
+        for message_id in evidence.get("messageIds", []):
+            record = messages.get(message_id)
+            if record is None:
+                raise ValueError(
+                    f"Terminology entry {entry['id']} cites missing message {message_id}"
+                )
+            for page in record["pages"]:
+                for token in page["tokens"]:
+                    reading = token.get("dictionaryReading", token["reading"])
+                    actual = f"{token['lemma']}|{reading}|{token['senseId']}"
+                    found = found or actual == expected
+        if not found:
+            raise ValueError(f"Terminology entry {entry['id']} has stale corpus evidence")
 
 
 def main() -> None:

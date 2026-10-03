@@ -105,7 +105,16 @@ class GameCatalog:
                 continue
             with path.open(encoding="utf-8") as source:
                 game = json.load(source)
-            self._validate(game, path, self._card_manifests.get(game["id"]))
+            card_manifest = self._card_manifests.get(game["id"])
+            self._validate(game, path, card_manifest)
+            if card_manifest is not None:
+                content_by_chapter = {
+                    item["chapterId"]: item for item in card_manifest["chapters"]
+                }
+                for chapter in game["chapters"]:
+                    chapter["terminology"] = deepcopy(
+                        content_by_chapter[chapter["id"]].get("terminology", [])
+                    )
             games[game["id"]] = game
         return games
 
@@ -154,7 +163,7 @@ class GameCatalog:
             raise ValueError(f"Catalog game {game_id} chapter ids must be unique")
         known = set(chapter_ids)
         manifest_chapters = {
-            item.get("chapterId"): item.get("cards")
+            item.get("chapterId"): item
             for item in (card_manifest or {}).get("chapters", [])
         }
         if game.get("cardManifest") and card_manifest is None:
@@ -166,7 +175,10 @@ class GameCatalog:
             if any(reference not in known for reference in references):
                 raise ValueError(f"Catalog game {game_id} has an unknown chapter reference")
             cards = chapter.get("sampleCards", [])
-            reviewed_cards = manifest_chapters.get(chapter["id"], cards)
+            manifest_chapter = manifest_chapters.get(chapter["id"])
+            reviewed_cards = (
+                manifest_chapter.get("cards") if manifest_chapter is not None else cards
+            )
             if not isinstance(reviewed_cards, list):
                 raise ValueError(f"Card manifest chapter {chapter['id']} has invalid cards")
             if chapter.get("deck", {}).get("reviewedCardCount") != len(reviewed_cards):
@@ -184,6 +196,24 @@ class GameCatalog:
                 evidence = card.get("corpusEvidence", {})
                 if not evidence.get("identity") or not evidence.get("messageIds"):
                     raise ValueError(f"Catalog card {card['id']} has no corpus evidence")
+            terminology = (
+                manifest_chapter.get("terminology", [])
+                if manifest_chapter is not None else []
+            )
+            if not isinstance(terminology, list):
+                raise ValueError(f"Card manifest chapter {chapter['id']} has invalid terminology")
+            terminology_ids = [entry.get("id") for entry in terminology]
+            if any(not entry_id for entry_id in terminology_ids) or len(terminology_ids) != len(set(terminology_ids)):
+                raise ValueError(f"Catalog chapter {chapter['id']} terminology ids must be unique")
+            expected_terms = chapter.get("deck", {}).get("terminologyCount", 0)
+            if expected_terms != len(terminology):
+                raise ValueError(f"Catalog chapter {chapter['id']} terminology count is stale")
+            for entry in terminology:
+                evidence = entry.get("corpusEvidence", {})
+                if not evidence.get("identity") or not evidence.get("messageIds"):
+                    raise ValueError(
+                        f"Catalog terminology entry {entry['id']} has no corpus evidence"
+                    )
 
     @staticmethod
     def _summary(game: dict[str, Any]) -> dict[str, Any]:

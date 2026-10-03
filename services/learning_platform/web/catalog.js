@@ -212,6 +212,26 @@ function chapterCard(chapter, chapterNames) {
     details.append(summary, grid);
     item.append(details);
   }
+  if (chapter.terminology?.length) {
+    const details = document.createElement("details");
+    details.className = "pilot-cards terminology";
+    const summary = document.createElement("summary");
+    text(summary, `Game terminology ${chapter.terminology.length}`);
+    const grid = document.createElement("div");
+    grid.className = "pilot-grid";
+    for (const entry of chapter.terminology) {
+      const article = document.createElement("article");
+      const word = document.createElement("h4");
+      const reading = document.createElement("span");
+      const meaning = document.createElement("p");
+      text(word, entry.written); text(reading, entry.reading); text(meaning, entry.meaning);
+      reading.className = "reading"; meaning.className = "card-meaning";
+      article.append(word, reading, meaning);
+      grid.append(article);
+    }
+    details.append(summary, grid);
+    item.append(details);
+  }
   return item;
 }
 
@@ -226,10 +246,14 @@ async function loadCatalog() {
     text(document.querySelector("#chapter-model"), `${game.chapterModel.description} ${game.chapterModel.assignmentRule}`);
     text(document.querySelector("#audio-policy"), game.audio.description);
     const reviewed = game.chapters.reduce((total, chapter) => total + chapter.deck.reviewedCardCount, 0);
+    const terminology = game.chapters.reduce(
+      (total, chapter) => total + (chapter.deck.terminologyCount || 0), 0
+    );
     const facts = document.querySelector("#game-facts");
     facts.append(
       fact("Chapters", String(game.chapters.length)),
       fact("Reviewed pilot cards", String(reviewed)),
+      fact("Game terminology", String(terminology)),
       fact("Audio", game.audio.status === "optional-not-generated" ? "Optional · not generated" : game.audio.status),
       fact("Deck status", "In development")
     );

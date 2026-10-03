@@ -36,6 +36,7 @@
         "status": "pilot",
         "downloadAvailable": false,
         "reviewedCardCount": 87,
+        "terminologyCount": 2,
         "audioStatus": "none",
         "description": "A small reviewed sample proves the content and export format before full corpus assignment."
       },

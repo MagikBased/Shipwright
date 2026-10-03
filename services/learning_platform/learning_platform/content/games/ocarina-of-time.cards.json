@@ -1203,12 +1203,14 @@
       ],
       "terminology": [
         {
+          "id": "デク|でく|deku-term",
           "written": "デク",
           "reading": "でく",
           "meaning": "Deku; a game-specific name associated with tree-like beings and objects",
           "corpusEvidence": {"identity": "デク|でく|proper:デク|でく", "messageIds": ["0x0007"]}
         },
         {
+          "id": "コキリ|こきり|kokiri-term",
           "written": "コキリ",
           "reading": "こきり",
           "meaning": "Kokiri; the forest-dwelling children",

@@ -153,6 +153,11 @@ class LearningPlatformApiTest(unittest.TestCase):
             game["chapters"][0]["deck"]["reviewedCardCount"],
             len(game["chapters"][0]["sampleCards"]),
         )
+        self.assertEqual(game["chapters"][0]["deck"]["terminologyCount"], 2)
+        self.assertEqual(
+            {entry["written"] for entry in game["chapters"][0]["terminology"]},
+            {"デク", "コキリ"},
+        )
         self.assertTrue(all(card["corpusEvidence"]["messageIds"] for card in cards))
         self.assertTrue(all(card["wordAudio"] is None for card in cards))
         self.assertTrue(all(card["sentenceAudio"] is None for card in cards))

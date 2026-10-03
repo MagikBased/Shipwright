@@ -14,8 +14,10 @@ from build_catalog_deck import (
     load_game,
     reviewed_cards,
     stable_note_guid,
+    terminology_entries,
     validate_corpus_evidence,
     validate_prerequisite_uniqueness,
+    validate_terminology_evidence,
 )
 
 
@@ -64,6 +66,12 @@ def audit_course(
                     issues.append(
                         f"Duplicate {field}: {previous_example} and {chapter_id}/{card_id}"
                     )
+        terms = terminology_entries(chapter)
+        term_ids = [entry.get("id") for entry in terms]
+        if len(term_ids) != len(set(term_ids)) or any(not value for value in term_ids):
+            issues.append(f"{chapter_id}: terminology ids must be present and unique")
+        if any(not entry.get("corpusEvidence") for entry in terms):
+            issues.append(f"{chapter_id}: terminology entry has no corpus evidence")
         coverage = summary_by_chapter.get(chapter_id)
         if coverage is None:
             issues.append(f"{chapter_id}: missing candidate coverage summary")
@@ -87,6 +95,7 @@ def audit_course(
         chapter_results.append({
             "chapterId": chapter_id,
             "cardCount": len(cards),
+            "terminologyCount": len(terms),
             "coveragePercent": coverage_percent,
             "targetPercent": target,
             "ready": ready,
@@ -94,6 +103,7 @@ def audit_course(
     return {
         "gameId": game["id"],
         "cardCount": sum(item["cardCount"] for item in chapter_results),
+        "terminologyCount": sum(item["terminologyCount"] for item in chapter_results),
         "readyChapterCount": sum(item["ready"] for item in chapter_results),
         "chapterCount": len(chapter_results),
         "chapters": chapter_results,
@@ -117,16 +127,18 @@ def main() -> None:
     for chapter in game["chapters"]:
         try:
             validate_corpus_evidence(chapter, runtime)
+            validate_terminology_evidence(chapter, runtime)
         except ValueError as error:
             report["issues"].append(str(error))
     for chapter in report["chapters"]:
         print(
             f"{chapter['chapterId']}: {chapter['cardCount']} cards, "
+            f"{chapter['terminologyCount']} terms, "
             f"{chapter['coveragePercent']:.2f}%/{chapter['targetPercent']}% coverage, "
             f"{'ready' if chapter['ready'] else 'in progress'}"
         )
     print(
-        f"Total: {report['cardCount']} cards; "
+        f"Total: {report['cardCount']} cards, {report['terminologyCount']} terms; "
         f"{report['readyChapterCount']}/{report['chapterCount']} chapters ready"
     )
     if report["issues"]:
