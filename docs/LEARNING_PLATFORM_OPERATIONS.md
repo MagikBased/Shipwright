@@ -32,6 +32,18 @@ It creates no personal data. The reports under the ignored
 concurrent devices, 8,000 unique words, retry deduplication, account reads,
 memory/database limits, and a 5,000-word schema forward/rollback/reapply cycle.
 
+The CI release gate also runs the disposable stack rehearsal:
+
+```bash
+services/learning_platform/scripts/rehearse_staging.sh
+```
+
+It selects a unique Compose project, starts fresh volumes, passes production
+smoke plus backup/restore checks, and deletes only that project's containers,
+network, and volumes. The normal `staging.sh down` deliberately preserves user
+data. `staging.sh destroy` refuses to remove volumes unless
+`JP_ASSIST_CONFIRM_DESTROY` exactly matches the selected project name.
+
 ## Upgrade
 
 1. Run the smoke test and restore drill on the current release.

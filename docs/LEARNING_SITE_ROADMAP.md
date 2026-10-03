@@ -231,7 +231,7 @@ pass against the built release image.
 
 ## Milestone 7 — Operations-ready local staging
 
-Status: **in progress**. A one-command, loopback-only production-shaped stack
+Status: **complete**. A one-command, loopback-only production-shaped stack
 now starts the app, Caddy HTTPS proxy, persistent SQLite volumes, Mailpit,
 Prometheus, and a provisioned Grafana operations dashboard. Correlated JSON
 request/audit logs omit request content and credentials; private metrics cover
@@ -244,8 +244,11 @@ supported local Podman compatibility path. Automated qualification now covers
 eight concurrent devices, an 8,000-word account, retry deduplication, bounded
 resource use, and a 5,000-word schema-8 forward/rollback/reapply cycle without
 logical data loss. Upgrade, rollback, restore, credential-rotation, incident,
-account-request, and off-host-backup procedures are documented. A clean-machine
-rehearsal and release-candidate qualification remain open.
+account-request, and off-host-backup procedures are documented. The disposable
+staging rehearsal creates fresh volumes, exercises HTTPS, backup, restore, and
+production smoke, then proves its uniquely named containers, network, and
+volumes were removed. CI runs it on a clean runner after the complete service,
+browser, Anki, load, migration, image, and security gates.
 
 Deliverables:
 

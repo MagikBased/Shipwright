@@ -93,6 +93,13 @@ EOF
     down)
         run_compose down
         ;;
+    destroy)
+        if [[ "${JP_ASSIST_CONFIRM_DESTROY:-}" != "$project_name" ]]; then
+            echo "Refusing to delete volumes. Set JP_ASSIST_CONFIRM_DESTROY=$project_name to confirm." >&2
+            exit 2
+        fi
+        run_compose down --volumes --remove-orphans
+        ;;
     status)
         run_compose ps
         ;;
@@ -112,7 +119,7 @@ EOF
         run_compose config
         ;;
     *)
-        echo "Usage: $0 {up|down|status|logs [service...]|smoke|backup|restore-drill|config}" >&2
+        echo "Usage: $0 {up|down|destroy|status|logs [service...]|smoke|backup|restore-drill|config}" >&2
         exit 2
         ;;
 esac

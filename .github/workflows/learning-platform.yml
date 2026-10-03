@@ -92,6 +92,9 @@ jobs:
       - name: Verify production release image
         run: services/learning_platform/scripts/verify_release_image.sh jp-assist-learning-platform:test
 
+      - name: Rehearse clean production-shaped staging
+        run: services/learning_platform/scripts/rehearse_staging.sh
+
       - name: Generate release-image SBOM
         uses: anchore/sbom-action@fffec3d851af758d56fee099cf3fbf8aa8779843 # v0.24.3
         with:

@@ -48,6 +48,12 @@ supports current Docker Compose as well as the legacy rootless Podman stack
 shipped by Linux Mint 21; its Podman 3 workaround touches only the Compose
 network named for this project.
 
+For a disposable clean-volume rehearsal, use
+`scripts/rehearse_staging.sh`. It runs production smoke and backup/restore
+checks, then removes its uniquely named test project. Do not use `destroy` for
+the normal staging project unless its persistent account data is intentionally
+being discarded and the exact confirmation variable is set.
+
 ## Configure and start
 
 From `services/learning_platform`:
