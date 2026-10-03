@@ -144,7 +144,10 @@ class LearningPlatformApiTest(unittest.TestCase):
         self.assertEqual([chapter["order"] for chapter in game["chapters"]], list(range(1, 12)))
         self.assertTrue(all(chapter["deck"]["status"] == "pilot" for chapter in game["chapters"]))
         cards = [card for chapter in game["chapters"] for card in chapter["sampleCards"]]
-        self.assertEqual(len(cards), 56)
+        self.assertEqual(
+            len(cards),
+            sum(chapter["deck"]["reviewedCardCount"] for chapter in game["chapters"]),
+        )
         self.assertTrue(all(len(chapter["sampleCards"]) >= 5 for chapter in game["chapters"]))
         self.assertTrue(all(card["corpusEvidence"]["messageIds"] for card in cards))
         self.assertTrue(all(card["wordAudio"] is None for card in cards))

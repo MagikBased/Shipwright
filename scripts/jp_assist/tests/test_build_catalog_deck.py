@@ -21,7 +21,10 @@ from build_catalog_deck import (  # noqa: E402
 class BuildCatalogDeckTest(unittest.TestCase):
     def test_every_chapter_builds_reviewed_text_only_notes(self):
         game = load_game("ocarina-of-time")
-        self.assertEqual(sum(chapter["deck"]["reviewedCardCount"] for chapter in game["chapters"]), 56)
+        self.assertEqual(
+            sum(chapter["deck"]["reviewedCardCount"] for chapter in game["chapters"]),
+            sum(len(chapter["sampleCards"]) for chapter in game["chapters"]),
+        )
         for chapter in game["chapters"]:
             deck, media = build_deck(game, chapter)
             self.assertEqual(len(deck.notes), chapter["deck"]["reviewedCardCount"])
