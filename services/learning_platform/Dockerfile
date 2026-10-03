@@ -1,4 +1,4 @@
-FROM python:3.12.15-slim-bookworm@sha256:54c85f3c47607a77f32adec749d3c81d1348bf25833671f512b26a9b6d778cb3
+FROM python:3.12.15-alpine3.23@sha256:effc76773dc1a0bfcc327c8b2b0c58e1aa37505017d1f036a3c0850c56aacb76
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
@@ -7,13 +7,14 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
-RUN groupadd --system --gid 10001 jpassist \
-    && useradd --system --uid 10001 --gid jpassist --home-dir /app jpassist \
+RUN addgroup --system --gid 10001 jpassist \
+    && adduser --system --disabled-password --no-create-home --uid 10001 --ingroup jpassist jpassist \
     && mkdir -p /data /backups \
     && chown jpassist:jpassist /data /backups
 
 COPY requirements.txt ./requirements.txt
-RUN pip install --no-cache-dir --requirement requirements.txt
+RUN pip install --no-cache-dir --requirement requirements.txt \
+    && pip uninstall --yes pip
 
 COPY learning_platform ./learning_platform
 COPY web ./web

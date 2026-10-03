@@ -107,7 +107,11 @@ The learning-platform workflow performs the following release checks:
 - Gitleaks 8.30.1 against all Git history, downloaded with its published SHA-256
   checksum;
 - a production image build; and
-- an SPDX JSON SBOM of the built image using a commit-pinned Anchore action.
+- an SPDX JSON SBOM of the built image using a commit-pinned Anchore action;
+- the complete service/privacy suite and production runtime checks against that
+  built image; and
+- Grype 0.119.0 against the image SBOM, failing on unresolved high or critical
+  findings and retaining its JSON report.
 
 `.gitleaksignore` contains only exact finding fingerprints for reviewed
 pre-existing upstream Ship of Harkinian constants and StormLib test-key
@@ -118,6 +122,24 @@ Before a release, rerun the audits against the final commit, review the complete
 image SBOM, and record any accepted vulnerability with owner, rationale, and an
 expiry date. A clean automated result is evidence for—not a replacement for—the
 final threat-model review.
+
+### Release audit record — 2026-10-02
+
+- `pip-audit` reported no known vulnerability in the pinned application
+  requirements, and `npm audit` reported no browser-test dependency finding.
+- Gitleaks scanned all 3,879 commits with no unreviewed finding after applying
+  the fingerprint-specific upstream allowlist.
+- The final Alpine 3.23 image inventory contains 58 packages. The Grype result
+  has no unresolved high or critical finding; its remaining report contains
+  nine medium and one negligible finding.
+- CVE-2026-85091 in Alpine zlib is marked `not_affected` in
+  `services/learning_platform/security/openvex.json`. Exploitation requires the
+  non-blocking `gzFile` write APIs; JP Assist neither calls nor exposes those
+  APIs. The maintainer-owned exception expires on 2026-11-02 and must be
+  revisited sooner if zlib or native compression code changes.
+- Privacy-contract tests and the production runtime smoke test pass inside the
+  built image. Production docs are disabled and all required browser security
+  headers are present.
 
 This document describes the local release candidate boundary. Internet hosting
 still requires a shared rate limiter where applicable, external monitoring, and

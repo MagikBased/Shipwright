@@ -86,6 +86,9 @@ jobs:
       - name: Build production image
         run: docker build --tag jp-assist-learning-platform:test services/learning_platform
 
+      - name: Verify production release image
+        run: services/learning_platform/scripts/verify_release_image.sh jp-assist-learning-platform:test
+
       - name: Generate release-image SBOM
         uses: anchore/sbom-action@fffec3d851af758d56fee099cf3fbf8aa8779843 # v0.24.3
         with:
@@ -96,6 +99,21 @@ jobs:
           upload-release-assets: false
           upload-artifact-retention: 14
 
+      - name: Scan release-image SBOM
+        run: |
+          curl --fail --location --silent --show-error \
+            --output /tmp/grype.tar.gz \
+            https://github.com/anchore/grype/releases/download/v0.119.0/grype_0.119.0_linux_amd64.tar.gz
+          echo "3fa2dc4b924621ab65404cf08d0b8438d896d80ab949c9d5a4ca283c36004c9b  /tmp/grype.tar.gz" \
+            | sha256sum --check --strict
+          tar --extract --gzip --file /tmp/grype.tar.gz --directory /tmp grype
+          /tmp/grype \
+            sbom:services/learning_platform/var/security/image.spdx.json \
+            --vex services/learning_platform/security/openvex.json \
+            --fail-on high \
+            --output json=services/learning_platform/var/security/image-vulnerabilities.json \
+            --output table
+
       - name: Upload security evidence
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
@@ -103,6 +121,7 @@ jobs:
           path: |
             services/learning_platform/var/security/python.cdx.json
             services/learning_platform/var/security/image.spdx.json
+            services/learning_platform/var/security/image-vulnerabilities.json
           if-no-files-found: error
           retention-days: 14
 

@@ -195,7 +195,7 @@ pass browser tests without sending traffic outside the local environment.
 
 ## Milestone 6 — Privacy and security hardening
 
-Status: **in progress**. Cookie mutations now use double-submit CSRF protection;
+Status: **complete**. Cookie mutations now use double-submit CSRF protection;
 responses carry a restrictive CSP and browser security headers; reviews,
 exports, and sensitive mutations are rate-limited; operational retention has an
 idempotent cleanup command; and the privacy inventory/threat model is
@@ -203,7 +203,10 @@ documented; session management now uses independent public IDs and
 privacy-minimal browser labels; CI audits exactly pinned direct dependencies
 and repository history, builds the digest-pinned image, and retains its SBOM;
 and explicit privacy-boundary tests cover event contracts, storage, and exports.
-Final audit findings and release-image verification remain.
+The production-configured image passes its runtime and embedded privacy checks.
+The 2026-10-02 release audit has no unresolved high or critical finding; its one
+not-applicable inherited zlib finding is narrowly documented in OpenVEX with a
+2026-11-02 reassessment deadline.
 
 Deliverables:
 

@@ -27,6 +27,10 @@ def backup_database(source_path: Path, output_path: Path, overwrite: bool = Fals
     output_path.parent.mkdir(parents=True, exist_ok=True)
     with sqlite3.connect(source_path) as source, sqlite3.connect(output_path) as destination:
         source.backup(destination)
+        destination.commit()
+        journal_mode = destination.execute("PRAGMA journal_mode=DELETE").fetchone()[0]
+        if str(journal_mode).lower() != "delete":
+            raise SystemExit(f"Backup could not enter single-file journal mode: {journal_mode}")
         integrity = destination.execute("PRAGMA quick_check").fetchone()[0]
         if integrity != "ok":
             raise SystemExit(f"Backup integrity check failed: {integrity}")

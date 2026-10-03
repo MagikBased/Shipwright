@@ -1,0 +1,24 @@
+{
+  "@context": "https://openvex.dev/ns/v0.2.0",
+  "@id": "https://jp-assist.invalid/security/vex/2026-10-02",
+  "author": "JP Assist maintainers",
+  "role": "Document Creator",
+  "timestamp": "2026-10-02T23:30:00-05:00",
+  "version": 1,
+  "statements": [
+    {
+      "vulnerability": {
+        "name": "CVE-2026-85091"
+      },
+      "products": [
+        {
+          "@id": "pkg:apk/alpine/zlib@1.3.2-r0?arch=x86_64&distro=alpine-3.23.6"
+        }
+      ],
+      "status": "not_affected",
+      "justification": "vulnerable_code_not_in_execute_path",
+      "impact_statement": "JP Assist does not call or expose zlib's gzwrite, gzprintf, gzvprintf, or non-blocking gzFile APIs required to reach gz_vacate. Python application compression uses the separate in-memory zlib interface.",
+      "status_notes": "Maintainer-owned exception expires 2026-11-02. Reassess sooner when the Alpine zlib package changes or when JP Assist adds native compression code."
+    }
+  ]
+}
