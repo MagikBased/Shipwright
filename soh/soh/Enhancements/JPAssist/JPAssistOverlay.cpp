@@ -159,59 +159,65 @@ class JPAssistOverlayWindow final : public Ship::GuiWindow {
         // The card deliberately contains only learning content. Controller
         // hints and status labels made this panel substantially taller than
         // the original translation overlay and duplicated stable controls.
-        const float sectionHeight = std::max(ImGui::GetContentRegionAvail().y, 1.0f);
-        const float sectionContentHeight =
-            std::max(sectionHeight - ImGui::GetStyle().CellPadding.y * 2.0f, 1.0f);
-        if (ImGui::BeginTable("JPAssistStudyColumns", 3,
-                              ImGuiTableFlags_SizingStretchProp | ImGuiTableFlags_BordersInnerV,
-                              ImVec2(0.0f, sectionHeight))) {
-            ImGui::TableSetupColumn("English", ImGuiTableColumnFlags_WidthStretch, 0.80f);
-            ImGui::TableSetupColumn("Word", ImGuiTableColumnFlags_WidthStretch, 0.40f);
-            ImGui::TableSetupColumn("Definition", ImGuiTableColumnFlags_WidthStretch, 1.00f);
-            ImGui::TableNextRow(ImGuiTableRowFlags_None, sectionContentHeight);
-            ImGui::TableSetColumnIndex(0);
-            ImGui::BeginChild("JPAssistEnglishSection", ImVec2(0.0f, sectionContentHeight), false,
-                              ImGuiWindowFlags_NoScrollWithMouse);
-            const float englishColumnLeft = ImGui::GetCursorScreenPos().x;
-            const float englishColumnRight = englishColumnLeft + ImGui::GetContentRegionAvail().x;
-            const float englishTextBottom = DrawEnglishText(
-                mFrameState.studyPage.english.empty() ? "Translation unavailable" : mFrameState.studyPage.english,
-                englishColumnRight - englishColumnLeft);
-            DrawControlHints(englishColumnLeft, englishColumnRight, englishTextBottom);
-            ApplyPendingStudyScroll();
-            ImGui::EndChild();
+        const ImVec2 available = ImGui::GetContentRegionAvail();
+        const float sectionHeight = std::max(available.y, 1.0f);
+        const float separatorGutter = std::max(ImGui::GetStyle().ItemSpacing.x, 6.0f * mFrameScale);
+        const float sectionWidth = std::max(available.x - separatorGutter * 2.0f, 3.0f);
+        constexpr float totalWeight = 0.80f + 0.40f + 1.00f;
+        const float englishWidth = sectionWidth * 0.80f / totalWeight;
+        const float wordWidth = sectionWidth * 0.40f / totalWeight;
+        const float definitionWidth = sectionWidth - englishWidth - wordWidth;
 
-            ImGui::TableSetColumnIndex(1);
-            ImGui::BeginChild("JPAssistWordSection", ImVec2(0.0f, sectionContentHeight), false,
-                              ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
-            DrawWordBlock(token);
-            ImGui::EndChild();
+        ImGui::BeginChild("JPAssistEnglishSection", ImVec2(englishWidth, sectionHeight), false,
+                          ImGuiWindowFlags_NoScrollWithMouse);
+        const float englishColumnLeft = ImGui::GetCursorScreenPos().x;
+        const float englishColumnRight = englishColumnLeft + ImGui::GetContentRegionAvail().x;
+        const float englishTextBottom = DrawEnglishText(
+            mFrameState.studyPage.english.empty() ? "Translation unavailable" : mFrameState.studyPage.english,
+            englishColumnRight - englishColumnLeft);
+        DrawControlHints(englishColumnLeft, englishColumnRight, englishTextBottom);
+        ApplyPendingStudyScroll();
+        ImGui::EndChild();
 
-            ImGui::TableSetColumnIndex(2);
-            ImGui::BeginChild("JPAssistDefinitionSection", ImVec2(0.0f, sectionContentHeight), false,
-                              ImGuiWindowFlags_NoScrollWithMouse);
-            if (!token.partOfSpeech.empty()) {
-                const float headerRight = ImGui::GetCursorScreenPos().x + ImGui::GetContentRegionAvail().x;
-                const float partOfSpeechWidth = ImGui::CalcTextSize(token.partOfSpeech.c_str()).x;
-                const float partOfSpeechX = headerRight - partOfSpeechWidth;
-                ImGui::SetCursorScreenPos(ImVec2(partOfSpeechX, ImGui::GetCursorScreenPos().y));
-                ImGui::TextDisabled("%s", token.partOfSpeech.c_str());
-            }
-            ImGui::PushTextWrapPos(0.0f);
-            ImGui::TextUnformatted(token.meaning.empty() ? "Definition pending review" : token.meaning.c_str());
-            if (!token.note.empty()) {
-                ImGui::Spacing();
-                ImGui::TextColored(ImVec4(0.70f, 0.78f, 0.88f, 1.0f), "%s", token.note.c_str());
-            }
-            ImGui::PopTextWrapPos();
-            ApplyPendingStudyScroll();
-            ImGui::EndChild();
-            ImGui::EndTable();
+        DrawSectionSeparator(sectionHeight, separatorGutter);
+        ImGui::BeginChild("JPAssistWordSection", ImVec2(wordWidth, sectionHeight), false,
+                          ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+        DrawWordBlock(token);
+        ImGui::EndChild();
+
+        DrawSectionSeparator(sectionHeight, separatorGutter);
+        ImGui::BeginChild("JPAssistDefinitionSection", ImVec2(definitionWidth, sectionHeight), false,
+                          ImGuiWindowFlags_NoScrollWithMouse);
+        if (!token.partOfSpeech.empty()) {
+            const float headerRight = ImGui::GetCursorScreenPos().x + ImGui::GetContentRegionAvail().x;
+            const float partOfSpeechWidth = ImGui::CalcTextSize(token.partOfSpeech.c_str()).x;
+            const float partOfSpeechX = headerRight - partOfSpeechWidth;
+            ImGui::SetCursorScreenPos(ImVec2(partOfSpeechX, ImGui::GetCursorScreenPos().y));
+            ImGui::TextDisabled("%s", token.partOfSpeech.c_str());
         }
+        ImGui::PushTextWrapPos(0.0f);
+        ImGui::TextUnformatted(token.meaning.empty() ? "Definition pending review" : token.meaning.c_str());
+        if (!token.note.empty()) {
+            ImGui::Spacing();
+            ImGui::TextColored(ImVec4(0.70f, 0.78f, 0.88f, 1.0f), "%s", token.note.c_str());
+        }
+        ImGui::PopTextWrapPos();
+        ApplyPendingStudyScroll();
+        ImGui::EndChild();
         restoreFont();
     }
 
   private:
+    void DrawSectionSeparator(float height, float gutter) const {
+        ImGui::SameLine(0.0f, 0.0f);
+        const ImVec2 position = ImGui::GetCursorScreenPos();
+        const float x = position.x + gutter * 0.5f;
+        ImGui::GetWindowDrawList()->AddLine(ImVec2(x, position.y), ImVec2(x, position.y + height),
+                                            ImGui::GetColorU32(ImGuiCol_Separator));
+        ImGui::Dummy(ImVec2(gutter, height));
+        ImGui::SameLine(0.0f, 0.0f);
+    }
+
     void ApplyPendingStudyScroll() const {
         const float scrollMax = ImGui::GetScrollMaxY();
         if (mFrameState.pendingStudyScroll != 0.0f && scrollMax > 0.0f) {
