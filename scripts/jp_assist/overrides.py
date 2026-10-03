@@ -67,7 +67,8 @@ OVERRIDES: dict[tuple[str, str], dict] = {
     ("ピエール", "ぴえーる"): {"meaning": "Pierre", "note": "Character name."},
     ("だー", "だー"): {"meaning": "dialectal/stylized form of だ (to be)", "note": "Character speech pattern."},
     ("ッ", "っ"): {"meaning": "emphatic final small tsu", "note": "Marks an abrupt or forceful ending."},
-    ("ッピ", "っぴ"): {"meaning": "Deku Scrub sentence-ending speech quirk", "note": "Character speech pattern."},
+    ("ッピ", "っぴ"): {"meaning": "Deku Scrub sentence-ending speech quirk", "note": "Character speech pattern.", "partOfSpeech": "suffix"},
+    ("ピー", "ぴー"): {"meaning": "Deku Scrub sentence-ending speech quirk", "note": "Character speech pattern; not the letter P.", "partOfSpeech": "suffix"},
     ("ゴロォ", "ごろぉ"): {"meaning": "stretched Goron sentence ending", "note": "Character speech pattern."},
     ("ゾラ", "ぞら"): {"meaning": "King Zora's sentence-ending speech quirk", "note": "Character speech pattern."},
     ("て", "て"): {"meaning": "te-form connector; and/then; by doing", "note": "Common grammar; exact role depends on context."},
@@ -117,7 +118,7 @@ OVERRIDES: dict[tuple[str, str], dict] = {
     ("ムニャ", "むにゃ"): {"meaning": "mumble; sleepy murmuring", "note": "Sleep sound effect."},
     ("おぉ", "おぉ"): {"meaning": "oh!; ooh!", "note": "Interjection."},
     ("どー", "どー"): {"meaning": "how; in what way (elongated どう)", "note": "Colloquial spelling."},
-    ("ッピー", "っぴー"): {"meaning": "Deku Scrub sentence-ending speech quirk", "note": "Character speech pattern."},
+    ("ッピー", "っぴー"): {"meaning": "Deku Scrub sentence-ending speech quirk", "note": "Character speech pattern.", "partOfSpeech": "suffix"},
     ("ハッハッハ", "はっはっは"): {"meaning": "ha ha ha", "note": "Laughter."},
     ("ハッハッハッハッハ", "はっはっはっはっは"): {"meaning": "ha ha ha ha ha", "note": "Laughter."},
     ("ヒヒッ", "ひひっ"): {"meaning": "hee hee", "note": "Mischievous laughter."},
@@ -154,6 +155,13 @@ OVERRIDES: dict[tuple[str, str], dict] = {
     ("オババ", "おばば"): {"meaning": "granny; old woman", "note": "Familiar character title."},
     ("ボムチュウボウリング", "ぼむちゅうぼうりんぐ"): {"meaning": "Bombchu Bowling", "note": "Minigame name."},
     ("タネブクロ", "たねぶくろ"): {"meaning": "seed bag; bullet bag", "note": "Item name, stylized in katakana."},
+    ("オイラ", "おいら"): {"meaning": "I; me (casual, rustic)", "note": "First-person pronoun; singular in this dialogue.", "partOfSpeech": "pronoun"},
+    ("c", "c"): {
+        "meaning": "C button; C-item control label",
+        "note": "Controller interface label rather than Japanese vocabulary.",
+        "partOfSpeech": "interface label",
+        "senseId": "interface:c-button",
+    },
 }
 
 

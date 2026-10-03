@@ -100,6 +100,21 @@ class BuildChapterCandidatesTest(unittest.TestCase):
         self.assertEqual(len(rows), 1)
         self.assertEqual(rows[0]["gameFrequency"], 2)
 
+    def test_interface_labels_do_not_inflate_core_coverage_target(self):
+        self.mapping["chapters"][0]["messageIds"].append("0x1001")
+        runtime = {"messages": {
+            "0x1000": self.message("森", "もり", "sense-forest", "forest"),
+            "0x1001": self.message("c", "c", "interface:c-button", "C button"),
+        }}
+
+        by_chapter, summary = collect_candidates(runtime, self.catalog, self.mapping)
+
+        interface = next(row for row in by_chapter["one"] if row["written"] == "c")
+        self.assertFalse(interface["coreEligible"])
+        first = summary["chapters"][0]
+        self.assertEqual(first["totalTokenOccurrences"], 1)
+        self.assertEqual(first["excludedInterfaceOccurrences"], 1)
+
     def test_transitive_prerequisites_and_cycles_are_validated(self):
         catalog = {"chapters": [
             {"id": "one", "order": 1},

@@ -19,6 +19,14 @@ class OverrideTest(unittest.TestCase):
         self.assertEqual(result["partOfSpeech"], "pronoun")
         self.assertIn("not 鷲", result["note"])
 
+    def test_oira_is_singular_and_controller_label_is_not_vocabulary(self):
+        oira = apply_override("オイラ", "おいら", {"meaning": "we; us"})
+        self.assertEqual(oira["meaning"], "I; me (casual, rustic)")
+        self.assertEqual(oira["partOfSpeech"], "pronoun")
+        control = apply_override("c", "c", {"meaning": "letter C"})
+        self.assertEqual(control["senseId"], "interface:c-button")
+        self.assertEqual(control["partOfSpeech"], "interface label")
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -30,6 +30,32 @@ def katakana_to_hiragana(text: str) -> str:
     return "".join(_KATAKANA_TO_HIRAGANA.get(ch, ch) for ch in text)
 
 
+def japanese_number_reading(value: int) -> str:
+    """Return a standard native reading for an integer used in UI/dialogue."""
+    if value < 0 or value >= 10_000:
+        raise ValueError("Japanese number reading supports 0 through 9999")
+    if value == 0:
+        return "れい"
+    digits = ("", "いち", "に", "さん", "よん", "ご", "ろく", "なな", "はち", "きゅう")
+    parts: list[str] = []
+    thousands, remainder = divmod(value, 1000)
+    hundreds, remainder = divmod(remainder, 100)
+    tens, ones = divmod(remainder, 10)
+    if thousands:
+        parts.append({1: "せん", 3: "さんぜん", 8: "はっせん"}.get(
+            thousands, digits[thousands] + "せん"
+        ))
+    if hundreds:
+        parts.append({1: "ひゃく", 3: "さんびゃく", 6: "ろっぴゃく", 8: "はっぴゃく"}.get(
+            hundreds, digits[hundreds] + "ひゃく"
+        ))
+    if tens:
+        parts.append("じゅう" if tens == 1 else digits[tens] + "じゅう")
+    if ones:
+        parts.append(digits[ones])
+    return "".join(parts)
+
+
 _POS_MAP = {
     "名詞": "noun",
     "動詞": "verb",
@@ -105,9 +131,18 @@ class Tokenizer:
 
             lemma = morpheme.dictionary_form()
             reading = katakana_to_hiragana(morpheme.reading_form())
-            dictionary_reading = self._dictionary_reading(lemma) or reading
             normalized_pos = english_part_of_speech(pos)
-            sense = self._lookup_sense(lemma, dictionary_reading, normalized_pos)
+            if lemma.isascii() and lemma.isdigit():
+                dictionary_reading = japanese_number_reading(int(lemma))
+                sense = {
+                    "meaning": f"number {lemma}",
+                    "senseId": f"number:{lemma}",
+                    "partOfSpeech": "noun",
+                    "note": "Arabic numeral as read in context.",
+                }
+            else:
+                dictionary_reading = self._dictionary_reading(lemma) or reading
+                sense = self._lookup_sense(lemma, dictionary_reading, normalized_pos)
             sense = apply_override(lemma, dictionary_reading, sense)
 
             start = japanese_text.find(surface, search_from)

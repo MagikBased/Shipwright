@@ -29,6 +29,10 @@ CANONICAL_IDENTITY_ALIASES = {
     # Dialogue sometimes uses katakana for emphasis. It remains one learnable
     # particle rather than becoming a second card solely because of styling.
     ("ヨ", "よ", "override:ヨ|よ"): ("よ", "よ", "override:よ|よ"),
+    ("ネ", "ね", "jmdict:2029080:0"): ("ね", "ね", "jmdict:2029080:0"),
+    ("オマエ", "おまえ", "jmdict:1002290:0"): ("お前", "おまえ", "jmdict:1002290:0"),
+    ("ピー", "ぴー", "override:ピー|ぴー"): ("ッピ", "っぴ", "override:ッピ|っぴ"),
+    ("ッピー", "っぴー", "override:ッピー|っぴー"): ("ッピ", "っぴ", "override:ッピ|っぴ"),
 }
 
 
@@ -56,6 +60,11 @@ def token_identity(token: dict[str, Any]) -> tuple[str, str, str]:
     reading = token.get("dictionaryReading", token["reading"])
     identity = (token["lemma"], reading, token["senseId"])
     return CANONICAL_IDENTITY_ALIASES.get(identity, identity)
+
+
+def core_eligible(identity: tuple[str, str, str]) -> bool:
+    """Exclude controls/markup while retaining names and speech learners see."""
+    return not identity[2].startswith("interface:")
 
 
 def message_number(value: str) -> int:
@@ -173,17 +182,21 @@ def collect_candidates(
     by_chapter: dict[str, list[dict[str, Any]]] = {chapter["id"]: [] for chapter in catalog["chapters"]}
     excluded_by_prerequisite: Counter[str] = Counter()
     prerequisite_covered_occurrences: Counter[str] = Counter()
+    excluded_interface_occurrences: Counter[str] = Counter()
     for identity, counts in occurrences.items():
         identity_text = "|".join(identity)
         mapped_frequency = sum(counts.values())
         for chapter_id in sorted(counts, key=chapter_order.get):
+            if not core_eligible(identity):
+                excluded_interface_occurrences[chapter_id] += counts[chapter_id]
             taught_by_prerequisite = any(
                 (identity_text, prerequisite) in published
                 for prerequisite in prerequisites[chapter_id]
             )
             if taught_by_prerequisite:
                 excluded_by_prerequisite[chapter_id] += 1
-                prerequisite_covered_occurrences[chapter_id] += counts[chapter_id]
+                if core_eligible(identity):
+                    prerequisite_covered_occurrences[chapter_id] += counts[chapter_id]
                 continue
             later = sorted(
                 (
@@ -203,6 +216,7 @@ def collect_candidates(
                 "reviewStatus": (
                     "published" if (identity_text, chapter_id) in published else "candidate"
                 ),
+                "coreEligible": core_eligible(identity),
             }
             by_chapter[chapter_id].append(row)
     for rows in by_chapter.values():
@@ -218,12 +232,12 @@ def collect_candidates(
         chapter_id = chapter["id"]
         rows = by_chapter[chapter_id]
         total_occurrences = prerequisite_covered_occurrences[chapter_id] + sum(
-            row["chapterFrequency"] for row in rows
+            row["chapterFrequency"] for row in rows if row["coreEligible"]
         )
         published_occurrences = sum(
             row["chapterFrequency"]
             for row in rows
-            if row["reviewStatus"] == "published"
+            if row["reviewStatus"] == "published" and row["coreEligible"]
         )
         covered_occurrences = prerequisite_covered_occurrences[chapter_id] + published_occurrences
         target_occurrences = int(
@@ -235,6 +249,8 @@ def collect_candidates(
             if projected_occurrences >= target_occurrences:
                 break
             if row["reviewStatus"] == "published":
+                continue
+            if not row["coreEligible"]:
                 continue
             projected_occurrences += row["chapterFrequency"]
             additional_cards_to_target += 1
@@ -263,6 +279,7 @@ def collect_candidates(
                 sum(row["reviewStatus"] == "published" for row in rows)
                 + additional_cards_to_target
             ),
+            "excludedInterfaceOccurrences": excluded_interface_occurrences[chapter_id],
         })
 
     summary = {
@@ -286,7 +303,7 @@ def collect_candidates(
 def write_outputs(by_chapter: dict[str, list[dict[str, Any]]], summary: dict[str, Any], out_dir: Path) -> None:
     out_dir.mkdir(parents=True, exist_ok=True)
     fields = [
-        "ImportanceRank", "Identity", "Written", "Reading", "PartOfSpeech", "Meaning", "ChapterFrequency",
+        "ImportanceRank", "Identity", "Written", "Reading", "PartOfSpeech", "Meaning", "CoreEligible", "ChapterFrequency",
         "GameFrequency", "MappedFrequency", "MessageIds", "LaterChapters", "ReviewStatus",
     ]
     for chapter in summary["chapters"]:
@@ -297,7 +314,7 @@ def write_outputs(by_chapter: dict[str, list[dict[str, Any]]], summary: dict[str
             for row in by_chapter[chapter_id]:
                 writer.writerow([
                     row["importanceRank"], row["identity"], row["written"], row["reading"], row["partOfSpeech"],
-                    row["meaning"], row["chapterFrequency"], row["gameFrequency"], row["mappedFrequency"],
+                    row["meaning"], row["coreEligible"], row["chapterFrequency"], row["gameFrequency"], row["mappedFrequency"],
                     ",".join(row["messageIds"]), ",".join(row["laterChapters"]), row["reviewStatus"],
                 ])
     (out_dir / "summary.json").write_text(
