@@ -14,6 +14,7 @@
 #include "NativePageTracker.h"
 #include "StudyPersistence.h"
 #include "StudyRepository.h"
+#include "StudySelectionMemory.h"
 
 #include "soh/Enhancements/game-interactor/GameInteractor.h"
 #include "soh/ShipInit.hpp"
@@ -60,6 +61,7 @@ JPAssist::NativePageTracker sNativePageTracker;
 // Study Mode selection is an occurrence index within the current corpus page.
 bool sStudyModeActive = false;
 int sSelectedTokenIndex = 0;
+JPAssist::StudySelectionMemory sStudySelectionMemory;
 uint64_t sStudyEnterCount = 0;
 uint64_t sStudyNavigationCount = 0;
 uint64_t sStudyScrollCount = 0;
@@ -119,10 +121,31 @@ void CheckRomCompatibilityOnce() {
     }
 }
 
+const JPAssist::StudyPage* CurrentStudyPage() {
+    return JPAssist::StudyRepository_FindPage(sTrackedTextId, sCurrentPageIndex);
+}
+
+void RememberCurrentSelection() {
+    const JPAssist::StudyPage* page = CurrentStudyPage();
+    if (page != nullptr) {
+        sStudySelectionMemory.Remember(sTrackedTextId, sCurrentPageIndex, sSelectedTokenIndex,
+                                       static_cast<int>(page->tokens.size()));
+    }
+}
+
+void RestoreCurrentSelection() {
+    const JPAssist::StudyPage* page = CurrentStudyPage();
+    sSelectedTokenIndex = page == nullptr
+                              ? 0
+                              : sStudySelectionMemory.Restore(sTrackedTextId, sCurrentPageIndex,
+                                                              static_cast<int>(page->tokens.size()));
+}
+
 void ExitStudyMode() {
     if (!sStudyModeActive) {
         return;
     }
+    RememberCurrentSelection();
     sStudyModeActive = false;
     sFrozenChoiceValid = false;
     JPAssist::JPAssistOverlay_Hide();
@@ -133,10 +156,6 @@ void ExitStudyMode() {
     // write on every single D-pad press.
     JPAssist::StudyPersistence_Save();
     SPDLOG_INFO("[JPAssist] Study Mode exited");
-}
-
-const JPAssist::StudyPage* CurrentStudyPage() {
-    return JPAssist::StudyRepository_FindPage(sTrackedTextId, sCurrentPageIndex);
 }
 
 // Called whenever sSelectedTokenIndex changes (entering Study Mode counts as
@@ -194,7 +213,7 @@ void HandleStudyModeInput(PlayState* play, MessageContext* msgCtx, Input* input)
         if (rPressed && page != nullptr && !page->tokens.empty()) {
             sStudyModeActive = true;
             sStudyEnterCount++;
-            sSelectedTokenIndex = 0;
+            RestoreCurrentSelection();
             if (page->isChoice) {
                 sFrozenChoiceValid = true;
                 sFrozenChoiceIndex = msgCtx->choiceIndex;
@@ -246,6 +265,7 @@ void HandleStudyModeInput(PlayState* play, MessageContext* msgCtx, Input* input)
         }
         if (sSelectedTokenIndex != previousIndex) {
             sStudyNavigationCount++;
+            RememberCurrentSelection();
             RecordTokenEncounter(sSelectedTokenIndex);
         }
 
@@ -346,6 +366,9 @@ void OnDialogMessage() {
         // mode that can precede it) is what actually catches it. Found by
         // hitting exactly this gap live: the page counter kept climbing
         // across an id change that a mode-only check had missed.
+        if (sStudyModeActive) {
+            RememberCurrentSelection();
+        }
         sTrackedTextId = msgCtx->textId;
         sCurrentPageIndex = 0;
         sNativePageTracker.Reset();
@@ -355,7 +378,7 @@ void OnDialogMessage() {
         // closing state below, which exits Study Mode.
         GetOverlay()->ClearNotifications();
         if (sStudyModeActive) {
-            sSelectedTokenIndex = 0;
+            RestoreCurrentSelection();
             sFrozenChoiceValid = false;
             const JPAssist::StudyPage* page = CurrentStudyPage();
             if (page != nullptr && !page->tokens.empty()) {
@@ -383,19 +406,22 @@ void OnDialogMessage() {
                                   msgMode != MSGMODE_TEXT_NEXT_MSG && msgMode != MSGMODE_TEXT_CONTINUING;
     if (decodedPageReady &&
         sNativePageTracker.Observe(JPAssist_GetNativeTextBoxNumber(), observedPageIndex)) {
+        if (sStudyModeActive) {
+            RememberCurrentSelection();
+        }
         sCurrentPageIndex = observedPageIndex;
         SPDLOG_INFO("[JPAssist] Page changed: textId {:#x}, now page {}", sTrackedTextId, sCurrentPageIndex);
         if (sStudyModeActive) {
-            sSelectedTokenIndex = 0;
-            RecordTokenEncounter(0);
+            RestoreCurrentSelection();
+            RecordTokenEncounter(sSelectedTokenIndex);
         }
     }
 
     if (msgMode == MSGMODE_TEXT_CLOSING && sLastMsgMode != MSGMODE_TEXT_CLOSING) {
         SPDLOG_INFO("[JPAssist] Dialogue closed: textId {:#x}", sTrackedTextId);
+        ExitStudyMode();
         sTrackedTextId = 0xFFFF;
         sNativePageTracker.Reset();
-        ExitStudyMode();
         GetOverlay()->ClearNotifications();
         JPAssist::JPAssistOverlay_Hide();
     }

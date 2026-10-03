@@ -635,6 +635,10 @@ Built as `scripts/jp_assist/{extract_dialogue,message_codes,tokenize_dialogue,ov
 - Study Mode can be entered from Japanese dialogue and safely exited.
 - Every selectable token in the supported corpus has a reading and concise contextual meaning.
 - The selected token is visually unambiguous.
+- Closing and reopening Study Mode on the same dialogue page restores the
+  previously highlighted token. Each message page remembers its own cursor for
+  the lifetime of the game process; transient cursor positions are not written
+  to player progress.
 - Saving a word survives a game restart.
 - An exported deck imports into Anki without duplicate note IDs.
 - Missing corpus data fails gracefully.

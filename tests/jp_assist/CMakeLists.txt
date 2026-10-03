@@ -20,6 +20,7 @@ add_executable(jpassist_tests
     test_native_page_tracker.cpp
     test_overlay_layout.cpp
     test_scenario_parser.cpp
+    test_study_selection_memory.cpp
     test_study_token.cpp
     ${CMAKE_SOURCE_DIR}/soh/soh/Enhancements/JPAssist/MessageParser.cpp
     ${CMAKE_SOURCE_DIR}/soh/soh/Enhancements/JPAssist/LearningSyncStore.cpp
