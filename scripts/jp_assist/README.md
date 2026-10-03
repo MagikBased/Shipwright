@@ -180,7 +180,10 @@ website's game catalog. `build_chapter_candidates.py` joins the private corpus t
 the committed non-text chapter mapping and emits ignored review queues without
 dialogue. `build_catalog_deck.py` verifies each published card's identity and
 message-ID provenance before creating a text-only or optionally audio-enhanced
-package. See `docs/OOT_CHAPTER_DECKS.md` for the full workflow.
+package. `audit_chapter_mapping.py` measures complete corpus coverage and joins
+unmapped IDs to actor/gameplay source references for review; its
+`--require-complete` mode is the final mapping gate. See
+`docs/OOT_CHAPTER_DECKS.md` for the full workflow.
 
 ## Data contract
 

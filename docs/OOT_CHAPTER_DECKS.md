@@ -45,8 +45,8 @@ JP Assist::Ocarina of Time::11 The Hero of Time
    prerequisite; do not remove identities merely because they occur in a
    numerically earlier parallel branch.
 4. Rank the remaining candidates by frequency in the chapter, then recurrence
-   across the full game corpus. Reviewers use usefulness and learner level to choose
-   from that ranked queue before publication.
+   across the full game corpus. Reviewers use usefulness and learner level to
+   choose from that ranked queue before publication.
 5. Write an original example and translation; do not publish extracted dialogue.
 6. Review the Japanese, sense choice, reading, translation, and spoiler level.
 7. Mark the card reviewed in catalog content and regenerate the deck.
@@ -58,8 +58,21 @@ The committed non-text mapping lives at
 queues from the private corpus with:
 
 ```bash
+python3 scripts/jp_assist/audit_chapter_mapping.py
 python3 scripts/jp_assist/build_chapter_candidates.py
 ```
+
+The audit writes an ignored `chapter_mapping_audit/` review queue containing
+every unmapped message ID plus any actor/gameplay source files that reference
+it. It deliberately does not infer chapter ownership from the numeric ID. The
+strict release gate is:
+
+```bash
+python3 scripts/jp_assist/audit_chapter_mapping.py --require-complete
+```
+
+That command fails until every corpus message is explicitly accounted for and
+the mapping contains no stale IDs.
 
 It writes one ignored TSV per chapter plus `summary.json` under
 `scripts/jp_assist/out/chapter_candidates/`. These files contain dictionary
@@ -132,7 +145,8 @@ rejects an exact corpus sentence.
 A chapter becomes `ready` only when:
 
 - its progression boundaries and prerequisite graph are reviewed;
-- its corpus mapping is complete for every supported dialogue variant;
+- the strict mapping audit accounts for every message in every supported
+  dialogue variant;
 - every included card passes language and spoiler review;
 - stable-ID, duplicate, package-import, and regeneration tests pass;
 - the site reports the true card and audio counts; and
