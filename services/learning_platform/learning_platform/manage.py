@@ -112,6 +112,7 @@ def main() -> None:
     subparsers = parser.add_subparsers(dest="command", required=True)
     subparsers.add_parser("status", help="Check schema version and SQLite integrity")
     subparsers.add_parser("migrate", help="Apply all supported schema migrations")
+    subparsers.add_parser("rebuild-reviews", help="Rebuild derived FSRS card state from the review log")
     backup_parser = subparsers.add_parser("backup", help="Create a consistent online SQLite backup")
     backup_parser.add_argument("output", type=Path)
     backup_parser.add_argument("--force", action="store_true")
@@ -141,6 +142,9 @@ def main() -> None:
         )
         if not ready:
             raise SystemExit(1)
+    elif args.command == "rebuild-reviews":
+        count = LearningPlatform(database_path).rebuild_review_states()
+        print(f"Rebuilt {count} FSRS card states in {database_path}")
     elif args.command == "backup":
         Database(database_path)
         backup_database(database_path, args.output, args.force)

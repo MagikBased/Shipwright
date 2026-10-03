@@ -1,6 +1,6 @@
 import tempfile
 import unittest
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from learning_platform.errors import (
@@ -187,7 +187,9 @@ class LearningPlatformTest(unittest.TestCase):
         self.assertEqual(stats_before["dueReviews"], 1)
         self.assertEqual(stats_before["learningStates"], {"new": 1})
         review = self.platform.submit_review(self.session, "武器|ぶき", None, 3)
-        self.assertGreaterEqual(review["intervalDays"], 1)
+        self.assertGreater(review["intervalDays"], 0)
+        self.assertEqual(review["schedulerVersion"], "fsrs-6.3.2")
+        self.assertEqual(review["algorithmVersion"], "FSRS-6")
         self.assertEqual(self.platform.review_queue(self.session), [])
         stats_after = self.platform.get_stats(self.session)
         self.assertEqual(stats_after["reviewedToday"], 1)
@@ -196,6 +198,33 @@ class LearningPlatformTest(unittest.TestCase):
         export = self.platform.account_export(self.session)
         self.assertEqual(len(export["reviews"]), 1)
         self.assertNotIn("password", str(export).lower())
+
+    def test_fsrs_previews_and_review_state_rebuild_are_deterministic(self):
+        device = self.pair_device()
+        self.platform.ingest_events(device["deviceToken"], [self.event("evt-save", "word_saved")])
+        queue = self.platform.review_queue(self.session)
+        self.assertEqual(queue[0]["schedulerVersion"], "fsrs-6.3.2")
+        self.assertEqual([item["rating"] for item in queue[0]["ratingPreviews"]], [1, 2, 3, 4])
+        self.assertAlmostEqual(queue[0]["ratingPreviews"][2]["intervalDays"], 10 / 1440)
+        self.assertEqual(queue[0]["ratingPreviews"][3]["intervalDays"], 8)
+
+        first = self.platform.submit_review(self.session, "武器|ぶき", None, 3)
+        self.assertEqual(first["cardState"], 1)
+        self.assertAlmostEqual(first["stability"], 2.3065)
+        self.clock.value += timedelta(minutes=10)
+        second = self.platform.submit_review(self.session, "武器|ぶき", None, 3)
+        self.assertEqual(second["cardState"], 2)
+        self.assertEqual(second["intervalDays"], 2)
+
+        with self.platform.database.connect() as connection:
+            state_before = dict(connection.execute("SELECT * FROM review_state").fetchone())
+            reviews_before = [tuple(row) for row in connection.execute("SELECT * FROM reviews ORDER BY reviewed_at, id")]
+            connection.execute("DELETE FROM review_state")
+            self.assertEqual(self.platform._rebuild_review_states(connection), 1)
+            state_after = dict(connection.execute("SELECT * FROM review_state").fetchone())
+            reviews_after = [tuple(row) for row in connection.execute("SELECT * FROM reviews ORDER BY reviewed_at, id")]
+        self.assertEqual(state_after, state_before)
+        self.assertEqual(reviews_after, reviews_before)
 
     def test_session_password_and_per_game_clear_controls(self):
         first_device = self.pair_device()

@@ -2,7 +2,7 @@ import sqlite3
 from pathlib import Path
 
 
-LATEST_SCHEMA_VERSION = 3
+LATEST_SCHEMA_VERSION = 4
 
 SCHEMA = """
 PRAGMA foreign_keys = ON;
@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS metadata (
     value TEXT NOT NULL
 );
 
-INSERT OR IGNORE INTO metadata(key, value) VALUES ('schema_version', '3');
+INSERT OR IGNORE INTO metadata(key, value) VALUES ('schema_version', '4');
 
 CREATE TABLE IF NOT EXISTS users (
     id TEXT PRIMARY KEY,
@@ -138,6 +138,16 @@ CREATE TABLE IF NOT EXISTS review_state (
     repetitions INTEGER NOT NULL DEFAULT 0,
     lapses INTEGER NOT NULL DEFAULT 0,
     last_reviewed_at TEXT,
+    scheduler_version TEXT NOT NULL DEFAULT 'fsrs-6.3.2',
+    algorithm_version TEXT NOT NULL DEFAULT 'FSRS-6',
+    parameters_json TEXT NOT NULL DEFAULT '[]',
+    desired_retention REAL NOT NULL DEFAULT 0.9,
+    card_state INTEGER NOT NULL DEFAULT 1,
+    step INTEGER,
+    stability REAL,
+    difficulty REAL,
+    scheduled_days REAL NOT NULL DEFAULT 0,
+    elapsed_days REAL NOT NULL DEFAULT 0,
     PRIMARY KEY (user_id, word_id, sense_id)
 );
 
@@ -153,7 +163,17 @@ CREATE TABLE IF NOT EXISTS reviews (
     due_at TEXT NOT NULL,
     interval_days REAL NOT NULL,
     ease REAL NOT NULL,
-    source TEXT NOT NULL DEFAULT 'web'
+    source TEXT NOT NULL DEFAULT 'web',
+    scheduler_version TEXT NOT NULL DEFAULT 'fsrs-6.3.2',
+    algorithm_version TEXT NOT NULL DEFAULT 'FSRS-6',
+    parameters_json TEXT NOT NULL DEFAULT '[]',
+    desired_retention REAL NOT NULL DEFAULT 0.9,
+    card_state INTEGER,
+    step INTEGER,
+    stability REAL,
+    difficulty REAL,
+    scheduled_days REAL,
+    elapsed_days REAL
 );
 
 CREATE INDEX IF NOT EXISTS reviews_user_time_idx ON reviews(user_id, reviewed_at);
@@ -194,7 +214,44 @@ class Database:
             event_columns = {row["name"] for row in connection.execute("PRAGMA table_info(events)")}
             if "page_index" not in event_columns:
                 connection.execute("ALTER TABLE events ADD COLUMN page_index INTEGER")
-            connection.execute("UPDATE metadata SET value = '3' WHERE key = 'schema_version'")
+            self._migrate_review_schema(connection)
+            connection.execute("UPDATE metadata SET value = '4' WHERE key = 'schema_version'")
+
+    @staticmethod
+    def _migrate_review_schema(connection: sqlite3.Connection) -> None:
+        state_columns = {row["name"] for row in connection.execute("PRAGMA table_info(review_state)")}
+        state_additions = {
+            "scheduler_version": "TEXT NOT NULL DEFAULT 'mvp-1'",
+            "algorithm_version": "TEXT NOT NULL DEFAULT 'MVP'",
+            "parameters_json": "TEXT NOT NULL DEFAULT '[]'",
+            "desired_retention": "REAL NOT NULL DEFAULT 0.9",
+            "card_state": "INTEGER NOT NULL DEFAULT 1",
+            "step": "INTEGER",
+            "stability": "REAL",
+            "difficulty": "REAL",
+            "scheduled_days": "REAL NOT NULL DEFAULT 0",
+            "elapsed_days": "REAL NOT NULL DEFAULT 0",
+        }
+        for name, definition in state_additions.items():
+            if name not in state_columns:
+                connection.execute(f"ALTER TABLE review_state ADD COLUMN {name} {definition}")
+
+        review_columns = {row["name"] for row in connection.execute("PRAGMA table_info(reviews)")}
+        review_additions = {
+            "scheduler_version": "TEXT NOT NULL DEFAULT 'mvp-1'",
+            "algorithm_version": "TEXT NOT NULL DEFAULT 'MVP'",
+            "parameters_json": "TEXT NOT NULL DEFAULT '[]'",
+            "desired_retention": "REAL NOT NULL DEFAULT 0.9",
+            "card_state": "INTEGER",
+            "step": "INTEGER",
+            "stability": "REAL",
+            "difficulty": "REAL",
+            "scheduled_days": "REAL",
+            "elapsed_days": "REAL",
+        }
+        for name, definition in review_additions.items():
+            if name not in review_columns:
+                connection.execute(f"ALTER TABLE reviews ADD COLUMN {name} {definition}")
 
     @staticmethod
     def _schema_version(connection: sqlite3.Connection) -> int:

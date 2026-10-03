@@ -66,6 +66,38 @@ class DeploymentTest(unittest.TestCase):
                 tables = {row[0] for row in connection.execute("SELECT name FROM sqlite_master WHERE type='table'")}
             self.assertTrue({"word_annotations", "review_state", "reviews", "learning_goals"}.issubset(tables))
 
+    def test_legacy_review_schema_gains_versioned_fsrs_projection_columns(self):
+        with tempfile.TemporaryDirectory(prefix="jp-assist-review-migration-") as temporary:
+            path = Path(temporary) / "version-three.sqlite3"
+            with sqlite3.connect(path) as connection:
+                connection.executescript("""
+                    CREATE TABLE metadata(key TEXT PRIMARY KEY, value TEXT NOT NULL);
+                    INSERT INTO metadata VALUES ('schema_version', '3');
+                    CREATE TABLE review_state (
+                        user_id TEXT NOT NULL, word_id TEXT NOT NULL, sense_id TEXT NOT NULL DEFAULT '',
+                        due_at TEXT NOT NULL, interval_days REAL NOT NULL DEFAULT 0,
+                        ease REAL NOT NULL DEFAULT 2.5, repetitions INTEGER NOT NULL DEFAULT 0,
+                        lapses INTEGER NOT NULL DEFAULT 0, last_reviewed_at TEXT,
+                        PRIMARY KEY (user_id, word_id, sense_id)
+                    );
+                    CREATE TABLE reviews (
+                        id TEXT PRIMARY KEY, user_id TEXT NOT NULL, word_id TEXT NOT NULL,
+                        sense_id TEXT NOT NULL DEFAULT '', rating INTEGER NOT NULL,
+                        reviewed_at TEXT NOT NULL, due_at TEXT NOT NULL,
+                        interval_days REAL NOT NULL, ease REAL NOT NULL,
+                        source TEXT NOT NULL DEFAULT 'web'
+                    );
+                """)
+            migrated = Database(path)
+            self.assertEqual(migrated.schema_version(), 4)
+            expected = {"scheduler_version", "algorithm_version", "parameters_json", "desired_retention",
+                        "card_state", "step", "stability", "difficulty", "scheduled_days", "elapsed_days"}
+            with migrated.connect() as connection:
+                state_columns = {row["name"] for row in connection.execute("PRAGMA table_info(review_state)")}
+                review_columns = {row["name"] for row in connection.execute("PRAGMA table_info(reviews)")}
+            self.assertTrue(expected.issubset(state_columns))
+            self.assertTrue(expected.issubset(review_columns))
+
     def test_backup_and_restore_create_ready_database_and_safety_copy(self):
         with tempfile.TemporaryDirectory(prefix="jp-assist-backup-") as temporary:
             root = Path(temporary)

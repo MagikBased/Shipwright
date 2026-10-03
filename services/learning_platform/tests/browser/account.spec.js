@@ -142,6 +142,7 @@ test.describe.serial("learning account", () => {
     await login(page); await openView(page, "review");
     await page.locator("#review-card").click();
     await expect(page.locator("#review-actions")).toBeVisible();
+    await expect(page.locator("#review-actions [data-rating='3'] small")).toHaveText(/m|h|d|mo|y/);
     const firstMeaning = await page.locator("#review-card .meaning").textContent();
     await page.locator("#review-actions [data-rating='3']").click();
     await page.locator("#review-card").click();

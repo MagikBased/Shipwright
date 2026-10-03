@@ -111,6 +111,12 @@ at supported widths, and approved visual snapshots for all primary states.
 
 ## Milestone 3 — Exact FSRS review system
 
+Status: **in progress**. The service now pins py-fsrs 6.3.2/FSRS-6 with
+deterministic parameters, persists the complete memory-state projection, shows
+Again/Hard/Good/Easy interval previews, migrates legacy schemas, and can rebuild
+derived card state from immutable ratings and timestamps. Daily-limit,
+burying, account-timezone, parameter-upgrade, and conformance work remains.
+
 Replace the temporary interval logic with a pinned, documented FSRS
 implementation and deterministic state reconstruction.
 

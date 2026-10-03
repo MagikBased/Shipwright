@@ -83,6 +83,13 @@ button:disabled {
   color: var(--muted);
 }
 
+.review-actions button small {
+  display: block;
+  font-size: 0.75rem;
+  margin-top: 3px;
+  opacity: 0.76;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

@@ -107,16 +107,25 @@ After signing in, the website provides:
 - an overview with activity and per-game totals;
 - a searchable vocabulary library with saved/new/learning/known/ignored state,
   personal tags, and notes;
-- an MVP spaced-review queue with append-only review history;
+- a pinned FSRS-6 review queue with next-interval previews and append-only
+  review history;
 - daily new-word and review goals (the reminder preference is stored, but this
   release does not send notifications);
 - saved-word and complete-account JSON exports;
 - mod-device and website-session revocation, password changes, per-game data
   clearing, and account deletion.
 
-The scheduler is intentionally an MVP scheduler, not an exact FSRS or Anki
-scheduling implementation. Its history model is designed so a later scheduler
-can replay prior answers instead of discarding them.
+The scheduler uses `py-fsrs==6.3.2`, its FSRS-6 defaults, 90% desired retention,
+and disabled interval fuzzing so the same review timestamps and ratings always
+reproduce the same card state. The schema records the algorithm, package
+version, parameters, card state, difficulty, stability, scheduled/elapsed days,
+and last review. Derived state can be discarded and rebuilt without changing
+the append-only answers:
+
+```bash
+PYTHONPATH=services/learning_platform \
+  python3 -m learning_platform.manage rebuild-reviews
+```
 
 ## Dictionary enrichment
 

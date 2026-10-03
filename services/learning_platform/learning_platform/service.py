@@ -17,6 +17,17 @@ from .errors import (
     PairingPendingError,
     ValidationError,
 )
+from .fsrs_scheduler import (
+    ALGORITHM_VERSION,
+    DESIRED_RETENTION,
+    PARAMETERS_JSON,
+    SCHEDULER_VERSION,
+    ReviewEvent,
+    card_from_row,
+    previews,
+    replay,
+    schedule,
+)
 from .security import hash_password, new_bearer_token, new_user_code, token_hash, verify_password
 
 
@@ -80,6 +91,88 @@ class LearningPlatform:
     def __init__(self, database_path: str | Path, now: Callable[[], datetime] = utc_now):
         self.database = Database(database_path)
         self.now = now
+        self._rebuild_stale_review_states()
+
+    def _rebuild_stale_review_states(self) -> None:
+        with self.database.connect() as connection:
+            stale = connection.execute(
+                """
+                SELECT 1
+                FROM reviews AS history
+                LEFT JOIN review_state AS state
+                  ON state.user_id = history.user_id
+                 AND state.word_id = history.word_id
+                 AND state.sense_id = history.sense_id
+                WHERE state.scheduler_version IS NULL OR state.scheduler_version != ?
+                LIMIT 1
+                """,
+                (SCHEDULER_VERSION,),
+            ).fetchone()
+            if stale is None:
+                return
+            self._rebuild_review_states(connection)
+
+    def _rebuild_review_states(self, connection: sqlite3.Connection, user_id: str | None = None) -> int:
+        where = "WHERE user_id = ?" if user_id else ""
+        arguments = (user_id,) if user_id else ()
+        rows = connection.execute(
+            f"SELECT user_id, word_id, sense_id, rating, reviewed_at FROM reviews {where} "
+            "ORDER BY user_id, word_id, sense_id, reviewed_at, id",
+            arguments,
+        ).fetchall()
+        grouped: dict[tuple[str, str, str], list[ReviewEvent]] = {}
+        for row in rows:
+            grouped.setdefault((row["user_id"], row["word_id"], row["sense_id"]), []).append(
+                ReviewEvent(row["rating"], datetime.fromisoformat(row["reviewed_at"].replace("Z", "+00:00")))
+            )
+        if user_id:
+            connection.execute("DELETE FROM review_state WHERE user_id = ?", (user_id,))
+        else:
+            connection.execute("DELETE FROM review_state")
+        for (owner, word_id, sense_id), events in grouped.items():
+            card, projection, repetitions, lapses = replay(events)
+            if projection:
+                self._write_review_state(connection, owner, word_id, sense_id, card, projection, repetitions, lapses)
+        return len(grouped)
+
+    def rebuild_review_states(self, user_id: str | None = None) -> int:
+        with self.database.connect() as connection:
+            connection.execute("BEGIN IMMEDIATE")
+            return self._rebuild_review_states(connection, user_id)
+
+    @staticmethod
+    def _write_review_state(
+        connection: sqlite3.Connection, user_id: str, word_id: str, sense_id: str,
+        card: Any, projection: dict[str, Any], repetitions: int, lapses: int,
+    ) -> None:
+        connection.execute(
+            """
+            INSERT INTO review_state (
+                user_id, word_id, sense_id, due_at, interval_days, ease, repetitions, lapses,
+                last_reviewed_at, scheduler_version, algorithm_version, parameters_json,
+                desired_retention, card_state, step, stability, difficulty, scheduled_days, elapsed_days
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(user_id, word_id, sense_id) DO UPDATE SET
+                due_at = excluded.due_at, interval_days = excluded.interval_days,
+                repetitions = excluded.repetitions, lapses = excluded.lapses,
+                last_reviewed_at = excluded.last_reviewed_at,
+                scheduler_version = excluded.scheduler_version,
+                algorithm_version = excluded.algorithm_version,
+                parameters_json = excluded.parameters_json,
+                desired_retention = excluded.desired_retention,
+                card_state = excluded.card_state, step = excluded.step,
+                stability = excluded.stability, difficulty = excluded.difficulty,
+                scheduled_days = excluded.scheduled_days, elapsed_days = excluded.elapsed_days
+            """,
+            (
+                user_id, word_id, sense_id, isoformat(card.due), projection["scheduledDays"], 2.5,
+                repetitions, lapses, isoformat(card.last_review), projection["schedulerVersion"],
+                projection["algorithmVersion"], projection["parametersJson"],
+                projection["desiredRetention"], projection["cardState"], projection["step"],
+                projection["stability"], projection["difficulty"], projection["scheduledDays"],
+                projection["elapsedDays"],
+            ),
+        )
 
     def register_user(self, email: str, password: str, display_name: str) -> dict[str, Any]:
         normalized_email = self._validate_email(email)
@@ -704,13 +797,16 @@ class LearningPlatform:
         user = self.authenticate_session(session_token)
         if not 1 <= limit <= 100:
             raise ValidationError("limit must be between 1 and 100")
-        now = isoformat(self.now())
+        now_value = self.now()
+        now = isoformat(now_value)
         with self.database.connect() as connection:
             rows = connection.execute(
                 """
                 SELECT progress.word_id, progress.sense_id, progress.encounter_count,
                        dictionary.written, dictionary.reading, dictionary.meaning, dictionary.part_of_speech,
                        review.due_at, review.interval_days, review.repetitions,
+                       review.scheduler_version, review.card_state, review.step,
+                       review.stability, review.difficulty, review.last_reviewed_at,
                        COALESCE(annotation.learning_state, 'new') AS learning_state
                 FROM word_progress progress
                 LEFT JOIN dictionary_entries dictionary ON dictionary.word_id = progress.word_id
@@ -727,16 +823,22 @@ class LearningPlatform:
                 """,
                 (user["id"], now, limit),
             ).fetchall()
-        return [
-            {"wordId": row["word_id"], "senseId": row["sense_id"] or None,
-             "written": row["written"] or row["word_id"].split("|")[0],
-             "reading": row["reading"] or (row["word_id"].split("|", 1)[1] if "|" in row["word_id"] else ""),
-             "meaning": row["meaning"] or "", "partOfSpeech": row["part_of_speech"] or "",
-             "encounterCount": row["encounter_count"], "learningState": row["learning_state"],
-             "dueAt": row["due_at"], "intervalDays": row["interval_days"] or 0,
-             "repetitions": row["repetitions"] or 0}
-            for row in rows
-        ]
+        queue = []
+        for row in rows:
+            card = card_from_row(row)
+            rating_previews = previews(card, now_value)
+            queue.append({
+                "wordId": row["word_id"], "senseId": row["sense_id"] or None,
+                "written": row["written"] or row["word_id"].split("|")[0],
+                "reading": row["reading"] or (row["word_id"].split("|", 1)[1] if "|" in row["word_id"] else ""),
+                "meaning": row["meaning"] or "", "partOfSpeech": row["part_of_speech"] or "",
+                "encounterCount": row["encounter_count"], "learningState": row["learning_state"],
+                "dueAt": row["due_at"], "intervalDays": row["interval_days"] or 0,
+                "repetitions": row["repetitions"] or 0,
+                "schedulerVersion": SCHEDULER_VERSION,
+                "ratingPreviews": [{**item, "dueAt": isoformat(item["dueAt"])} for item in rating_previews],
+            })
+        return queue
 
     def submit_review(
         self, session_token: str, word_id: str, sense_id: str | None, rating: int, source: str = "web"
@@ -760,37 +862,36 @@ class LearningPlatform:
                 "SELECT * FROM review_state WHERE user_id = ? AND word_id = ? AND sense_id = ?",
                 (user["id"], word_id, sense_id),
             ).fetchone()
-            interval = float(current["interval_days"]) if current else 0.0
-            ease = float(current["ease"]) if current else 2.5
+            card = card_from_row(current)
+            card, projection = schedule(card, rating, now_value)
             repetitions = int(current["repetitions"]) if current else 0
             lapses = int(current["lapses"]) if current else 0
-            if rating == 1:
-                interval, ease, repetitions, lapses = 0.007, max(1.3, ease - 0.2), 0, lapses + 1
-            elif rating == 2:
-                interval, ease, repetitions = max(1.0, interval * 1.2), max(1.3, ease - 0.15), repetitions + 1
-            elif rating == 3:
-                interval, repetitions = max(1.0, interval * ease), repetitions + 1
-            else:
-                interval, ease, repetitions = max(4.0, interval * ease * 1.3), ease + 0.15, repetitions + 1
-            due_at = isoformat(now_value + timedelta(days=interval))
-            connection.execute(
-                """
-                INSERT INTO review_state VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-                ON CONFLICT(user_id, word_id, sense_id) DO UPDATE SET due_at = excluded.due_at,
-                    interval_days = excluded.interval_days, ease = excluded.ease,
-                    repetitions = excluded.repetitions, lapses = excluded.lapses,
-                    last_reviewed_at = excluded.last_reviewed_at
-                """,
-                (user["id"], word_id, sense_id, due_at, interval, ease, repetitions, lapses, now),
+            repetitions += 1
+            lapses += int(rating == 1)
+            due_at = isoformat(card.due)
+            interval = projection["scheduledDays"]
+            self._write_review_state(
+                connection, user["id"], word_id, sense_id, card, projection, repetitions, lapses,
             )
             review_id = str(uuid.uuid4())
             connection.execute(
-                "INSERT INTO reviews VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                (review_id, user["id"], word_id, sense_id, rating, now, due_at, interval, ease, source),
+                """
+                INSERT INTO reviews (
+                    id, user_id, word_id, sense_id, rating, reviewed_at, due_at, interval_days,
+                    ease, source, scheduler_version, algorithm_version, parameters_json,
+                    desired_retention, card_state, step, stability, difficulty, scheduled_days, elapsed_days
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    review_id, user["id"], word_id, sense_id, rating, now, due_at, interval, 2.5, source,
+                    SCHEDULER_VERSION, ALGORITHM_VERSION, PARAMETERS_JSON, DESIRED_RETENTION,
+                    projection["cardState"], projection["step"], projection["stability"],
+                    projection["difficulty"], projection["scheduledDays"], projection["elapsedDays"],
+                ),
             )
         return {"id": review_id, "wordId": word_id, "senseId": sense_id or None, "rating": rating,
-                "reviewedAt": now, "dueAt": due_at, "intervalDays": interval, "ease": ease,
-                "repetitions": repetitions, "lapses": lapses}
+                "reviewedAt": now, "dueAt": due_at, "intervalDays": interval,
+                "repetitions": repetitions, "lapses": lapses, **projection}
 
     def list_sessions(self, session_token: str) -> list[dict[str, Any]]:
         user = self.authenticate_session(session_token)
@@ -848,7 +949,12 @@ class LearningPlatform:
                 "SELECT word_id, sense_id, learning_state, note, tags_json, updated_at FROM word_annotations WHERE user_id = ?",
                 (user["id"],))]
             reviews = [dict(row) for row in connection.execute(
-                "SELECT word_id, sense_id, rating, reviewed_at, due_at, interval_days, ease, source FROM reviews WHERE user_id = ? ORDER BY reviewed_at",
+                """
+                SELECT word_id, sense_id, rating, reviewed_at, due_at, interval_days, source,
+                       scheduler_version, algorithm_version, parameters_json, desired_retention,
+                       card_state, step, stability, difficulty, scheduled_days, elapsed_days
+                FROM reviews WHERE user_id = ? ORDER BY reviewed_at, id
+                """,
                 (user["id"],))]
             events = [dict(row) for row in connection.execute(
                 """
@@ -866,7 +972,9 @@ class LearningPlatform:
                 (user["id"],))]
         for annotation in annotations:
             annotation["tags"] = json.loads(annotation.pop("tags_json"))
-        return {"schemaVersion": 1, "exportedAt": exported_at, "user": user,
+        for review in reviews:
+            review["parameters"] = json.loads(review.pop("parameters_json"))
+        return {"schemaVersion": 2, "exportedAt": exported_at, "user": user,
                 "stats": self.get_stats(session_token), "goals": self.get_goals(session_token),
                 "words": self.list_word_progress(session_token, limit=1000),
                 "annotations": annotations, "reviews": reviews, "events": events,

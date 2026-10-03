@@ -122,11 +122,25 @@ function renderConnections() {
 }
 
 async function loadReviewQueue() { state.queue = await api("/v1/me/reviews/queue?limit=100"); state.reviewIndex = 0; renderReview(false); }
+function formatInterval(days) {
+  const minutes = Math.round(days * 1440);
+  if (minutes < 60) return `${Math.max(1, minutes)}m`;
+  const hours = Math.round(days * 24);
+  if (hours < 24) return `${hours}h`;
+  if (days < 30) return `${Math.round(days)}d`;
+  if (days < 365) return `${Math.round(days / 30)}mo`;
+  return `${(days / 365).toFixed(1)}y`;
+}
 function renderReview(revealed) {
   const card = state.queue[state.reviewIndex], box = document.querySelector("#review-card"), actions = document.querySelector("#review-actions");
   if (!card) { box.disabled = true; box.innerHTML = '<span class="muted">You are caught up. Save more words in-game or mark words as learning.</span>'; actions.classList.add("hidden"); return; }
   box.disabled = false;
   box.innerHTML = `<div><div class="reading">${escapeHtml(card.reading)}</div><div class="written">${escapeHtml(card.written)}</div>${revealed?`<hr><div class="meaning">${escapeHtml(card.meaning || "No dictionary meaning imported")}</div><p>${escapeHtml(card.partOfSpeech)}</p>`:'<p class="muted">Click the card to reveal</p>'}</div>`;
+  const labels = ["Again", "Hard", "Good", "Easy"];
+  actions.querySelectorAll("[data-rating]").forEach((button, index) => {
+    const preview = card.ratingPreviews?.find(item => item.rating === index + 1);
+    button.innerHTML = `${labels[index]}${preview ? `<small>${formatInterval(preview.intervalDays)}</small>` : ""}`;
+  });
   actions.classList.toggle("hidden", !revealed);
 }
 
