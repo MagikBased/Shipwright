@@ -109,6 +109,10 @@ class KnownWordRequest(ApiModel):
     known: bool = True
 
 
+class CourseEnrollmentRequest(ApiModel):
+    active: bool = True
+
+
 class GoalsRequest(ApiModel):
     dailyNewWords: StrictInt
     dailyReviews: StrictInt
@@ -217,6 +221,7 @@ def create_app(
     )
     catalog = GameCatalog()
     platform.sync_catalog_vocabulary(catalog.database_records())
+    platform.sync_catalog_courses(catalog.course_records())
     app = FastAPI(
         title="JP Assist Learning Platform",
         version="0.3.0-rc.1",
@@ -345,6 +350,18 @@ def create_app(
             media_type="application/octet-stream",
             headers={"Content-Disposition": f'attachment; filename="{filename}"'},
         )
+
+    @app.get("/v1/catalog/games/{game_id}/chapters/{chapter_id}/cards")
+    def catalog_chapter_cards(
+        game_id: str, chapter_id: str, limit: int = 50, offset: int = 0,
+    ) -> dict[str, Any]:
+        try:
+            result = catalog.get_chapter_cards(game_id, chapter_id, limit, offset)
+        except ValueError as error:
+            raise HTTPException(status_code=422, detail=str(error)) from error
+        if result is None:
+            raise HTTPException(status_code=404, detail="Catalog chapter not found")
+        return result
 
     @app.get("/v1/catalog/games/{game_id}/vocabulary")
     def catalog_vocabulary(
@@ -550,6 +567,24 @@ def create_app(
         result["coverage"] = platform.catalog_coverage(token, game_id)
         return result
 
+    @app.get("/v1/me/courses/{game_id}/chapters/{chapter_id}")
+    def course_progress(
+        game_id: str, chapter_id: str, request: Request,
+        authorization: str | None = Header(default=None),
+    ) -> dict[str, Any]:
+        return platform.course_progress(
+            session_token(request, authorization), game_id, chapter_id,
+        )
+
+    @app.put("/v1/me/courses/{game_id}/chapters/{chapter_id}")
+    def update_course_enrollment(
+        game_id: str, chapter_id: str, payload: CourseEnrollmentRequest,
+        request: Request, authorization: str | None = Header(default=None),
+    ) -> dict[str, Any]:
+        return platform.set_course_enrollment(
+            session_token(request, authorization), game_id, chapter_id, payload.active,
+        )
+
     @app.get("/v1/me/activity")
     def activity(
         request: Request, days: int = 30, authorization: str | None = Header(default=None)
@@ -571,9 +606,12 @@ def create_app(
 
     @app.get("/v1/me/reviews/queue")
     def review_queue(
-        request: Request, limit: int = 20, authorization: str | None = Header(default=None)
+        request: Request, limit: int = 20, gameId: str | None = None,
+        chapterId: str | None = None, authorization: str | None = Header(default=None),
     ) -> list[dict[str, Any]]:
-        return platform.review_queue(session_token(request, authorization), limit)
+        return platform.review_queue(
+            session_token(request, authorization), limit, gameId, chapterId,
+        )
 
     @app.post("/v1/me/reviews")
     def submit_review(
@@ -689,6 +727,10 @@ def create_app(
     @app.get("/catalog", include_in_schema=False)
     def catalog_website() -> FileResponse:
         return FileResponse(web_root / "catalog.html")
+
+    @app.get("/study/{game_id}/{chapter_id}", include_in_schema=False)
+    def study_website(game_id: str, chapter_id: str) -> FileResponse:
+        return FileResponse(web_root / "study.html")
 
     return app
 

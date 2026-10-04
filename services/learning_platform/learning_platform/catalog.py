@@ -62,6 +62,66 @@ class GameCatalog:
         result["reviewedCards"] = deepcopy(content.get("cards", []))
         return deepcopy(game), result
 
+    @staticmethod
+    def _study_card(card: dict[str, Any]) -> dict[str, Any]:
+        identity = card["corpusEvidence"]["identity"]
+        _lemma, _reading, sense_id = identity.split("|", 2)
+        result = deepcopy(card)
+        # Reviewed display forms are dictionary forms. They may deliberately
+        # normalize a stylistic corpus spelling (for example katakana emphasis)
+        # onto the account-wide lexeme used by the vocabulary catalog.
+        result["wordId"] = f"{card['written']}|{card['reading']}"
+        result["senseId"] = sense_id
+        return result
+
+    def get_chapter_cards(
+        self, game_id: str, chapter_id: str, limit: int = 50, offset: int = 0,
+    ) -> dict[str, Any] | None:
+        if not 1 <= limit <= 250 or offset < 0:
+            raise ValueError("limit must be 1-250 and offset cannot be negative")
+        source = self.get_chapter_for_export(game_id, chapter_id)
+        if source is None:
+            return None
+        game, chapter = source
+        cards = chapter["reviewedCards"]
+        return {
+            "gameId": game_id,
+            "gameTitle": game["title"],
+            "chapterId": chapter_id,
+            "chapterOrder": chapter["order"],
+            "chapterTitle": chapter["title"],
+            "total": len(cards),
+            "limit": limit,
+            "offset": offset,
+            "cards": [self._study_card(card) for card in cards[offset:offset + limit]],
+        }
+
+    def course_records(self) -> list[dict[str, Any]]:
+        """Return reviewed chapter/card content for local account study."""
+        records = []
+        for game_id, game in self._games.items():
+            manifest = self._card_manifests.get(game_id)
+            if manifest is None:
+                continue
+            cards_by_chapter = {
+                item["chapterId"]: item.get("cards", [])
+                for item in manifest.get("chapters", [])
+            }
+            chapters = []
+            for chapter in game["chapters"]:
+                cards = [
+                    self._study_card(card)
+                    for card in cards_by_chapter.get(chapter["id"], [])
+                ]
+                chapters.append({
+                    "chapterId": chapter["id"],
+                    "order": chapter["order"],
+                    "title": chapter["title"],
+                    "cards": cards,
+                })
+            records.append({"gameId": game_id, "title": game["title"], "chapters": chapters})
+        return records
+
     def list_vocabulary(
         self, game_id: str, search: str = "", jlpt_level: str | None = None,
         limit: int = 50, offset: int = 0,

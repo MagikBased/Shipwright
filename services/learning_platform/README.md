@@ -192,13 +192,23 @@ PYTHONPATH=services/learning_platform \
   --attribution "See the dictionary licenses used by this deployment"
 ```
 
-## Anki handoff
+## Chapter study and Anki handoff
 
 The public game catalog is available at `/catalog`, with machine-readable data at
-`/v1/catalog/games`. Its reviewed chapter decks are separate from the personal
-saved-word export below: catalog cards use original example sentences intended
-for distribution, while personal exports join a player's identifiers to their
-local extracted corpus. See [Ocarina of Time chapter decks](../../docs/OOT_CHAPTER_DECKS.md).
+`/v1/catalog/games`. Every ready chapter has a **Study on site** action. Signed-in
+learners can enroll in a chapter, reveal its reviewed examples, and rate cards
+with the shared account-wide FSRS scheduler. Known words and mastered senses
+carry across games, while pausing a chapter removes its course-only cards from
+the due queue without deleting review history. Chapter enrollment is included
+in the complete account export.
+
+The same reviewed chapter cards remain downloadable as Anki packages. They are
+separate from the personal saved-word export below: catalog cards use original
+example sentences intended for distribution, while personal exports join a
+player's identifiers to their local extracted corpus. If Anki is selected as
+the scheduling owner, the site shows the chapter content and progress but does
+not create a competing due queue. See
+[Ocarina of Time chapter decks](../../docs/OOT_CHAPTER_DECKS.md).
 
 Use **Download saved words** on the dashboard. The downloaded JSON is accepted
 directly by the existing local builder:

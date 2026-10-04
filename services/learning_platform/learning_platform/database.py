@@ -2,7 +2,7 @@ import sqlite3
 from pathlib import Path
 
 
-LATEST_SCHEMA_VERSION = 11
+LATEST_SCHEMA_VERSION = 12
 
 SCHEMA = """
 PRAGMA foreign_keys = ON;
@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS metadata (
     value TEXT NOT NULL
 );
 
-INSERT OR IGNORE INTO metadata(key, value) VALUES ('schema_version', '11');
+INSERT OR IGNORE INTO metadata(key, value) VALUES ('schema_version', '12');
 
 CREATE TABLE IF NOT EXISTS users (
     id TEXT PRIMARY KEY,
@@ -187,6 +187,58 @@ CREATE INDEX IF NOT EXISTS game_vocabulary_word_idx
 CREATE INDEX IF NOT EXISTS game_vocabulary_game_level_idx
     ON game_vocabulary(game_id, jlpt_level, word_id);
 
+CREATE TABLE IF NOT EXISTS catalog_chapters (
+    game_id TEXT NOT NULL REFERENCES catalog_games(game_id) ON DELETE CASCADE,
+    chapter_id TEXT NOT NULL,
+    order_index INTEGER NOT NULL,
+    title TEXT NOT NULL,
+    card_count INTEGER NOT NULL DEFAULT 0 CHECK (card_count >= 0),
+    PRIMARY KEY (game_id, chapter_id)
+);
+
+CREATE TABLE IF NOT EXISTS catalog_cards (
+    game_id TEXT NOT NULL,
+    chapter_id TEXT NOT NULL,
+    card_id TEXT NOT NULL,
+    position INTEGER NOT NULL,
+    word_id TEXT NOT NULL,
+    sense_id TEXT NOT NULL DEFAULT '',
+    written TEXT NOT NULL,
+    reading TEXT NOT NULL DEFAULT '',
+    part_of_speech TEXT NOT NULL DEFAULT '',
+    meaning TEXT NOT NULL DEFAULT '',
+    sentence_japanese TEXT NOT NULL DEFAULT '',
+    sentence_english TEXT NOT NULL DEFAULT '',
+    word_audio TEXT,
+    sentence_audio TEXT,
+    PRIMARY KEY (game_id, chapter_id, card_id),
+    UNIQUE (game_id, word_id, sense_id),
+    FOREIGN KEY (game_id, chapter_id)
+        REFERENCES catalog_chapters(game_id, chapter_id) ON DELETE CASCADE,
+    FOREIGN KEY (word_id, sense_id)
+        REFERENCES lexical_senses(word_id, sense_id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS catalog_cards_chapter_position_idx
+    ON catalog_cards(game_id, chapter_id, position);
+CREATE INDEX IF NOT EXISTS catalog_cards_word_idx
+    ON catalog_cards(word_id, sense_id, game_id);
+
+CREATE TABLE IF NOT EXISTS course_enrollments (
+    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    game_id TEXT NOT NULL,
+    chapter_id TEXT NOT NULL,
+    active INTEGER NOT NULL DEFAULT 1 CHECK (active IN (0, 1)),
+    enrolled_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL,
+    PRIMARY KEY (user_id, game_id, chapter_id),
+    FOREIGN KEY (game_id, chapter_id)
+        REFERENCES catalog_chapters(game_id, chapter_id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS course_enrollments_user_active_idx
+    ON course_enrollments(user_id, active, game_id, chapter_id);
+
 CREATE TABLE IF NOT EXISTS review_state (
     user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     word_id TEXT NOT NULL,
@@ -359,7 +411,7 @@ class Database:
             connection.execute("UPDATE sessions SET id = lower(hex(randomblob(16))) WHERE id IS NULL")
             connection.execute("UPDATE sessions SET last_seen_at = created_at WHERE last_seen_at IS NULL")
             connection.execute("CREATE UNIQUE INDEX IF NOT EXISTS sessions_public_id_idx ON sessions(id)")
-            connection.execute("UPDATE metadata SET value = '11' WHERE key = 'schema_version'")
+            connection.execute("UPDATE metadata SET value = '12' WHERE key = 'schema_version'")
 
     @staticmethod
     def _migrate_review_schema(connection: sqlite3.Connection) -> None:

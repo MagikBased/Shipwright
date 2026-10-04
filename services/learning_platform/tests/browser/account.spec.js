@@ -181,6 +181,8 @@ test.describe.serial("learning account", () => {
     const firstTab = page.locator("#tabs button").first();
     await firstTab.focus();
     await page.keyboard.press("Tab");
+    await expect(page.locator("#catalog-tab")).toBeFocused();
+    await page.keyboard.press("Tab");
     await expect(page.locator("#tabs [data-view=vocabulary]")).toBeFocused();
     for (const view of ["overview", "vocabulary", "review", "export", "connections", "account"]) {
       await openView(page, view);
@@ -236,6 +238,12 @@ test.describe.serial("learning account", () => {
     await editor.locator("button[type=submit]").click();
     await page.locator("#word-state").selectOption("known");
     await expect(page.locator(".word-card")).toContainText("tested");
+
+    // Restore this saved fixture card to the review queue for the following
+    // serial review test. Known cards are intentionally excluded from study.
+    await page.locator(".word-card").first().click();
+    await editor.locator("select[name=learningState]").selectOption("learning");
+    await editor.locator("button[type=submit]").click();
 
     await page.locator("#word-state").selectOption("");
     await page.locator("#word-search").fill("unsafe marker");

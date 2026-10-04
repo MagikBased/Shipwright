@@ -719,8 +719,25 @@ class LearningPlatform:
                 LEFT JOIN review_state review ON review.user_id = progress.user_id
                     AND review.word_id = progress.word_id AND review.sense_id = progress.sense_id
                 WHERE progress.user_id = ?
-                    AND (progress.saved = 1 OR annotation.learning_state = 'learning')
-                    AND COALESCE(annotation.learning_state, 'new') != 'ignored'
+                    AND (
+                        progress.saved = 1 OR annotation.learning_state = 'learning'
+                        OR EXISTS (
+                            SELECT 1 FROM catalog_cards AS card
+                            JOIN course_enrollments AS enrollment
+                              ON enrollment.user_id = progress.user_id
+                             AND enrollment.game_id = card.game_id
+                             AND enrollment.chapter_id = card.chapter_id
+                             AND enrollment.active = 1
+                            WHERE card.word_id = progress.word_id
+                              AND card.sense_id = progress.sense_id
+                        )
+                    )
+                    AND COALESCE(annotation.learning_state, 'new') NOT IN ('ignored', 'known')
+                    AND NOT EXISTS (
+                        SELECT 1 FROM known_words AS known
+                        WHERE known.user_id = progress.user_id
+                          AND known.word_id = progress.word_id
+                    )
                     AND (review.due_at IS NULL OR review.due_at <= ?)
                 """,
                 (user["id"], now),
@@ -1119,6 +1136,231 @@ class LearningPlatform:
             "gameMemberships": membership_count,
         }
 
+    def sync_catalog_courses(self, games: list[dict[str, Any]]) -> dict[str, int]:
+        """Synchronize reviewed chapter cards used by the website study queue."""
+        now = isoformat(self.now())
+        chapter_count = card_count = 0
+        with self.database.connect() as connection:
+            for game in games:
+                game_id = require_identifier("gameId", game.get("gameId"))
+                connection.execute(
+                    """
+                    INSERT INTO catalog_games(game_id, title, content_version, updated_at)
+                    VALUES (?, ?, '', ?)
+                    ON CONFLICT(game_id) DO UPDATE SET title = excluded.title,
+                        updated_at = excluded.updated_at
+                    """,
+                    (game_id, game.get("title", game_id), now),
+                )
+                current_chapters: set[str] = set()
+                current_cards: set[tuple[str, str]] = set()
+                for chapter in game.get("chapters", []):
+                    chapter_id = require_identifier("chapterId", chapter.get("chapterId"))
+                    current_chapters.add(chapter_id)
+                    cards = chapter.get("cards", [])
+                    connection.execute(
+                        """
+                        INSERT INTO catalog_chapters(
+                            game_id, chapter_id, order_index, title, card_count
+                        ) VALUES (?, ?, ?, ?, ?)
+                        ON CONFLICT(game_id, chapter_id) DO UPDATE SET
+                            order_index = excluded.order_index, title = excluded.title,
+                            card_count = excluded.card_count
+                        """,
+                        (game_id, chapter_id, int(chapter["order"]), chapter["title"], len(cards)),
+                    )
+                    chapter_count += 1
+                    for position, card in enumerate(cards):
+                        word_id = str(card["wordId"])
+                        sense_id = str(card.get("senseId") or "")
+                        card_id = str(card["id"])
+                        current_cards.add((chapter_id, card_id))
+                        connection.execute(
+                            """
+                            INSERT INTO lexemes(word_id, language, written, reading, updated_at)
+                            VALUES (?, 'ja', ?, ?, ?)
+                            ON CONFLICT(word_id) DO UPDATE SET written = excluded.written,
+                                reading = excluded.reading, updated_at = excluded.updated_at
+                            """,
+                            (word_id, card["written"], card.get("reading", ""), now),
+                        )
+                        connection.execute(
+                            """
+                            INSERT INTO lexical_senses(
+                                word_id, sense_id, part_of_speech, meaning, source, updated_at
+                            ) VALUES (?, ?, ?, ?, 'catalog-card', ?)
+                            ON CONFLICT(word_id, sense_id) DO UPDATE SET
+                                part_of_speech = excluded.part_of_speech,
+                                meaning = excluded.meaning, source = excluded.source,
+                                updated_at = excluded.updated_at
+                            """,
+                            (word_id, sense_id, card.get("partOfSpeech", ""), card.get("meaning", ""), now),
+                        )
+                        connection.execute(
+                            """
+                            INSERT INTO dictionary_entries(
+                                word_id, sense_id, written, reading, part_of_speech,
+                                meaning, source, attribution, updated_at
+                            ) VALUES (?, ?, ?, ?, ?, ?, 'catalog-card', '', ?)
+                            ON CONFLICT(word_id, sense_id) DO UPDATE SET
+                                written = excluded.written, reading = excluded.reading,
+                                part_of_speech = excluded.part_of_speech,
+                                meaning = excluded.meaning, source = excluded.source,
+                                updated_at = excluded.updated_at
+                            """,
+                            (
+                                word_id, sense_id, card["written"], card.get("reading", ""),
+                                card.get("partOfSpeech", ""), card.get("meaning", ""), now,
+                            ),
+                        )
+                        connection.execute(
+                            """
+                            INSERT INTO catalog_cards(
+                                game_id, chapter_id, card_id, position, word_id, sense_id,
+                                written, reading, part_of_speech, meaning,
+                                sentence_japanese, sentence_english, word_audio, sentence_audio
+                            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                            ON CONFLICT(game_id, chapter_id, card_id) DO UPDATE SET
+                                position = excluded.position, word_id = excluded.word_id,
+                                sense_id = excluded.sense_id, written = excluded.written,
+                                reading = excluded.reading,
+                                part_of_speech = excluded.part_of_speech,
+                                meaning = excluded.meaning,
+                                sentence_japanese = excluded.sentence_japanese,
+                                sentence_english = excluded.sentence_english,
+                                word_audio = excluded.word_audio,
+                                sentence_audio = excluded.sentence_audio
+                            """,
+                            (
+                                game_id, chapter_id, card_id, position, word_id, sense_id,
+                                card["written"], card.get("reading", ""),
+                                card.get("partOfSpeech", ""), card.get("meaning", ""),
+                                card.get("sentenceJapanese", ""), card.get("sentenceEnglish", ""),
+                                card.get("wordAudio"), card.get("sentenceAudio"),
+                            ),
+                        )
+                        card_count += 1
+                for row in connection.execute(
+                    "SELECT chapter_id, card_id FROM catalog_cards WHERE game_id = ?", (game_id,),
+                ):
+                    if (row["chapter_id"], row["card_id"]) not in current_cards:
+                        connection.execute(
+                            "DELETE FROM catalog_cards WHERE game_id = ? AND chapter_id = ? AND card_id = ?",
+                            (game_id, row["chapter_id"], row["card_id"]),
+                        )
+                for row in connection.execute(
+                    "SELECT chapter_id FROM catalog_chapters WHERE game_id = ?", (game_id,),
+                ):
+                    if row["chapter_id"] not in current_chapters:
+                        connection.execute(
+                            "DELETE FROM catalog_chapters WHERE game_id = ? AND chapter_id = ?",
+                            (game_id, row["chapter_id"]),
+                        )
+        return {"chapters": chapter_count, "cards": card_count}
+
+    def set_course_enrollment(
+        self, session_token: str, game_id: str, chapter_id: str, active: bool,
+    ) -> dict[str, Any]:
+        user = self.authenticate_session(session_token)
+        require_identifier("gameId", game_id)
+        require_identifier("chapterId", chapter_id)
+        now = isoformat(self.now())
+        with self.database.connect() as connection:
+            chapter = connection.execute(
+                "SELECT 1 FROM catalog_chapters WHERE game_id = ? AND chapter_id = ?",
+                (game_id, chapter_id),
+            ).fetchone()
+            if chapter is None:
+                raise NotFoundError("Catalog chapter not found")
+            connection.execute(
+                """
+                INSERT INTO course_enrollments(
+                    user_id, game_id, chapter_id, active, enrolled_at, updated_at
+                ) VALUES (?, ?, ?, ?, ?, ?)
+                ON CONFLICT(user_id, game_id, chapter_id) DO UPDATE SET
+                    active = excluded.active, updated_at = excluded.updated_at
+                """,
+                (user["id"], game_id, chapter_id, int(active), now, now),
+            )
+            if active:
+                connection.execute(
+                    """
+                    INSERT OR IGNORE INTO word_progress(
+                        user_id, word_id, sense_id, encounter_count, selection_count,
+                        saved, first_seen_at, last_seen_at
+                    )
+                    SELECT ?, word_id, sense_id, 0, 0, 0, ?, ?
+                    FROM catalog_cards WHERE game_id = ? AND chapter_id = ?
+                    """,
+                    (user["id"], now, now, game_id, chapter_id),
+                )
+        return self.course_progress(session_token, game_id, chapter_id)
+
+    def course_progress(
+        self, session_token: str, game_id: str, chapter_id: str,
+    ) -> dict[str, Any]:
+        user = self.authenticate_session(session_token)
+        with self.database.connect() as connection:
+            chapter = connection.execute(
+                """
+                SELECT title, card_count FROM catalog_chapters
+                WHERE game_id = ? AND chapter_id = ?
+                """,
+                (game_id, chapter_id),
+            ).fetchone()
+            if chapter is None:
+                raise NotFoundError("Catalog chapter not found")
+            enrollment = connection.execute(
+                """
+                SELECT active, enrolled_at, updated_at FROM course_enrollments
+                WHERE user_id = ? AND game_id = ? AND chapter_id = ?
+                """,
+                (user["id"], game_id, chapter_id),
+            ).fetchone()
+            cards = connection.execute(
+                """
+                SELECT card.word_id, card.sense_id,
+                       CASE WHEN known.word_id IS NOT NULL
+                                  OR annotation.learning_state = 'known' THEN 1 ELSE 0 END AS manually_known,
+                       CASE WHEN review.card_state = 2 THEN 1 ELSE 0 END AS reviewed_known,
+                       review.due_at, review.repetitions
+                FROM catalog_cards AS card
+                LEFT JOIN known_words AS known ON known.user_id = ?
+                    AND known.word_id = card.word_id
+                LEFT JOIN word_annotations AS annotation ON annotation.user_id = ?
+                    AND annotation.word_id = card.word_id AND annotation.sense_id = card.sense_id
+                LEFT JOIN review_state AS review ON review.user_id = ?
+                    AND review.word_id = card.word_id AND review.sense_id = card.sense_id
+                WHERE card.game_id = ? AND card.chapter_id = ?
+                """,
+                (user["id"], user["id"], user["id"], game_id, chapter_id),
+            ).fetchall()
+        total = len(cards)
+        known = sum(bool(row["manually_known"]) for row in cards)
+        mastered = sum(bool(row["manually_known"] or row["reviewed_known"]) for row in cards)
+        reviewed = sum((row["repetitions"] or 0) > 0 for row in cards)
+        now = isoformat(self.now())
+        new = sum(
+            not row["manually_known"] and (row["repetitions"] or 0) == 0
+            for row in cards
+        )
+        due = sum(
+            not row["manually_known"]
+            and (
+                (row["repetitions"] or 0) == 0
+                or bool(row["due_at"] and row["due_at"] <= now)
+            )
+            for row in cards
+        )
+        return {
+            "gameId": game_id, "chapterId": chapter_id, "chapterTitle": chapter["title"],
+            "active": bool(enrollment and enrollment["active"]),
+            "enrolledAt": enrollment["enrolled_at"] if enrollment else None,
+            "totalCards": total, "knownCards": known, "masteredCards": mastered,
+            "reviewedCards": reviewed, "newCards": new, "dueCards": due,
+            "percentMastered": round(mastered * 100 / total, 1) if total else 100.0,
+        }
+
     def catalog_coverage(self, session_token: str, game_id: str) -> dict[str, Any] | None:
         """Calculate cross-game familiarity and exact sense/dialogue coverage."""
         user = self.authenticate_session(session_token)
@@ -1365,10 +1607,18 @@ class LearningPlatform:
             )
         return self.get_review_collection(session_token, game_id)
 
-    def review_queue(self, session_token: str, limit: int = 20) -> list[dict[str, Any]]:
+    def review_queue(
+        self, session_token: str, limit: int = 20,
+        game_id: str | None = None, chapter_id: str | None = None,
+    ) -> list[dict[str, Any]]:
         user = self.authenticate_session(session_token)
         if not 1 <= limit <= 100:
             raise ValidationError("limit must be between 1 and 100")
+        if (game_id is None) != (chapter_id is None):
+            raise ValidationError("gameId and chapterId must be provided together")
+        if game_id is not None:
+            require_identifier("gameId", game_id)
+            require_identifier("chapterId", chapter_id)
         collection = self.get_review_collection(session_token)
         if collection["reviewOwner"] == "anki":
             return []
@@ -1423,15 +1673,66 @@ class LearningPlatform:
                     AND annotation.word_id = progress.word_id AND annotation.sense_id = progress.sense_id
                 LEFT JOIN buried_cards buried ON buried.user_id = progress.user_id
                     AND buried.word_id = progress.word_id AND buried.sense_id = progress.sense_id
-                WHERE progress.user_id = ? AND (progress.saved = 1 OR annotation.learning_state = 'learning')
-                    AND COALESCE(annotation.learning_state, 'new') != 'ignored'
+                WHERE progress.user_id = ?
+                    AND (
+                        progress.saved = 1 OR annotation.learning_state = 'learning'
+                        OR EXISTS (
+                            SELECT 1 FROM course_enrollments AS enrollment
+                            JOIN catalog_cards AS course_card
+                              ON course_card.game_id = enrollment.game_id
+                             AND course_card.chapter_id = enrollment.chapter_id
+                            WHERE enrollment.user_id = progress.user_id
+                              AND enrollment.active = 1
+                              AND course_card.word_id = progress.word_id
+                              AND course_card.sense_id = progress.sense_id
+                        )
+                    )
+                    AND COALESCE(annotation.learning_state, 'new') NOT IN ('ignored', 'known')
+                    AND NOT EXISTS (
+                        SELECT 1 FROM known_words AS known
+                        WHERE known.user_id = progress.user_id AND known.word_id = progress.word_id
+                    )
+                    AND (
+                        ? IS NULL OR EXISTS (
+                            SELECT 1 FROM course_enrollments AS selected_enrollment
+                            JOIN catalog_cards AS selected_card
+                              ON selected_card.game_id = selected_enrollment.game_id
+                             AND selected_card.chapter_id = selected_enrollment.chapter_id
+                            WHERE selected_enrollment.user_id = progress.user_id
+                              AND selected_enrollment.active = 1
+                              AND selected_enrollment.game_id = ?
+                              AND selected_enrollment.chapter_id = ?
+                              AND selected_card.word_id = progress.word_id
+                              AND selected_card.sense_id = progress.sense_id
+                        )
+                    )
                     AND (review.due_at IS NULL OR review.due_at <= ?)
                     AND (buried.buried_until IS NULL OR buried.buried_until <= ?)
                 ORDER BY COALESCE(review.due_at, progress.first_seen_at), progress.encounter_count DESC
                 LIMIT 1000
                 """,
-                (user["id"], now, now),
+                (user["id"], game_id, game_id, chapter_id, now, now),
             ).fetchall()
+            course_arguments: list[Any] = [user["id"]]
+            course_filter = ""
+            if game_id is not None:
+                course_filter = "AND card.game_id = ? AND card.chapter_id = ?"
+                course_arguments.extend((game_id, chapter_id))
+            course_rows = connection.execute(
+                f"""
+                SELECT card.* FROM catalog_cards AS card
+                JOIN course_enrollments AS enrollment
+                  ON enrollment.game_id = card.game_id
+                 AND enrollment.chapter_id = card.chapter_id
+                WHERE enrollment.user_id = ? AND enrollment.active = 1
+                {course_filter}
+                ORDER BY enrollment.updated_at, card.position
+                """,
+                course_arguments,
+            ).fetchall()
+        course_cards: dict[tuple[str, str], Any] = {}
+        for course_card in course_rows:
+            course_cards.setdefault((course_card["word_id"], course_card["sense_id"]), course_card)
         queue = []
         remaining_new = max(0, daily_new_words - new_today)
         remaining_reviews = max(0, daily_reviews - established_today)
@@ -1447,6 +1748,7 @@ class LearningPlatform:
                 remaining_reviews -= 1
             card = card_from_row(row)
             rating_previews = previews(card, now_value)
+            course_card = course_cards.get((row["word_id"], row["sense_id"]))
             queue.append({
                 "wordId": row["word_id"], "senseId": row["sense_id"] or None,
                 "written": row["written"] or row["word_id"].split("|")[0],
@@ -1457,6 +1759,15 @@ class LearningPlatform:
                 "repetitions": row["repetitions"] or 0,
                 "schedulerVersion": SCHEDULER_VERSION,
                 "ratingPreviews": [{**item, "dueAt": isoformat(item["dueAt"])} for item in rating_previews],
+                "courseCard": ({
+                    "gameId": course_card["game_id"],
+                    "chapterId": course_card["chapter_id"],
+                    "cardId": course_card["card_id"],
+                    "sentenceJapanese": course_card["sentence_japanese"],
+                    "sentenceEnglish": course_card["sentence_english"],
+                    "wordAudio": course_card["word_audio"],
+                    "sentenceAudio": course_card["sentence_audio"],
+                } if course_card else None),
             })
             if len(queue) >= limit:
                 break
@@ -1729,6 +2040,15 @@ class LearningPlatform:
                 FROM review_collections WHERE user_id = ? ORDER BY collection_id
                 """,
                 (user["id"],))]
+            course_enrollments = [dict(row) for row in connection.execute(
+                """
+                SELECT game_id, chapter_id, active, enrolled_at, updated_at
+                FROM course_enrollments
+                WHERE user_id = ?
+                ORDER BY game_id, chapter_id
+                """,
+                (user["id"],),
+            )]
             notification_preferences = connection.execute(
                 """
                 SELECT review_reminders, product_updates, reminder_hour, timezone, updated_at
@@ -1750,12 +2070,13 @@ class LearningPlatform:
             review["sourceMetadata"] = json.loads(review.pop("source_metadata_json"))
         for audit_event in audit_events:
             audit_event["metadata"] = json.loads(audit_event.pop("metadata_json"))
-        return {"schemaVersion": 5, "exportedAt": exported_at, "user": user,
+        return {"schemaVersion": 6, "exportedAt": exported_at, "user": user,
                 "stats": self.get_stats(session_token), "goals": self.get_goals(session_token),
                 "words": self.list_word_progress(session_token, limit=1000),
                 "annotations": annotations, "knownWords": known_words, "reviews": reviews, "events": events,
                 "devices": self.list_devices(session_token), "sessions": self.list_sessions(session_token),
                 "pairings": pairings, "exportHistory": exports, "reviewCollections": review_collections,
+                "courseEnrollments": course_enrollments,
                 "notificationPreferences": dict(notification_preferences) if notification_preferences else None,
                 "auditEvents": audit_events}
 
@@ -1840,8 +2161,25 @@ class LearningPlatform:
                      AND review.word_id = progress.word_id
                      AND review.sense_id = progress.sense_id
                     WHERE progress.user_id = ?
-                      AND (progress.saved = 1 OR annotation.learning_state = 'learning')
-                      AND COALESCE(annotation.learning_state, 'new') != 'ignored'
+                      AND (
+                          progress.saved = 1 OR annotation.learning_state = 'learning'
+                          OR EXISTS (
+                              SELECT 1 FROM catalog_cards AS card
+                              JOIN course_enrollments AS enrollment
+                                ON enrollment.user_id = progress.user_id
+                               AND enrollment.game_id = card.game_id
+                               AND enrollment.chapter_id = card.chapter_id
+                               AND enrollment.active = 1
+                              WHERE card.word_id = progress.word_id
+                                AND card.sense_id = progress.sense_id
+                          )
+                      )
+                      AND COALESCE(annotation.learning_state, 'new') NOT IN ('ignored', 'known')
+                      AND NOT EXISTS (
+                          SELECT 1 FROM known_words AS known
+                          WHERE known.user_id = progress.user_id
+                            AND known.word_id = progress.word_id
+                      )
                       AND (review.due_at IS NULL OR review.due_at <= ?)
                     """,
                     (candidate["id"], now),

@@ -3,7 +3,8 @@
 ## Goal
 
 The public catalog divides the game into eleven progression-aware vocabulary
-chapters. Each chapter will become an Anki-compatible deck whose cards contain:
+chapters. Each chapter is both an on-site course and an Anki-compatible deck
+whose cards contain:
 
 - a stable game-scoped card identity;
 - written form, reading, part of speech, and concise meaning;
@@ -146,11 +147,16 @@ card has stable corpus provenance, a newly written non-IP example sentence, and
 a stable Anki note identity. Audio remains optional, so every chapter is
 available as a fully usable text-only deck.
 
-Each ready chapter can be downloaded from the game catalog. The public download
-endpoint builds the package from the same repository-owned card manifest used by
-the local tooling:
+Each ready chapter can be studied directly from the game catalog or downloaded
+for Anki. On-site enrollment uses the account-wide vocabulary identity and FSRS
+review history, so mastering the same sense in one game applies to every other
+game. Pausing a chapter preserves that history. The card browser and the public
+download endpoint both use the same repository-owned card manifest used by the
+local tooling:
 
 ```text
+/study/ocarina-of-time/{chapter-id}
+/v1/catalog/games/ocarina-of-time/chapters/{chapter-id}/cards
 /v1/catalog/games/ocarina-of-time/chapters/{chapter-id}/deck
 ```
 

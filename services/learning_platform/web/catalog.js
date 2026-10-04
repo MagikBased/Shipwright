@@ -196,15 +196,19 @@ function chapterCard(chapter, chapterNames) {
   if (chapter.deck.downloadAvailable) {
     const actions = document.createElement("div");
     actions.className = "chapter-actions";
+    const study = document.createElement("a");
+    study.className = "button-link chapter-study";
+    study.href = `/study/${encodeURIComponent(GAME_ID)}/${encodeURIComponent(chapter.id)}`;
+    text(study, "Study on site");
     const download = document.createElement("a");
-    download.className = "button-link chapter-download";
+    download.className = "button-link quiet-link chapter-download";
     download.href = `/v1/catalog/games/${GAME_ID}/chapters/${chapter.id}/deck`;
     download.setAttribute("download", "");
     text(download, `Download ${chapter.deck.reviewedCardCount} Anki cards`);
     const audio = document.createElement("span");
     audio.className = "muted small";
     text(audio, chapter.deck.audioStatus === "none" ? "Text-only deck" : "Includes reviewed audio");
-    actions.append(download, audio);
+    actions.append(study, download, audio);
     item.append(actions);
   }
 

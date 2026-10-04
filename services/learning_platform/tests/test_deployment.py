@@ -93,6 +93,11 @@ class DeploymentTest(unittest.TestCase):
             path = Path(temporary) / "version-ten.sqlite3"
             database = Database(path)
             with database.connect() as connection:
+                # These course tables were introduced after v10 and depend on the
+                # relational vocabulary tables this fixture intentionally removes.
+                connection.execute("DROP TABLE course_enrollments")
+                connection.execute("DROP TABLE catalog_cards")
+                connection.execute("DROP TABLE catalog_chapters")
                 connection.execute("DROP TABLE game_vocabulary")
                 connection.execute("DROP TABLE lexical_senses")
                 connection.execute("DROP TABLE lexemes")

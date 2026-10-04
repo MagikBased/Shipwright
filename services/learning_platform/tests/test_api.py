@@ -250,6 +250,72 @@ class LearningPlatformApiTest(unittest.TestCase):
             json={"wordId": "not-in-game", "known": True}, headers=self.csrf_headers(),
         ).status_code, 404)
 
+    def test_chapter_cards_can_be_studied_with_the_shared_fsrs_queue(self):
+        game_id = "ocarina-of-time"
+        chapter_id = "11-hero-of-time"
+        cards = self.client.get(
+            f"/v1/catalog/games/{game_id}/chapters/{chapter_id}/cards?limit=2"
+        )
+        self.assertEqual(cards.status_code, 200)
+        self.assertEqual(cards.json()["total"], 5)
+        self.assertEqual(len(cards.json()["cards"]), 2)
+        self.assertTrue(cards.json()["cards"][0]["sentenceJapanese"])
+        self.assertIn("wordId", cards.json()["cards"][0])
+        self.assertIn("senseId", cards.json()["cards"][0])
+
+        self.client.post(
+            "/v1/auth/register",
+            json={
+                "email": "course@example.com", "password": "correct horse battery",
+                "displayName": "Course Learner",
+            },
+        )
+        before = self.client.get(f"/v1/me/courses/{game_id}/chapters/{chapter_id}")
+        self.assertFalse(before.json()["active"])
+        self.assertEqual(before.json()["totalCards"], 5)
+
+        enrolled = self.client.put(
+            f"/v1/me/courses/{game_id}/chapters/{chapter_id}",
+            json={"active": True}, headers=self.csrf_headers(),
+        )
+        self.assertEqual(enrolled.status_code, 200)
+        self.assertTrue(enrolled.json()["active"])
+        self.assertEqual(enrolled.json()["newCards"], 5)
+        self.assertEqual(enrolled.json()["dueCards"], 5)
+        account_export = self.client.get("/v1/me/exports/account").json()
+        self.assertEqual(account_export["schemaVersion"], 6)
+        self.assertEqual(account_export["courseEnrollments"][0]["chapter_id"], chapter_id)
+        self.assertEqual(self.client.get("/v1/me/stats").json()["dueReviews"], 5)
+        queue = self.client.get(
+            f"/v1/me/reviews/queue?gameId={game_id}&chapterId={chapter_id}&limit=10"
+        ).json()
+        self.assertEqual(len(queue), 5)
+        self.assertEqual(queue[0]["courseCard"]["chapterId"], chapter_id)
+        self.assertTrue(queue[0]["courseCard"]["sentenceJapanese"])
+
+        reviewed = self.client.post(
+            "/v1/me/reviews",
+            json={
+                "wordId": queue[0]["wordId"], "senseId": queue[0]["senseId"], "rating": 3,
+            },
+            headers=self.csrf_headers(),
+        )
+        self.assertEqual(reviewed.status_code, 200)
+        progress = self.client.get(
+            f"/v1/me/courses/{game_id}/chapters/{chapter_id}"
+        ).json()
+        self.assertEqual(progress["reviewedCards"], 1)
+
+        paused = self.client.put(
+            f"/v1/me/courses/{game_id}/chapters/{chapter_id}",
+            json={"active": False}, headers=self.csrf_headers(),
+        )
+        self.assertFalse(paused.json()["active"])
+        self.assertEqual(self.client.get("/v1/me/stats").json()["dueReviews"], 0)
+        self.assertEqual(self.client.get(
+            f"/v1/me/reviews/queue?gameId={game_id}&chapterId={chapter_id}"
+        ).json(), [])
+
     def test_cookie_mutations_require_matching_csrf_token(self):
         self.client.post(
             "/v1/auth/register",

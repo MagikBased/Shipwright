@@ -158,7 +158,8 @@ function renderReview(revealed) {
   const card = state.queue[state.reviewIndex], box = document.querySelector("#review-card"), actions = document.querySelector("#review-actions");
   if (!card) { box.disabled = true; box.innerHTML = `<span class="muted">${state.reviewCollection?.reviewOwner === "anki" ? "Anki owns this review queue." : "You are caught up. Save more words in-game or mark words as learning."}</span>`; actions.classList.add("hidden"); return; }
   box.disabled = false;
-  box.innerHTML = `<div><div class="reading">${escapeHtml(card.reading)}</div><div class="written">${escapeHtml(card.written)}</div>${revealed?`<hr><div class="meaning">${escapeHtml(card.meaning || "No dictionary meaning imported")}</div><p>${escapeHtml(card.partOfSpeech)}</p>`:'<p class="muted">Click the card to reveal</p>'}</div>`;
+  const courseExample = card.courseCard && revealed ? `<div class="review-example"><p lang="ja">${escapeHtml(card.courseCard.sentenceJapanese || "")}</p><p class="muted">${escapeHtml(card.courseCard.sentenceEnglish || "")}</p></div>` : "";
+  box.innerHTML = `<div><div class="reading">${escapeHtml(card.reading)}</div><div class="written">${escapeHtml(card.written)}</div>${revealed?`<hr><div class="meaning">${escapeHtml(card.meaning || "No dictionary meaning imported")}</div><p>${escapeHtml(card.partOfSpeech)}</p>${courseExample}`:'<p class="muted">Click the card to reveal</p>'}</div>`;
   const labels = ["Again", "Hard", "Good", "Easy"];
   actions.querySelectorAll("[data-rating]").forEach((button, index) => {
     const preview = card.ratingPreviews?.find(item => item.rating === index + 1);
