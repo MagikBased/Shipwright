@@ -252,6 +252,11 @@ OVERRIDES: dict[tuple[str, str], dict] = {
         "note": "Stylized masculine sentence-ending particle.",
         "partOfSpeech": "particle",
     },
+    ("視点", "してん"): {
+        "meaning": "viewpoint; viewing perspective; camera view",
+        "note": "The visual/camera perspective sense used in control tutorials.",
+        "partOfSpeech": "noun",
+    },
 }
 
 

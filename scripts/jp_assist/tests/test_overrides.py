@@ -56,10 +56,12 @@ class OverrideTest(unittest.TestCase):
         yield_word = apply_override("まいる", "まいる", {"meaning": "to come"})
         mask = apply_override("面", "めん", {"meaning": "face"})
         target = apply_override("相手", "あいて", {"meaning": "companion"})
+        viewpoint = apply_override("視点", "してん", {"meaning": "opinion"})
         self.assertEqual(thing["meaning"], "thing; that which; nominalizer")
         self.assertIn("give up", yield_word["meaning"])
         self.assertEqual(mask["meaning"], "mask")
         self.assertIn("target", target["meaning"])
+        self.assertIn("camera", viewpoint["meaning"])
 
 
 if __name__ == "__main__":
