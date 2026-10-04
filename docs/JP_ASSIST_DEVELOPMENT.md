@@ -9,12 +9,13 @@ boundary so deferred testing can start from a known point.
 - Native Japanese dialogue plus a corpus-backed English reference inside the
   combined Study card, without changing the save's global language or mutating
   the active message context.
-- R enters Study Mode on any Japanese page with token data. Choice selection
-  is frozen while the study panel owns focus, including analog-stick input.
+- R enters Study Mode with the definition visible; L or Z enters with it
+  hidden. Choice selection is frozen while the study panel owns focus,
+  including analog-stick input.
 - D-Left/D-Right select occurrences; D-Up/D-Down scroll long cards; C-Right
-  saves a vocabulary item; C-Left marks its exact sense known; L or Z plays
+  saves a vocabulary item; C-Left marks its exact sense known; C-Down plays
   its pronunciation when an optional reviewed audio bundle contains that
-  word; R or B closes the panel. A and
+  word; L or Z toggles the definition; only R closes the panel. A and
   C-Up continue native dialogue while the card follows page and chained
   text-ID changes.
 - Frame-safe, bottom-centered ImGui English-reference and vocabulary card.

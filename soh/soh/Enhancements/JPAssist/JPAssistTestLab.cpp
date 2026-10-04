@@ -46,6 +46,10 @@ enum class SmokeControlStep {
     None,
     PressStudy,
     AwaitStudy,
+    PressHideDefinition,
+    AwaitDefinitionHidden,
+    PressRevealDefinition,
+    AwaitDefinitionVisible,
     PressNavigate,
     AwaitNavigate,
     PressSave,
@@ -63,6 +67,12 @@ enum class SmokeControlStep {
     AwaitChoiceDeflection,
     PressExit,
     AwaitExit,
+    PressRecallEntry,
+    AwaitRecallEntry,
+    PressRecallReveal,
+    AwaitRecallReveal,
+    PressFinalExit,
+    AwaitFinalExit,
 };
 
 struct SmokeState {
@@ -71,7 +81,9 @@ struct SmokeState {
     std::string detail = "Not run";
     int framesRemaining = 0;
     uint64_t startedAtStudyCount = 0;
+    uint64_t expectedStudyEnterCount = 0;
     uint64_t startedAtNavigationCount = 0;
+    uint64_t expectedDefinitionToggleCount = 0;
     uint64_t expectedSaveToggleCount = 0;
     uint64_t expectedScrollCount = 0;
     uint8_t frozenChoiceIndex = 0;
@@ -134,6 +146,20 @@ void InjectSmokeControl() {
             sSmoke.controlStep = SmokeControlStep::AwaitNavigate;
             sSmoke.framesRemaining = 30;
             break;
+        case SmokeControlStep::PressHideDefinition:
+            SPDLOG_INFO("[JPAssist Test Lab] Injecting definition hide L");
+            InjectButton(BTN_L);
+            sSmoke.expectedDefinitionToggleCount++;
+            sSmoke.controlStep = SmokeControlStep::AwaitDefinitionHidden;
+            sSmoke.framesRemaining = 30;
+            break;
+        case SmokeControlStep::PressRevealDefinition:
+            SPDLOG_INFO("[JPAssist Test Lab] Injecting definition reveal Z");
+            InjectButton(BTN_Z);
+            sSmoke.expectedDefinitionToggleCount++;
+            sSmoke.controlStep = SmokeControlStep::AwaitDefinitionVisible;
+            sSmoke.framesRemaining = 30;
+            break;
         case SmokeControlStep::PressSave:
             SPDLOG_INFO("[JPAssist Test Lab] Injecting save toggle C-Right");
             InjectButton(BTN_CRIGHT);
@@ -178,9 +204,28 @@ void InjectSmokeControl() {
             break;
         }
         case SmokeControlStep::PressExit:
-            SPDLOG_INFO("[JPAssist Test Lab] Injecting Study exit B");
-            InjectButton(BTN_B);
+            SPDLOG_INFO("[JPAssist Test Lab] Injecting Study exit R");
+            InjectButton(BTN_R);
             sSmoke.controlStep = SmokeControlStep::AwaitExit;
+            sSmoke.framesRemaining = 30;
+            break;
+        case SmokeControlStep::PressRecallEntry:
+            SPDLOG_INFO("[JPAssist Test Lab] Injecting concealed Study entry L");
+            InjectButton(BTN_L);
+            sSmoke.controlStep = SmokeControlStep::AwaitRecallEntry;
+            sSmoke.framesRemaining = 30;
+            break;
+        case SmokeControlStep::PressRecallReveal:
+            SPDLOG_INFO("[JPAssist Test Lab] Injecting concealed-card reveal Z");
+            InjectButton(BTN_Z);
+            sSmoke.expectedDefinitionToggleCount++;
+            sSmoke.controlStep = SmokeControlStep::AwaitRecallReveal;
+            sSmoke.framesRemaining = 30;
+            break;
+        case SmokeControlStep::PressFinalExit:
+            SPDLOG_INFO("[JPAssist Test Lab] Injecting final Study exit R");
+            InjectButton(BTN_R);
+            sSmoke.controlStep = SmokeControlStep::AwaitFinalExit;
             sSmoke.framesRemaining = 30;
             break;
         default:
@@ -386,12 +431,13 @@ void StartControlValidation(const std::string& corpusDetail) {
     sSmoke.corpusDetail = corpusDetail;
     sSmoke.startedAtStudyCount = runtime.studyEnterCount;
     sSmoke.startedAtNavigationCount = runtime.studyNavigationCount;
+    sSmoke.expectedDefinitionToggleCount = runtime.definitionToggleCount;
     sSmoke.initialPageIndex = runtime.pageIndex;
     sSmoke.advancePressCount = 0;
     sSmoke.controlStep = SmokeControlStep::PressStudy;
     sSmoke.framesRemaining = 30;
     sSmoke.detail = "Corpus passed; entering Study Mode";
-    SPDLOG_INFO("[JPAssist Test Lab] Starting R-button Study Mode smoke for {}", sPendingScenario.id);
+    SPDLOG_INFO("[JPAssist Test Lab] Starting Study Mode reveal smoke for {}", sPendingScenario.id);
 }
 
 bool ControlTimedOut(const TestScenario& scenario, const std::string& expectation) {
@@ -411,7 +457,8 @@ bool ShouldValidateNativeAdvance(const TestScenario& scenario) {
 void FinishControlValidation(const TestScenario& scenario) {
     FinishScenario(scenario, true,
                    sSmoke.corpusDetail +
-                       "; controls PASS: R Study enter/exit, save/restore, D-pad scroll, focus consumption" +
+                       "; controls PASS: R visible entry/exit, L/Z concealed entry and definition toggle, "
+                       "save/restore, D-pad scroll, focus consumption" +
                        (StudyRepository_FindPage(scenario.textId, 0)->tokens.size() > 1 ? ", token navigation" : "") +
                        (ShouldValidateNativeAdvance(scenario) ? ", native advancement while studying" : "") +
                        (StudyRepository_FindPage(scenario.textId, 0)->isChoice ? ", choice freeze" : ""));
@@ -440,14 +487,36 @@ void UpdateControlValidation(const TestScenario& scenario) {
     switch (sSmoke.controlStep) {
         case SmokeControlStep::AwaitStudy:
             if (runtime.studyModeActive && runtime.studyEnterCount > sSmoke.startedAtStudyCount) {
-                if (runtime.currentPageTokenCount > 1) {
-                    sSmoke.controlStep = SmokeControlStep::PressNavigate;
-                    sSmoke.detail = "Study entry passed; testing token navigation";
-                } else {
-                    StartStudyInteractionValidation(runtime, "Study entry passed");
+                if (!runtime.definitionVisible) {
+                    FinishScenario(scenario, false, "R entered Study Mode with the definition hidden");
+                    break;
                 }
+                sSmoke.controlStep = SmokeControlStep::PressHideDefinition;
+                sSmoke.detail = "Study entry passed; testing definition concealment";
             } else {
                 ControlTimedOut(scenario, "R did not enter Study Mode");
+            }
+            break;
+        case SmokeControlStep::AwaitDefinitionHidden:
+            if (!runtime.definitionVisible &&
+                runtime.definitionToggleCount >= sSmoke.expectedDefinitionToggleCount) {
+                sSmoke.controlStep = SmokeControlStep::PressRevealDefinition;
+                sSmoke.detail = "Definition hide passed; testing reveal";
+            } else {
+                ControlTimedOut(scenario, "L did not hide the definition");
+            }
+            break;
+        case SmokeControlStep::AwaitDefinitionVisible:
+            if (runtime.definitionVisible &&
+                runtime.definitionToggleCount >= sSmoke.expectedDefinitionToggleCount) {
+                if (runtime.currentPageTokenCount > 1) {
+                    sSmoke.controlStep = SmokeControlStep::PressNavigate;
+                    sSmoke.detail = "Definition reveal passed; testing token navigation";
+                } else {
+                    StartStudyInteractionValidation(runtime, "Definition reveal passed");
+                }
+            } else {
+                ControlTimedOut(scenario, "Z did not reveal the definition");
             }
             break;
         case SmokeControlStep::AwaitNavigate:
@@ -544,10 +613,37 @@ void UpdateControlValidation(const TestScenario& scenario) {
             break;
         case SmokeControlStep::AwaitExit:
             if (!runtime.studyModeActive) {
+                sSmoke.expectedStudyEnterCount = runtime.studyEnterCount + 1;
+                sSmoke.controlStep = SmokeControlStep::PressRecallEntry;
+                sSmoke.detail = "R exit passed; testing concealed L/Z entry";
+            } else {
+                ControlTimedOut(scenario, "R did not exit Study Mode");
+            }
+            break;
+        case SmokeControlStep::AwaitRecallEntry:
+            if (runtime.studyModeActive && runtime.studyEnterCount >= sSmoke.expectedStudyEnterCount &&
+                !runtime.definitionVisible) {
+                sSmoke.controlStep = SmokeControlStep::PressRecallReveal;
+                sSmoke.detail = "L concealed entry passed; testing Z reveal";
+            } else {
+                ControlTimedOut(scenario, "L did not enter Study Mode with the definition hidden");
+            }
+            break;
+        case SmokeControlStep::AwaitRecallReveal:
+            if (runtime.studyModeActive && runtime.definitionVisible &&
+                runtime.definitionToggleCount >= sSmoke.expectedDefinitionToggleCount) {
+                sSmoke.controlStep = SmokeControlStep::PressFinalExit;
+                sSmoke.detail = "Concealed-card reveal passed; closing with R";
+            } else {
+                ControlTimedOut(scenario, "Z did not reveal the concealed-entry definition");
+            }
+            break;
+        case SmokeControlStep::AwaitFinalExit:
+            if (!runtime.studyModeActive) {
                 sSmoke.controlStep = SmokeControlStep::None;
                 FinishControlValidation(scenario);
             } else {
-                ControlTimedOut(scenario, "B did not exit Study Mode");
+                ControlTimedOut(scenario, "R did not close the recall-first card");
             }
             break;
         default:
@@ -889,6 +985,8 @@ class TestLabWindow final : public Ship::GuiWindow {
                     runtime.currentPageTokenCount);
         ImGui::Text("Study %s  token %d", runtime.studyModeActive ? "active" : "closed",
                     runtime.selectedTokenIndex);
+        ImGui::Text("Definition %s  toggles %llu", runtime.definitionVisible ? "visible" : "hidden",
+                    static_cast<unsigned long long>(runtime.definitionToggleCount));
         ImGui::Text("Selected state: %s%s", runtime.selectedTokenKnown ? "known" : "not known",
                     runtime.selectedTokenSaved ? ", saved" : "");
         ImGui::Text("Selected pronunciation %s  plays %llu",
@@ -898,13 +996,14 @@ class TestLabWindow final : public Ship::GuiWindow {
                     DialogueSurfaceLabel(runtime.dialogueSurface), runtime.displayModeFallback ? " (fallback)" : "");
         ImGui::Text("Choice page %s  choice %u  selection %s", runtime.currentPageIsChoice ? "yes" : "no",
                     runtime.choiceIndex, runtime.choiceSelectionFrozen ? "frozen" : "native");
-        ImGui::Text("Observed controls: Study %llu, navigation %llu, saves %llu, known %llu, audio %llu",
+        ImGui::Text("Observed controls: Study %llu, reveal %llu, navigation %llu, saves %llu, known %llu, audio %llu",
                     static_cast<unsigned long long>(runtime.studyEnterCount),
+                    static_cast<unsigned long long>(runtime.definitionToggleCount),
                     static_cast<unsigned long long>(runtime.studyNavigationCount),
                     static_cast<unsigned long long>(runtime.saveToggleCount),
                     static_cast<unsigned long long>(runtime.knownMarkCount),
                     static_cast<unsigned long long>(runtime.audioPlayCount));
-        ImGui::TextDisabled("Smoke verifies warp, corpus, R, navigation, focus consumption, and choice freeze.");
+        ImGui::TextDisabled("Smoke verifies warp, corpus, R, L/Z reveal, navigation, focus, and choice freeze.");
     }
 };
 

@@ -61,6 +61,7 @@ JPAssist::NativePageTracker sNativePageTracker;
 
 // Study Mode selection is an occurrence index within the current corpus page.
 bool sStudyModeActive = false;
+bool sDefinitionVisible = true;
 int sSelectedTokenIndex = 0;
 JPAssist::StudySelectionMemory sStudySelectionMemory;
 uint64_t sStudyEnterCount = 0;
@@ -68,6 +69,7 @@ uint64_t sStudyNavigationCount = 0;
 uint64_t sStudyScrollCount = 0;
 uint64_t sSaveToggleCount = 0;
 uint64_t sKnownMarkCount = 0;
+uint64_t sDefinitionToggleCount = 0;
 uint64_t sAudioPlayCount = 0;
 bool sFrozenChoiceValid = false;
 uint8_t sFrozenChoiceIndex = 0;
@@ -150,6 +152,7 @@ void ExitStudyMode() {
     }
     RememberCurrentSelection();
     sStudyModeActive = false;
+    sDefinitionVisible = true;
     sFrozenChoiceValid = false;
     JPAssist::JPAssistOverlay_Hide();
     // Flush encounter counts accumulated while navigating (design doc
@@ -228,7 +231,7 @@ void DrawStudyCard() {
 
     JPAssist::JPAssistOverlay_ShowStudy(
         *page, index, JPAssist::JPAssistAudio_HasWord(tokens[index].Id()),
-        JPAssist::StudyPersistence_IsKnown(tokens[index].Id(), tokens[index].senseId));
+        JPAssist::StudyPersistence_IsKnown(tokens[index].Id(), tokens[index].senseId), sDefinitionVisible);
 }
 
 // Handles Study Mode's own input and, while active, consumes the buttons
@@ -241,15 +244,21 @@ void DrawStudyCard() {
 // input while cycling arrows - clearing press/cur bits on the shared Input
 // struct rather than trying to intercept the read.
 void HandleStudyModeInput(PlayState* play, MessageContext* msgCtx, Input* input) {
-    bool rPressed = CHECK_BTN_ALL(input->press.button, BTN_R);
+    const bool rPressed = CHECK_BTN_ALL(input->press.button, BTN_R);
+    const bool definitionPressed = CHECK_BTN_ALL(input->press.button, BTN_L) ||
+                                   CHECK_BTN_ALL(input->press.button, BTN_Z);
 
     if (!sStudyModeActive) {
         // Study Mode is available whenever Japanese token data exists. On
         // choice pages the highlighted answer is captured below and frozen
         // while the study panel owns the D-pad/analog focus.
         const JPAssist::StudyPage* page = CurrentStudyPage();
-        if (rPressed && page != nullptr && !page->tokens.empty()) {
+        if ((rPressed || definitionPressed) && page != nullptr && !page->tokens.empty()) {
             sStudyModeActive = true;
+            // R is the direct Study Mode path. L/Z is the recall-first path:
+            // show the word and context, but require another L/Z press before
+            // exposing its definition.
+            sDefinitionVisible = rPressed;
             sStudyEnterCount++;
             RestoreCurrentSelection();
             if (page->isChoice) {
@@ -263,19 +272,27 @@ void HandleStudyModeInput(PlayState* play, MessageContext* msgCtx, Input* input)
             }
             RecordTokenEncounter(sSelectedTokenIndex);
             JPAssist::LearningSync_RecordDialogueEvent("study_mode_opened", sTrackedTextId, sCurrentPageIndex);
-            input->press.button &= ~BTN_R;
-            input->cur.button &= ~BTN_R;
+            constexpr uint16_t entryButtons = BTN_R | BTN_L | BTN_Z;
+            input->press.button &= ~entryButtons;
+            input->cur.button &= ~entryButtons;
             DrawStudyCard();
-            SPDLOG_INFO("[JPAssist] Study Mode entered");
+            SPDLOG_INFO("[JPAssist] Study Mode entered with definition {}",
+                        sDefinitionVisible ? "visible" : "hidden");
         }
         return;
     }
 
-    if (rPressed || CHECK_BTN_ALL(input->press.button, BTN_B)) {
+    if (rPressed) {
         ExitStudyMode();
-        input->press.button &= ~(BTN_R | BTN_B);
-        input->cur.button &= ~(BTN_R | BTN_B);
+        input->press.button &= ~BTN_R;
+        input->cur.button &= ~BTN_R;
         return;
+    }
+
+    if (definitionPressed) {
+        sDefinitionVisible = !sDefinitionVisible;
+        sDefinitionToggleCount++;
+        SPDLOG_INFO("[JPAssist] Definition {}", sDefinitionVisible ? "revealed" : "hidden");
     }
 
     const JPAssist::StudyPage* page = CurrentStudyPage();
@@ -337,7 +354,7 @@ void HandleStudyModeInput(PlayState* play, MessageContext* msgCtx, Input* input)
         // and reversals remain available from the account vocabulary page.
         if (CHECK_BTN_ALL(input->press.button, BTN_CLEFT)) {
             const int index = std::min(sSelectedTokenIndex, static_cast<int>(tokens.size()) - 1);
-            const std::string& tokenId = tokens[index].Id();
+            const std::string tokenId = tokens[index].Id();
             if (!JPAssist::StudyPersistence_IsKnown(tokenId, tokens[index].senseId)) {
                 JPAssist::StudyPersistence_MarkKnown(tokenId, tokens[index].senseId);
                 JPAssist::StudyPersistence_Save();
@@ -348,10 +365,9 @@ void HandleStudyModeInput(PlayState* play, MessageContext* msgCtx, Input* input)
             }
         }
 
-        // L and Z are interchangeable pronunciation controls. They are
-        // otherwise unused by Study Mode and preserve C-Left for the more
-        // frequent knowledge-marking action.
-        if (CHECK_BTN_ALL(input->press.button, BTN_L) || CHECK_BTN_ALL(input->press.button, BTN_Z)) {
+        // L/Z now own definition reveal. Preserve optional pronunciation on
+        // the otherwise-unused C-Down button.
+        if (CHECK_BTN_ALL(input->press.button, BTN_CDOWN)) {
             const int index = std::min(sSelectedTokenIndex, static_cast<int>(tokens.size()) - 1);
             if (JPAssist::JPAssistAudio_PlayWord(tokens[index].Id())) {
                 sAudioPlayCount++;
@@ -362,11 +378,10 @@ void HandleStudyModeInput(PlayState* play, MessageContext* msgCtx, Input* input)
 
     // Consume only Study Mode's own controls. A and C-Up deliberately remain
     // untouched so Message_ShouldAdvance can reveal/advance the native text
-    // while the card stays open and follows the newly decoded page. B is our
-    // close binding above; keeping it in this defensive mask also covers the
-    // SkipText branch, which reads cur.button rather than only press.button.
+    // while the card stays open and follows the newly decoded page. R is the
+    // sole close binding; B remains available to the native dialogue system.
     constexpr uint16_t studyOwnedButtons =
-        BTN_B | BTN_R | BTN_DUP | BTN_DDOWN | BTN_DLEFT | BTN_DRIGHT | BTN_CLEFT | BTN_CRIGHT | BTN_L | BTN_Z;
+        BTN_R | BTN_DUP | BTN_DDOWN | BTN_DLEFT | BTN_DRIGHT | BTN_CLEFT | BTN_CRIGHT | BTN_CDOWN | BTN_L | BTN_Z;
     input->press.button &= ~studyOwnedButtons;
     input->cur.button &= ~studyOwnedButtons;
 
@@ -510,9 +525,9 @@ void OnDialogMessage() {
         sQueuedTestHasStickY = false;
     }
 
-    // Study Mode owns R/B, navigation, and save input while active. Native A
-    // and C-Up advancement remains available, and page tracking above keeps
-    // the card synchronized with the resulting dialogue.
+    // Study Mode owns R, definition, navigation, and study-action input while
+    // active. Native A, B, and C-Up remain available, and page tracking above
+    // keeps the card synchronized with the resulting dialogue.
     HandleStudyModeInput(play, msgCtx, input);
 }
 
@@ -528,7 +543,7 @@ void RegisterJPAssistMenu() {
     SohGui::mSohMenu->AddWidget(path, "Enable JP Assist", WIDGET_CVAR_CHECKBOX)
         .CVar(CVAR_ENHANCEMENT("JPAssist.Enabled"))
         .Options(UIWidgets::CheckboxOptions().DefaultValue(true).Tooltip(
-            "Master toggle for the R-button Study Mode language-learning tools. "
+            "Master toggle for the R/L/Z Study Mode language-learning tools. "
             "Disabling this leaves the game exactly as if the mod weren't installed."));
     SohGui::mSohMenu->AddWidget(path, "Study card scale: %.2f", WIDGET_CVAR_SLIDER_FLOAT)
         .CVar(CVAR_ENHANCEMENT("JPAssist.CardScale"))
@@ -655,7 +670,7 @@ void RegisterJPAssist() {
     RegisterJPAssistMenu();
     Ship::Context::GetRawInstance()->GetConsole()->AddCommand(
         "jpassist_history", { JPAssistHistoryCommand, "Lists JP Assist's recent dialogue history." });
-    SPDLOG_INFO("[JPAssist] Registered (corpus={}, R Study Mode, persistence, Anki export data)",
+    SPDLOG_INFO("[JPAssist] Registered (corpus={}, R/L/Z Study Mode, persistence, Anki export data)",
                 JPAssist::StudyRepository_IsCorpusLoaded() ? JPAssist::StudyRepository_GetCorpusVersion()
                                                            : "unavailable");
 }
@@ -690,6 +705,7 @@ RuntimeStatus JPAssist_GetRuntimeStatus() {
     status.requestedLanguage = LANGUAGE_JPN;
     status.alternateLanguageVisible = false;
     status.studyModeActive = sStudyModeActive;
+    status.definitionVisible = sDefinitionVisible;
     status.choiceSelectionFrozen = sStudyModeActive && sFrozenChoiceValid;
     status.selectedTokenIndex = sSelectedTokenIndex;
     status.displayMode = DialogueStudy::DialogueDisplayMode::JapaneseOnly;
@@ -701,6 +717,7 @@ RuntimeStatus JPAssist_GetRuntimeStatus() {
     status.studyScrollCount = sStudyScrollCount;
     status.saveToggleCount = sSaveToggleCount;
     status.knownMarkCount = sKnownMarkCount;
+    status.definitionToggleCount = sDefinitionToggleCount;
     status.audioPlayCount = sAudioPlayCount;
     if (const StudyPage* page = CurrentStudyPage(); page != nullptr) {
         status.currentPageTokenCount = static_cast<int>(page->tokens.size());

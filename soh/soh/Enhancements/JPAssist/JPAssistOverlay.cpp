@@ -37,6 +37,7 @@ struct OverlayState {
     int selectedTokenIndex = 0;
     bool wordAudioAvailable = false;
     bool selectedTokenKnown = false;
+    bool definitionVisible = true;
     float pendingStudyScroll = 0.0f;
 };
 
@@ -182,7 +183,8 @@ class JPAssistOverlayWindow final : public Ship::GuiWindow {
         const float englishTextBottom = DrawEnglishText(
             mFrameState.studyPage.english.empty() ? "Translation unavailable" : mFrameState.studyPage.english,
             englishColumnRight - englishColumnLeft);
-        DrawControlHints(englishColumnLeft, englishColumnRight, englishTextBottom, mFrameState.wordAudioAvailable);
+        DrawControlHints(englishColumnLeft, englishColumnRight, englishTextBottom, mFrameState.wordAudioAvailable,
+                         mFrameState.definitionVisible);
         ApplyPendingStudyScroll();
         ImGui::EndChild();
 
@@ -193,30 +195,36 @@ class JPAssistOverlayWindow final : public Ship::GuiWindow {
         ImGui::EndChild();
 
         DrawSectionSeparator(sectionHeight, separatorGutter);
-        ImGui::BeginChild("JPAssistDefinitionSection", ImVec2(definitionWidth, sectionHeight), false,
-                          ImGuiWindowFlags_NoScrollWithMouse);
-        std::string metadata = BuildMetadataLabel(token);
-        if (mFrameState.selectedTokenKnown) {
+        const ImGuiWindowFlags definitionFlags = mFrameState.definitionVisible
+                                                     ? ImGuiWindowFlags_NoScrollWithMouse
+                                                     : ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
+        ImGui::BeginChild("JPAssistDefinitionSection", ImVec2(definitionWidth, sectionHeight), false, definitionFlags);
+        if (mFrameState.definitionVisible) {
+            std::string metadata = BuildMetadataLabel(token);
+            if (mFrameState.selectedTokenKnown) {
+                if (!metadata.empty()) {
+                    metadata += " · ";
+                }
+                metadata += "Known";
+            }
             if (!metadata.empty()) {
-                metadata += " · ";
+                const float headerLeft = ImGui::GetCursorScreenPos().x;
+                const float headerRight = ImGui::GetCursorScreenPos().x + ImGui::GetContentRegionAvail().x;
+                const float metadataWidth = ImGui::CalcTextSize(metadata.c_str()).x;
+                if (metadataWidth <= headerRight - headerLeft) {
+                    ImGui::SetCursorScreenPos(ImVec2(headerRight - metadataWidth, ImGui::GetCursorScreenPos().y));
+                }
+                ImGui::PushTextWrapPos(headerRight);
+                ImGui::TextDisabled("%s", metadata.c_str());
+                ImGui::PopTextWrapPos();
             }
-            metadata += "Known";
-        }
-        if (!metadata.empty()) {
-            const float headerLeft = ImGui::GetCursorScreenPos().x;
-            const float headerRight = ImGui::GetCursorScreenPos().x + ImGui::GetContentRegionAvail().x;
-            const float metadataWidth = ImGui::CalcTextSize(metadata.c_str()).x;
-            if (metadataWidth <= headerRight - headerLeft) {
-                ImGui::SetCursorScreenPos(ImVec2(headerRight - metadataWidth, ImGui::GetCursorScreenPos().y));
-            }
-            ImGui::PushTextWrapPos(headerRight);
-            ImGui::TextDisabled("%s", metadata.c_str());
+            ImGui::PushTextWrapPos(0.0f);
+            ImGui::TextUnformatted(token.meaning.empty() ? "Definition pending review" : token.meaning.c_str());
             ImGui::PopTextWrapPos();
+            ApplyPendingStudyScroll();
+        } else {
+            DrawRevealPrompt();
         }
-        ImGui::PushTextWrapPos(0.0f);
-        ImGui::TextUnformatted(token.meaning.empty() ? "Definition pending review" : token.meaning.c_str());
-        ImGui::PopTextWrapPos();
-        ApplyPendingStudyScroll();
         ImGui::EndChild();
         PersistGeometryAfterInteraction();
         restoreFont();
@@ -578,7 +586,45 @@ class JPAssistOverlayWindow final : public Ship::GuiWindow {
         return ImGui::GetItemRectMax().y;
     }
 
-    void DrawControlHints(float left, float right, float textBottom, bool wordAudioAvailable) const {
+    void DrawRevealPrompt() const {
+        const ImVec2 start = ImGui::GetCursorScreenPos();
+        const ImVec2 available = ImGui::GetContentRegionAvail();
+        const float glyphSize = 28.0f * mFrameScale;
+        const float gap = 6.0f * mFrameScale;
+        const char* label = "Reveal";
+        const ImVec2 slashSize = ImGui::CalcTextSize("/");
+        const ImVec2 labelSize = ImGui::CalcTextSize(label);
+        const float controlsWidth = glyphSize * 2.0f + gap * 2.0f + slashSize.x;
+        const float contentWidth = std::max(controlsWidth, labelSize.x);
+        const float contentHeight = glyphSize + gap + labelSize.y;
+        const float x = start.x + std::max((available.x - contentWidth) * 0.5f, 0.0f);
+        const float y = start.y + std::max((available.y - contentHeight) * 0.5f, 0.0f);
+        ImDrawList* drawList = ImGui::GetWindowDrawList();
+
+        const float controlsX = x + (contentWidth - controlsWidth) * 0.5f;
+        if (mFast3dGui != nullptr) {
+            ImTextureID lTexture = mFast3dGui->GetTextureByName(kLGlyph);
+            ImTextureID zTexture = mFast3dGui->GetTextureByName(kZGlyph);
+            if (lTexture != nullptr) {
+                drawList->AddImage(lTexture, ImVec2(controlsX, y), ImVec2(controlsX + glyphSize, y + glyphSize));
+            }
+            const float slashX = controlsX + glyphSize + gap;
+            drawList->AddText(ImVec2(slashX, y + (glyphSize - slashSize.y) * 0.5f),
+                              ImGui::GetColorU32(ImGuiCol_TextDisabled), "/");
+            const float zX = slashX + slashSize.x + gap;
+            if (zTexture != nullptr) {
+                drawList->AddImage(zTexture, ImVec2(zX, y), ImVec2(zX + glyphSize, y + glyphSize));
+            }
+        } else {
+            drawList->AddText(ImVec2(controlsX, y), ImGui::GetColorU32(ImGuiCol_TextDisabled), "L / Z");
+        }
+        drawList->AddText(ImVec2(x + (contentWidth - labelSize.x) * 0.5f, y + glyphSize + gap),
+                          ImGui::GetColorU32(ImGuiCol_TextDisabled), label);
+        ImGui::Dummy(available);
+    }
+
+    void DrawControlHints(float left, float right, float textBottom, bool wordAudioAvailable,
+                          bool definitionVisible) const {
         if (mFast3dGui == nullptr) {
             return;
         }
@@ -590,7 +636,8 @@ class JPAssistOverlayWindow final : public Ship::GuiWindow {
         const Hint hints[] = {
             { kDPadGlyph, "move / scroll" },
             { kCLeftGlyph, mFrameState.selectedTokenKnown ? "known" : "mark known" },
-            { wordAudioAvailable ? kLGlyph : nullptr, wordAudioAvailable ? "listen (L/Z)" : nullptr },
+            { kLGlyph, definitionVisible ? "hide (L/Z)" : "reveal (L/Z)" },
+            { wordAudioAvailable ? kCDownGlyph : nullptr, wordAudioAvailable ? "listen" : nullptr },
             { kCRightGlyph, "save" },
             { kAGlyph, "next" },
             { kRGlyph, "close" },
@@ -670,7 +717,7 @@ bool JPAssistOverlay_HasJapaneseFont() {
 }
 
 void JPAssistOverlay_ShowStudy(const StudyPage& page, int selectedTokenIndex, bool wordAudioAvailable,
-                               bool selectedTokenKnown) {
+                               bool selectedTokenKnown, bool definitionVisible) {
     std::lock_guard<std::mutex> lock(sStateMutex);
     if (sState.mode != OverlayMode::Study || sState.selectedTokenIndex != selectedTokenIndex ||
         sState.studyPage.japanese != page.japanese) {
@@ -681,6 +728,7 @@ void JPAssistOverlay_ShowStudy(const StudyPage& page, int selectedTokenIndex, bo
     sState.selectedTokenIndex = selectedTokenIndex;
     sState.wordAudioAvailable = wordAudioAvailable;
     sState.selectedTokenKnown = selectedTokenKnown;
+    sState.definitionVisible = definitionVisible;
 }
 
 void JPAssistOverlay_ScrollStudy(float pixels) {

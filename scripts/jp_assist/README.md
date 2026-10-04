@@ -145,11 +145,12 @@ JP Assist reuses.
 ### Optional in-game pronunciation audio
 
 Study Mode marks the highlighted sense known with **C-Left**. It plays reviewed
-word audio with either **L** or **Z** when the highlighted `lemma|reading`
+word audio with **C-Down** when the highlighted `lemma|reading`
 identity is present in the optional local audio manifest. The listening hint
 appears only for words that have audio. Clips are decoded from WAV, resampled
-to Ship's 32 kHz stereo stream, and mixed with game audio; pressing L or Z
-again restarts the pronunciation.
+to Ship's 32 kHz stereo stream, and mixed with game audio; pressing C-Down
+again restarts the pronunciation. L/Z instead opens the card recall-first with
+the definition hidden, then toggles definition visibility while the card is open.
 
 Generate chapter audio into the ignored review area, listen to every clip, and
 change that generated manifest's `reviewStatus` to `approved`. Then package one

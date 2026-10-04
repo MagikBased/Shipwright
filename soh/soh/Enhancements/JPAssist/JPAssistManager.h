@@ -12,6 +12,7 @@ struct RuntimeStatus {
     uint8_t requestedLanguage = 0;
     bool alternateLanguageVisible = false;
     bool studyModeActive = false;
+    bool definitionVisible = true;
     bool currentPageIsChoice = false;
     bool choiceSelectionFrozen = false;
     uint8_t choiceIndex = 0;
@@ -29,6 +30,7 @@ struct RuntimeStatus {
     uint64_t studyScrollCount = 0;
     uint64_t saveToggleCount = 0;
     uint64_t knownMarkCount = 0;
+    uint64_t definitionToggleCount = 0;
     uint64_t audioPlayCount = 0;
 };
 

@@ -96,11 +96,13 @@ Suggested controls:
 | D-pad Left / Right | Select previous or next token |
 | D-pad Up / Down | Move between dictionary senses or card sections |
 | A or C-Up | Reveal or advance native dialogue while keeping the card open |
-| B | Close the card, then exit Study Mode |
 | C-Left | Mark the selected word sense as known |
+| C-Down | Play the selected word's pronunciation when reviewed audio is installed |
 | C-Right | Add or remove the word from the study list |
-| L or Z | Play the selected word's pronunciation when reviewed audio is installed |
-| R | Exit Study Mode |
+| L or Z while closed | Open Study Mode with the definition hidden |
+| L or Z while open | Reveal or hide the definition |
+| R while closed | Open Study Mode with the definition visible |
+| R while open | Exit Study Mode |
 
 The selected Japanese token is highlighted directly behind its native textbox
 glyphs. A C-compatible render bridge exposes only the selected normalized-text
@@ -110,7 +112,7 @@ re-decoding or mutating live dialogue state.
 
 Pronunciation audio is optional and keyed by the same stable `written|reading`
 identity as cards and saved progress. Only locally packaged, reviewed WAV clips
-are exposed in-game. The L/Z listening hint is omitted from the card when the
+are exposed in-game. The C-Down listening hint is omitted from the card when the
 selected word has no clip. Clips are decoded on first use, resampled to Ship's 32 kHz
 stereo stream, cached, and mixed into the normal game output without replacing
 music, effects, or dialogue state.
@@ -153,13 +155,11 @@ NoDialogue
     │ textbox opens
     ▼
 DialogueJapanese
-    │ R
-    ▼
-StudyTokenSelect ◄──────────────► StudyCardOpen
-    │ A / B                          │ B
-    │
-    │ R or B
-    └────────────► DialogueJapanese ◄┘
+    ├── R ──────► StudyCardOpen (definition visible)
+    └── L / Z ──► StudyCardOpen (definition hidden)
+                         │
+                         ├── L / Z toggles definition
+                         └── R closes ──► DialogueJapanese
 ```
 
 Important state rules:
@@ -295,7 +295,7 @@ What was built and live-verified against the recorded test dialogues (multi-page
 - `DialogueRepository` — a read-only lookup into the vanilla JPN/NES message tables that never touches `msgCtx`/`font`, unlike `Message_FindMessage`/`Message_FindMessageJPN` and the debug `MessageViewer` path, which write into the live font buffer as a side effect of "finding" a message.
 - `MessageParser` — a non-mutating control-code walker that splits a message into pages and flags choice pages for both languages. It only decodes plain text for English; Japanese glyph codes are not translated to displayable text yet (that needs the kanji font/atlas work, which belongs to Milestone 3's corpus pipeline, not this spike).
 - `JPAssistManager` — registers on the existing `GameInteractor::OnDialogMessage` and detects dialogue open/page-advance/close by diffing `msgMode`/`textId` across frames. No changes to core `z_message_PAL.c` were needed; both required hooks already existed.
-- Historical spike: the original L/Z prototype posted alternate-language pages through `Ship::GameOverlay::TextDrawNotification`. That path established the frame-safe rendering requirement but was superseded by the combined R-button Study card.
+- Historical spike: the original L/Z prototype posted alternate-language pages through `Ship::GameOverlay::TextDrawNotification`. That path established the frame-safe rendering requirement but was superseded by the combined Study card.
 
 Bugs found and fixed during live testing (all in `JPAssistManager.cpp`/`MessageParser.cpp`):
 
@@ -596,7 +596,9 @@ Built as an extension of the Milestone 1 spike (`JPAssistManager.cpp` plus a new
 - Entering/exiting, and the D-pad token navigation, reuse the existing `GameInteractor::OnDialogMessage` per-frame hook from Milestone 1 - no new hooks needed.
 - The card is a hard-coded `StudyRepository` token list (ordinary vocabulary words, not extracted dialogue - see section 7.4), redrawn every frame from current state via `GameOverlay::TextDrawNotification` with a very short duration, rather than only on discrete navigation events. This was a deliberate change from Milestone 1's event-triggered reposting, which went stale under a game-logic/render-thread race; continuous per-frame redraw sidesteps that class of bug rather than trying to catch every triggering event correctly.
 - Historical spike: native dialogue advancement was initially blocked while Study Mode had focus. The current behavior consumes only Study-owned inputs and deliberately passes A/C-Up through so the card can remain open across page and chained text-ID changes.
-- Historical spike: Study Mode initially supported L/Z language toggling. The current combined card shows English alongside the vocabulary entry, so that extra state and input path are no longer needed.
+- Historical spike: Study Mode initially supported L/Z language toggling. The
+  current combined card instead uses L/Z for recall-first entry and definition
+  reveal without changing the native dialogue language.
 - Live-tested: entering/exiting via R across several conversations; the current implementation keeps the card synchronized across native page and dialogue jumps.
 
 **Known limitation:** the hard-coded Japanese surface/reading strings render as `?`/tofu in the card, because nothing in this path has loaded a CJK-capable font into ImGui's font atlas - only the native N64 renderer has real kanji textures. This is the same underlying gap as Milestone 1's undecoded Japanese overlay text, not a new problem; a real font/kanji-atlas solution is out of scope until Milestone 3's corpus and font work exists.
@@ -635,8 +637,8 @@ Built as `scripts/jp_assist/{extract_dialogue,message_codes,tokenize_dialogue,ov
 - C-Right in Study Mode toggles the selected token's saved status (saved immediately, since it's an explicit and infrequent action); encounter counts increment once per navigation to a token (not once per frame the card is drawn) and are flushed to disk when Study Mode closes, to avoid a disk write on every D-pad press.
 - C-Left marks the selected dictionary sense known, persists it immediately,
   and queues a content-neutral `word_known` account event. The card displays
-  `Known` immediately. L and Z interchangeably retain optional pronunciation
-  playback.
+  `Known` immediately. L and Z open a concealed card or toggle its definition;
+  optional pronunciation playback remains available on C-Down.
 - **Real bug found and fixed via live restart-testing, not just code review**: `StudyPersistence_Load()`'s `json.value(key, default).items()` chained directly in a range-for is undefined behavior - `.value()` returns a temporary `nlohmann::json` by value, and the range-for only extends the lifetime of what it directly binds to (the `.items()` iteration proxy), not the sub-expression the proxy references. The temporary's lifetime ends before the loop body runs. This is exactly the kind of bug that not not show up in code review and behaves inconsistently at runtime: the first observed symptom was a bogus `type must be number, but is null` parse exception; adding diagnostics to narrow it down changed the symptom to a straight segfault on the very next run, with the same on-disk file. Tracked down with a minimal standalone reproduction against the exact file rather than guessing from the exception message, and fixed by binding each `.value()` result to a named local before iterating it. Also explains an earlier observation mid-testing that already-saved words seemed to survive a reload once - UB is exactly this inconsistent; it doesn't corrupt every time.
 - `build_anki_deck.py` collapses every token occurrence across however many messages were tokenized into one note per `(lemma, reading, meaning)` identity, with a stable GUID derived from that same identity (design doc 8.3) rather than genanki's default field-hash GUID, so editing an example sentence later doesn't fork the note. Verified directly, not just asserted: regenerated the deck twice from the same input and confirmed the two `.apkg` files contain identical note GUID sets - satisfies the design doc's "regenerating the deck must update existing notes instead of creating duplicates" acceptance criterion.
 - `--progress-file` lets the export be restricted to only saved words, or (by omitting it) the full tokenized set - covers "export saved words and the full vocabulary corpus" without two separate scripts.
@@ -653,7 +655,7 @@ Built as `scripts/jp_assist/{extract_dialogue,message_codes,tokenize_dialogue,ov
 
 #### Milestone 5 spike findings
 
-- Settings moved from a hardcoded-on spike to a real CVar-backed menu (`Enhancements > JP Assist` in the SoH settings UI). The current menu keeps the master enable, card scale, and opacity controls; the prototype's L/Z alias settings were removed with the ordinary translation overlay. Wiring this in required declaring `SohGui::mSohMenu` as an `extern` *inside* `namespace SohGui` (not just qualified with `SohGui::` at global scope) - the two forms produce different mangled symbols, so the global-scope form linked but never resolved to the real definition. `WidgetPath`/`SECTION_COLUMN_1`, by contrast, are global-namespace types despite living in a `SohGui`-adjacent header, so they must *not* be qualified.
+- Settings moved from a hardcoded-on spike to a real CVar-backed menu (`Enhancements > JP Assist` in the SoH settings UI). The current menu keeps the master enable, card scale, and opacity controls; the prototype's configurable L/Z language aliases were removed with the ordinary translation overlay, while fixed L/Z inputs now drive recall-first definition reveal. Wiring this in required declaring `SohGui::mSohMenu` as an `extern` *inside* `namespace SohGui` (not just qualified with `SohGui::` at global scope) - the two forms produce different mangled symbols, so the global-scope form linked but never resolved to the real definition. `WidgetPath`/`SECTION_COLUMN_1`, by contrast, are global-namespace types despite living in a `SohGui`-adjacent header, so they must *not* be qualified.
 - Dialogue history is a bounded (20-entry), oldest-trimmed `std::vector<HistoryEntry>` recorded whenever a new message opens, persisted alongside the existing saved-token/encounter-count data in `jp_assist_progress.json` under a new `messageHistory` array, and readable through both the `jpassist_history` console command and a newest-first searchable GUI. The GUI filters Japanese, English, and hexadecimal text IDs. Reused the exact "bind `.value()` to a named variable before iterating" pattern from the Milestone 4 UB fix rather than re-risking the same dangling-reference bug on the new array.
 - Stress-tested the extended `StudyPersistence_Load()` against 14 malformed-JSON cases (empty file, truncated JSON, wrong types at every field, non-UTF8 garbage, deeply nested garbage, etc.) via a standalone repro compiled against the exact parsing logic - all handled without crashing, consistent with design doc 14's "a malformed progress file must never prevent the game from starting."
 - Accessibility review against section 12: confirmed by code inspection that `tts.cpp`'s dialogue-narration hook reads only `msgCtx` state fields. Study Mode leaves A/C-Up native advancement intact and introduces no color-only signaling or simultaneous-press requirement.

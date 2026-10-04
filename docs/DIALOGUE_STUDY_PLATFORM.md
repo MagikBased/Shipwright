@@ -57,6 +57,7 @@ enum class StudyAction {
     NextToken,
     ScrollUp,
     ScrollDown,
+    ToggleDefinition,
     MarkKnown,
     ToggleSaved,
 };
