@@ -90,6 +90,10 @@ class OverrideTest(unittest.TestCase):
         self.assertEqual(apply_override("カンバン", "かんばん", {"meaning": "kanban"})["meaning"], "signboard; sign")
         self.assertIn("appearance", apply_override("カッコ", "かっこ", {"meaning": "brackets"})["meaning"])
         self.assertEqual(apply_override("ザマス", "ざます", {"meaning": "noun"})["partOfSpeech"], "auxiliary verb")
+        self.assertEqual(apply_override("あ", "あ", {"meaning": "that"})["meaning"], "ah!; oh!")
+        honorific = apply_override("様", "よう", {"meaning": "appearance"})
+        self.assertEqual(honorific["dictionaryReading"], "さま")
+        self.assertEqual(honorific["senseId"], "override:様|さま")
 
     def test_ki_wo_tsukeru_is_split_from_attach_and_equip(self):
         equipped = apply_override("つける", "つける", {"meaning": "install"})

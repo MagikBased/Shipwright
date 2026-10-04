@@ -2753,6 +2753,131 @@
           "id": "ぼうや|ぼうや|boy", "written": "ぼうや", "reading": "ぼうや", "partOfSpeech": "noun", "meaning": "boy; child; son",
           "sentenceJapanese": "勇敢なぼうやが迷子の妖精を助けた。", "sentenceEnglish": "A brave boy helped a lost fairy.",
           "corpusEvidence": {"identity": "ぼうや|ぼうや|jmdict:1519060:0", "messageIds": ["0x207e"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "夢|ゆめ|dream", "written": "夢", "reading": "ゆめ", "partOfSpeech": "noun", "meaning": "dream",
+          "sentenceJapanese": "少年は空を飛ぶ船の夢を見た。", "sentenceEnglish": "The boy dreamed of a ship that could fly through the sky.",
+          "corpusEvidence": {"identity": "夢|ゆめ|jmdict:1529410:0", "messageIds": ["0x202d"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "ぜ|ぜ|emphatic-particle", "written": "ぜ", "reading": "ぜ", "partOfSpeech": "particle", "meaning": "sentence-ending emphasis; I tell you",
+          "sentenceJapanese": "この勝負はオレが勝つぜ。", "sentenceEnglish": "I'm going to win this contest, I tell you.",
+          "corpusEvidence": {"identity": "ぜ|ぜ|jmdict:2834812:0", "messageIds": ["0x006e"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "王家|おうけ|royal-family", "written": "王家", "reading": "おうけ", "partOfSpeech": "noun", "meaning": "royal family",
+          "sentenceJapanese": "この紋章は古い王家のものだ。", "sentenceEnglish": "This crest belongs to an ancient royal family.",
+          "corpusEvidence": {"identity": "王家|おうけ|jmdict:1181440:0", "messageIds": ["0x2063"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "ねぇ|ねぇ|right-particle", "written": "ねぇ", "reading": "ねぇ", "partOfSpeech": "particle", "meaning": "right?; don't you think?",
+          "sentenceJapanese": "この森は少し静かすぎるよねぇ。", "sentenceEnglish": "This forest is a little too quiet, don't you think?",
+          "corpusEvidence": {"identity": "ねぇ|ねぇ|jmdict:2029080:0", "messageIds": ["0x7016"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "クスリ|くすり|medicine", "written": "クスリ", "reading": "くすり", "partOfSpeech": "noun", "meaning": "medicine; drug; remedy",
+          "sentenceJapanese": "薬草から作ったクスリを傷ついた兵士に渡した。", "sentenceEnglish": "I gave the wounded soldier medicine made from herbs.",
+          "corpusEvidence": {"identity": "クスリ|くすり|jmdict:1538160:0", "messageIds": ["0x0043"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "信ずる|しんずる|believe", "written": "信ずる", "reading": "しんずる", "partOfSpeech": "verb", "meaning": "to believe; to trust; to have faith in",
+          "sentenceJapanese": "賢者の言葉を信ずる者だけが門を通れる。", "sentenceEnglish": "Only those who believe the sage's words may pass through the gate.",
+          "corpusEvidence": {"identity": "信ずる|しんずる|jmdict:1359070:0", "messageIds": ["0x2079"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "男|おとこ|man", "written": "男", "reading": "おとこ", "partOfSpeech": "noun", "meaning": "man; male",
+          "sentenceJapanese": "黒い外套の男が塔の前に立っていた。", "sentenceEnglish": "A man in a black cloak stood before the tower.",
+          "corpusEvidence": {"identity": "男|おとこ|jmdict:1419990:0", "messageIds": ["0x2078"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "屋|や|shop-suffix", "written": "屋", "reading": "や", "partOfSpeech": "suffix", "meaning": "shop; dealer in something",
+          "sentenceJapanese": "町の道具屋で古いランタンを買った。", "sentenceEnglish": "I bought an old lantern at the town's tool shop.",
+          "corpusEvidence": {"identity": "屋|や|jmdict:2082160:0", "messageIds": ["0x020f"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "よ〜|よ|elongated-emphasis", "written": "よ〜", "reading": "よ", "partOfSpeech": "particle", "meaning": "elongated sentence-ending emphasis marker",
+          "sentenceJapanese": "橋の向こうに宝箱があるよ〜。", "sentenceEnglish": "There's a treasure chest beyond the bridge!",
+          "corpusEvidence": {"identity": "よ〜|よ|override:よ〜|よ", "messageIds": ["0x7018"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "クン|くん|familiar-title", "written": "クン", "reading": "くん", "partOfSpeech": "suffix", "meaning": "-kun; familiar title for a boy or junior",
+          "sentenceJapanese": "旅人クン、門の外では気をつけなさい。", "sentenceEnglish": "Young traveler, be careful beyond the gate.",
+          "corpusEvidence": {"identity": "クン|くん|jmdict:1247260:0", "messageIds": ["0x200a"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "進む|すすむ|advance", "written": "進む", "reading": "すすむ", "partOfSpeech": "verb", "meaning": "to advance; to go forward",
+          "sentenceJapanese": "松明を掲げて暗い地下道を進んだ。", "sentenceEnglish": "We raised a torch and advanced through the dark passage.",
+          "corpusEvidence": {"identity": "進む|すすむ|jmdict:1365980:0", "messageIds": ["0x2065"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "だ〜|だー|elongated-copula", "written": "だ〜", "reading": "だー", "partOfSpeech": "auxiliary verb", "meaning": "elongated form of だ; to be",
+          "sentenceJapanese": "今夜の見張り役はオレだ〜。", "sentenceEnglish": "I'm the one on watch tonight.",
+          "corpusEvidence": {"identity": "だ〜|だー|override:だ〜|だー", "messageIds": ["0x2081"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "あ|あ|ah", "written": "あ", "reading": "あ", "partOfSpeech": "interjection", "meaning": "ah!; oh!",
+          "sentenceJapanese": "あ、月の石が光り始めた。", "sentenceEnglish": "Oh, the moonstone has begun to glow.",
+          "corpusEvidence": {"identity": "あ|あ|override:あ|あ", "messageIds": ["0x2047"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "トライ|とらい|attempt", "written": "トライ", "reading": "とらい", "partOfSpeech": "noun", "meaning": "try; attempt",
+          "sentenceJapanese": "失敗しても、もう一度トライすればいい。", "sentenceEnglish": "Even if you fail, you can make another attempt.",
+          "corpusEvidence": {"identity": "トライ|とらい|jmdict:1085500:0", "messageIds": ["0x207a"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "フォース|ふぉーす|force", "written": "フォース", "reading": "ふぉーす", "partOfSpeech": "noun", "meaning": "force; power",
+          "sentenceJapanese": "三つの宝石から不思議なフォースがあふれた。", "sentenceEnglish": "A mysterious force poured from the three jewels.",
+          "corpusEvidence": {"identity": "フォース|ふぉーす|jmdict:1110190:0", "messageIds": ["0x207a"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "買う|かう|buy", "written": "買う", "reading": "かう", "partOfSpeech": "verb", "meaning": "to buy; to purchase",
+          "sentenceJapanese": "旅の前に店で丈夫な盾を買う。", "sentenceEnglish": "I will buy a sturdy shield at the shop before the journey.",
+          "corpusEvidence": {"identity": "買う|かう|jmdict:1473740:0", "messageIds": ["0x208b"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "おく|おく|put", "written": "おく", "reading": "おく", "partOfSpeech": "verb", "meaning": "to put; to place; to leave in advance",
+          "sentenceJapanese": "入口に目印の石をおいておこう。", "sentenceEnglish": "Let us place a marker stone at the entrance.",
+          "corpusEvidence": {"identity": "おく|おく|jmdict:1421850:0", "messageIds": ["0x200d"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "話|はなし|story", "written": "話", "reading": "はなし", "partOfSpeech": "noun", "meaning": "talk; story; conversation",
+          "sentenceJapanese": "旅人は焚き火のそばで昔の話を聞いた。", "sentenceEnglish": "The traveler heard an old story beside the campfire.",
+          "corpusEvidence": {"identity": "話|はなし|jmdict:1600900:0", "messageIds": ["0x0142"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "より|より|than", "written": "より", "reading": "より", "partOfSpeech": "particle", "meaning": "than; compared with",
+          "sentenceJapanese": "この剣は見た目より軽い。", "sentenceEnglish": "This sword is lighter than it looks.",
+          "corpusEvidence": {"identity": "より|より|jmdict:1013190:0", "messageIds": ["0x2046"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "ふしぎ|ふしぎ|mysterious", "written": "ふしぎ", "reading": "ふしぎ", "partOfSpeech": "adjectival noun", "meaning": "mysterious; strange; wondrous",
+          "sentenceJapanese": "泉の底からふしぎな光が差している。", "sentenceEnglish": "A mysterious light shines from the bottom of the spring.",
+          "corpusEvidence": {"identity": "ふしぎ|ふしぎ|jmdict:1492570:0", "messageIds": ["0x009a"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "夜|よる|night", "written": "夜", "reading": "よる", "partOfSpeech": "noun", "meaning": "night; evening",
+          "sentenceJapanese": "夜になると森の道に青い火が現れる。", "sentenceEnglish": "At night, blue flames appear on the forest path.",
+          "corpusEvidence": {"identity": "夜|よる|jmdict:1536350:0", "messageIds": ["0x020d"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "面屋|おもや|mask-shop", "written": "面屋", "reading": "おもや", "partOfSpeech": "noun", "meaning": "mask shop; mask seller",
+          "sentenceJapanese": "祭りの前に面屋で狐の面を選んだ。", "sentenceEnglish": "Before the festival, I chose a fox mask at the mask shop.",
+          "corpusEvidence": {"identity": "面屋|おもや|override:面屋|おもや", "messageIds": ["0x0207"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "告げ|つげ|announcement", "written": "告げ", "reading": "つげ", "partOfSpeech": "noun", "meaning": "telling; announcement; notice",
+          "sentenceJapanese": "夜明けを告げる鐘が谷に響いた。", "sentenceEnglish": "The bell announcing dawn echoed through the valley.",
+          "corpusEvidence": {"identity": "告げ|つげ|override:告げ|つげ", "messageIds": ["0x2078"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "神殿|しんでん|temple", "written": "神殿", "reading": "しんでん", "partOfSpeech": "noun", "meaning": "temple; sacred place; sanctuary",
+          "sentenceJapanese": "砂漠の神殿には古い鏡が眠っている。", "sentenceEnglish": "An ancient mirror lies dormant in the desert temple.",
+          "corpusEvidence": {"identity": "神殿|しんでん|jmdict:1364770:0", "messageIds": ["0x701d"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "様|さま|honorific-title", "written": "様", "reading": "さま", "partOfSpeech": "suffix", "meaning": "honorific title; Mr.; Ms.; Lord; Lady",
+          "sentenceJapanese": "兵士たちは女王様の命令を待っていた。", "sentenceEnglish": "The soldiers awaited the queen's command.",
+          "corpusEvidence": {"identity": "様|さま|override:様|さま", "messageIds": ["0x2045"]}, "wordAudio": null, "sentenceAudio": null
         }
       ]
     },
@@ -2974,17 +3099,17 @@
           "sentenceAudio": null
         },
         {
-          "id": "神殿|しんでん|temple",
-          "written": "神殿",
-          "reading": "しんでん",
+          "id": "白馬|はくば|white-horse",
+          "written": "白馬",
+          "reading": "はくば",
           "partOfSpeech": "noun",
-          "meaning": "temple; shrine; sanctuary",
-          "sentenceJapanese": "旅人は夜明け前に山頂の神殿へ着いた。",
-          "sentenceEnglish": "The traveler reached the temple on the mountaintop before dawn.",
+          "meaning": "white horse",
+          "sentenceJapanese": "夜明けに白馬が霧の谷を駆け抜けた。",
+          "sentenceEnglish": "At dawn, a white horse raced through the misty valley.",
           "corpusEvidence": {
-            "identity": "神殿|しんでん|jmdict:1364770:0",
+            "identity": "白馬|はくば|jmdict:1841490:0",
             "messageIds": [
-              "0x014d"
+              "0x014c"
             ]
           },
           "wordAudio": null,
@@ -3008,17 +3133,17 @@
           "sentenceAudio": null
         },
         {
-          "id": "王家|おうけ|royal-family",
-          "written": "王家",
-          "reading": "おうけ",
+          "id": "名|な|name",
+          "written": "名",
+          "reading": "な",
           "partOfSpeech": "noun",
-          "meaning": "royal family",
-          "sentenceJapanese": "王家の紋章は金色の門に刻まれていた。",
-          "sentenceEnglish": "The royal family's crest was carved into the golden gate.",
+          "meaning": "name; given name",
+          "sentenceJapanese": "石碑には忘れられた騎士の名が刻まれていた。",
+          "sentenceEnglish": "The name of a forgotten knight was carved into the monument.",
           "corpusEvidence": {
-            "identity": "王家|おうけ|jmdict:1181440:0",
+            "identity": "名|な|jmdict:1531330:0",
             "messageIds": [
-              "0x0214"
+              "0x201c"
             ]
           },
           "wordAudio": null,

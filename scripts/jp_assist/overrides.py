@@ -384,6 +384,18 @@ OVERRIDES: dict[tuple[str, str], dict] = {
         "note": "Character speech pattern used as a copula.",
         "partOfSpeech": "auxiliary verb",
     },
+    ("あ", "あ"): {
+        "meaning": "ah!; oh!",
+        "note": "Interjection of surprise or realization, not the demonstrative 'that'.",
+        "partOfSpeech": "interjection",
+    },
+    ("様", "よう"): {
+        "meaning": "honorific title; Mr.; Ms.; Lord; Lady",
+        "note": "The honorific suffix さま used after a name or title.",
+        "partOfSpeech": "suffix",
+        "dictionaryReading": "さま",
+        "senseId": "override:様|さま",
+    },
 }
 
 

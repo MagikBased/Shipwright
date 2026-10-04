@@ -388,7 +388,7 @@
       "startMarker": "Leave Kokiri Forest",
       "endMarker": "Learn the royal song",
       "prerequisites": ["01-boy-without-a-fairy"],
-      "deck": {"status": "pilot", "downloadAvailable": false, "reviewedCardCount": 30, "audioStatus": "none"},
+      "deck": {"status": "pilot", "downloadAvailable": false, "reviewedCardCount": 55, "audioStatus": "none"},
       "sampleCards": [
         {"id": "姫|ひめ|princess", "written": "姫", "reading": "ひめ", "partOfSpeech": "noun", "meaning": "princess; noble young woman", "sentenceJapanese": "姫は星空の下で旅人に秘密の地図を渡した。", "sentenceEnglish": "The princess gave the traveler a secret map beneath the starry sky.", "corpusEvidence": {"identity": "姫|ひめ|jmdict:1602150:0", "messageIds": ["0x0142"]}, "wordAudio": null, "sentenceAudio": null},
         {"id": "会う|あう|meet", "written": "会う", "reading": "あう", "partOfSpeech": "verb", "meaning": "to meet; to encounter", "sentenceJapanese": "旅人は城へ向かう道で不思議な少女に会った。", "sentenceEnglish": "The traveler met a mysterious girl on the road to the castle.", "corpusEvidence": {"identity": "会う|あう|jmdict:1198180:0", "messageIds": ["0x0142"]}, "wordAudio": null, "sentenceAudio": null},
@@ -446,9 +446,9 @@
       "deck": {"status": "pilot", "downloadAvailable": false, "reviewedCardCount": 5, "audioStatus": "none"},
       "sampleCards": [
         {"id": "扉|とびら|door", "written": "扉", "reading": "とびら", "partOfSpeech": "noun", "meaning": "door; gate", "sentenceJapanese": "古い呪文を唱えると、聖なる扉がゆっくり開いた。", "sentenceEnglish": "When the ancient spell was recited, the sacred door slowly opened.", "corpusEvidence": {"identity": "扉|とびら|jmdict:1483380:0", "messageIds": ["0x0200"]}, "wordAudio": null, "sentenceAudio": null},
-        {"id": "神殿|しんでん|temple", "written": "神殿", "reading": "しんでん", "partOfSpeech": "noun", "meaning": "temple; shrine; sanctuary", "sentenceJapanese": "旅人は夜明け前に山頂の神殿へ着いた。", "sentenceEnglish": "The traveler reached the temple on the mountaintop before dawn.", "corpusEvidence": {"identity": "神殿|しんでん|jmdict:1364770:0", "messageIds": ["0x014d"]}, "wordAudio": null, "sentenceAudio": null},
+        {"id": "白馬|はくば|white-horse", "written": "白馬", "reading": "はくば", "partOfSpeech": "noun", "meaning": "white horse", "sentenceJapanese": "夜明けに白馬が霧の谷を駆け抜けた。", "sentenceEnglish": "At dawn, a white horse raced through the misty valley.", "corpusEvidence": {"identity": "白馬|はくば|jmdict:1841490:0", "messageIds": ["0x014c"]}, "wordAudio": null, "sentenceAudio": null},
         {"id": "伝説|でんせつ|legend", "written": "伝説", "reading": "でんせつ", "partOfSpeech": "noun", "meaning": "legend; tradition", "sentenceJapanese": "村の長老は失われた剣の伝説を語った。", "sentenceEnglish": "The village elder told the legend of a lost sword.", "corpusEvidence": {"identity": "伝説|でんせつ|jmdict:1442100:0", "messageIds": ["0x202a"]}, "wordAudio": null, "sentenceAudio": null},
-        {"id": "王家|おうけ|royal-family", "written": "王家", "reading": "おうけ", "partOfSpeech": "noun", "meaning": "royal family", "sentenceJapanese": "王家の紋章は金色の門に刻まれていた。", "sentenceEnglish": "The royal family's crest was carved into the golden gate.", "corpusEvidence": {"identity": "王家|おうけ|jmdict:1181440:0", "messageIds": ["0x0214"]}, "wordAudio": null, "sentenceAudio": null},
+        {"id": "名|な|name", "written": "名", "reading": "な", "partOfSpeech": "noun", "meaning": "name; given name", "sentenceJapanese": "石碑には忘れられた騎士の名が刻まれていた。", "sentenceEnglish": "The name of a forgotten knight was carved into the monument.", "corpusEvidence": {"identity": "名|な|jmdict:1531330:0", "messageIds": ["0x201c"]}, "wordAudio": null, "sentenceAudio": null},
         {"id": "歴史|れきし|history", "written": "歴史", "reading": "れきし", "partOfSpeech": "noun", "meaning": "history", "sentenceJapanese": "壁の文字には王国の長い歴史が記されていた。", "sentenceEnglish": "The writing on the wall recorded the kingdom's long history.", "corpusEvidence": {"identity": "歴史|れきし|jmdict:1558050:0", "messageIds": ["0x0208"]}, "wordAudio": null, "sentenceAudio": null}
       ]
     },
