@@ -3432,6 +3432,131 @@
           },
           "wordAudio": null,
           "sentenceAudio": null
+        },
+        {
+          "id": "ゴロ|ごろ|goron-ending", "written": "ゴロ", "reading": "ごろ", "partOfSpeech": "suffix", "meaning": "Goron sentence-ending speech quirk",
+          "sentenceJapanese": "岩の民は『山は静かだゴロ』と笑った。", "sentenceEnglish": "The rock-dweller laughed, saying, “The mountain is quiet, goro.”",
+          "corpusEvidence": {"identity": "ゴロ|ごろ|override:ゴロ|ごろ", "messageIds": ["0x0325"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "らしい|らしい|seems", "written": "らしい", "reading": "らしい", "partOfSpeech": "auxiliary verb", "meaning": "seems; apparently; reportedly",
+          "sentenceJapanese": "古い井戸の底には秘密の道があるらしい。", "sentenceEnglish": "Apparently there is a secret passage at the bottom of the old well.",
+          "corpusEvidence": {"identity": "らしい|らしい|jmdict:1013240:0", "messageIds": ["0x0401"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "村|むら|village", "written": "村", "reading": "むら", "partOfSpeech": "noun", "meaning": "village",
+          "sentenceJapanese": "山のふもとの村では収穫祭が開かれていた。", "sentenceEnglish": "A harvest festival was being held in the village at the mountain's foot.",
+          "corpusEvidence": {"identity": "村|むら|jmdict:1406820:0", "messageIds": ["0x022c"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "借りる|かりる|borrow", "written": "借りる", "reading": "かりる", "partOfSpeech": "verb", "meaning": "to borrow; to rent",
+          "sentenceJapanese": "旅人は店から丈夫な盾を借りた。", "sentenceEnglish": "The traveler borrowed a sturdy shield from the shop.",
+          "corpusEvidence": {"identity": "借りる|かりる|jmdict:1323560:0", "messageIds": ["0x0010"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "花|はな|flower", "written": "花", "reading": "はな", "partOfSpeech": "noun", "meaning": "flower; blossom",
+          "sentenceJapanese": "墓の前に白い花を一輪置いた。", "sentenceEnglish": "I placed a single white flower before the grave.",
+          "corpusEvidence": {"identity": "花|はな|jmdict:1194500:0", "messageIds": ["0x0079"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "我|われ|i-archaic", "written": "我", "reading": "われ", "partOfSpeech": "pronoun", "meaning": "I; me; oneself (literary)",
+          "sentenceJapanese": "我は炎を守る者なり、と石碑に刻まれていた。", "sentenceEnglish": "“I am the guardian of the flame” was carved into the monument.",
+          "corpusEvidence": {"identity": "我|われ|jmdict:1196670:0", "messageIds": ["0x0212"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "かぶる|かぶる|wear-head", "written": "かぶる", "reading": "かぶる", "partOfSpeech": "verb", "meaning": "to wear on the head; to put on",
+          "sentenceJapanese": "少年は狐の面をかぶって祭りへ向かった。", "sentenceEnglish": "The boy put on a fox mask and headed to the festival.",
+          "corpusEvidence": {"identity": "かぶる|かぶる|jmdict:1484330:0", "messageIds": ["0x0010"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "おお|おお|oh", "written": "おお", "reading": "おお", "partOfSpeech": "interjection", "meaning": "oh!; ooh!",
+          "sentenceJapanese": "おお、失われた王冠を見つけたのか。", "sentenceEnglish": "Oh, did you find the lost crown?",
+          "corpusEvidence": {"identity": "おお|おお|override:おお|おお", "messageIds": ["0x70a5"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "はえる|はえる|grow", "written": "はえる", "reading": "はえる", "partOfSpeech": "verb", "meaning": "to grow; to sprout",
+          "sentenceJapanese": "月の光が当たる場所に銀色の草がはえる。", "sentenceEnglish": "Silver grass grows where the moonlight falls.",
+          "corpusEvidence": {"identity": "はえる|はえる|jmdict:1378490:0", "messageIds": ["0x040a"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "自由|じゆう|freedom", "written": "自由", "reading": "じゆう", "partOfSpeech": "noun", "meaning": "freedom; liberty",
+          "sentenceJapanese": "封印が解け、精霊はようやく自由になった。", "sentenceEnglish": "The seal broke, and the spirit was finally free.",
+          "corpusEvidence": {"identity": "自由|じゆう|jmdict:1318720:0", "messageIds": ["0x5000"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "オメエ|おめえ|rough-you", "written": "オメエ", "reading": "おめえ", "partOfSpeech": "pronoun", "meaning": "you (rough or familiar)",
+          "sentenceJapanese": "オメエ、本当に一人で山へ登るのか。", "sentenceEnglish": "You—are you really climbing the mountain alone?",
+          "corpusEvidence": {"identity": "オメエ|おめえ|jmdict:2848635:0", "messageIds": ["0x3004"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "クモ|くも|spider", "written": "クモ", "reading": "くも", "partOfSpeech": "noun", "meaning": "spider",
+          "sentenceJapanese": "巨大なクモが洞窟の天井から降りてきた。", "sentenceEnglish": "A giant spider descended from the cave ceiling.",
+          "corpusEvidence": {"identity": "クモ|くも|jmdict:1421960:0", "messageIds": ["0x0024"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "太陽|たいよう|sun", "written": "太陽", "reading": "たいよう", "partOfSpeech": "noun", "meaning": "sun",
+          "sentenceJapanese": "太陽が昇ると谷の霧が消えた。", "sentenceEnglish": "When the sun rose, the mist in the valley disappeared.",
+          "corpusEvidence": {"identity": "太陽|たいよう|jmdict:1408370:0", "messageIds": ["0x00d3"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "兄弟|きょうだい|siblings", "written": "兄弟", "reading": "きょうだい", "partOfSpeech": "noun", "meaning": "siblings; brothers",
+          "sentenceJapanese": "二人の兄弟は力を合わせて岩を動かした。", "sentenceEnglish": "The two brothers joined forces to move the boulder.",
+          "corpusEvidence": {"identity": "兄弟|きょうだい|jmdict:1249960:0", "messageIds": ["0x500b"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "ウサギ|うさぎ|rabbit", "written": "ウサギ", "reading": "うさぎ", "partOfSpeech": "noun", "meaning": "rabbit; hare",
+          "sentenceJapanese": "白いウサギが草むらから飛び出した。", "sentenceEnglish": "A white rabbit leapt out of the grass.",
+          "corpusEvidence": {"identity": "ウサギ|うさぎ|jmdict:1443970:0", "messageIds": ["0x0013"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "フォッ|ふぉっ|owl-call", "written": "フォッ", "reading": "ふぉっ", "partOfSpeech": "interjection", "meaning": "hoo; ho; owl-like call",
+          "sentenceJapanese": "夜の森でフォッという声が頭上から聞こえた。", "sentenceEnglish": "A hoo call came from overhead in the night forest.",
+          "corpusEvidence": {"identity": "フォッ|ふぉっ|override:フォッ|ふぉっ", "messageIds": ["0x70aa"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "袋|ふくろ|bag", "written": "袋", "reading": "ふくろ", "partOfSpeech": "noun", "meaning": "bag; sack; pouch",
+          "sentenceJapanese": "旅人は薬草を革の袋に入れた。", "sentenceEnglish": "The traveler put the herbs into a leather pouch.",
+          "corpusEvidence": {"identity": "袋|ふくろ|jmdict:1411070:0", "messageIds": ["0x001c"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "ポリ|ぽり|munch", "written": "ポリ", "reading": "ぽり", "partOfSpeech": "interjection", "meaning": "munch; crunch; scratch-scratch",
+          "sentenceJapanese": "商人は木の実をポリポリ食べながら話した。", "sentenceEnglish": "The merchant spoke while crunching on nuts.",
+          "corpusEvidence": {"identity": "ポリ|ぽり|override:ポリ|ぽり", "messageIds": ["0x7184"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "ダメ|だめ|no-good", "written": "ダメ", "reading": "だめ", "partOfSpeech": "adjectival noun", "meaning": "no good; not allowed; useless",
+          "sentenceJapanese": "壊れた橋をそのまま渡ってはダメだ。", "sentenceEnglish": "You must not cross the broken bridge as it is.",
+          "corpusEvidence": {"identity": "ダメ|だめ|jmdict:1409110:0", "messageIds": ["0x0020"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "ヒミツ|ひみつ|secret", "written": "ヒミツ", "reading": "ひみつ", "partOfSpeech": "noun", "meaning": "secret; secrecy",
+          "sentenceJapanese": "泉の場所は村人だけのヒミツだ。", "sentenceEnglish": "The spring's location is a secret known only to the villagers.",
+          "corpusEvidence": {"identity": "ヒミツ|ひみつ|jmdict:1484150:0", "messageIds": ["0x0227"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "子供|こども|child", "written": "子供", "reading": "こども", "partOfSpeech": "noun", "meaning": "child; children",
+          "sentenceJapanese": "村の子供たちは広場で木の剣を振っていた。", "sentenceEnglish": "The village children swung wooden swords in the square.",
+          "corpusEvidence": {"identity": "子供|こども|jmdict:1307850:0", "messageIds": ["0x0024"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "のぉ|のぉ|old-speech-ending", "written": "のぉ", "reading": "のぉ", "partOfSpeech": "particle", "meaning": "sentence-ending のう; you see; isn't it",
+          "sentenceJapanese": "この剣には長い歴史があるのぉ。", "sentenceEnglish": "This sword has a long history, you see.",
+          "corpusEvidence": {"identity": "のぉ|のぉ|override:のぉ|のぉ", "messageIds": ["0x10c0"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "でる|でる|contracted-progressive", "written": "でる", "reading": "でる", "partOfSpeech": "auxiliary verb", "meaning": "contracted progressive or resulting-state ending in forms such as 〜んでる",
+          "sentenceJapanese": "あの岩の上で鳥が休んでる。", "sentenceEnglish": "A bird is resting on that rock.",
+          "corpusEvidence": {"identity": "でる|でる|override:でる|でる", "messageIds": ["0x0227"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "仕事|しごと|work", "written": "仕事", "reading": "しごと", "partOfSpeech": "noun", "meaning": "work; job; task",
+          "sentenceJapanese": "門を直すのは村の大工たちの仕事だ。", "sentenceEnglish": "Repairing the gate is the village carpenters' job.",
+          "corpusEvidence": {"identity": "仕事|しごと|jmdict:1304970:0", "messageIds": ["0x2015"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "コワい|こわい|scary", "written": "コワい", "reading": "こわい", "partOfSpeech": "adjective", "meaning": "scary; frightening",
+          "sentenceJapanese": "暗い洞窟からコワい声が聞こえた。", "sentenceEnglish": "A frightening voice came from the dark cave.",
+          "corpusEvidence": {"identity": "コワい|こわい|jmdict:1593480:0", "messageIds": ["0x3008"]}, "wordAudio": null, "sentenceAudio": null
         }
       ]
     },

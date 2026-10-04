@@ -406,7 +406,7 @@
       "startMarker": "Open the path to Death Mountain",
       "endMarker": "Receive the fire spiritual stone",
       "prerequisites": ["02-princess-of-destiny"],
-      "deck": {"status": "pilot", "downloadAvailable": false, "reviewedCardCount": 6, "audioStatus": "none"},
+      "deck": {"status": "pilot", "downloadAvailable": false, "reviewedCardCount": 31, "audioStatus": "none"},
       "sampleCards": [
         {"id": "山|やま|mountain", "written": "山", "reading": "やま", "partOfSpeech": "noun", "meaning": "mountain; hill", "sentenceJapanese": "高い山の頂上には、火を守る民が住んでいる。", "sentenceEnglish": "People who guard the flame live at the summit of the high mountain.", "corpusEvidence": {"identity": "山|やま|jmdict:1302680:0", "messageIds": ["0x300d"]}, "wordAudio": null, "sentenceAudio": null},
         {"id": "岩|いわ|rock", "written": "岩", "reading": "いわ", "partOfSpeech": "noun", "meaning": "rock; boulder", "sentenceJapanese": "巨大な岩が洞窟への道をふさいでいた。", "sentenceEnglish": "A gigantic boulder blocked the path to the cavern.", "corpusEvidence": {"identity": "岩|いわ|jmdict:1217270:0", "messageIds": ["0x3014"]}, "wordAudio": null, "sentenceAudio": null},

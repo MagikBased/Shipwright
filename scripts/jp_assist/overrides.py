@@ -83,7 +83,7 @@ OVERRIDES: dict[tuple[str, str], dict] = {
     ("この", "この"): {"meaning": "this", "note": "Placed before a noun."},
     ("な", "な"): {"meaning": "sentence-ending/prohibitive particle or attributive copula", "note": "Exact role depends on context."},
     ("ん", "ん"): {"meaning": "explanatory nominalizer or contracted negative ending", "note": "Exact role depends on context."},
-    ("ゴロ", "ごろ"): {"meaning": "Goron sentence-ending speech quirk", "note": "Character speech pattern."},
+    ("ゴロ", "ごろ"): {"meaning": "Goron sentence-ending speech quirk", "note": "Character speech pattern.", "partOfSpeech": "suffix"},
     ("って", "って"): {"meaning": "casual quotation/topic marker", "note": "Common grammar."},
     ("てる", "てる"): {"meaning": "contracted progressive/resultative ending (-ている)", "note": "Common grammar."},
     ("ない", "ない"): {"meaning": "not; nonexistent", "note": "Negative form."},
@@ -129,7 +129,7 @@ OVERRIDES: dict[tuple[str, str], dict] = {
     ("ヒッヒッヒ", "ひっひっひ"): {"meaning": "heh heh heh", "note": "Laughter."},
     ("だ〜", "だー"): {"meaning": "elongated form of だ (to be)", "note": "Stylized speech."},
     ("キョーダイ", "きょーだい"): {"meaning": "brother; sworn brother", "note": "Stylized spelling of 兄弟."},
-    ("フォッ", "ふぉっ"): {"meaning": "hoo; ho", "note": "Owl-like laugh/call."},
+    ("フォッ", "ふぉっ"): {"meaning": "hoo; ho", "note": "Owl-like laugh/call.", "partOfSpeech": "interjection"},
     ("フォ", "ふぉ"): {"meaning": "hoo; ho", "note": "Owl-like laugh/call."},
     ("ホホォ", "ほほぉ"): {"meaning": "hoo hoo", "note": "Owl call."},
     ("ホホーゥ", "ほほーぅ"): {"meaning": "hoo-hoot", "note": "Owl call."},
@@ -500,6 +500,21 @@ OVERRIDES: dict[tuple[str, str], dict] = {
         "meaning": "Sheikah (game-specific people)",
         "note": "Zelda proper noun; not the English loanword seeker.",
         "partOfSpeech": "proper noun",
+    },
+    ("おお", "おお"): {
+        "meaning": "oh!; ooh!",
+        "note": "Interjection of surprise or recognition, not 大 (large).",
+        "partOfSpeech": "interjection",
+    },
+    ("ポリ", "ぽり"): {
+        "meaning": "munch; crunch; scratch-scratch",
+        "note": "Onomatopoeic repeated sound, not polyethylene.",
+        "partOfSpeech": "interjection",
+    },
+    ("でる", "でる"): {
+        "meaning": "contracted progressive/resultative ending in forms such as 〜んでる or 〜でてる",
+        "note": "Conversational contraction related to ている; exact surface depends on the preceding verb.",
+        "partOfSpeech": "auxiliary verb",
     },
 }
 
