@@ -537,7 +537,7 @@
       "endMarker": "Awaken the Spirit Sage",
       "prerequisites": ["05-door-of-time"],
       "recommendedAfter": ["08-beneath-the-ice"],
-      "deck": {"status": "pilot", "downloadAvailable": false, "reviewedCardCount": 5, "audioStatus": "none"},
+      "deck": {"status": "pilot", "downloadAvailable": false, "reviewedCardCount": 20, "audioStatus": "none"},
       "sampleCards": [
         {"id": "宝|たから|treasure", "written": "宝", "reading": "たから", "partOfSpeech": "noun", "meaning": "treasure", "sentenceJapanese": "盗賊は砂の神殿に眠る宝の話を聞いた。", "sentenceEnglish": "The bandit heard a tale of treasure sleeping in the desert temple.", "corpusEvidence": {"identity": "宝|たから|jmdict:1516160:0", "messageIds": ["0x6024"]}, "wordAudio": null, "sentenceAudio": null},
         {"id": "盗賊|とうぞく|bandit", "written": "盗賊", "reading": "とうぞく", "partOfSpeech": "noun", "meaning": "thief; robber; bandit", "sentenceJapanese": "素早い盗賊は見張りの鍵を奪って姿を消した。", "sentenceEnglish": "The swift bandit stole the guard's key and vanished.", "corpusEvidence": {"identity": "盗賊|とうぞく|jmdict:1448470:0", "messageIds": ["0x606a"]}, "wordAudio": null, "sentenceAudio": null},
