@@ -2108,7 +2108,7 @@
           "meaning": "castle",
           "sentenceJapanese": "丘の上の城には高い石壁がある。",
           "sentenceEnglish": "The castle on the hill has tall stone walls.",
-          "corpusEvidence": {"identity": "城|しろ|jmdict:1355710:0", "messageIds": ["0x1043"]},
+          "corpusEvidence": {"identity": "城|しろ|override:城|しろ", "messageIds": ["0x1043"]},
           "wordAudio": null,
           "sentenceAudio": null
         },
@@ -2878,6 +2878,131 @@
           "id": "様|さま|honorific-title", "written": "様", "reading": "さま", "partOfSpeech": "suffix", "meaning": "honorific title; Mr.; Ms.; Lord; Lady",
           "sentenceJapanese": "兵士たちは女王様の命令を待っていた。", "sentenceEnglish": "The soldiers awaited the queen's command.",
           "corpusEvidence": {"identity": "様|さま|override:様|さま", "messageIds": ["0x2045"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "コレ|これ|this", "written": "コレ", "reading": "これ", "partOfSpeech": "pronoun", "meaning": "this; this one",
+          "sentenceJapanese": "コレが石の門を開く鍵だ。", "sentenceEnglish": "This is the key that opens the stone gate.",
+          "corpusEvidence": {"identity": "コレ|これ|jmdict:1628530:0", "messageIds": ["0x10bf"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "きっと|きっと|surely", "written": "きっと", "reading": "きっと", "partOfSpeech": "adverb", "meaning": "surely; certainly; most likely",
+          "sentenceJapanese": "夜明けまで待てば、きっと霧が晴れる。", "sentenceEnglish": "If we wait until dawn, the mist will surely clear.",
+          "corpusEvidence": {"identity": "きっと|きっと|jmdict:1003430:0", "messageIds": ["0x2043"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "ため|ため|purpose", "written": "ため", "reading": "ため", "partOfSpeech": "noun", "meaning": "for; for the sake of; in order to; because of",
+          "sentenceJapanese": "村を守るため、騎士たちは橋を閉じた。", "sentenceEnglish": "The knights closed the bridge in order to protect the village.",
+          "corpusEvidence": {"identity": "ため|ため|override:ため|ため", "messageIds": ["0x207a"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "ちがう|ちがう|differ", "written": "ちがう", "reading": "ちがう", "partOfSpeech": "verb", "meaning": "to differ; to be wrong; to be different",
+          "sentenceJapanese": "この地図の印は入口の場所とちがう。", "sentenceEnglish": "The mark on this map differs from the entrance's location.",
+          "corpusEvidence": {"identity": "ちがう|ちがう|jmdict:1158880:0", "messageIds": ["0x2023"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "道|みち|road", "written": "道", "reading": "みち", "partOfSpeech": "noun", "meaning": "road; path; way",
+          "sentenceJapanese": "月明かりが山へ続く道を照らした。", "sentenceEnglish": "Moonlight illuminated the road leading toward the mountain.",
+          "corpusEvidence": {"identity": "道|みち|jmdict:1454080:0", "messageIds": ["0x033a"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "もっと|もっと|more", "written": "もっと", "reading": "もっと", "partOfSpeech": "adverb", "meaning": "more; even more; further",
+          "sentenceJapanese": "もっと高い場所からなら城が見える。", "sentenceEnglish": "From a higher place, we can see the castle.",
+          "corpusEvidence": {"identity": "もっと|もっと|jmdict:1012620:0", "messageIds": ["0x10dc"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "いただく|いただく|receive-humble", "written": "いただく", "reading": "いただく", "partOfSpeech": "verb", "meaning": "to receive; to accept (humble)",
+          "sentenceJapanese": "賢者から旅の祝福をいただいた。", "sentenceEnglish": "I received a blessing for the journey from the sage.",
+          "corpusEvidence": {"identity": "いただく|いただく|jmdict:1587290:0", "messageIds": ["0x0207"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "時間|じかん|time", "written": "時間", "reading": "じかん", "partOfSpeech": "noun", "meaning": "time; hours",
+          "sentenceJapanese": "門が開くまで少し時間がかかる。", "sentenceEnglish": "It will take a little time for the gate to open.",
+          "corpusEvidence": {"identity": "時間|じかん|jmdict:1315920:0", "messageIds": ["0x0211"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "にゃ|にゃ|niwa-contraction", "written": "にゃ", "reading": "にゃ", "partOfSpeech": "particle", "meaning": "contraction of には; for; as for; to",
+          "sentenceJapanese": "この重い鎧は子供にゃ着られない。", "sentenceEnglish": "A child cannot wear this heavy armor.",
+          "corpusEvidence": {"identity": "にゃ|にゃ|override:にゃ|にゃ", "messageIds": ["0x009c"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "もし|もし|if", "written": "もし", "reading": "もし", "partOfSpeech": "adverb", "meaning": "if; in case; supposing",
+          "sentenceJapanese": "もし道に迷ったら、川の音を探して。", "sentenceEnglish": "If you lose your way, listen for the sound of the river.",
+          "corpusEvidence": {"identity": "もし|もし|jmdict:1012500:0", "messageIds": ["0x2065"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "羽|はね|feather", "written": "羽", "reading": "はね", "partOfSpeech": "noun", "meaning": "feather; wing; plume",
+          "sentenceJapanese": "祭壇の上に銀色の羽が落ちていた。", "sentenceEnglish": "A silver feather lay on the altar.",
+          "corpusEvidence": {"identity": "羽|はね|override:羽|はね", "messageIds": ["0x207e"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "しあわせ|しあわせ|happiness", "written": "しあわせ", "reading": "しあわせ", "partOfSpeech": "noun", "meaning": "happiness; good fortune; blessing",
+          "sentenceJapanese": "旅人は村にしあわせを運ぶ笛を吹いた。", "sentenceEnglish": "The traveler played a flute said to bring happiness to the village.",
+          "corpusEvidence": {"identity": "しあわせ|しあわせ|jmdict:1594060:0", "messageIds": ["0x0207"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "回|かい|times-counter", "written": "回", "reading": "かい", "partOfSpeech": "counter", "meaning": "time; occurrence; counter for repetitions",
+          "sentenceJapanese": "鐘を三回鳴らすと秘密の扉が開く。", "sentenceEnglish": "Ring the bell three times and the secret door will open.",
+          "corpusEvidence": {"identity": "回|かい|override:回|かい", "messageIds": ["0x006d"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "昼|ひる|noon", "written": "昼", "reading": "ひる", "partOfSpeech": "noun", "meaning": "noon; daytime",
+          "sentenceJapanese": "昼は市場が旅人と商人でにぎわう。", "sentenceEnglish": "During the day, the market bustles with travelers and merchants.",
+          "corpusEvidence": {"identity": "昼|ひる|jmdict:1426250:0", "messageIds": ["0x020f"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "あきビン|あきびん|empty-bottle", "written": "あきビン", "reading": "あきびん", "partOfSpeech": "noun", "meaning": "empty bottle",
+          "sentenceJapanese": "泉の水を入れるためにあきビンを用意した。", "sentenceEnglish": "I prepared an empty bottle to hold water from the spring.",
+          "corpusEvidence": {"identity": "あきビン|あきびん|jmdict:1586240:0", "messageIds": ["0x0042"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "代金|だいきん|price", "written": "代金", "reading": "だいきん", "partOfSpeech": "noun", "meaning": "price; cost; payment",
+          "sentenceJapanese": "商人に地図の代金を銀貨で払った。", "sentenceEnglish": "I paid the merchant for the map with silver coins.",
+          "corpusEvidence": {"identity": "代金|だいきん|jmdict:1411790:0", "messageIds": ["0x0207"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "ワン|わん|woof", "written": "ワン", "reading": "わん", "partOfSpeech": "interjection", "meaning": "woof; bark",
+          "sentenceJapanese": "番犬が門の影に向かってワンとほえた。", "sentenceEnglish": "The guard dog barked “woof” toward the shadow by the gate.",
+          "corpusEvidence": {"identity": "ワン|わん|override:ワン|わん", "messageIds": ["0x709b"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "ら|ら|plural-suffix", "written": "ら", "reading": "ら", "partOfSpeech": "suffix", "meaning": "pluralizing suffix; and others",
+          "sentenceJapanese": "兵士らは夜明けに北門へ集まった。", "sentenceEnglish": "The soldiers gathered at the north gate at dawn.",
+          "corpusEvidence": {"identity": "ら|ら|jmdict:2067770:0", "messageIds": ["0x10be"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "ちょっと|ちょっと|a-little", "written": "ちょっと", "reading": "ちょっと", "partOfSpeech": "adverb", "meaning": "a little; a bit; briefly",
+          "sentenceJapanese": "この盾はちょっと重いが、とても丈夫だ。", "sentenceEnglish": "This shield is a little heavy, but it is very sturdy.",
+          "corpusEvidence": {"identity": "ちょっと|ちょっと|jmdict:1163940:0", "messageIds": ["0x009c"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "おぼえる|おぼえる|remember", "written": "おぼえる", "reading": "おぼえる", "partOfSpeech": "verb", "meaning": "to remember; to memorize; to learn",
+          "sentenceJapanese": "石碑に刻まれた短い呪文をおぼえた。", "sentenceEnglish": "I memorized the short spell carved into the monument.",
+          "corpusEvidence": {"identity": "おぼえる|おぼえる|jmdict:1206050:0", "messageIds": ["0x00d2"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "いつ|いつ|when", "written": "いつ", "reading": "いつ", "partOfSpeech": "pronoun", "meaning": "when; at what time",
+          "sentenceJapanese": "次の船はいつ港を出るのですか。", "sentenceEnglish": "When does the next ship leave the harbor?",
+          "corpusEvidence": {"identity": "いつ|いつ|jmdict:1188760:0", "messageIds": ["0x2069"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "ボク|ぼく|i", "written": "ボク", "reading": "ぼく", "partOfSpeech": "pronoun", "meaning": "I; me",
+          "sentenceJapanese": "ボクも勇者の旅についていきたい。", "sentenceEnglish": "I want to accompany the hero on the journey too.",
+          "corpusEvidence": {"identity": "ボク|ぼく|jmdict:1521400:0", "messageIds": ["0x10be"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "しまう|しまう|end-up", "written": "しまう", "reading": "しまう", "partOfSpeech": "verb", "meaning": "to finish; to do completely; to end up doing; to put away",
+          "sentenceJapanese": "急がないと魔法の橋が消えてしまう。", "sentenceEnglish": "If we do not hurry, the magic bridge will disappear.",
+          "corpusEvidence": {"identity": "しまう|しまう|override:しまう|しまう", "messageIds": ["0x2027"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "やっぱり|やっぱり|as-expected", "written": "やっぱり", "reading": "やっぱり", "partOfSpeech": "adverb", "meaning": "as expected; after all; sure enough",
+          "sentenceJapanese": "やっぱり古い地図の印は正しかった。", "sentenceEnglish": "As expected, the mark on the old map was correct.",
+          "corpusEvidence": {"identity": "やっぱり|やっぱり|jmdict:1012810:0", "messageIds": ["0x00f5"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "売れる|うれる|sell", "written": "売れる", "reading": "うれる", "partOfSpeech": "verb", "meaning": "to sell; to be sold; to sell well",
+          "sentenceJapanese": "この珍しい羽なら市場で高く売れる。", "sentenceEnglish": "This rare feather should sell for a high price at the market.",
+          "corpusEvidence": {"identity": "売れる|うれる|jmdict:1473960:0", "messageIds": ["0x0096"]}, "wordAudio": null, "sentenceAudio": null
         }
       ]
     },

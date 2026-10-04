@@ -94,6 +94,12 @@ class OverrideTest(unittest.TestCase):
         honorific = apply_override("様", "よう", {"meaning": "appearance"})
         self.assertEqual(honorific["dictionaryReading"], "さま")
         self.assertEqual(honorific["senseId"], "override:様|さま")
+        self.assertIn("in order to", apply_override("ため", "ため", {"meaning": "benefit"})["meaning"])
+        self.assertIn("には", apply_override("にゃ", "にゃ", {"meaning": "unless"})["meaning"])
+        self.assertEqual(apply_override("城", "しろ", {"meaning": "suffix"})["meaning"], "castle")
+        self.assertEqual(apply_override("羽", "はね", {"meaning": "suffix"})["partOfSpeech"], "noun")
+        self.assertEqual(apply_override("回", "かい", {"meaning": "instance"})["partOfSpeech"], "counter")
+        self.assertIn("end up", apply_override("しまう", "しまう", {"meaning": "close"})["meaning"])
 
     def test_ki_wo_tsukeru_is_split_from_attach_and_equip(self):
         equipped = apply_override("つける", "つける", {"meaning": "install"})

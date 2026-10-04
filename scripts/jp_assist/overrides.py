@@ -396,6 +396,36 @@ OVERRIDES: dict[tuple[str, str], dict] = {
         "dictionaryReading": "さま",
         "senseId": "override:様|さま",
     },
+    ("ため", "ため"): {
+        "meaning": "for; for the sake of; in order to; because of",
+        "note": "Purpose or reason marker in the dialogue, not benefit/welfare.",
+        "partOfSpeech": "noun",
+    },
+    ("にゃ", "にゃ"): {
+        "meaning": "contraction of には; for; as for; to",
+        "note": "Colloquial contraction in character dialogue, not a conditional ending.",
+        "partOfSpeech": "particle",
+    },
+    ("城", "しろ"): {
+        "meaning": "castle",
+        "note": "Standalone noun, not only a place-name suffix.",
+        "partOfSpeech": "noun",
+    },
+    ("羽", "はね"): {
+        "meaning": "feather; wing; plume",
+        "note": "Standalone noun in this corpus.",
+        "partOfSpeech": "noun",
+    },
+    ("回", "かい"): {
+        "meaning": "time; occurrence; counter for repetitions",
+        "note": "Counter usage.",
+        "partOfSpeech": "counter",
+    },
+    ("しまう", "しまう"): {
+        "meaning": "to finish; to do completely; to end up doing; to put away",
+        "note": "Often an auxiliary expressing completion or an unintended result.",
+        "partOfSpeech": "verb",
+    },
 }
 
 
