@@ -30,6 +30,12 @@ void StudyPersistence_Save();
 bool StudyPersistence_IsSaved(const std::string& tokenId);
 void StudyPersistence_ToggleSaved(const std::string& tokenId);
 
+// Known state is sense-specific: homographs may share a lemma/reading while
+// carrying different meanings. Marking is intentionally one-way in-game;
+// the account site remains the place to correct or undo a knowledge claim.
+bool StudyPersistence_IsKnown(const std::string& tokenId, const std::string& senseId);
+void StudyPersistence_MarkKnown(const std::string& tokenId, const std::string& senseId);
+
 // Increments the in-memory encounter count and last-encounter timestamp for
 // tokenId. Does not write to disk itself - call StudyPersistence_Save()
 // separately (e.g. once when Study Mode closes) to avoid a disk write on

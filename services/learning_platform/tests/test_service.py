@@ -256,6 +256,38 @@ class LearningPlatformTest(unittest.TestCase):
         self.assertEqual(len(words), 1)
         self.assertTrue(words[0]["saved"])
 
+    def test_game_can_mark_an_exact_word_sense_known(self):
+        device = self.pair_device()
+        sense_id = "jmdict:1494620:0"
+        event = self.event(
+            "known-weapon", "word_known", wordId="武器|ぶき", senseId=sense_id,
+        )
+        first = self.platform.ingest_events(device["deviceToken"], [event])
+        retry = self.platform.ingest_events(device["deviceToken"], [event])
+
+        self.assertEqual(first["acceptedEventIds"], ["known-weapon"])
+        self.assertEqual(retry["duplicateEventIds"], ["known-weapon"])
+        word = self.platform.list_word_progress(self.session)[0]
+        self.assertEqual(word["wordId"], "武器|ぶき")
+        self.assertEqual(word["senseId"], sense_id)
+        self.assertEqual(word["learningState"], "known")
+
+        self.clock.value = datetime(2026, 10, 2, 13, 0, tzinfo=timezone.utc)
+        self.platform.update_word_annotation(
+            self.session, "武器|ぶき", sense_id, "learning", "Needs practice", ["combat"],
+        )
+        self.platform.ingest_events(
+            device["deviceToken"],
+            [self.event(
+                "stale-known-weapon", "word_known", "2026-10-02T12:30:00Z",
+                wordId="武器|ぶき", senseId=sense_id,
+            )],
+        )
+        word = self.platform.list_word_progress(self.session)[0]
+        self.assertEqual(word["learningState"], "learning")
+        self.assertEqual(word["note"], "Needs practice")
+        self.assertEqual(word["tags"], ["combat"])
+
     def test_save_state_uses_event_time_when_offline_batches_arrive_out_of_order(self):
         device = self.pair_device()
         self.platform.ingest_events(

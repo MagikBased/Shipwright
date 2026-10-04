@@ -67,6 +67,7 @@ uint64_t sStudyEnterCount = 0;
 uint64_t sStudyNavigationCount = 0;
 uint64_t sStudyScrollCount = 0;
 uint64_t sSaveToggleCount = 0;
+uint64_t sKnownMarkCount = 0;
 uint64_t sAudioPlayCount = 0;
 bool sFrozenChoiceValid = false;
 uint8_t sFrozenChoiceIndex = 0;
@@ -225,7 +226,9 @@ void DrawStudyCard() {
     const auto& tokens = page->tokens;
     int index = std::min(sSelectedTokenIndex, static_cast<int>(tokens.size()) - 1);
 
-    JPAssist::JPAssistOverlay_ShowStudy(*page, index, JPAssist::JPAssistAudio_HasWord(tokens[index].Id()));
+    JPAssist::JPAssistOverlay_ShowStudy(
+        *page, index, JPAssist::JPAssistAudio_HasWord(tokens[index].Id()),
+        JPAssist::StudyPersistence_IsKnown(tokens[index].Id(), tokens[index].senseId));
 }
 
 // Handles Study Mode's own input and, while active, consumes the buttons
@@ -319,7 +322,7 @@ void HandleStudyModeInput(PlayState* play, MessageContext* msgCtx, Input* input)
         if (CHECK_BTN_ALL(input->press.button, BTN_CRIGHT)) {
             sSaveToggleCount++;
             int index = std::min(sSelectedTokenIndex, static_cast<int>(tokens.size()) - 1);
-            const std::string& tokenId = tokens[index].Id();
+            const std::string tokenId = tokens[index].Id();
             JPAssist::StudyPersistence_ToggleSaved(tokenId);
             JPAssist::StudyPersistence_Save();
             const bool saved = JPAssist::StudyPersistence_IsSaved(tokenId);
@@ -329,11 +332,26 @@ void HandleStudyModeInput(PlayState* play, MessageContext* msgCtx, Input* input)
                         saved ? "saved" : "unsaved");
         }
 
-        // C-Left plays the reviewed pronunciation when the optional local
-        // audio bundle contains this stable word identity. Missing audio is
-        // intentionally a no-op so text-only installations behave exactly
-        // as before.
+        // C-Left records an explicit, sense-specific knowledge claim. Keep
+        // it one-way in-game to make rapid marking predictable; corrections
+        // and reversals remain available from the account vocabulary page.
         if (CHECK_BTN_ALL(input->press.button, BTN_CLEFT)) {
+            const int index = std::min(sSelectedTokenIndex, static_cast<int>(tokens.size()) - 1);
+            const std::string& tokenId = tokens[index].Id();
+            if (!JPAssist::StudyPersistence_IsKnown(tokenId, tokens[index].senseId)) {
+                JPAssist::StudyPersistence_MarkKnown(tokenId, tokens[index].senseId);
+                JPAssist::StudyPersistence_Save();
+                JPAssist::LearningSync_RecordWordEvent("word_known", tokens[index], sTrackedTextId,
+                                                       sCurrentPageIndex);
+                sKnownMarkCount++;
+                SPDLOG_INFO("[JPAssist] Token {} sense {} marked known", tokenId, tokens[index].senseId);
+            }
+        }
+
+        // L and Z are interchangeable pronunciation controls. They are
+        // otherwise unused by Study Mode and preserve C-Left for the more
+        // frequent knowledge-marking action.
+        if (CHECK_BTN_ALL(input->press.button, BTN_L) || CHECK_BTN_ALL(input->press.button, BTN_Z)) {
             const int index = std::min(sSelectedTokenIndex, static_cast<int>(tokens.size()) - 1);
             if (JPAssist::JPAssistAudio_PlayWord(tokens[index].Id())) {
                 sAudioPlayCount++;
@@ -348,7 +366,7 @@ void HandleStudyModeInput(PlayState* play, MessageContext* msgCtx, Input* input)
     // close binding above; keeping it in this defensive mask also covers the
     // SkipText branch, which reads cur.button rather than only press.button.
     constexpr uint16_t studyOwnedButtons =
-        BTN_B | BTN_R | BTN_DUP | BTN_DDOWN | BTN_DLEFT | BTN_DRIGHT | BTN_CLEFT | BTN_CRIGHT;
+        BTN_B | BTN_R | BTN_DUP | BTN_DDOWN | BTN_DLEFT | BTN_DRIGHT | BTN_CLEFT | BTN_CRIGHT | BTN_L | BTN_Z;
     input->press.button &= ~studyOwnedButtons;
     input->cur.button &= ~studyOwnedButtons;
 
@@ -682,6 +700,7 @@ RuntimeStatus JPAssist_GetRuntimeStatus() {
     status.studyNavigationCount = sStudyNavigationCount;
     status.studyScrollCount = sStudyScrollCount;
     status.saveToggleCount = sSaveToggleCount;
+    status.knownMarkCount = sKnownMarkCount;
     status.audioPlayCount = sAudioPlayCount;
     if (const StudyPage* page = CurrentStudyPage(); page != nullptr) {
         status.currentPageTokenCount = static_cast<int>(page->tokens.size());
@@ -689,6 +708,8 @@ RuntimeStatus JPAssist_GetRuntimeStatus() {
         if (!page->tokens.empty()) {
             const int index = std::clamp(sSelectedTokenIndex, 0, static_cast<int>(page->tokens.size()) - 1);
             status.selectedTokenSaved = StudyPersistence_IsSaved(page->tokens[index].Id());
+            status.selectedTokenKnown =
+                StudyPersistence_IsKnown(page->tokens[index].Id(), page->tokens[index].senseId);
             status.selectedTokenAudioAvailable = JPAssistAudio_HasWord(page->tokens[index].Id());
         }
     }

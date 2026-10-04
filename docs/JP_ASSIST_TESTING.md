@@ -95,7 +95,9 @@ controller-glyph persistence regression. Unit tests also verify that dialogue
 and Study cards remain within 720p, 1080p, and ultrawide work areas at all
 supported scales. Physical-controller mapping and ergonomics, visible scroll
 movement, Japanese glyph rendering, and visual overlap still require an
-in-game manual pass. The controller-glyph case is intentionally
+in-game manual pass. C-Left known marking is manual because the action is
+deliberately one-way and an automated smoke run must not modify the learner's
+knowledge state. The controller-glyph case is intentionally
 persistence-only and terminal because its special two-page native message is
 unsafe to drive as a standalone interactive textbox.
 
@@ -106,7 +108,7 @@ full suite, so the temporary scene remains available for inspection.
 
 | Check | Scenario | Action | Pass condition |
 |---|---|---|---|
-| Study focus | `mido_house_sign` | R, D-Right, D-Left, C-Right, B | Counters increment; Study-owned inputs do not alter native choices; saved state updates |
+| Study focus | `mido_house_sign` | R, D-Right, D-Left, C-Right, C-Left, B | Counters increment; Study-owned inputs do not alter native choices; saved and known state update |
 | Advance while studying | Any multi-page message | Press R, then advance with A and C-Up | Native dialogue advances, Study Mode remains open, the English line updates, and token selection resets to the first token |
 | Native highlight | `adult_kakariko` | R, then move through tokens with D-Left/D-Right | Blue backlight follows the complete selected word in the original Japanese textbox without covering its glyphs |
 | Long card | `adult_kakariko` | R, then D-Up/D-Down | Long definitions and notes scroll; text stays inside the compact card |

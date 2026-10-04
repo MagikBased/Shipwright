@@ -18,6 +18,7 @@ struct RuntimeStatus {
     int selectedTokenIndex = 0;
     int currentPageTokenCount = 0;
     bool selectedTokenSaved = false;
+    bool selectedTokenKnown = false;
     bool selectedTokenAudioAvailable = false;
     DialogueStudy::DialogueDisplayMode displayMode = DialogueStudy::DialogueDisplayMode::AttachedTranslation;
     DialogueStudy::DialogueSurface dialogueSurface = DialogueStudy::DialogueSurface::Hidden;
@@ -27,6 +28,7 @@ struct RuntimeStatus {
     uint64_t studyNavigationCount = 0;
     uint64_t studyScrollCount = 0;
     uint64_t saveToggleCount = 0;
+    uint64_t knownMarkCount = 0;
     uint64_t audioPlayCount = 0;
 };
 

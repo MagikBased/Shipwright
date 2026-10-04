@@ -97,8 +97,9 @@ Suggested controls:
 | D-pad Up / Down | Move between dictionary senses or card sections |
 | A or C-Up | Reveal or advance native dialogue while keeping the card open |
 | B | Close the card, then exit Study Mode |
-| C-Left | Play the selected word's pronunciation when reviewed audio is installed |
+| C-Left | Mark the selected word sense as known |
 | C-Right | Add or remove the word from the study list |
+| L or Z | Play the selected word's pronunciation when reviewed audio is installed |
 | R | Exit Study Mode |
 
 The selected Japanese token is highlighted directly behind its native textbox
@@ -109,8 +110,8 @@ re-decoding or mutating live dialogue state.
 
 Pronunciation audio is optional and keyed by the same stable `written|reading`
 identity as cards and saved progress. Only locally packaged, reviewed WAV clips
-are exposed in-game. C-Left is omitted from the card hints when the selected
-word has no clip. Clips are decoded on first use, resampled to Ship's 32 kHz
+are exposed in-game. The L/Z listening hint is omitted from the card when the
+selected word has no clip. Clips are decoded on first use, resampled to Ship's 32 kHz
 stereo stream, cached, and mixed into the normal game output without replacing
 music, effects, or dialogue state.
 
@@ -632,6 +633,10 @@ Built as `scripts/jp_assist/{extract_dialogue,message_codes,tokenize_dialogue,ov
 
 - `StudyPersistence.h/.cpp` stores progress in `jp_assist_progress.json` via `Ship::Context::GetPathRelativeToAppDirectory` (the same directory `shipofharkinian.json`/`Save/`/`presets/` already use), following existing conventions rather than inventing a new location: safe load modeled on `Presets.cpp`'s try/catch-and-skip-on-corruption pattern, atomic write modeled on `SaveManager.cpp`'s write-to-`.tmp`-then-`std::filesystem::rename` pattern for `.sav` files.
 - C-Right in Study Mode toggles the selected token's saved status (saved immediately, since it's an explicit and infrequent action); encounter counts increment once per navigation to a token (not once per frame the card is drawn) and are flushed to disk when Study Mode closes, to avoid a disk write on every D-pad press.
+- C-Left marks the selected dictionary sense known, persists it immediately,
+  and queues a content-neutral `word_known` account event. The card displays
+  `Known` immediately. L and Z interchangeably retain optional pronunciation
+  playback.
 - **Real bug found and fixed via live restart-testing, not just code review**: `StudyPersistence_Load()`'s `json.value(key, default).items()` chained directly in a range-for is undefined behavior - `.value()` returns a temporary `nlohmann::json` by value, and the range-for only extends the lifetime of what it directly binds to (the `.items()` iteration proxy), not the sub-expression the proxy references. The temporary's lifetime ends before the loop body runs. This is exactly the kind of bug that not not show up in code review and behaves inconsistently at runtime: the first observed symptom was a bogus `type must be number, but is null` parse exception; adding diagnostics to narrow it down changed the symptom to a straight segfault on the very next run, with the same on-disk file. Tracked down with a minimal standalone reproduction against the exact file rather than guessing from the exception message, and fixed by binding each `.value()` result to a named local before iterating it. Also explains an earlier observation mid-testing that already-saved words seemed to survive a reload once - UB is exactly this inconsistent; it doesn't corrupt every time.
 - `build_anki_deck.py` collapses every token occurrence across however many messages were tokenized into one note per `(lemma, reading, meaning)` identity, with a stable GUID derived from that same identity (design doc 8.3) rather than genanki's default field-hash GUID, so editing an example sentence later doesn't fork the note. Verified directly, not just asserted: regenerated the deck twice from the same input and confirmed the two `.apkg` files contain identical note GUID sets - satisfies the design doc's "regenerating the deck must update existing notes instead of creating duplicates" acceptance criterion.
 - `--progress-file` lets the export be restricted to only saved words, or (by omitting it) the full tokenized set - covers "export saved words and the full vocabulary corpus" without two separate scripts.
@@ -688,7 +693,8 @@ Built as `scripts/jp_assist/{extract_dialogue,message_codes,tokenize_dialogue,ov
 
 ## 16. Open decisions
 
-1. Should C-Right save the selected word, or would another Study Mode input be more comfortable?
+1. Should known words remain fully selectable, become visually deemphasized,
+   or be skipped by default during navigation?
 2. Which additional SoH render hook can support Native Swap without mutating the live message decoder state?
 3. Should cutscenes freeze completely while the study panel is open?
 4. Should particles and punctuation be selectable by default?

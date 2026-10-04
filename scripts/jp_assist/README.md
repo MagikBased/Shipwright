@@ -144,11 +144,12 @@ JP Assist reuses.
 
 ### Optional in-game pronunciation audio
 
-Study Mode plays reviewed word audio with **C-Left** when the highlighted
-`lemma|reading` identity is present in the optional local audio manifest. The
-hint appears only for words that have audio. Clips are decoded from WAV,
-resampled to Ship's 32 kHz stereo stream, and mixed with game audio; pressing
-C-Left again restarts the pronunciation.
+Study Mode marks the highlighted sense known with **C-Left**. It plays reviewed
+word audio with either **L** or **Z** when the highlighted `lemma|reading`
+identity is present in the optional local audio manifest. The listening hint
+appears only for words that have audio. Clips are decoded from WAV, resampled
+to Ship's 32 kHz stereo stream, and mixed with game audio; pressing L or Z
+again restarts the pronunciation.
 
 Generate chapter audio into the ignored review area, listen to every clip, and
 change that generated manifest's `reviewStatus` to `approved`. Then package one

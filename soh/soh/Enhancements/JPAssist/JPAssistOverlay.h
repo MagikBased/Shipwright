@@ -13,7 +13,8 @@ bool JPAssistOverlay_HasJapaneseFont();
 
 // Study Mode combines the official English line with the selected word's
 // Anki-like card. The manager owns navigation; the overlay is presentation-only.
-void JPAssistOverlay_ShowStudy(const StudyPage& page, int selectedTokenIndex, bool wordAudioAvailable = false);
+void JPAssistOverlay_ShowStudy(const StudyPage& page, int selectedTokenIndex, bool wordAudioAvailable = false,
+                               bool selectedTokenKnown = false);
 void JPAssistOverlay_ScrollStudy(float pixels);
 void JPAssistOverlay_Hide();
 

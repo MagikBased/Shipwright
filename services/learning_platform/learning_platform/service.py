@@ -43,6 +43,7 @@ EVENT_TYPES = {
     "word_selected",
     "word_saved",
     "word_unsaved",
+    "word_known",
     "dialogue_seen",
     "study_mode_opened",
 }
@@ -51,6 +52,7 @@ WORD_EVENT_TYPES = {
     "word_selected",
     "word_saved",
     "word_unsaved",
+    "word_known",
 }
 EVENT_FIELDS = {
     "eventId",
@@ -2584,7 +2586,7 @@ class LearningPlatform:
                 """,
                 (event["count"], user_id, event["gameId"], event["wordId"], sense_id),
             )
-        else:
+        elif event["type"] in {"word_saved", "word_unsaved"}:
             saved = 1 if event["type"] == "word_saved" else 0
             connection.execute(
                 """
@@ -2605,6 +2607,18 @@ class LearningPlatform:
                     event["occurredAt"],
                     event["eventId"],
                 ),
+            )
+        elif event["type"] == "word_known":
+            connection.execute(
+                """
+                INSERT INTO word_annotations(
+                    user_id, word_id, sense_id, learning_state, note, tags_json, updated_at
+                ) VALUES (?, ?, ?, 'known', '', '[]', ?)
+                ON CONFLICT(user_id, word_id, sense_id) DO UPDATE SET
+                    learning_state = 'known', updated_at = excluded.updated_at
+                WHERE excluded.updated_at >= word_annotations.updated_at
+                """,
+                (user_id, event["wordId"], sense_id, event["occurredAt"]),
             )
 
     @staticmethod

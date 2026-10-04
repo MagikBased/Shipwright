@@ -36,6 +36,7 @@ struct OverlayState {
     StudyPage studyPage;
     int selectedTokenIndex = 0;
     bool wordAudioAvailable = false;
+    bool selectedTokenKnown = false;
     float pendingStudyScroll = 0.0f;
 };
 
@@ -194,7 +195,13 @@ class JPAssistOverlayWindow final : public Ship::GuiWindow {
         DrawSectionSeparator(sectionHeight, separatorGutter);
         ImGui::BeginChild("JPAssistDefinitionSection", ImVec2(definitionWidth, sectionHeight), false,
                           ImGuiWindowFlags_NoScrollWithMouse);
-        const std::string metadata = BuildMetadataLabel(token);
+        std::string metadata = BuildMetadataLabel(token);
+        if (mFrameState.selectedTokenKnown) {
+            if (!metadata.empty()) {
+                metadata += " · ";
+            }
+            metadata += "Known";
+        }
         if (!metadata.empty()) {
             const float headerLeft = ImGui::GetCursorScreenPos().x;
             const float headerRight = ImGui::GetCursorScreenPos().x + ImGui::GetContentRegionAvail().x;
@@ -582,7 +589,8 @@ class JPAssistOverlayWindow final : public Ship::GuiWindow {
         };
         const Hint hints[] = {
             { kDPadGlyph, "move / scroll" },
-            { wordAudioAvailable ? kCLeftGlyph : nullptr, wordAudioAvailable ? "listen" : nullptr },
+            { kCLeftGlyph, mFrameState.selectedTokenKnown ? "known" : "mark known" },
+            { wordAudioAvailable ? kLGlyph : nullptr, wordAudioAvailable ? "listen (L/Z)" : nullptr },
             { kCRightGlyph, "save" },
             { kAGlyph, "next" },
             { kRGlyph, "close" },
@@ -661,7 +669,8 @@ bool JPAssistOverlay_HasJapaneseFont() {
     return OTRGlobals::Instance != nullptr && OTRGlobals::Instance->fontJapanese != nullptr;
 }
 
-void JPAssistOverlay_ShowStudy(const StudyPage& page, int selectedTokenIndex, bool wordAudioAvailable) {
+void JPAssistOverlay_ShowStudy(const StudyPage& page, int selectedTokenIndex, bool wordAudioAvailable,
+                               bool selectedTokenKnown) {
     std::lock_guard<std::mutex> lock(sStateMutex);
     if (sState.mode != OverlayMode::Study || sState.selectedTokenIndex != selectedTokenIndex ||
         sState.studyPage.japanese != page.japanese) {
@@ -671,6 +680,7 @@ void JPAssistOverlay_ShowStudy(const StudyPage& page, int selectedTokenIndex, bo
     sState.studyPage = page;
     sState.selectedTokenIndex = selectedTokenIndex;
     sState.wordAudioAvailable = wordAudioAvailable;
+    sState.selectedTokenKnown = selectedTokenKnown;
 }
 
 void JPAssistOverlay_ScrollStudy(float pixels) {

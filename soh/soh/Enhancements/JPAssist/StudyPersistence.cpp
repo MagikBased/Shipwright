@@ -5,6 +5,7 @@
 #include <fstream>
 #include <set>
 #include <unordered_map>
+#include <utility>
 
 #include <nlohmann/json.hpp>
 #include <spdlog/spdlog.h>
@@ -17,10 +18,11 @@ namespace JPAssist {
 
 namespace {
 
-constexpr int kSchemaVersion = 1;
+constexpr int kSchemaVersion = 2;
 constexpr size_t kMaxHistoryEntries = 20;
 
 std::set<std::string> sSavedTokenIds;
+std::set<std::pair<std::string, std::string>> sKnownTokens;
 std::unordered_map<std::string, int> sEncounterCounts;
 std::unordered_map<std::string, int64_t> sLastEncounterUnixTime;
 std::vector<HistoryEntry> sHistory; // oldest first; trimmed to kMaxHistoryEntries
@@ -34,6 +36,7 @@ std::string ProgressFilePath() {
 
 void StudyPersistence_Load() {
     sSavedTokenIds.clear();
+    sKnownTokens.clear();
     sEncounterCounts.clear();
     sLastEncounterUnixTime.clear();
     sHistory.clear();
@@ -72,6 +75,13 @@ void StudyPersistence_Load() {
         for (const auto& id : savedTokenIds) {
             sSavedTokenIds.insert(id.get<std::string>());
         }
+        nlohmann::json knownTokens = json.value("knownTokens", nlohmann::json::array());
+        for (const auto& known : knownTokens) {
+            const std::string tokenId = known.value("tokenId", "");
+            if (!tokenId.empty()) {
+                sKnownTokens.emplace(tokenId, known.value("senseId", ""));
+            }
+        }
         nlohmann::json encounterCounts = json.value("encounterCounts", nlohmann::json::object());
         for (const auto& [id, count] : encounterCounts.items()) {
             sEncounterCounts[id] = count.get<int>();
@@ -88,11 +98,13 @@ void StudyPersistence_Load() {
             historyEntry.unixTime = entry.value("unixTime", static_cast<int64_t>(0));
             sHistory.push_back(historyEntry);
         }
-        SPDLOG_INFO("[JPAssist] Loaded progress: {} saved token(s), {} with encounter counts, {} history entries",
-                    sSavedTokenIds.size(), sEncounterCounts.size(), sHistory.size());
+        SPDLOG_INFO(
+            "[JPAssist] Loaded progress: {} saved token(s), {} known sense(s), {} with encounter counts, {} history entries",
+            sSavedTokenIds.size(), sKnownTokens.size(), sEncounterCounts.size(), sHistory.size());
     } catch (const std::exception& e) {
         SPDLOG_ERROR("[JPAssist] Failed to parse progress file at {} ({}) - starting fresh", path, e.what());
         sSavedTokenIds.clear();
+        sKnownTokens.clear();
         sEncounterCounts.clear();
         sLastEncounterUnixTime.clear();
         sHistory.clear();
@@ -104,6 +116,10 @@ void StudyPersistence_Save() {
     json["schemaVersion"] = kSchemaVersion;
     json["corpusVersion"] = StudyRepository_IsCorpusLoaded() ? StudyRepository_GetCorpusVersion() : "unavailable";
     json["savedTokenIds"] = std::vector<std::string>(sSavedTokenIds.begin(), sSavedTokenIds.end());
+    json["knownTokens"] = nlohmann::json::array();
+    for (const auto& [tokenId, senseId] : sKnownTokens) {
+        json["knownTokens"].push_back({ { "tokenId", tokenId }, { "senseId", senseId } });
+    }
     json["encounterCounts"] = sEncounterCounts;
     json["lastEncounterUnixTime"] = sLastEncounterUnixTime;
     nlohmann::json historyArray = nlohmann::json::array();
@@ -156,6 +172,20 @@ void StudyPersistence_ToggleSaved(const std::string& tokenId) {
     } else {
         sSavedTokenIds.insert(tokenId);
     }
+}
+
+bool StudyPersistence_IsKnown(const std::string& tokenId, const std::string& senseId) {
+    if (!sLoaded) {
+        StudyPersistence_Load();
+    }
+    return sKnownTokens.contains({ tokenId, senseId });
+}
+
+void StudyPersistence_MarkKnown(const std::string& tokenId, const std::string& senseId) {
+    if (!sLoaded) {
+        StudyPersistence_Load();
+    }
+    sKnownTokens.emplace(tokenId, senseId);
 }
 
 void StudyPersistence_RecordEncounter(const std::string& tokenId) {

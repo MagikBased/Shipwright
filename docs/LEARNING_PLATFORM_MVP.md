@@ -94,10 +94,13 @@ Initial event types:
 - `word_selected`
 - `word_saved`
 - `word_unsaved`
+- `word_known`
 - `dialogue_seen`
 - `study_mode_opened`
 
-Encounter and selection counts are additive. Save state uses event time with a
+Encounter and selection counts are additive. `word_known` applies to the exact
+`wordId` and `senseId`, allowing homographs to retain independent knowledge
+state across games. Save state uses event time with a
 deterministic event-ID tie breaker. Website review answers are append-only and
 feed an MVP spaced-review state table. This is not presented as exact FSRS or
 Anki scheduling compatibility; the immutable answer history leaves that future

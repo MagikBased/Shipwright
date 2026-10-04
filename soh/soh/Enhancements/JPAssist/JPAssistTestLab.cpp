@@ -889,6 +889,8 @@ class TestLabWindow final : public Ship::GuiWindow {
                     runtime.currentPageTokenCount);
         ImGui::Text("Study %s  token %d", runtime.studyModeActive ? "active" : "closed",
                     runtime.selectedTokenIndex);
+        ImGui::Text("Selected state: %s%s", runtime.selectedTokenKnown ? "known" : "not known",
+                    runtime.selectedTokenSaved ? ", saved" : "");
         ImGui::Text("Selected pronunciation %s  plays %llu",
                     runtime.selectedTokenAudioAvailable ? "available" : "unavailable",
                     static_cast<unsigned long long>(runtime.audioPlayCount));
@@ -896,10 +898,11 @@ class TestLabWindow final : public Ship::GuiWindow {
                     DialogueSurfaceLabel(runtime.dialogueSurface), runtime.displayModeFallback ? " (fallback)" : "");
         ImGui::Text("Choice page %s  choice %u  selection %s", runtime.currentPageIsChoice ? "yes" : "no",
                     runtime.choiceIndex, runtime.choiceSelectionFrozen ? "frozen" : "native");
-        ImGui::Text("Observed controls: Study %llu, navigation %llu, saves %llu, audio %llu",
+        ImGui::Text("Observed controls: Study %llu, navigation %llu, saves %llu, known %llu, audio %llu",
                     static_cast<unsigned long long>(runtime.studyEnterCount),
                     static_cast<unsigned long long>(runtime.studyNavigationCount),
                     static_cast<unsigned long long>(runtime.saveToggleCount),
+                    static_cast<unsigned long long>(runtime.knownMarkCount),
                     static_cast<unsigned long long>(runtime.audioPlayCount));
         ImGui::TextDisabled("Smoke verifies warp, corpus, R, navigation, focus consumption, and choice freeze.");
     }

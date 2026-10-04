@@ -144,7 +144,8 @@ bool JPAssistAudio_PlayWord(const std::string& wordId) {
 
     std::lock_guard<std::mutex> lock(sAudioMutex);
     const auto cached = sDecodedClips.emplace(wordId, std::move(decoded)).first;
-    // Re-pressing C-Left restarts the selected pronunciation immediately.
+    // Re-pressing either Study Mode pronunciation binding restarts the
+    // selected clip immediately.
     sActiveClip = cached->second;
     sActiveSample = 0;
     return true;
