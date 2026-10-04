@@ -4376,7 +4376,7 @@
         {
           "id": "余|よ|I", "written": "余", "reading": "よ", "partOfSpeech": "pronoun", "meaning": "I; me (archaic, used by rulers)",
           "sentenceJapanese": "王は「余が責任を持とう」と家臣に告げた。", "sentenceEnglish": "The king told his retainers, 'I shall take responsibility.'",
-          "corpusEvidence": {"identity": "余|よ|jmdict:1543840:2", "messageIds": ["0x401a"]}, "wordAudio": null, "sentenceAudio": null
+          "corpusEvidence": {"identity": "余|よ|override:余|よ", "messageIds": ["0x401a"]}, "wordAudio": null, "sentenceAudio": null
         },
         {
           "id": "大切|たいせつ|important", "written": "大切", "reading": "たいせつ", "partOfSpeech": "adjectival noun", "meaning": "important; precious; necessary",
@@ -5321,6 +5321,116 @@
           },
           "wordAudio": null,
           "sentenceAudio": null
+        },
+        {
+          "id": "ゴロォ|ごろぉ|stretched-ending", "written": "ゴロォ", "reading": "ごろぉ", "partOfSpeech": "suffix", "meaning": "stretched Goron sentence ending",
+          "sentenceJapanese": "山の職人は『もう少し待つゴロォ』と答えた。", "sentenceEnglish": "The mountain craftsman replied, 'Wait a little longer.'",
+          "corpusEvidence": {"identity": "ゴロォ|ごろぉ|override:ゴロォ|ごろぉ", "messageIds": ["0x3058", "0x3059", "0x305a", "0x305c", "0x305d", "0x305e"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "重い|おもい|heavy", "written": "重い", "reading": "おもい", "partOfSpeech": "adjective", "meaning": "heavy; weighty",
+          "sentenceJapanese": "この重いブーツなら水の底を歩ける。", "sentenceEnglish": "With these heavy boots, one can walk along the bottom of the water.",
+          "corpusEvidence": {"identity": "重い|おもい|jmdict:1335750:0", "messageIds": ["0x0053", "0x0153"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "くるしい|くるしい|painful", "written": "くるしい", "reading": "くるしい", "partOfSpeech": "adjective", "meaning": "painful; difficult; distressing",
+          "sentenceJapanese": "息が続かず、水中にいるのがくるしくなった。", "sentenceEnglish": "Running out of breath made it painful to remain underwater.",
+          "corpusEvidence": {"identity": "くるしい|くるしい|jmdict:1244320:0", "messageIds": ["0x0051", "0x4012", "0x401f"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "水中|すいちゅう|underwater", "written": "水中", "reading": "すいちゅう", "partOfSpeech": "noun", "meaning": "underwater; in the water",
+          "sentenceJapanese": "水中には青く光る道しるべが並んでいた。", "sentenceEnglish": "Blue glowing markers lined the underwater path.",
+          "corpusEvidence": {"identity": "水中|すいちゅう|jmdict:1371840:0", "messageIds": ["0x00ab", "0x4012", "0x401d", "0x401f"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "年|ねん|year", "written": "年", "reading": "ねん", "partOfSpeech": "noun", "meaning": "year; years",
+          "sentenceJapanese": "湖が凍ってから七年が過ぎた。", "sentenceEnglish": "Seven years have passed since the lake froze.",
+          "corpusEvidence": {"identity": "年|ねん|jmdict:2084840:0", "messageIds": ["0x403e", "0x4093"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "忘れる|わすれる|forget", "written": "忘れる", "reading": "わすれる", "partOfSpeech": "verb", "meaning": "to forget; to leave behind",
+          "sentenceJapanese": "氷の洞窟で見つけた印を忘れないで。", "sentenceEnglish": "Do not forget the symbol found in the ice cavern.",
+          "corpusEvidence": {"identity": "忘れる|わすれる|jmdict:1519210:0", "messageIds": ["0x305a", "0x40a3", "0x40a7"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "ブーツ|ぶーつ|boots", "written": "ブーツ", "reading": "ぶーつ", "partOfSpeech": "noun", "meaning": "boots",
+          "sentenceJapanese": "鉄のブーツをはくと湖の底へ沈んだ。", "sentenceEnglish": "Putting on the iron boots made me sink to the bottom of the lake.",
+          "corpusEvidence": {"identity": "ブーツ|ぶーつ|jmdict:1113130:0", "messageIds": ["0x0053", "0x0153", "0x401d"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "目薬|めぐすり|eye-drops", "written": "目薬", "reading": "めぐすり", "partOfSpeech": "noun", "meaning": "eye drops; eyewash",
+          "sentenceJapanese": "薬師は雪山の薬草から目薬を作った。", "sentenceEnglish": "The apothecary made eye drops from herbs gathered on the snowy mountain.",
+          "corpusEvidence": {"identity": "目薬|めぐすり|jmdict:1535690:0", "messageIds": ["0x000e", "0x3059", "0x4001", "0x4014"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "300|さんびゃく|three-hundred", "written": "300", "reading": "さんびゃく", "partOfSpeech": "noun", "meaning": "three hundred",
+          "sentenceJapanese": "古い潜水具は金貨三百枚で売られている。", "sentenceEnglish": "The old diving gear is sold for three hundred gold coins.",
+          "corpusEvidence": {"identity": "300|さんびゃく|number:300", "messageIds": ["0x0094", "0x00ab", "0x00b8", "0x00b9"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "セレナーデ|せれなーで|serenade", "written": "セレナーデ", "reading": "せれなーで", "partOfSpeech": "noun", "meaning": "serenade",
+          "sentenceJapanese": "湖畔で奏でたセレナーデが水面に響いた。", "sentenceEnglish": "The serenade played by the lakeside echoed across the water.",
+          "corpusEvidence": {"identity": "セレナーデ|せれなーで|jmdict:1074910:0", "messageIds": ["0x0075", "0x0872", "0x0895", "0x4038"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "七|なな|seven", "written": "七", "reading": "なな", "partOfSpeech": "noun", "meaning": "seven",
+          "sentenceJapanese": "七つの水門を開くと中央の塔が動いた。", "sentenceEnglish": "Opening seven water gates caused the central tower to move.",
+          "corpusEvidence": {"identity": "七|なな|jmdict:1319210:0", "messageIds": ["0x403e", "0x4093"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "事|こと|matter", "written": "事", "reading": "こと", "partOfSpeech": "noun", "meaning": "thing; matter; fact",
+          "sentenceJapanese": "氷の民に起きた事を賢者から聞いた。", "sentenceEnglish": "I heard from the sage what had happened to the people of the ice.",
+          "corpusEvidence": {"identity": "事|こと|jmdict:1313580:0", "messageIds": ["0x4038", "0x4041", "0x4049"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "魔物|まもの|monster", "written": "魔物", "reading": "まもの", "partOfSpeech": "noun", "meaning": "monster; demon; evil spirit",
+          "sentenceJapanese": "氷の下から水にすむ魔物が現れた。", "sentenceEnglish": "An aquatic monster emerged from beneath the ice.",
+          "corpusEvidence": {"identity": "魔物|まもの|jmdict:1524220:0", "messageIds": ["0x4037", "0x403e", "0x4059"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "救う|すくう|save", "written": "救う", "reading": "すくう", "partOfSpeech": "verb", "meaning": "to save; to rescue",
+          "sentenceJapanese": "凍った村を救うため泉の呪いを解いた。", "sentenceEnglish": "We broke the spring's curse to save the frozen village.",
+          "corpusEvidence": {"identity": "救う|すくう|jmdict:1229060:0", "messageIds": ["0x4037", "0x403e", "0x4058"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "渡す|わたす|hand-over", "written": "渡す", "reading": "わたす", "partOfSpeech": "verb", "meaning": "to hand over; to give; to pass",
+          "sentenceJapanese": "職人に薬を渡すと、彼は仕事を再開した。", "sentenceEnglish": "When I handed the medicine to the craftsman, he resumed his work.",
+          "corpusEvidence": {"identity": "渡す|わたす|override:渡す|わたす", "messageIds": ["0x000d", "0x000e", "0x305a"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "刀|かたな|sword", "written": "刀", "reading": "かたな", "partOfSpeech": "noun", "meaning": "sword; katana",
+          "sentenceJapanese": "鍛冶屋は氷のように輝く刀を打った。", "sentenceEnglish": "The smith forged a sword that gleamed like ice.",
+          "corpusEvidence": {"identity": "刀|かたな|jmdict:1446420:0", "messageIds": ["0x000a", "0x000b", "0x000c"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "ふむ|ふむ|hmm", "written": "ふむ", "reading": "ふむ", "partOfSpeech": "interjection", "meaning": "hmm; indeed; I see",
+          "sentenceJapanese": "ふむ、この氷は普通の炎では溶けないようだ。", "sentenceEnglish": "Hmm, it seems this ice will not melt with ordinary fire.",
+          "corpusEvidence": {"identity": "ふむ|ふむ|override:ふむ|ふむ", "messageIds": ["0x4014"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "ベイベ|べいべ|baby", "written": "ベイベ", "reading": "べいべ", "partOfSpeech": "noun", "meaning": "baby; affectionate form of address",
+          "sentenceJapanese": "寒い夜でも元気でいろよ、ベイベ。", "sentenceEnglish": "Stay strong even on this cold night, baby.",
+          "corpusEvidence": {"identity": "ベイベ|べいべ|override:ベイベ|べいべ", "messageIds": ["0x40a2", "0x40a3", "0x40a6"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "ガエル|がえる|frog", "written": "ガエル", "reading": "がえる", "partOfSpeech": "noun", "meaning": "frog",
+          "sentenceJapanese": "青いガエルが凍った池のそばで春を待っている。", "sentenceEnglish": "A blue frog waits for spring beside the frozen pond.",
+          "corpusEvidence": {"identity": "ガエル|がえる|override:ガエル|がえる", "messageIds": ["0x000d", "0x000e", "0x4019"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "気持ち|きもち|feeling", "written": "気持ち", "reading": "きもち", "partOfSpeech": "noun", "meaning": "feeling; sensation; state of mind",
+          "sentenceJapanese": "冷たい水から出ると気持ちが落ち着いた。", "sentenceEnglish": "After leaving the cold water, I felt calm again.",
+          "corpusEvidence": {"identity": "気持ち|きもち|jmdict:1591430:0", "messageIds": ["0x4012", "0x401f"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "メダマ|めだま|eyeball", "written": "メダマ", "reading": "めだま", "partOfSpeech": "noun", "meaning": "eyeball; eye",
+          "sentenceJapanese": "薬師は巨大なガエルのメダマを調べた。", "sentenceEnglish": "The apothecary examined the giant frog's eyeball.",
+          "corpusEvidence": {"identity": "メダマ|めだま|jmdict:1535370:0", "messageIds": ["0x000d", "0x000e", "0x4019"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "姿|すがた|form", "written": "姿", "reading": "すがた", "partOfSpeech": "noun", "meaning": "figure; form; appearance",
+          "sentenceJapanese": "水面に銀色の精霊の姿が映った。", "sentenceEnglish": "The figure of a silver spirit was reflected on the water.",
+          "corpusEvidence": {"identity": "姿|すがた|jmdict:1307710:0", "messageIds": ["0x4038", "0x4059"]}, "wordAudio": null, "sentenceAudio": null
         }
       ]
     },

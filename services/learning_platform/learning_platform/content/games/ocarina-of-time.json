@@ -499,7 +499,7 @@
       "endMarker": "Awaken the Water Sage",
       "prerequisites": ["05-door-of-time"],
       "recommendedAfter": ["06-forest-awakens", "07-fire-sage"],
-      "deck": {"status": "pilot", "downloadAvailable": false, "reviewedCardCount": 6, "audioStatus": "none"},
+      "deck": {"status": "pilot", "downloadAvailable": false, "reviewedCardCount": 28, "audioStatus": "none"},
       "sampleCards": [
         {"id": "氷|こおり|ice", "written": "氷", "reading": "こおり", "partOfSpeech": "noun", "meaning": "ice", "sentenceJapanese": "青い氷の壁が洞窟の奥への道を閉ざしていた。", "sentenceEnglish": "A wall of blue ice blocked the way deeper into the cavern.", "corpusEvidence": {"identity": "氷|こおり|jmdict:1488840:0", "messageIds": ["0x4019"]}, "wordAudio": null, "sentenceAudio": null},
         {"id": "凍る|こおる|freeze", "written": "凍る", "reading": "こおる", "partOfSpeech": "verb", "meaning": "to freeze; to become frozen", "sentenceJapanese": "夜になると泉が凍り、月の光を映した。", "sentenceEnglish": "At night the spring froze and reflected the moonlight.", "corpusEvidence": {"identity": "凍る|こおる|jmdict:1593100:0", "messageIds": ["0x0197"]}, "wordAudio": null, "sentenceAudio": null},

@@ -87,6 +87,21 @@ OVERRIDES: dict[tuple[str, str], dict] = {
         "note": "Katakana spelling of 竜 in the volcanic-mountain dialogue; not 流 (style or manner).",
         "partOfSpeech": "noun",
     },
+    ("余", "よ"): {
+        "meaning": "I; me (archaic royal pronoun)",
+        "note": "Archaic first-person pronoun used by a ruler; not 'remaining' or 'leftover'.",
+        "partOfSpeech": "pronoun",
+    },
+    ("渡す", "わたす"): {
+        "meaning": "to hand over; to give; to pass",
+        "note": "Transfer-of-possession sense in the item-trading dialogue, not ferrying across water.",
+        "partOfSpeech": "verb",
+    },
+    ("ふむ", "ふむ"): {
+        "meaning": "hmm; indeed; I see",
+        "note": "Contemplative interjection in dialogue, not 踏む (to step on).",
+        "partOfSpeech": "interjection",
+    },
     ("だー", "だー"): {"meaning": "dialectal/stylized form of だ (to be)", "note": "Character speech pattern."},
     ("ッ", "っ"): {"meaning": "emphatic final small tsu", "note": "Marks an abrupt or forceful ending."},
     ("ッピ", "っぴ"): {"meaning": "Deku Scrub sentence-ending speech quirk", "note": "Character speech pattern.", "partOfSpeech": "suffix"},
