@@ -34,7 +34,9 @@ class ValidateCatalogCourseTest(unittest.TestCase):
                 "deck": {"reviewedCardCount": 1, "status": "pilot", "downloadAvailable": False},
             }],
         }
-        summary = {"chapters": [{"chapterId": "one", "coveragePercent": 50.0}]}
+        summary = {"chapters": [{
+            "chapterId": "one", "coveragePercent": 50.0, "mappingStatus": "seeded",
+        }]}
         report = audit_course(game, summary)
         self.assertEqual(report["issues"], [])
         self.assertEqual(report["readyChapterCount"], 0)
@@ -51,12 +53,15 @@ class ValidateCatalogCourseTest(unittest.TestCase):
                 "deck": {"reviewedCardCount": 2, "status": "pilot", "downloadAvailable": False},
             }],
         }
-        summary = {"chapters": [{"chapterId": "one", "coveragePercent": 70.0}]}
+        summary = {"chapters": [{
+            "chapterId": "one", "coveragePercent": 70.0, "mappingStatus": "seeded",
+        }]}
         issues = audit_course(game, summary, require_ready=True)["issues"]
         self.assertTrue(any("Duplicate sentenceJapanese" in issue for issue in issues))
         self.assertTrue(any("below 80%" in issue for issue in issues))
         self.assertTrue(any("status is not ready" in issue for issue in issues))
         self.assertTrue(any("download is not available" in issue for issue in issues))
+        self.assertTrue(any("dialogue mapping is not reviewed" in issue for issue in issues))
 
 
 if __name__ == "__main__":

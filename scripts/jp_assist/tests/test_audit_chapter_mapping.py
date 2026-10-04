@@ -39,7 +39,18 @@ class AuditChapterMappingTest(unittest.TestCase):
         self.assertEqual(summary["coveragePercent"], 50.0)
         self.assertEqual(summary["unmappedWithSourceReferenceCount"], 1)
         self.assertFalse(summary["complete"])
+        self.assertFalse(summary["reviewed"])
+        self.assertEqual(summary["reviewedChapterCount"], 0)
         self.assertEqual(queue[0]["sourceReferences"], ["src/actor.c"])
+
+    def test_reports_reviewed_mapping_state(self):
+        self.mapping["chapters"][0]["status"] = "reviewed"
+        self.runtime["messages"].pop("0x2000")
+        summary, queue = build_audit(self.runtime, self.catalog, self.mapping, {})
+        self.assertTrue(summary["complete"])
+        self.assertTrue(summary["reviewed"])
+        self.assertEqual(summary["reviewedChapterCount"], 1)
+        self.assertEqual(queue, [])
 
     def test_collects_only_exact_runtime_ids_and_skips_jp_assist(self):
         with tempfile.TemporaryDirectory() as temporary:

@@ -197,4 +197,10 @@ python3 scripts/jp_assist/validate_catalog_course.py
 For a release, add `--require-ready`. The strict form fails unless every
 chapter reaches its configured coverage target, is marked ready, exposes a
 download, has unique examples and Anki GUIDs, contains no prerequisite repeats,
-and retains valid corpus evidence.
+retains valid corpus evidence, and has a reviewed dialogue mapping. The mapping
+partition can also be checked independently with:
+
+```bash
+python3 scripts/jp_assist/audit_chapter_mapping.py \
+  --require-complete --require-reviewed
+```

@@ -78,9 +78,11 @@ def audit_course(
             coverage_percent = 0.0
         else:
             coverage_percent = coverage["coveragePercent"]
+        mapping_status = coverage.get("mappingStatus") if coverage else None
         target = game.get("chapterModel", {}).get("coreCoverageTargetPercent", 80)
         ready = (
             coverage_percent >= target
+            and mapping_status == "reviewed"
             and chapter["deck"].get("status") == "ready"
             and chapter["deck"].get("downloadAvailable") is True
         )
@@ -92,12 +94,15 @@ def audit_course(
             issues.append(f"{chapter_id}: deck status is not ready")
         if require_ready and chapter["deck"].get("downloadAvailable") is not True:
             issues.append(f"{chapter_id}: deck download is not available")
+        if require_ready and mapping_status != "reviewed":
+            issues.append(f"{chapter_id}: dialogue mapping is not reviewed")
         chapter_results.append({
             "chapterId": chapter_id,
             "cardCount": len(cards),
             "terminologyCount": len(terms),
             "coveragePercent": coverage_percent,
             "targetPercent": target,
+            "mappingStatus": mapping_status,
             "ready": ready,
         })
     return {

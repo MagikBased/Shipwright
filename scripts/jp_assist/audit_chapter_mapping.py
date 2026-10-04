@@ -101,6 +101,10 @@ def build_audit(
     mapped_ids = runtime_ids.intersection(ownership)
     unmapped_ids = sorted(runtime_ids - mapped_ids, key=lambda value: int(value, 0))
     stale_ids = sorted(set(ownership) - runtime_ids, key=lambda value: int(value, 0))
+    mapping_statuses = {
+        chapter["chapterId"]: chapter.get("status", "unknown")
+        for chapter in mapping["chapters"]
+    }
     alignment_counts = Counter(
         messages[message_id]["source"].get("alignmentStatus", "unknown")
         for message_id in unmapped_ids
@@ -131,7 +135,13 @@ def build_audit(
         "unmappedWithoutSourceReferenceCount": sum(not row["sourceReferences"] for row in queue),
         "unmappedAlignmentCounts": dict(sorted(alignment_counts.items())),
         "unmappedIdPrefixCounts": dict(sorted(prefix_counts.items())),
+        "mappingStatuses": mapping_statuses,
+        "reviewedChapterCount": sum(
+            status == "reviewed" for status in mapping_statuses.values()
+        ),
+        "chapterCount": len(mapping_statuses),
         "complete": not unmapped_ids and not stale_ids,
+        "reviewed": all(status == "reviewed" for status in mapping_statuses.values()),
     }
     return summary, queue
 
@@ -166,6 +176,10 @@ def main() -> int:
         "--require-complete", action="store_true",
         help="Exit unsuccessfully unless every runtime message is mapped and no mapping is stale",
     )
+    parser.add_argument(
+        "--require-reviewed", action="store_true",
+        help="Exit unsuccessfully unless every chapter mapping is marked reviewed",
+    )
     args = parser.parse_args()
     runtime = json.loads(args.runtime.read_text(encoding="utf-8"))
     catalog = json.loads(args.catalog.read_text(encoding="utf-8"))
@@ -182,7 +196,13 @@ def main() -> int:
         f"Source references found for {summary['unmappedWithSourceReferenceCount']} unmapped messages; "
         f"{summary['unmappedWithoutSourceReferenceCount']} need another provenance source"
     )
+    print(
+        f"Reviewed mappings: {summary['reviewedChapterCount']} of "
+        f"{summary['chapterCount']} chapters"
+    )
     if args.require_complete and not summary["complete"]:
+        return 1
+    if args.require_reviewed and not summary["reviewed"]:
         return 1
     return 0
 
