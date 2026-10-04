@@ -496,6 +496,11 @@ OVERRIDES: dict[tuple[str, str], dict] = {
         "note": "Kana spelling of 返す in this dialogue, not sending a person home.",
         "partOfSpeech": "verb",
     },
+    ("シーカー", "しーかー"): {
+        "meaning": "Sheikah (game-specific people)",
+        "note": "Zelda proper noun; not the English loanword seeker.",
+        "partOfSpeech": "proper noun",
+    },
 }
 
 

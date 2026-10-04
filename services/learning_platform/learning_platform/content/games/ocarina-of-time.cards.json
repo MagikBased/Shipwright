@@ -3309,6 +3309,23 @@
           "sentenceJapanese": "当店では旅人向けの丈夫な靴を売っています。", "sentenceEnglish": "Our shop sells sturdy boots for travelers.",
           "corpusEvidence": {"identity": "当店|とうてん|jmdict:1449200:0", "messageIds": ["0x0207"]}, "wordAudio": null, "sentenceAudio": null
         }
+      ],
+      "terminology": [
+        {"id": "ハイラル|はいらる|hyrule-term", "written": "ハイラル", "reading": "はいらる", "meaning": "Hyrule; the kingdom and wider setting", "corpusEvidence": {"identity": "ハイラル|はいらる|proper:ハイラル|はいらる", "messageIds": ["0x0142"]}},
+        {"id": "ゼルダ|ぜるだ|zelda-term", "written": "ゼルダ", "reading": "ぜるだ", "meaning": "Zelda; the princess's name", "corpusEvidence": {"identity": "ゼルダ|ぜるだ|proper:ゼルダ|ぜるだ", "messageIds": ["0x0069"]}},
+        {"id": "マロン|まろん|malon-term", "written": "マロン", "reading": "まろん", "meaning": "Malon; a ranch girl", "corpusEvidence": {"identity": "マロン|まろん|proper:マロン|まろん", "messageIds": ["0x0229"]}},
+        {"id": "ロンロン|ろんろん|lon-lon-term", "written": "ロンロン", "reading": "ろんろん", "meaning": "Lon Lon; the ranch name", "corpusEvidence": {"identity": "ロンロン|ろんろん|proper:ロンロン|ろんろん", "messageIds": ["0x0098"]}},
+        {"id": "コッコ|こっこ|cucco-term", "written": "コッコ", "reading": "こっこ", "meaning": "Cucco; a game-specific chicken-like creature", "corpusEvidence": {"identity": "コッコ|こっこ|proper:コッコ|こっこ", "messageIds": ["0x207e"]}},
+        {"id": "ハイリア|はいりあ|hylian-term", "written": "ハイリア", "reading": "はいりあ", "meaning": "Hylia or Hylian; a game-specific cultural and people name", "corpusEvidence": {"identity": "ハイリア|はいりあ|proper:ハイリア|はいりあ", "messageIds": ["0x004d"]}},
+        {"id": "ダンペイ|だんぺい|dampe-term", "written": "ダンペイ", "reading": "だんぺい", "meaning": "Dampé; the gravekeeper's name", "corpusEvidence": {"identity": "ダンペイ|だんぺい|proper:ダンペイ|だんぺい", "messageIds": ["0x2022"]}},
+        {"id": "エポナ|えぽな|epona-term", "written": "エポナ", "reading": "えぽな", "meaning": "Epona; a horse's name", "corpusEvidence": {"identity": "エポナ|えぽな|proper:エポナ|えぽな", "messageIds": ["0x00d2"]}},
+        {"id": "ガノンドロフ|がのんどろふ|ganondorf-term", "written": "ガノンドロフ", "reading": "がのんどろふ", "meaning": "Ganondorf; a character name", "corpusEvidence": {"identity": "ガノンドロフ|がのんどろふ|proper:ガノンドロフ|がのんどろふ", "messageIds": ["0x207a"]}},
+        {"id": "デスマウンテン|ですまうんてん|death-mountain-term", "written": "デスマウンテン", "reading": "ですまうんてん", "meaning": "Death Mountain; a place name", "corpusEvidence": {"identity": "デスマウンテン|ですまうんてん|proper:デスマウンテン|ですまうんてん", "messageIds": ["0x204f"]}},
+        {"id": "ゲルド|げるど|gerudo-term", "written": "ゲルド", "reading": "げるど", "meaning": "Gerudo; a game-specific people name", "corpusEvidence": {"identity": "ゲルド|げるど|proper:ゲルド|げるど", "messageIds": ["0x206f"]}},
+        {"id": "インゴー|いんごー|ingo-term", "written": "インゴー", "reading": "いんごー", "meaning": "Ingo; a ranch worker's name", "corpusEvidence": {"identity": "インゴー|いんごー|proper:インゴー|いんごー", "messageIds": ["0x2014"]}},
+        {"id": "タロン|たろん|talon-term", "written": "タロン", "reading": "たろん", "meaning": "Talon; a ranch owner's name", "corpusEvidence": {"identity": "タロン|たろん|proper:タロン|たろん", "messageIds": ["0x0315"]}},
+        {"id": "インパ|いんぱ|impa-term", "written": "インパ", "reading": "いんぱ", "meaning": "Impa; a character name", "corpusEvidence": {"identity": "インパ|いんぱ|proper:インパ|いんぱ", "messageIds": ["0x708d"]}},
+        {"id": "シーカー|しーかー|sheikah-term", "written": "シーカー", "reading": "しーかー", "meaning": "Sheikah; a game-specific people name", "corpusEvidence": {"identity": "シーカー|しーかー|proper:シーカー|しーかー", "messageIds": ["0x7027"]}}
       ]
     },
     {

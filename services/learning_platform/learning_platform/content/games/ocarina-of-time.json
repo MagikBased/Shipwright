@@ -388,7 +388,7 @@
       "startMarker": "Leave Kokiri Forest",
       "endMarker": "Learn the royal song",
       "prerequisites": ["01-boy-without-a-fairy"],
-      "deck": {"status": "pilot", "downloadAvailable": false, "reviewedCardCount": 141, "audioStatus": "none"},
+      "deck": {"status": "pilot", "downloadAvailable": false, "reviewedCardCount": 141, "terminologyCount": 15, "audioStatus": "none"},
       "sampleCards": [
         {"id": "姫|ひめ|princess", "written": "姫", "reading": "ひめ", "partOfSpeech": "noun", "meaning": "princess; noble young woman", "sentenceJapanese": "姫は星空の下で旅人に秘密の地図を渡した。", "sentenceEnglish": "The princess gave the traveler a secret map beneath the starry sky.", "corpusEvidence": {"identity": "姫|ひめ|jmdict:1602150:0", "messageIds": ["0x0142"]}, "wordAudio": null, "sentenceAudio": null},
         {"id": "会う|あう|meet", "written": "会う", "reading": "あう", "partOfSpeech": "verb", "meaning": "to meet; to encounter", "sentenceJapanese": "旅人は城へ向かう道で不思議な少女に会った。", "sentenceEnglish": "The traveler met a mysterious girl on the road to the castle.", "corpusEvidence": {"identity": "会う|あう|jmdict:1198180:0", "messageIds": ["0x0142"]}, "wordAudio": null, "sentenceAudio": null},

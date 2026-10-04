@@ -114,6 +114,7 @@ class OverrideTest(unittest.TestCase):
         self.assertEqual(apply_override("いま", "いま", {"meaning": "living room"})["meaning"], "now; the present time")
         self.assertIn("father", apply_override("オヤジ", "おやじ", {"meaning": "dictionary entry"})["meaning"])
         self.assertEqual(apply_override("かえす", "かえす", {"meaning": "send home"})["meaning"], "to return; to give back")
+        self.assertTrue(apply_override("シーカー", "しーかー", {"meaning": "seeker"})["senseId"].startswith("proper:"))
 
     def test_ki_wo_tsukeru_is_split_from_attach_and_equip(self):
         equipped = apply_override("つける", "つける", {"meaning": "install"})
