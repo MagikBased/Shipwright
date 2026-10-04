@@ -3557,6 +3557,131 @@
           "id": "コワい|こわい|scary", "written": "コワい", "reading": "こわい", "partOfSpeech": "adjective", "meaning": "scary; frightening",
           "sentenceJapanese": "暗い洞窟からコワい声が聞こえた。", "sentenceEnglish": "A frightening voice came from the dark cave.",
           "corpusEvidence": {"identity": "コワい|こわい|jmdict:1593480:0", "messageIds": ["0x3008"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "研究|けんきゅう|research", "written": "研究", "reading": "けんきゅう", "partOfSpeech": "noun", "meaning": "study; research; investigation",
+          "sentenceJapanese": "学者は古い石碑の研究を続けている。", "sentenceEnglish": "The scholar continues researching the ancient stone monument.",
+          "corpusEvidence": {"identity": "研究|けんきゅう|jmdict:1258520:0", "messageIds": ["0x040f"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "ジマン|じまん|pride", "written": "ジマン", "reading": "じまん", "partOfSpeech": "noun", "meaning": "pride; boast",
+          "sentenceJapanese": "この丈夫な盾は鍛冶屋のジマンだ。", "sentenceEnglish": "This sturdy shield is the blacksmith's pride.",
+          "corpusEvidence": {"identity": "ジマン|じまん|jmdict:1318680:0", "messageIds": ["0x0010"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "親方|おやかた|master", "written": "親方", "reading": "おやかた", "partOfSpeech": "noun", "meaning": "master; boss; chief; foreman",
+          "sentenceJapanese": "親方は弟子に城門の修理を任せた。", "sentenceEnglish": "The master entrusted his apprentice with repairing the castle gate.",
+          "corpusEvidence": {"identity": "親方|おやかた|jmdict:1365360:0", "messageIds": ["0x0227"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "キョーダイ|きょーだい|sworn-brother", "written": "キョーダイ", "reading": "きょーだい", "partOfSpeech": "noun", "meaning": "brother; sworn brother",
+          "sentenceJapanese": "戦士たちは杯を交わし、キョーダイとなった。", "sentenceEnglish": "The warriors shared a cup and became sworn brothers.",
+          "corpusEvidence": {"identity": "キョーダイ|きょーだい|override:キョーダイ|きょーだい", "messageIds": ["0x3000"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "ドクロ|どくろ|skull", "written": "ドクロ", "reading": "どくろ", "partOfSpeech": "noun", "meaning": "skull; death's-head emblem",
+          "sentenceJapanese": "洞窟の扉にはドクロの印が刻まれていた。", "sentenceEnglish": "A skull emblem was carved into the cave door.",
+          "corpusEvidence": {"identity": "ドクロ|どくろ|jmdict:1574700:0", "messageIds": ["0x0010"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "ハラ|はら|stomach", "written": "ハラ", "reading": "はら", "partOfSpeech": "noun", "meaning": "belly; stomach; abdomen",
+          "sentenceJapanese": "長い山道を歩いてハラがへった。", "sentenceEnglish": "After walking the long mountain path, I became hungry.",
+          "corpusEvidence": {"identity": "ハラ|はら|override:ハラ|はら", "messageIds": ["0x3014"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "貸し出す|かしだす|lend", "written": "貸し出す", "reading": "かしだす", "partOfSpeech": "verb", "meaning": "to lend; to loan; to let out on hire",
+          "sentenceJapanese": "番人は旅人に古いランタンを貸し出した。", "sentenceEnglish": "The guard lent an old lantern to the traveler.",
+          "corpusEvidence": {"identity": "貸し出す|かしだす|jmdict:1411130:0", "messageIds": ["0x70b4"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "かお|かお|face", "written": "かお", "reading": "かお", "partOfSpeech": "noun", "meaning": "face; visage",
+          "sentenceJapanese": "仮面を外すと、旅人のかおが見えた。", "sentenceEnglish": "When the mask came off, the traveler's face could be seen.",
+          "corpusEvidence": {"identity": "かお|かお|jmdict:1217730:0", "messageIds": ["0x7133"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "ボム|ぼむ|bomb", "written": "ボム", "reading": "ぼむ", "partOfSpeech": "noun", "meaning": "bomb",
+          "sentenceJapanese": "冒険者はボムでひび割れた岩を壊した。", "sentenceEnglish": "The adventurer used a bomb to break the cracked boulder.",
+          "corpusEvidence": {"identity": "ボム|ぼむ|jmdict:1124260:0", "messageIds": ["0x001c"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "仮面|かめん|mask", "written": "仮面", "reading": "かめん", "partOfSpeech": "noun", "meaning": "mask",
+          "sentenceJapanese": "祭りの夜、踊り手たちは不思議な仮面をつけた。", "sentenceEnglish": "On the festival night, the dancers wore mysterious masks.",
+          "corpusEvidence": {"identity": "仮面|かめん|jmdict:1188220:0", "messageIds": ["0x0017"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "木|き|tree", "written": "木", "reading": "き", "partOfSpeech": "noun", "meaning": "tree; shrub; bush",
+          "sentenceJapanese": "森でいちばん古い木の下に宝箱がある。", "sentenceEnglish": "A treasure chest lies beneath the oldest tree in the forest.",
+          "corpusEvidence": {"identity": "木|き|jmdict:1534520:0", "messageIds": ["0x0227"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "魔法|まほう|magic", "written": "魔法", "reading": "まほう", "partOfSpeech": "noun", "meaning": "magic; sorcery; spell",
+          "sentenceJapanese": "賢者は魔法で谷に光の橋をかけた。", "sentenceEnglish": "The sage used magic to form a bridge of light across the valley.",
+          "corpusEvidence": {"identity": "魔法|まほう|jmdict:1524230:0", "messageIds": ["0x3008"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "曲|きょく|song", "written": "曲", "reading": "きょく", "partOfSpeech": "noun", "meaning": "composition; piece of music; song",
+          "sentenceJapanese": "旅の楽師は月明かりの下で静かな曲を奏でた。", "sentenceEnglish": "The traveling musician played a quiet song beneath the moonlight.",
+          "corpusEvidence": {"identity": "曲|きょく|jmdict:1239700:0", "messageIds": ["0x301c"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "大|おお|great-prefix", "written": "大", "reading": "おお", "partOfSpeech": "prefix", "meaning": "large; great; major; important",
+          "sentenceJapanese": "大広間の中央に石の王座が置かれている。", "sentenceEnglish": "A stone throne stands in the center of the great hall.",
+          "corpusEvidence": {"identity": "大|おお|jmdict:2082140:0", "messageIds": ["0x301c"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "つれる|つれる|bring-along", "written": "つれる", "reading": "つれる", "partOfSpeech": "verb", "meaning": "to take someone along; to bring along; to be accompanied by",
+          "sentenceJapanese": "案内人は若い騎士を塔までつれていった。", "sentenceEnglish": "The guide took the young knight along to the tower.",
+          "corpusEvidence": {"identity": "つれる|つれる|jmdict:1559290:0", "messageIds": ["0x5036"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "まこと|まこと|truth", "written": "まこと", "reading": "まこと", "partOfSpeech": "noun", "meaning": "truth; reality",
+          "sentenceJapanese": "古い予言がまことかどうか確かめよう。", "sentenceEnglish": "Let us discover whether the ancient prophecy is true.",
+          "corpusEvidence": {"identity": "まこと|まこと|jmdict:1580555:0", "messageIds": ["0x0017"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "お願い|おねがい|request", "written": "お願い", "reading": "おねがい", "partOfSpeech": "noun", "meaning": "request; favor; wish",
+          "sentenceJapanese": "村長は勇者に一つだけお願いをした。", "sentenceEnglish": "The village chief asked the hero for just one favor.",
+          "corpusEvidence": {"identity": "お願い|おねがい|jmdict:2036870:0", "messageIds": ["0x5036"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "へる|へる|become-hungry", "written": "へる", "reading": "へる", "partOfSpeech": "verb", "meaning": "to decrease; to run low; to become hungry (of one's stomach)",
+          "sentenceJapanese": "山を登るとすぐにハラがへる。", "sentenceEnglish": "Climbing the mountain quickly makes one hungry.",
+          "corpusEvidence": {"identity": "へる|へる|override:へる|へる", "messageIds": ["0x3014"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "ゾラ|ぞら|zora-ending", "written": "ゾラ", "reading": "ぞら", "partOfSpeech": "suffix", "meaning": "King Zora's sentence-ending speech quirk",
+          "sentenceJapanese": "王はゆっくり立ち上がり、「道をあけるゾラ」と告げた。", "sentenceEnglish": "The king slowly rose and declared, 'I shall clear the way, zora.'",
+          "corpusEvidence": {"identity": "ゾラ|ぞら|override:ゾラ|ぞら", "messageIds": ["0x718c"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "魂|たましい|soul", "written": "魂", "reading": "たましい", "partOfSpeech": "noun", "meaning": "soul; spirit",
+          "sentenceJapanese": "古い剣には守護者の魂が宿っているという。", "sentenceEnglish": "They say a guardian's spirit dwells within the ancient sword.",
+          "corpusEvidence": {"identity": "魂|たましい|jmdict:1579170:0", "messageIds": ["0x022c"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "ところ|ところ|place", "written": "ところ", "reading": "ところ", "partOfSpeech": "noun", "meaning": "place; spot; scene; site",
+          "sentenceJapanese": "ここは旅人が休むのにちょうどよいところだ。", "sentenceEnglish": "This is just the right place for travelers to rest.",
+          "corpusEvidence": {"identity": "ところ|ところ|jmdict:1343100:0", "messageIds": ["0x300b"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "なかなか|なかなか|quite", "written": "なかなか", "reading": "なかなか", "partOfSpeech": "adverb", "meaning": "quite; rather; considerably; not easily",
+          "sentenceJapanese": "この古い錠前はなかなか開かない。", "sentenceEnglish": "This old lock will not open easily.",
+          "corpusEvidence": {"identity": "なかなか|なかなか|jmdict:1599420:0", "messageIds": ["0x5009"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "所|ところ|place-kanji", "written": "所", "reading": "ところ", "partOfSpeech": "noun", "meaning": "place; spot; site",
+          "sentenceJapanese": "危険な所には一人で入らないほうがいい。", "sentenceEnglish": "It is better not to enter a dangerous place alone.",
+          "corpusEvidence": {"identity": "所|ところ|jmdict:1343100:0", "messageIds": ["0x3008"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "走る|はしる|run", "written": "走る", "reading": "はしる", "partOfSpeech": "verb", "meaning": "to run",
+          "sentenceJapanese": "鐘が鳴ると、兵士たちは城門へ走った。", "sentenceEnglish": "When the bell rang, the soldiers ran to the castle gate.",
+          "corpusEvidence": {"identity": "走る|はしる|jmdict:1402540:0", "messageIds": ["0x0019"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "墓守り|はかもり|grave-keeper", "written": "墓守り", "reading": "はかもり", "partOfSpeech": "noun", "meaning": "grave keeper; cemetery caretaker",
+          "sentenceJapanese": "墓守りは夜明けまで霊廟の門を見張った。", "sentenceEnglish": "The grave keeper watched the mausoleum gate until dawn.",
+          "corpusEvidence": {"identity": "墓守り|はかもり|jmdict:1670650:0", "messageIds": ["0x0205"]}, "wordAudio": null, "sentenceAudio": null
         }
       ]
     },
@@ -4189,17 +4314,17 @@
           "sentenceAudio": null
         },
         {
-          "id": "魂|たましい|soul",
-          "written": "魂",
-          "reading": "たましい",
-          "partOfSpeech": "noun",
-          "meaning": "soul; spirit",
-          "sentenceJapanese": "砂の神殿には過去を忘れない魂が眠っている。",
-          "sentenceEnglish": "A soul that remembers the past sleeps within the desert temple.",
+          "id": "アタイ|あたい|I",
+          "written": "アタイ",
+          "reading": "あたい",
+          "partOfSpeech": "pronoun",
+          "meaning": "I; me",
+          "sentenceJapanese": "アタイが先に砦へ入り、門を開けてやるよ。",
+          "sentenceEnglish": "I'll enter the fortress first and open the gate for you.",
           "corpusEvidence": {
-            "identity": "魂|たましい|jmdict:1579170:0",
+            "identity": "アタイ|あたい|jmdict:1311125:0",
             "messageIds": [
-              "0x6005"
+              "0x6003"
             ]
           },
           "wordAudio": null,

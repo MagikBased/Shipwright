@@ -120,6 +120,9 @@ class OverrideTest(unittest.TestCase):
         self.assertEqual(apply_override("おお", "おお", {"meaning": "large"})["meaning"], "oh!; ooh!")
         self.assertIn("munch", apply_override("ポリ", "ぽり", {"meaning": "polyethylene"})["meaning"])
         self.assertIn("progressive", apply_override("でる", "でる", {"meaning": "leave"})["meaning"])
+        self.assertEqual(apply_override("ゾラ", "ぞら", {"meaning": "sky"})["partOfSpeech"], "suffix")
+        self.assertIn("stomach", apply_override("ハラ", "はら", {"meaning": "harassment"})["meaning"])
+        self.assertIn("hungry", apply_override("へる", "へる", {"meaning": "to elapse"})["meaning"])
 
     def test_ki_wo_tsukeru_is_split_from_attach_and_equip(self):
         equipped = apply_override("つける", "つける", {"meaning": "install"})
