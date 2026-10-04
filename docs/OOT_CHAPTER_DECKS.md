@@ -16,9 +16,9 @@ text can be used locally to determine which vocabulary belongs in a chapter, but
 published cards use newly written examples.
 
 Anki note GUIDs are stable across regeneration and scoped by game, chapter, and
-card identity. Chapter scope is required because parallel optional branches may
-legitimately contain the same vocabulary; importing both packages must not move
-or overwrite a note from the other branch.
+card identity. A dictionary-form vocabulary sense is published in exactly one
+chapter, so conjugated appearances and later occurrences never create duplicate
+notes.
 
 ## Chapter model
 
@@ -45,13 +45,15 @@ first-class chapter field, and the adult portion allows some nonlinear progress.
 Each chapter therefore declares hard prerequisites separately from recommended
 ordering.
 
-A deck introduces the most important vocabulary needed for its chapter after
-subtracting every word taught by any transitive hard-prerequisite deck.
-Recommended ordering does not count as a prerequisite: parallel optional
-branches may both teach a shared word so either route remains self-contained.
-"Complete core deck" has an objective corpus gate: its own reviewed cards plus
-cards taught by transitive hard prerequisites must account for at least 80% of
-the token occurrences in that chapter's mapped dialogue. This deliberately
+A deck introduces the most important vocabulary needed for its chapter. Each
+dictionary-form lemma, reading, and sense identity is assigned to one card across
+the whole course. Past, present, negative, polite, and other inflected surfaces
+therefore reinforce that card instead of creating new cards. Words with the same
+spelling and reading remain separate only when dictionary sense identity shows
+that they have genuinely different meanings. "Complete core deck" has an
+objective corpus gate: its own reviewed cards plus the same cards encountered in
+other chapters must account for at least 80% of the token occurrences in that
+chapter's mapped dialogue. This deliberately
 measures recurring reading value rather than requiring a card for every rare
 name, typo, interjection, or dictionary sense. Reviewers may still add rarer
 story-essential terms beyond the threshold.
@@ -68,10 +70,9 @@ JP Assist::Ocarina of Time::11 The Hero of Time
 
 1. Map dialogue and location identifiers to one or more chapter ranges.
 2. Aggregate vocabulary by stable lemma, reading, and sense identity.
-3. Review decks in prerequisite order. For each chapter, remove identities
-   already taught by any transitive hard-prerequisite deck; do not remove an
-   identity merely because it occurs in prerequisite dialogue or in a
-   numerically earlier parallel branch.
+3. Review decks in story order. Publish each dictionary-form lemma, reading, and
+   sense identity once, in its earliest suitable chapter. Every conjugated
+   surface and later occurrence receives coverage credit from that one card.
 4. Rank the remaining candidates by frequency in the chapter, then recurrence
    across the full game corpus. Reviewers use usefulness and learner level to
    choose from that ranked queue before publication.
@@ -106,14 +107,11 @@ It writes one ignored TSV per chapter plus `summary.json` under
 `scripts/jp_assist/out/chapter_candidates/`. These files contain dictionary
 metadata and message IDs but deliberately omit Japanese and English dialogue.
 Each TSV includes an explicit importance rank. Regenerating after cards are
-published removes those identities from dependent queues, and the summary
-reports how many repeats were removed because a prerequisite already teaches
-them. The summary also reports current token coverage, prerequisite coverage,
-and the number of additional ranked cards needed to meet the 80% core gate.
-Catalog deck
-generation independently rejects a published card that duplicates any
-transitive hard prerequisite, so an editorial mistake cannot silently create a
-redundant deck.
+published marks that identity as covered everywhere it occurs. The summary also
+reports current token coverage, prerequisite coverage, and the number of
+additional ranked cards needed to meet the 80% core gate. Catalog deck generation
+independently rejects duplicate dictionary-form sense identities anywhere in the
+course, so an editorial mistake cannot silently create a redundant card.
 Numeric ID ranges are never treated as story order implicitly: a reviewer must
 place explicit IDs or bounded ranges in the mapping and advance its status from
 `planned` to `seeded` to `reviewed`.
@@ -142,7 +140,7 @@ license evidence, quality limitations, and commands are documented in
 ## Complete chapter course
 
 All eleven chapters meet the configured 80% core-token coverage target. The
-course contains 796 prerequisite-aware sentence cards across all 2,002 mapped
+course contains 759 dictionary-form sentence cards across all 2,002 mapped
 dialogue messages. Every sentence
 card has stable corpus provenance, a newly written non-IP example sentence, and
 a stable Anki note identity. Audio remains optional, so every chapter is
@@ -208,7 +206,7 @@ python3 scripts/jp_assist/validate_catalog_course.py
 
 For a release, add `--require-ready`. The strict form fails unless every
 chapter reaches its configured coverage target, is marked ready, exposes a
-download, has unique examples and Anki GUIDs, contains no prerequisite repeats,
+download, has unique examples and Anki GUIDs, contains no course-wide vocabulary repeats,
 retains valid corpus evidence, has a current complete content-review record, and
 has a reviewed dialogue mapping. The mapping
 partition can also be checked independently with:

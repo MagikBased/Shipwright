@@ -55,6 +55,31 @@ class GameCatalogReviewTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "stale review card count"):
             GameCatalog(self.write_catalog(review))
 
+    def test_catalog_rejects_duplicate_dictionary_form_cards_across_chapters(self):
+        review = {
+            "status": "reviewed", "reviewedCardCount": 2,
+            "criteriaVersion": 1,
+            "criteria": sorted(REQUIRED_CONTENT_REVIEW_CRITERIA),
+        }
+        root = self.write_catalog(review)
+        game_path = root / "game.json"
+        manifest_path = root / "game.cards.json"
+        game = json.loads(game_path.read_text(encoding="utf-8"))
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        game["chapters"].append({
+            "id": "two", "order": 2, "title": "Two", "prerequisites": [],
+            "recommendedAfter": [], "sampleCards": [],
+            "deck": {"reviewedCardCount": 1},
+        })
+        duplicate = dict(manifest["chapters"][0]["cards"][0])
+        duplicate["id"] = "森|もり|forest-again"
+        manifest["chapters"].append({"chapterId": "two", "cards": [duplicate]})
+        game_path.write_text(json.dumps(game), encoding="utf-8")
+        manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+
+        with self.assertRaisesRegex(ValueError, "repeats dictionary-form card"):
+            GameCatalog(root)
+
 
 if __name__ == "__main__":
     unittest.main()

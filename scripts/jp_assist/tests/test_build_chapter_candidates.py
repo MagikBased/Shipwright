@@ -56,9 +56,11 @@ class BuildChapterCandidatesTest(unittest.TestCase):
         self.assertEqual(summary["chapters"][1]["additionalCardsToCoreTarget"], 1)
         self.assertEqual(by_chapter["two"][0]["importanceRank"], 1)
 
-    def test_parallel_branches_can_teach_the_same_new_word(self):
+    def test_one_published_card_covers_parallel_branch_occurrences(self):
         self.catalog["chapters"].append({
-            "id": "branch", "order": 3, "prerequisites": ["one"],
+            "id": "branch", "order": 3, "prerequisites": ["one"], "sampleCards": [{
+                "corpusEvidence": {"identity": "水|みず|sense-water"},
+            }],
         })
         self.mapping["chapters"].append({
             "chapterId": "branch", "status": "seeded",
@@ -72,8 +74,8 @@ class BuildChapterCandidatesTest(unittest.TestCase):
 
         by_chapter, _ = collect_candidates(runtime, self.catalog, self.mapping)
 
-        self.assertEqual([row["written"] for row in by_chapter["two"]], ["水"])
-        self.assertEqual([row["written"] for row in by_chapter["branch"]], ["水"])
+        self.assertEqual(by_chapter["two"][0]["reviewStatus"], "published")
+        self.assertEqual(by_chapter["branch"][0]["reviewStatus"], "published")
 
     def test_equal_chapter_frequency_prefers_full_game_recurrence(self):
         self.mapping["chapters"][0]["messageIds"].append("0x1001")

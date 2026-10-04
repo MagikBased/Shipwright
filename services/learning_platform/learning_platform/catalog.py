@@ -220,6 +220,7 @@ class GameCatalog:
                 raise ValueError(
                     f"Card manifest for {game_id} has incomplete review criteria"
                 )
+        vocabulary_identities: dict[str, str] = {}
         for chapter in chapters:
             references = chapter.get("prerequisites", []) + chapter.get("recommendedAfter", [])
             if any(reference not in known for reference in references):
@@ -246,6 +247,14 @@ class GameCatalog:
                 evidence = card.get("corpusEvidence", {})
                 if not evidence.get("identity") or not evidence.get("messageIds"):
                     raise ValueError(f"Catalog card {card['id']} has no corpus evidence")
+                identity = evidence["identity"]
+                label = f"{chapter['id']}/{card['id']}"
+                previous = vocabulary_identities.setdefault(identity, label)
+                if previous != label:
+                    raise ValueError(
+                        f"Catalog game {game_id} repeats dictionary-form card "
+                        f"{identity}: {previous} and {label}"
+                    )
 
     @staticmethod
     def _summary(game: dict[str, Any]) -> dict[str, Any]:

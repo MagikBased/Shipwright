@@ -16,7 +16,7 @@ from build_catalog_deck import (
     reviewed_cards,
     stable_note_guid,
     validate_corpus_evidence,
-    validate_prerequisite_uniqueness,
+    validate_course_uniqueness,
 )
 
 
@@ -117,6 +117,10 @@ def audit_course(
     chapter_results = []
     if require_ready:
         issues.extend(validate_content_review(game))
+    try:
+        validate_course_uniqueness(game)
+    except ValueError as error:
+        issues.append(str(error))
     for chapter in game["chapters"]:
         chapter_id = chapter["id"]
         cards = reviewed_cards(chapter)
@@ -128,10 +132,6 @@ def audit_course(
         card_ids = [card.get("id") for card in cards]
         if len(card_ids) != len(set(card_ids)):
             issues.append(f"{chapter_id}: duplicate card id")
-        try:
-            validate_prerequisite_uniqueness(game, chapter)
-        except ValueError as error:
-            issues.append(str(error))
         for card in cards:
             if require_ready:
                 issues.extend(validate_card_content(chapter_id, card))

@@ -4,7 +4,7 @@
   "contentReview": {
     "status": "reviewed",
     "criteriaVersion": 1,
-    "reviewedCardCount": 796,
+    "reviewedCardCount": 759,
     "criteria": [
       "japanese-usage-and-reading",
       "english-translation-and-sense",
@@ -4143,11 +4143,6 @@
           "sentenceAudio": null
         },
         {
-          "id": "ポリ|ぽり|munch", "written": "ポリ", "reading": "ぽり", "partOfSpeech": "interjection", "meaning": "munch; crunch; scratch-scratch",
-          "sentenceJapanese": "旅商人は木の実をポリポリ食べながら値段を数えた。", "sentenceEnglish": "The traveling merchant crunched on nuts while counting the price.",
-          "corpusEvidence": {"identity": "ポリ|ぽり|override:ポリ|ぽり", "messageIds": ["0x405e"]}, "wordAudio": null, "sentenceAudio": null
-        },
-        {
           "id": "サカナ|さかな|fish", "written": "サカナ", "reading": "さかな", "partOfSpeech": "noun", "meaning": "fish",
           "sentenceJapanese": "澄んだ泉で銀色のサカナが泳いでいる。", "sentenceEnglish": "Silver fish are swimming in the clear spring.",
           "corpusEvidence": {"identity": "サカナ|さかな|override:サカナ|さかな", "messageIds": ["0x400d"]}, "wordAudio": null, "sentenceAudio": null
@@ -4156,11 +4151,6 @@
           "id": "マメ|まめ|bean", "written": "マメ", "reading": "まめ", "partOfSpeech": "noun", "meaning": "bean; seed",
           "sentenceJapanese": "魔法のマメを湿った土に植えると一晩で芽が出た。", "sentenceEnglish": "When the magic bean was planted in damp soil, it sprouted overnight.",
           "corpusEvidence": {"identity": "マメ|まめ|jmdict:1450030:0", "messageIds": ["0x405e"]}, "wordAudio": null, "sentenceAudio": null
-        },
-        {
-          "id": "魔法|まほう|magic", "written": "魔法", "reading": "まほう", "partOfSpeech": "noun", "meaning": "magic; sorcery; spell",
-          "sentenceJapanese": "泉の巫女は魔法で濁った水を清めた。", "sentenceEnglish": "The shrine maiden purified the murky water with magic.",
-          "corpusEvidence": {"identity": "魔法|まほう|jmdict:1524230:0", "messageIds": ["0x405e"]}, "wordAudio": null, "sentenceAudio": null
         },
         {
           "id": "もぐる|もぐる|dive", "written": "もぐる", "reading": "もぐる", "partOfSpeech": "verb", "meaning": "to dive; to go underwater",
@@ -4208,11 +4198,6 @@
           "corpusEvidence": {"identity": "ホンマ|ほんま|jmdict:2001000:0", "messageIds": ["0x407e"]}, "wordAudio": null, "sentenceAudio": null
         },
         {
-          "id": "曲|きょく|song", "written": "曲", "reading": "きょく", "partOfSpeech": "noun", "meaning": "composition; piece of music; song",
-          "sentenceJapanese": "蛙たちは雨を呼ぶ不思議な曲に合わせて歌った。", "sentenceEnglish": "The frogs sang along with a mysterious song that summoned rain.",
-          "corpusEvidence": {"identity": "曲|きょく|jmdict:1239700:0", "messageIds": ["0x4077"]}, "wordAudio": null, "sentenceAudio": null
-        },
-        {
           "id": "王|おう|king", "written": "王", "reading": "おう", "partOfSpeech": "noun", "meaning": "king; ruler; sovereign",
           "sentenceJapanese": "水の王は玉座から旅人に問いかけた。", "sentenceEnglish": "The water king addressed the traveler from his throne.",
           "corpusEvidence": {"identity": "王|おう|jmdict:1629200:0", "messageIds": ["0x4003"]}, "wordAudio": null, "sentenceAudio": null
@@ -4226,11 +4211,6 @@
           "id": "ゲコ|げこ|ribbit", "written": "ゲコ", "reading": "げこ", "partOfSpeech": "interjection", "meaning": "ribbit; croak",
           "sentenceJapanese": "月夜の池からゲコゲコと楽しそうな声がした。", "sentenceEnglish": "Cheerful croaking came from the pond on the moonlit night.",
           "corpusEvidence": {"identity": "ゲコ|げこ|override:ゲコ|げこ", "messageIds": ["0x40a9"]}, "wordAudio": null, "sentenceAudio": null
-        },
-        {
-          "id": "記録|きろく|record", "written": "記録", "reading": "きろく", "partOfSpeech": "noun", "meaning": "record; document; result",
-          "sentenceJapanese": "若い漁師は村の最大記録を更新した。", "sentenceEnglish": "The young fisherman set a new village record.",
-          "corpusEvidence": {"identity": "記録|きろく|jmdict:1223440:0", "messageIds": ["0x4080"]}, "wordAudio": null, "sentenceAudio": null
         },
         {
           "id": "ひと|ひと|person", "written": "ひと", "reading": "ひと", "partOfSpeech": "noun", "meaning": "person; people",
@@ -4268,11 +4248,6 @@
           "corpusEvidence": {"identity": "はず|はず|override:はず|はず", "messageIds": ["0x400b"]}, "wordAudio": null, "sentenceAudio": null
         },
         {
-          "id": "さがす|さがす|search", "written": "さがす", "reading": "さがす", "partOfSpeech": "verb", "meaning": "to search for; to look for; to seek",
-          "sentenceJapanese": "姫をさがすため、騎士たちは川沿いに進んだ。", "sentenceEnglish": "The knights followed the river to search for the princess.",
-          "corpusEvidence": {"identity": "さがす|さがす|jmdict:1593670:0", "messageIds": ["0x400f"]}, "wordAudio": null, "sentenceAudio": null
-        },
-        {
           "id": "ゆう|ゆう|say", "written": "ゆう", "reading": "ゆう", "partOfSpeech": "verb", "meaning": "to say; colloquial pronunciation of いう",
           "sentenceJapanese": "そんな無茶なことをゆうたら仲間が心配するで。", "sentenceEnglish": "If you say something that reckless, your companions will worry.",
           "corpusEvidence": {"identity": "ゆう|ゆう|override:ゆう|ゆう", "messageIds": ["0x408d"]}, "wordAudio": null, "sentenceAudio": null
@@ -4296,11 +4271,6 @@
           "id": "ブヨブヨ|ぶよぶよ|flabby", "written": "ブヨブヨ", "reading": "ぶよぶよ", "partOfSpeech": "adjectival noun", "meaning": "soft and flabby; squishy",
           "sentenceJapanese": "沼の魔物はブヨブヨした体で道をふさいだ。", "sentenceEnglish": "The swamp monster blocked the path with its soft, flabby body.",
           "corpusEvidence": {"identity": "ブヨブヨ|ぶよぶよ|jmdict:1011210:0", "messageIds": ["0x012f"]}, "wordAudio": null, "sentenceAudio": null
-        },
-        {
-          "id": "大|おお|great-prefix", "written": "大", "reading": "おお", "partOfSpeech": "prefix", "meaning": "large; great; major",
-          "sentenceJapanese": "大広間の奥には水晶の玉座があった。", "sentenceEnglish": "A crystal throne stood at the rear of the great hall.",
-          "corpusEvidence": {"identity": "大|おお|jmdict:2082140:0", "messageIds": ["0x4063"]}, "wordAudio": null, "sentenceAudio": null
         },
         {
           "id": "イイ|いい|good", "written": "イイ", "reading": "いい", "partOfSpeech": "adjective", "meaning": "good; fine; okay",
@@ -4378,44 +4348,14 @@
           "corpusEvidence": {"identity": "キミ|きみ|jmdict:1247250:0", "messageIds": ["0x4006"]}, "wordAudio": null, "sentenceAudio": null
         },
         {
-          "id": "でる|でる|contracted-progressive", "written": "でる", "reading": "でる", "partOfSpeech": "auxiliary verb", "meaning": "contracted progressive or resulting-state ending",
-          "sentenceJapanese": "漁師は岸で大物を待ってる。", "sentenceEnglish": "The fisherman is waiting on the shore for a big catch.",
-          "corpusEvidence": {"identity": "でる|でる|override:でる|でる", "messageIds": ["0x402a"]}, "wordAudio": null, "sentenceAudio": null
-        },
-        {
-          "id": "ところ|ところ|place", "written": "ところ", "reading": "ところ", "partOfSpeech": "noun", "meaning": "place; spot; site",
-          "sentenceJapanese": "ここは旅人が川を渡るのに安全なところだ。", "sentenceEnglish": "This is a safe place for travelers to cross the river.",
-          "corpusEvidence": {"identity": "ところ|ところ|jmdict:1343100:0", "messageIds": ["0x4003"]}, "wordAudio": null, "sentenceAudio": null
-        },
-        {
           "id": "すべて|すべて|everything", "written": "すべて", "reading": "すべて", "partOfSpeech": "noun", "meaning": "everything; all; the whole",
           "sentenceJapanese": "洪水が村の橋をすべて流してしまった。", "sentenceEnglish": "The flood washed away all the village bridges.",
           "corpusEvidence": {"identity": "すべて|すべて|jmdict:1595730:0", "messageIds": ["0x4011"]}, "wordAudio": null, "sentenceAudio": null
         },
         {
-          "id": "うまい|うまい|skillful", "written": "うまい", "reading": "うまい", "partOfSpeech": "adjective", "meaning": "skillful; clever; expert",
-          "sentenceJapanese": "あの漁師は急流でも魚をつるのがうまい。", "sentenceEnglish": "That fisherman is skilled at catching fish even in rapids.",
-          "corpusEvidence": {"identity": "うまい|うまい|jmdict:1310460:0", "messageIds": ["0x407f"]}, "wordAudio": null, "sentenceAudio": null
-        },
-        {
-          "id": "所|ところ|place-kanji", "written": "所", "reading": "ところ", "partOfSpeech": "noun", "meaning": "place; spot; site",
-          "sentenceJapanese": "川が浅い所を見つけて向こう岸へ渡った。", "sentenceEnglish": "We found a shallow spot in the river and crossed to the other bank.",
-          "corpusEvidence": {"identity": "所|ところ|jmdict:1343100:0", "messageIds": ["0x4003"]}, "wordAudio": null, "sentenceAudio": null
-        },
-        {
-          "id": "な〜|な|do-not", "written": "な〜", "reading": "な", "partOfSpeech": "particle", "meaning": "don't; do not",
-          "sentenceJapanese": "危険な渦の近くで泳ぐな〜！", "sentenceEnglish": "Don't swim near the dangerous whirlpool!",
-          "corpusEvidence": {"identity": "な〜|な|jmdict:2029110:0", "messageIds": ["0x4055"]}, "wordAudio": null, "sentenceAudio": null
-        },
-        {
           "id": "そなた|そなた|you", "written": "そなた", "reading": "そなた", "partOfSpeech": "pronoun", "meaning": "you (archaic or formal)",
           "sentenceJapanese": "そなたの勇気に報いるため、この宝石を授けよう。", "sentenceEnglish": "To reward your courage, I shall grant you this jewel.",
           "corpusEvidence": {"identity": "そなた|そなた|override:そなた|そなた", "messageIds": ["0x4025"]}, "wordAudio": null, "sentenceAudio": null
-        },
-        {
-          "id": "ただいま|ただいま|currently", "written": "ただいま", "reading": "ただいま", "partOfSpeech": "noun", "meaning": "presently; right now; current",
-          "sentenceJapanese": "ただいまの潜水記録は十二メートルです。", "sentenceEnglish": "The current diving record is twelve meters.",
-          "corpusEvidence": {"identity": "ただいま|ただいま|jmdict:1538960:1", "messageIds": ["0x4089"]}, "wordAudio": null, "sentenceAudio": null
         },
         {
           "id": "おぉ|おぉ|oh", "written": "おぉ", "reading": "おぉ", "partOfSpeech": "interjection", "meaning": "oh!; ooh!",
@@ -4553,34 +4493,14 @@
           "corpusEvidence": {"identity": "電気|でんき|jmdict:1443000:0", "messageIds": ["0x012f", "0x0131", "0x0132"]}, "wordAudio": null, "sentenceAudio": null
         },
         {
-          "id": "吹く|ふく|blow", "written": "吹く", "reading": "ふく", "partOfSpeech": "verb", "meaning": "to blow; to play a wind instrument",
-          "sentenceJapanese": "笛を吹くと湖の霧がゆっくり晴れた。", "sentenceEnglish": "When I played the flute, the mist over the lake slowly cleared.",
-          "corpusEvidence": {"identity": "吹く|ふく|jmdict:1370760:0", "messageIds": ["0x089f", "0x40a0"]}, "wordAudio": null, "sentenceAudio": null
-        },
-        {
           "id": "たのむ|たのむ|request", "written": "たのむ", "reading": "たのむ", "partOfSpeech": "verb", "meaning": "to request; to ask; to beg",
           "sentenceJapanese": "門番に橋を下ろしてくれとたのんだ。", "sentenceEnglish": "I asked the gatekeeper to lower the bridge.",
           "corpusEvidence": {"identity": "たのむ|たのむ|jmdict:1548370:0", "messageIds": ["0x404b"]}, "wordAudio": null, "sentenceAudio": null
         },
         {
-          "id": "受け取る|うけとる|receive", "written": "受け取る", "reading": "うけとる", "partOfSpeech": "verb", "meaning": "to receive; to accept; to take",
-          "sentenceJapanese": "王女から旅の証となる首飾りを受け取った。", "sentenceEnglish": "I received a necklace from the princess as proof of my journey.",
-          "corpusEvidence": {"identity": "受け取る|うけとる|jmdict:1329650:0", "messageIds": ["0x401b", "0x4056"]}, "wordAudio": null, "sentenceAudio": null
-        },
-        {
           "id": "こそ|こそ|emphasis", "written": "こそ", "reading": "こそ", "partOfSpeech": "particle", "meaning": "precisely; definitely; it is ... that ...",
           "sentenceJapanese": "この古い鍵こそ水門を開く鍵だ。", "sentenceEnglish": "This old key is precisely the one that opens the water gate.",
           "corpusEvidence": {"identity": "こそ|こそ|jmdict:1004410:0", "messageIds": ["0x404b", "0x4096"]}, "wordAudio": null, "sentenceAudio": null
-        },
-        {
-          "id": "なかなか|なかなか|quite", "written": "なかなか", "reading": "なかなか", "partOfSpeech": "adverb", "meaning": "quite; considerably; not easily",
-          "sentenceJapanese": "この川の流れはなかなか速くて渡れない。", "sentenceEnglish": "The current of this river is quite fast, so it is not easy to cross.",
-          "corpusEvidence": {"identity": "なかなか|なかなか|jmdict:1599420:0", "messageIds": ["0x4056", "0x40b2"]}, "wordAudio": null, "sentenceAudio": null
-        },
-        {
-          "id": "のぉ|のぉ|sentence-ending", "written": "のぉ", "reading": "のぉ", "partOfSpeech": "particle", "meaning": "sentence-ending のう; you see; isn't it",
-          "sentenceJapanese": "今夜は湖がずいぶん静かじゃのぉ。", "sentenceEnglish": "The lake is remarkably quiet tonight, isn't it?",
-          "corpusEvidence": {"identity": "のぉ|のぉ|override:のぉ|のぉ", "messageIds": ["0x4017", "0x4031"]}, "wordAudio": null, "sentenceAudio": null
         },
         {
           "id": "ヤツ|やつ|fellow", "written": "ヤツ", "reading": "やつ", "partOfSpeech": "noun", "meaning": "fellow; guy; thing",
@@ -4603,21 +4523,6 @@
           "corpusEvidence": {"identity": "コイツ|こいつ|jmdict:1579070:0", "messageIds": ["0x4056"]}, "wordAudio": null, "sentenceAudio": null
         },
         {
-          "id": "すむ|すむ|reside", "written": "すむ", "reading": "すむ", "partOfSpeech": "verb", "meaning": "to live; to reside; to inhabit",
-          "sentenceJapanese": "水の民は滝の奥にある里にすんでいる。", "sentenceEnglish": "The water folk live in a village beyond the waterfall.",
-          "corpusEvidence": {"identity": "すむ|すむ|override:すむ|すむ", "messageIds": ["0x4003", "0x407d"]}, "wordAudio": null, "sentenceAudio": null
-        },
-        {
-          "id": "おかげ|おかげ|thanks-to", "written": "おかげ", "reading": "おかげ", "partOfSpeech": "noun", "meaning": "thanks to; owing to; because of",
-          "sentenceJapanese": "旅人のおかげで村の泉に水が戻った。", "sentenceEnglish": "Thanks to the traveler, water returned to the village spring.",
-          "corpusEvidence": {"identity": "おかげ|おかげ|override:おかげ|おかげ", "messageIds": ["0x402e", "0x404c"]}, "wordAudio": null, "sentenceAudio": null
-        },
-        {
-          "id": "こう|こう|this-way", "written": "こう", "reading": "こう", "partOfSpeech": "adverb", "meaning": "in this way; thus; like this",
-          "sentenceJapanese": "こう笛を持てば澄んだ音が出る。", "sentenceEnglish": "If you hold the flute like this, it will produce a clear sound.",
-          "corpusEvidence": {"identity": "こう|こう|jmdict:1004310:0", "messageIds": ["0x4091", "0x40a0"]}, "wordAudio": null, "sentenceAudio": null
-        },
-        {
           "id": "たすける|たすける|rescue", "written": "たすける", "reading": "たすける", "partOfSpeech": "verb", "meaning": "to save; to rescue; to help",
           "sentenceJapanese": "水牢に閉じ込められた王子をたすけよう。", "sentenceEnglish": "Let us rescue the prince imprisoned in the water dungeon.",
           "corpusEvidence": {"identity": "たすける|たすける|jmdict:1344410:0", "messageIds": ["0x4005", "0x4025"]}, "wordAudio": null, "sentenceAudio": null
@@ -4626,11 +4531,6 @@
           "id": "役|やく|role", "written": "役", "reading": "やく", "partOfSpeech": "noun", "meaning": "role; duty; function; responsibility",
           "sentenceJapanese": "泉を守る役は代々この一族が務めてきた。", "sentenceEnglish": "This clan has fulfilled the duty of guarding the spring for generations.",
           "corpusEvidence": {"identity": "役|やく|jmdict:1537970:0", "messageIds": ["0x4022", "0x402c"]}, "wordAudio": null, "sentenceAudio": null
-        },
-        {
-          "id": "研究|けんきゅう|research", "written": "研究", "reading": "けんきゅう", "partOfSpeech": "noun", "meaning": "study; research; investigation",
-          "sentenceJapanese": "学者は湖にすむ不思議な生き物を研究している。", "sentenceEnglish": "The scholar is researching the mysterious creatures that inhabit the lake.",
-          "corpusEvidence": {"identity": "研究|けんきゅう|jmdict:1258520:0", "messageIds": ["0x0318", "0x4018"]}, "wordAudio": null, "sentenceAudio": null
         },
         {
           "id": "伝説|でんせつ|legend", "written": "伝説", "reading": "でんせつ", "partOfSpeech": "noun", "meaning": "legend; tradition; folklore",
@@ -4658,11 +4558,6 @@
           "corpusEvidence": {"identity": "おい|おい|jmdict:1001200:0", "messageIds": ["0x400b", "0x4054"]}, "wordAudio": null, "sentenceAudio": null
         },
         {
-          "id": "なんか|なんか|something-like", "written": "なんか", "reading": "なんか", "partOfSpeech": "particle", "meaning": "something like; things like; the likes of",
-          "sentenceJapanese": "小さな波なんか怖くないと船乗りは笑った。", "sentenceEnglish": "The sailor laughed and said that little waves like these were nothing to fear.",
-          "corpusEvidence": {"identity": "なんか|なんか|jmdict:1009500:0", "messageIds": ["0x404c", "0x4075"]}, "wordAudio": null, "sentenceAudio": null
-        },
-        {
           "id": "ハッハッハ|はっはっは|laughter", "written": "ハッハッハ", "reading": "はっはっは", "partOfSpeech": "interjection", "meaning": "ha ha ha; hearty laughter",
           "sentenceJapanese": "ハッハッハ、こんな大物をつったのは初めてだ！", "sentenceEnglish": "Ha ha ha! This is the first time I have caught such a huge fish!",
           "corpusEvidence": {"identity": "ハッハッハ|はっはっは|override:ハッハッハ|はっはっは", "messageIds": ["0x4081", "0x40b0"]}, "wordAudio": null, "sentenceAudio": null
@@ -4681,16 +4576,6 @@
           "id": "はいる|はいる|enter", "written": "はいる", "reading": "はいる", "partOfSpeech": "verb", "meaning": "to enter; to go into",
           "sentenceJapanese": "水の洞窟にはいる前に松明を用意した。", "sentenceEnglish": "We prepared torches before entering the water cavern.",
           "corpusEvidence": {"identity": "はいる|はいる|jmdict:1465590:0", "messageIds": ["0x404b", "0x404c"]}, "wordAudio": null, "sentenceAudio": null
-        },
-        {
-          "id": "う〜ん|ううん|hesitation", "written": "う〜ん", "reading": "ううん", "partOfSpeech": "interjection", "meaning": "um; er; well",
-          "sentenceJapanese": "う〜ん、この深さでは宝箱まで届かないな。", "sentenceEnglish": "Hmm, at this depth I cannot reach the treasure chest.",
-          "corpusEvidence": {"identity": "う〜ん|ううん|jmdict:2002400:0", "messageIds": ["0x4096", "0x40a5"]}, "wordAudio": null, "sentenceAudio": null
-        },
-        {
-          "id": "よー|よー|emphasis", "written": "よー", "reading": "よー", "partOfSpeech": "particle", "meaning": "elongated sentence-ending よ; emphasis or insistence",
-          "sentenceJapanese": "この魚は逃がさないよー！", "sentenceEnglish": "I am not letting this fish get away!",
-          "corpusEvidence": {"identity": "よー|よー|override:よー|よー", "messageIds": ["0x4088", "0x4095"]}, "wordAudio": null, "sentenceAudio": null
         },
         {
           "id": "アレ|あれ|that-thing", "written": "アレ", "reading": "あれ", "partOfSpeech": "pronoun", "meaning": "that; that thing over there",
@@ -5203,23 +5088,6 @@
           "sentenceAudio": null
         },
         {
-          "id": "服|ふく|clothes",
-          "written": "服",
-          "reading": "ふく",
-          "partOfSpeech": "noun",
-          "meaning": "clothes; clothing",
-          "sentenceJapanese": "雪山へ向かう前に厚い服へ着替えた。",
-          "sentenceEnglish": "Before heading to the snowy mountain, the traveler changed into thick clothes.",
-          "corpusEvidence": {
-            "identity": "服|ふく|jmdict:1500940:0",
-            "messageIds": [
-              "0x0051"
-            ]
-          },
-          "wordAudio": null,
-          "sentenceAudio": null
-        },
-        {
           "id": "冷たい|つめたい|cold",
           "written": "冷たい",
           "reading": "つめたい",
@@ -5321,19 +5189,9 @@
           "corpusEvidence": {"identity": "七|なな|jmdict:1319210:0", "messageIds": ["0x403e", "0x4093"]}, "wordAudio": null, "sentenceAudio": null
         },
         {
-          "id": "事|こと|matter", "written": "事", "reading": "こと", "partOfSpeech": "noun", "meaning": "thing; matter; fact",
-          "sentenceJapanese": "氷の民に起きた事を賢者から聞いた。", "sentenceEnglish": "I heard from the sage what had happened to the people of the ice.",
-          "corpusEvidence": {"identity": "事|こと|jmdict:1313580:0", "messageIds": ["0x4038", "0x4041", "0x4049"]}, "wordAudio": null, "sentenceAudio": null
-        },
-        {
           "id": "魔物|まもの|monster", "written": "魔物", "reading": "まもの", "partOfSpeech": "noun", "meaning": "monster; demon; evil spirit",
           "sentenceJapanese": "氷の下から水にすむ魔物が現れた。", "sentenceEnglish": "An aquatic monster emerged from beneath the ice.",
           "corpusEvidence": {"identity": "魔物|まもの|jmdict:1524220:0", "messageIds": ["0x4037", "0x403e", "0x4059"]}, "wordAudio": null, "sentenceAudio": null
-        },
-        {
-          "id": "救う|すくう|save", "written": "救う", "reading": "すくう", "partOfSpeech": "verb", "meaning": "to save; to rescue",
-          "sentenceJapanese": "凍った村を救うため泉の呪いを解いた。", "sentenceEnglish": "We broke the spring's curse to save the frozen village.",
-          "corpusEvidence": {"identity": "救う|すくう|jmdict:1229060:0", "messageIds": ["0x4037", "0x403e", "0x4058"]}, "wordAudio": null, "sentenceAudio": null
         },
         {
           "id": "渡す|わたす|hand-over", "written": "渡す", "reading": "わたす", "partOfSpeech": "verb", "meaning": "to hand over; to give; to pass",
@@ -5369,11 +5227,6 @@
           "id": "メダマ|めだま|eyeball", "written": "メダマ", "reading": "めだま", "partOfSpeech": "noun", "meaning": "eyeball; eye",
           "sentenceJapanese": "薬師は巨大なガエルのメダマを調べた。", "sentenceEnglish": "The apothecary examined the giant frog's eyeball.",
           "corpusEvidence": {"identity": "メダマ|めだま|jmdict:1535370:0", "messageIds": ["0x000d", "0x000e", "0x4019"]}, "wordAudio": null, "sentenceAudio": null
-        },
-        {
-          "id": "姿|すがた|form", "written": "姿", "reading": "すがた", "partOfSpeech": "noun", "meaning": "figure; form; appearance",
-          "sentenceJapanese": "水面に銀色の精霊の姿が映った。", "sentenceEnglish": "The figure of a silver spirit was reflected on the water.",
-          "corpusEvidence": {"identity": "姿|すがた|jmdict:1307710:0", "messageIds": ["0x4038", "0x4059"]}, "wordAudio": null, "sentenceAudio": null
         }
       ]
     },
@@ -5560,21 +5413,15 @@
         {"id":"大工|だいく|carpenter","written":"大工","reading":"だいく","partOfSpeech":"noun","meaning":"carpenter","sentenceJapanese":"大工たちは谷に新しい橋を架けた。","sentenceEnglish":"The carpenters built a new bridge across the valley.","corpusEvidence":{"identity":"大工|だいく|jmdict:1413690:0","messageIds":["0x6007","0x605b","0x605c","0x605d","0x605e","0x606a","0x606c"]},"wordAudio":null,"sentenceAudio":null},
         {"id":"修練|しゅうれん|training","written":"修練","reading":"しゅうれん","partOfSpeech":"noun","meaning":"training; discipline; practice","sentenceJapanese":"剣士は毎日厳しい修練を続けている。","sentenceEnglish":"The swordswoman continues rigorous training every day.","corpusEvidence":{"identity":"修練|しゅうれん|jmdict:1594800:0","messageIds":["0x0071","0x007b","0x031b","0x6013","0x6014","0x6070","0x6071","0x6072"]},"wordAudio":null,"sentenceAudio":null},
         {"id":"ふふ|ふふ|laughter","written":"ふふ","reading":"ふふ","partOfSpeech":"interjection","meaning":"hee hee; soft laughter","sentenceJapanese":"ふふ、その程度で私に勝てると思うの？","sentenceEnglish":"Hee hee, do you think you can defeat me with so little skill?","corpusEvidence":{"identity":"ふふ|ふふ|jmdict:1111010:0","messageIds":["0x6076","0x6080","0x6082","0x6083","0x6084","0x6086"]},"wordAudio":null,"sentenceAudio":null},
-        {"id":"アンタ|あんた|you","written":"アンタ","reading":"あんた","partOfSpeech":"pronoun","meaning":"you","sentenceJapanese":"アンタ、本当に一人で砦へ入るつもりか？","sentenceEnglish":"Are you really planning to enter the fortress alone?","corpusEvidence":{"identity":"アンタ|あんた|jmdict:1979920:0","messageIds":["0x6004","0x601d","0x6020","0x6021","0x6036","0x604d","0x6051"]},"wordAudio":null,"sentenceAudio":null},
         {"id":"場|ば|place","written":"場","reading":"ば","partOfSpeech":"suffix","meaning":"place; grounds; arena","sentenceJapanese":"修練の場には弓の的が並んでいる。","sentenceEnglish":"Archery targets line the training grounds.","corpusEvidence":{"identity":"場|ば|jmdict:2652950:0","messageIds":["0x007b","0x031b","0x6013","0x6014","0x6070","0x6071","0x6072"]},"wordAudio":null,"sentenceAudio":null},
         {"id":"橋|はし|bridge","written":"橋","reading":"はし","partOfSpeech":"noun","meaning":"bridge","sentenceJapanese":"深い谷にかかる橋を見張りが守っている。","sentenceEnglish":"Guards protect the bridge spanning the deep valley.","corpusEvidence":{"identity":"橋|はし|jmdict:1237410:0","messageIds":["0x6067","0x606a","0x606c","0x607d","0x607e","0x6086"]},"wordAudio":null,"sentenceAudio":null},
-        {"id":"ポイント|ぽいんと|points","written":"ポイント","reading":"ぽいんと","partOfSpeech":"noun","meaning":"point; score","sentenceJapanese":"中央の的に当てれば百ポイントもらえる。","sentenceEnglish":"Hitting the center target earns one hundred points.","corpusEvidence":{"identity":"ポイント|ぽいんと|jmdict:1124860:0","messageIds":["0x031a","0x6040","0x6042","0x6045","0x6047"]},"wordAudio":null,"sentenceAudio":null},
-        {"id":"腕|うで|skill","written":"腕","reading":"うで","partOfSpeech":"noun","meaning":"arm; skill; ability","sentenceJapanese":"砂漠の射手は弓の腕を競い合った。","sentenceEnglish":"The desert archers competed in skill with the bow.","corpusEvidence":{"identity":"腕|うで|jmdict:1562850:0","messageIds":["0x005b","0x0237","0x031a","0x6004","0x6047","0x6064"]},"wordAudio":null,"sentenceAudio":null},
         {"id":"グローブ|ぐろーぶ|gloves","written":"グローブ","reading":"ぐろーぶ","partOfSpeech":"noun","meaning":"glove; gloves","sentenceJapanese":"銀のグローブをつけると大岩を動かせた。","sentenceEnglish":"The silver gloves made it possible to move the boulder.","corpusEvidence":{"identity":"グローブ|ぐろーぶ|jmdict:1047750:0","messageIds":["0x005b","0x015a","0x6024","0x6026"]},"wordAudio":null,"sentenceAudio":null},
         {"id":"新入り|しんいり|newcomer","written":"新入り","reading":"しんいり","partOfSpeech":"noun","meaning":"newcomer; initiate; rookie","sentenceJapanese":"新入りの戦士は砦の規則を教わった。","sentenceEnglish":"The rookie warrior learned the fortress rules.","corpusEvidence":{"identity":"新入り|しんいり|jmdict:1952770:0","messageIds":["0x6001","0x6002","0x6017","0x603f","0x6040","0x6042"]},"wordAudio":null,"sentenceAudio":null},
-        {"id":"年|ねん|year","written":"年","reading":"ねん","partOfSpeech":"noun","meaning":"year; years","sentenceJapanese":"彼女は七年かけて剣の技を磨いた。","sentenceEnglish":"She spent seven years refining her sword technique.","corpusEvidence":{"identity":"年|ねん|jmdict:2084840:0","messageIds":["0x6023","0x6035","0x604e","0x604f","0x6050"]},"wordAudio":null,"sentenceAudio":null},
         {"id":"助ける|たすける|rescue","written":"助ける","reading":"たすける","partOfSpeech":"verb","meaning":"to save; to rescue; to help","sentenceJapanese":"捕らえられた大工たちを砦から助けた。","sentenceEnglish":"We rescued the captured carpenters from the fortress.","corpusEvidence":{"identity":"助ける|たすける|jmdict:1344410:0","messageIds":["0x605b","0x605c","0x605d","0x605e"]},"wordAudio":null,"sentenceAudio":null},
         {"id":"過去|かこ|past","written":"過去","reading":"かこ","partOfSpeech":"noun","meaning":"past; bygone days","sentenceJapanese":"古い神殿では過去と現在の道が交わる。","sentenceEnglish":"In the ancient temple, paths from the past and present intersect.","corpusEvidence":{"identity":"過去|かこ|jmdict:1196030:0","messageIds":["0x0220","0x0221","0x6008","0x600c","0x6081"]},"wordAudio":null,"sentenceAudio":null},
         {"id":"やぶさめ|やぶさめ|horseback archery","written":"やぶさめ","reading":"やぶさめ","partOfSpeech":"noun","meaning":"horseback archery","sentenceJapanese":"王国の祭りでは、騎士たちがやぶさめの腕を競う。","sentenceEnglish":"At the kingdom's festival, knights compete in horseback archery.","corpusEvidence":{"identity":"やぶさめ|やぶさめ|jmdict:1552450:0","messageIds":["0x031a","0x600d","0x603f","0x6040","0x6065"]},"wordAudio":null,"sentenceAudio":null},
         {"id":"盗賊団|とうぞくだん|band of thieves","written":"盗賊団","reading":"とうぞくだん","partOfSpeech":"noun","meaning":"band of thieves; thieves' gang","sentenceJapanese":"盗賊団は月のない夜に商人の馬車を囲んだ。","sentenceEnglish":"The band of thieves surrounded the merchant's wagon on a moonless night.","corpusEvidence":{"identity":"盗賊団|とうぞくだん|override:盗賊団|とうぞくだん","messageIds":["0x605f","0x6060","0x6062","0x6068","0x606a"]},"wordAudio":null,"sentenceAudio":null},
         {"id":"ケモノ|けもの|beast","written":"ケモノ","reading":"けもの","partOfSpeech":"noun","meaning":"beast; brute; animal","sentenceJapanese":"砂の洞窟から巨大なケモノの足音が響いた。","sentenceEnglish":"The footsteps of a giant beast echoed from the desert cave.","corpusEvidence":{"identity":"ケモノ|けもの|jmdict:1335590:0","messageIds":["0x607d","0x6084","0x6086"]},"wordAudio":null,"sentenceAudio":null},
-        {"id":"矢|や|arrow","written":"矢","reading":"や","partOfSpeech":"noun","meaning":"arrow","sentenceJapanese":"狩人の矢は遠くの的の中心に刺さった。","sentenceEnglish":"The hunter's arrow struck the center of the distant target.","corpusEvidence":{"identity":"矢|や|jmdict:1537760:0","messageIds":["0x0057","0x0071","0x6040"]},"wordAudio":null,"sentenceAudio":null},
-        {"id":"真実|しんじつ|truth","written":"真実","reading":"しんじつ","partOfSpeech":"noun","meaning":"truth; reality","sentenceJapanese":"古い鏡は見る者の心に隠された真実を映す。","sentenceEnglish":"The ancient mirror reveals the truth hidden in the viewer's heart.","corpusEvidence":{"identity":"真実|しんじつ|jmdict:1363780:0","messageIds":["0x0213","0x031c","0x6018","0x605e"]},"wordAudio":null,"sentenceAudio":null},
         {"id":"べし|べし|should","written":"べし","reading":"べし","partOfSpeech":"auxiliary verb","meaning":"shall; should; must","sentenceJapanese":"試練に挑む者は、恐れを捨てるべし。","sentenceEnglish":"Those who face the trial must cast aside fear.","corpusEvidence":{"identity":"べし|べし|jmdict:1632610:0","messageIds":["0x0220","0x0221","0x0232","0x0238"]},"wordAudio":null,"sentenceAudio":null},
         {"id":"のみ|のみ|only","written":"のみ","reading":"のみ","partOfSpeech":"particle","meaning":"only; nothing but","sentenceJapanese":"封印を解けるのは、選ばれた者のみだ。","sentenceEnglish":"Only the chosen one can break the seal.","corpusEvidence":{"identity":"のみ|のみ|jmdict:1009990:0","messageIds":["0x031b","0x6020","0x6024","0x6046"]},"wordAudio":null,"sentenceAudio":null},
         {"id":"与える|あたえる|bestow","written":"与える","reading":"あたえる","partOfSpeech":"verb","meaning":"to give; to bestow; to grant","sentenceJapanese":"女王は勇敢な兵士に銀の勲章を与えた。","sentenceEnglish":"The queen bestowed a silver medal upon the brave soldier.","corpusEvidence":{"identity":"与える|あたえる|jmdict:1544730:0","messageIds":["0x0071","0x0635","0x602c","0x6044"]},"wordAudio":null,"sentenceAudio":null},
@@ -5587,8 +5434,6 @@
         {"id":"洗脳|せんのう|brainwashing","written":"洗脳","reading":"せんのう","partOfSpeech":"noun","meaning":"brainwashing; mind control","sentenceJapanese":"邪悪な魔術師は呪文で門番を洗脳した。","sentenceEnglish":"The evil sorcerer used a spell to control the gatekeeper's mind.","corpusEvidence":{"identity":"洗脳|せんのう|jmdict:1391030:0","messageIds":["0x6034","0x6039","0x605f","0x6063"]},"wordAudio":null,"sentenceAudio":null},
         {"id":"試練|しれん|trial","written":"試練","reading":"しれん","partOfSpeech":"noun","meaning":"test; trial; ordeal","sentenceJapanese":"最後の試練では、勇気より知恵が試された。","sentenceEnglish":"In the final trial, wisdom was tested more than courage.","corpusEvidence":{"identity":"試練|しれん|jmdict:1312590:0","messageIds":["0x0230","0x6017","0x6018"]},"wordAudio":null,"sentenceAudio":null},
         {"id":"達人|たつじん|master","written":"達人","reading":"たつじん","partOfSpeech":"noun","meaning":"master; expert","sentenceJapanese":"弓の達人は目を閉じたまま鐘を射抜いた。","sentenceEnglish":"The master archer pierced the bell with an arrow while keeping her eyes closed.","corpusEvidence":{"identity":"達人|たつじん|jmdict:1416250:0","messageIds":["0x600d","0x6044","0x6046"]},"wordAudio":null,"sentenceAudio":null},
-        {"id":"事|こと|matter","written":"事","reading":"こと","partOfSpeech":"noun","meaning":"thing; matter; fact","sentenceJapanese":"森で見た事は誰にも話してはいけない。","sentenceEnglish":"You must not tell anyone what you saw in the forest.","corpusEvidence":{"identity":"事|こと|jmdict:1313580:0","messageIds":["0x0230","0x6024","0x6070"]},"wordAudio":null,"sentenceAudio":null},
-        {"id":"弓|ゆみ|bow","written":"弓","reading":"ゆみ","partOfSpeech":"noun","meaning":"bow; archery bow","sentenceJapanese":"少女は古い弓を手に取り、空の標的を狙った。","sentenceEnglish":"The girl took up the old bow and aimed at the target in the sky.","corpusEvidence":{"identity":"弓|ゆみ|jmdict:1228490:0","messageIds":["0x600d","0x6040","0x6064"]},"wordAudio":null,"sentenceAudio":null},
         {"id":"女神|めがみ|goddess","written":"女神","reading":"めがみ","partOfSpeech":"noun","meaning":"goddess; female deity","sentenceJapanese":"旅人は泉の女神に安全な旅を祈った。","sentenceEnglish":"The traveler prayed to the goddess of the spring for a safe journey.","corpusEvidence":{"identity":"女神|めがみ|jmdict:1345210:0","messageIds":["0x0124","0x0168","0x605e"]},"wordAudio":null,"sentenceAudio":null},
         {"id":"約束|やくそく|promise","written":"約束","reading":"やくそく","partOfSpeech":"noun","meaning":"promise; agreement; one's word","sentenceJapanese":"騎士は必ず村へ戻ると約束した。","sentenceEnglish":"The knight promised that he would return to the village without fail.","corpusEvidence":{"identity":"約束|やくそく|jmdict:1538130:0","messageIds":["0x005b","0x6036","0x603a"]},"wordAudio":null,"sentenceAudio":null},
         {"id":"幼し|おさなし|young","written":"幼し","reading":"おさなし","partOfSpeech":"adjective","meaning":"young; childish","sentenceJapanese":"幼き勇者は小さな木剣で村を守ろうとした。","sentenceEnglish":"The young hero tried to defend the village with a small wooden sword.","corpusEvidence":{"identity":"幼し|おさなし|override:幼し|おさなし","messageIds":["0x0168","0x0221","0x600c"]},"wordAudio":null,"sentenceAudio":null},
@@ -5605,8 +5450,6 @@
         {"id":"修業|しゅぎょう|training","written":"修業","reading":"しゅぎょう","partOfSpeech":"noun","meaning":"training; study; pursuit of mastery","sentenceJapanese":"若い魔術師は山の塔で長い修業を始めた。","sentenceEnglish":"The young mage began a long period of training in the mountain tower.","corpusEvidence":{"identity":"修業|しゅぎょう|jmdict:1579800:0","messageIds":["0x6012","0x603f","0x6046"]},"wordAudio":null,"sentenceAudio":null},
         {"id":"旗|はた|flag","written":"旗","reading":"はた","partOfSpeech":"noun","meaning":"flag","sentenceJapanese":"赤い旗を目印にして砂の谷を進んだ。","sentenceEnglish":"We followed the red flags as markers through the sandy valley.","corpusEvidence":{"identity":"旗|はた|jmdict:1220240:0","messageIds":["0x6018","0x6074","0x6078"]},"wordAudio":null,"sentenceAudio":null},
         {"id":"目印|めじるし|marker","written":"目印","reading":"めじるし","partOfSpeech":"noun","meaning":"mark; sign; landmark","sentenceJapanese":"旅人は泉のそばの石塔を目印にした。","sentenceEnglish":"The traveler used the stone tower beside the spring as a landmark.","corpusEvidence":{"identity":"目印|めじるし|jmdict:1535300:0","messageIds":["0x6018","0x6074","0x6078"]},"wordAudio":null,"sentenceAudio":null},
-        {"id":"ちまう|ちまう|do completely","written":"ちまう","reading":"ちまう","partOfSpeech":"auxiliary verb","meaning":"to do completely; contracted form of てしまう","sentenceJapanese":"急がないと、盗賊に宝を取られちまうぞ。","sentenceEnglish":"If we do not hurry, the thieves will take the treasure from us.","corpusEvidence":{"identity":"ちまう|ちまう|jmdict:2210750:0","messageIds":["0x6039","0x606a"]},"wordAudio":null,"sentenceAudio":null},
-        {"id":"お礼|おれい|thanks","written":"お礼","reading":"おれい","partOfSpeech":"noun","meaning":"thanks; gratitude; reward","sentenceJapanese":"助けてくれたお礼に、商人は旅人へ地図を渡した。","sentenceEnglish":"In thanks for the rescue, the merchant gave the traveler a map.","corpusEvidence":{"identity":"お礼|おれい|jmdict:1270810:0","messageIds":["0x605e","0x606c"]},"wordAudio":null,"sentenceAudio":null},
         {"id":"メダル|めだる|medal","written":"メダル","reading":"めだる","partOfSpeech":"noun","meaning":"medal","sentenceJapanese":"競技に勝った射手は金のメダルを受け取った。","sentenceEnglish":"The archer who won the contest received a gold medal.","corpusEvidence":{"identity":"メダル|めだる|jmdict:1133500:0","messageIds":["0x003f","0x603a"]},"wordAudio":null,"sentenceAudio":null},
         {"id":"残念|ざんねん|regrettable","written":"残念","reading":"ざんねん","partOfSpeech":"adjectival noun","meaning":"regrettable; disappointing; unfortunate","sentenceJapanese":"残念だが、嵐が止むまで船は出せない。","sentenceEnglish":"Unfortunately, the ship cannot depart until the storm stops.","corpusEvidence":{"identity":"残念|ざんねん|jmdict:1304680:0","messageIds":["0x6074","0x6081"]},"wordAudio":null,"sentenceAudio":null},
         {"id":"一人|ひとり|one person","written":"一人","reading":"ひとり","partOfSpeech":"noun","meaning":"one person; alone","sentenceJapanese":"見習いの兵士は一人で夜の森へ向かった。","sentenceEnglish":"The apprentice soldier headed into the nighttime forest alone.","corpusEvidence":{"identity":"一人|ひとり|jmdict:1576150:0","messageIds":["0x6023","0x6039"]},"wordAudio":null,"sentenceAudio":null},

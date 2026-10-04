@@ -113,41 +113,25 @@ def card_identity(card: dict[str, Any]) -> str:
     return card.get("corpusEvidence", {}).get("identity") or card["id"]
 
 
-def validate_prerequisite_uniqueness(
-    game: dict[str, Any], chapter: dict[str, Any]
-) -> None:
-    """Reject cards already taught by a transitive hard prerequisite."""
-    chapters = {item["id"]: item for item in game["chapters"]}
-    prerequisites: set[str] = set()
-    visiting: set[str] = set()
+def validate_course_uniqueness(game: dict[str, Any]) -> None:
+    """Require one course card per dictionary-form vocabulary sense.
 
-    def collect(chapter_id: str) -> None:
-        if chapter_id in prerequisites:
-            return
-        if chapter_id in visiting:
-            raise ValueError(f"Chapter prerequisite cycle includes {chapter_id}")
-        if chapter_id not in chapters:
-            raise ValueError(f"Unknown chapter prerequisite: {chapter_id}")
-        visiting.add(chapter_id)
-        for prerequisite in chapters[chapter_id].get("prerequisites", []):
-            collect(prerequisite)
-            prerequisites.add(prerequisite)
-        visiting.remove(chapter_id)
-
-    collect(chapter["id"])
-    previously_taught = {
-        card_identity(card)
-        for prerequisite in prerequisites
-        for card in reviewed_cards(chapters[prerequisite])
-    }
-    repeated = sorted(
-        card_identity(card)
-        for card in reviewed_cards(chapter)
-        if card_identity(card) in previously_taught
-    )
+    Corpus identities are built from dictionary-form lemma, dictionary reading,
+    and sense id. Inflected surfaces therefore collapse into one card while
+    homographs with genuinely different meanings remain separate cards.
+    """
+    seen: dict[str, str] = {}
+    repeated: list[str] = []
+    for chapter in game["chapters"]:
+        for card in reviewed_cards(chapter):
+            identity = card_identity(card)
+            label = f"{chapter['id']}/{card['id']}"
+            previous = seen.setdefault(identity, label)
+            if previous != label:
+                repeated.append(f"{identity} ({previous}, {label})")
     if repeated:
         raise ValueError(
-            f"Chapter {chapter['id']} repeats prerequisite card(s): {', '.join(repeated)}"
+            "Course repeats dictionary-form card(s): " + ", ".join(sorted(repeated))
         )
 
 
@@ -173,7 +157,7 @@ def build_deck(
     cards = reviewed_cards(chapter)
     if not cards:
         raise ValueError(f"Chapter {chapter['id']} has no reviewed cards to export")
-    validate_prerequisite_uniqueness(game, chapter)
+    validate_course_uniqueness(game)
     deck_name = (
         f"JP Assist::{game['title']}::"
         f"{chapter['order']:02d} {chapter['title']}"

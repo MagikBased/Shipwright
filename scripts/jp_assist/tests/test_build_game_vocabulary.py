@@ -32,6 +32,30 @@ class BuildGameVocabularyTest(unittest.TestCase):
             [("forest", 2), ("shrine-grove", 1)],
         )
 
+    def test_conjugated_surfaces_collapse_to_one_dictionary_form_word(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            runtime = root / "runtime.json"
+            runtime.write_text(json.dumps({"messages": {"0x1": {"pages": [{"tokens": [
+                {
+                    "surface": "開けた", "lemma": "開ける", "dictionaryReading": "あける",
+                    "senseId": "open", "partOfSpeech": "verb", "meaning": "to open",
+                },
+                {
+                    "surface": "開ける", "lemma": "開ける", "dictionaryReading": "あける",
+                    "senseId": "open", "partOfSpeech": "verb", "meaning": "to open",
+                },
+            ]}]}}}), encoding="utf-8")
+            for level in ("n5", "n4", "n3", "n2", "n1"):
+                (root / f"{level}.json").write_text("[]", encoding="utf-8")
+
+            result = build(runtime, root, "test-game")
+
+        self.assertEqual(result["summary"]["uniqueWords"], 1)
+        self.assertEqual(result["words"][0]["wordId"], "開ける|あける")
+        self.assertEqual(result["words"][0]["occurrenceCount"], 2)
+        self.assertEqual(result["words"][0]["senses"][0]["occurrenceCount"], 2)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -118,9 +118,6 @@ def validate_mapping(mapping: dict[str, Any], catalog: dict[str, Any]) -> None:
 
 def prerequisite_closures(catalog: dict[str, Any]) -> dict[str, set[str]]:
     """Return every chapter's transitive hard prerequisites.
-
-    Recommended ordering is intentionally ignored: two optional branches may
-    teach the same word when neither branch is required before the other.
     """
     chapters = {chapter["id"]: chapter for chapter in catalog["chapters"]}
     closures: dict[str, set[str]] = {}
@@ -192,7 +189,7 @@ def collect_candidates(
                 })
 
     published = {
-        (canonical_identity_text(card["corpusEvidence"]["identity"]), chapter["id"])
+        canonical_identity_text(card["corpusEvidence"]["identity"]): chapter["id"]
         for chapter in catalog["chapters"]
         for card in reviewed_cards(chapter)
         if card.get("corpusEvidence")
@@ -207,10 +204,8 @@ def collect_candidates(
         for chapter_id in sorted(counts, key=chapter_order.get):
             if not core_eligible(identity):
                 excluded_non_transferable_occurrences[chapter_id] += counts[chapter_id]
-            taught_by_prerequisite = any(
-                (identity_text, prerequisite) in published
-                for prerequisite in prerequisites[chapter_id]
-            )
+            published_chapter = published.get(identity_text)
+            taught_by_prerequisite = published_chapter in prerequisites[chapter_id]
             if taught_by_prerequisite:
                 excluded_by_prerequisite[chapter_id] += 1
                 if core_eligible(identity):
@@ -232,7 +227,7 @@ def collect_candidates(
                 "messageIds": sorted(evidence[identity][chapter_id], key=message_number),
                 "laterChapters": later,
                 "reviewStatus": (
-                    "published" if (identity_text, chapter_id) in published else "candidate"
+                    "published" if identity_text in published else "candidate"
                 ),
                 "coreEligible": core_eligible(identity),
             }
@@ -309,7 +304,8 @@ def collect_candidates(
         "totalMessageCount": len(messages),
         "selectionRule": (
             "Rank by frequency in this chapter, then full-game recurrence; "
-            "exclude words taught by any transitive hard-prerequisite deck. "
+            "publish each dictionary-form vocabulary sense once across the course, "
+            "and credit that card everywhere the same sense occurs. "
             "Exclude proper names, interface tokens, invented speech endings, "
             "and unresolved tokenizer fragments from language coverage. "
             "A core deck is complete at 80% of mapped token occurrences; "

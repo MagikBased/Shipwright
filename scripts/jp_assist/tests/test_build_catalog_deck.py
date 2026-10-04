@@ -17,7 +17,7 @@ from build_catalog_deck import (  # noqa: E402
     stable_note_guid,
     reviewed_cards,
     validate_corpus_evidence,
-    validate_prerequisite_uniqueness,
+    validate_course_uniqueness,
 )
 SERVICE_EXPORT_PATH = SERVICE_DIR / "learning_platform" / "anki_export.py"
 SERVICE_EXPORT_SPEC = importlib.util.spec_from_file_location(
@@ -89,25 +89,25 @@ class BuildCatalogDeckTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "no reviewed cards"):
             build_deck(game, chapter)
 
-    def test_rejects_cards_already_taught_by_transitive_prerequisite(self):
+    def test_rejects_duplicate_dictionary_form_cards_across_course(self):
         card = {"id": "forest", "corpusEvidence": {"identity": "森|もり|forest"}}
         game = {"chapters": [
             {"id": "one", "sampleCards": [card]},
-            {"id": "two", "prerequisites": ["one"], "sampleCards": []},
-            {"id": "three", "prerequisites": ["two"], "sampleCards": [card]},
+            {"id": "two", "sampleCards": [card]},
         ]}
-        with self.assertRaisesRegex(ValueError, "repeats prerequisite"):
-            validate_prerequisite_uniqueness(game, game["chapters"][2])
+        with self.assertRaisesRegex(ValueError, "repeats dictionary-form"):
+            validate_course_uniqueness(game)
 
-    def test_parallel_chapters_may_contain_the_same_card(self):
-        card = {"id": "water", "corpusEvidence": {"identity": "水|みず|water"}}
+    def test_same_lexeme_with_distinct_senses_remains_separate(self):
         game = {"chapters": [
-            {"id": "one", "sampleCards": []},
-            {"id": "left", "prerequisites": ["one"], "sampleCards": [card]},
-            {"id": "right", "prerequisites": ["one"], "sampleCards": [card]},
+            {"id": "one", "sampleCards": [{
+                "id": "open", "corpusEvidence": {"identity": "開く|ひらく|open"},
+            }]},
+            {"id": "two", "sampleCards": [{
+                "id": "hold-event", "corpusEvidence": {"identity": "開く|ひらく|hold-event"},
+            }]},
         ]}
-        validate_prerequisite_uniqueness(game, game["chapters"][1])
-        validate_prerequisite_uniqueness(game, game["chapters"][2])
+        validate_course_uniqueness(game)
 
     def test_unknown_game_and_chapter_are_rejected(self):
         with tempfile.TemporaryDirectory() as empty:
