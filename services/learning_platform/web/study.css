@@ -102,24 +102,29 @@
 }
 
 .course-review-card {
+  align-items: center;
   color: var(--text);
   cursor: pointer;
-  display: grid;
+  display: flex;
+  justify-content: center;
   min-height: clamp(390px, 55vh, 650px);
-  place-content: center;
   text-align: center;
   width: 100%;
 }
 
 .course-review-card > div {
   margin: auto;
-  width: min(920px, 90%);
+  min-width: 0;
+  width: min(920px, calc(100% - 40px));
 }
 
 .course-review-card .written {
   color: var(--gold);
   font-size: clamp(4rem, 9vw, 7rem);
   line-height: 1;
+  overflow-wrap: normal;
+  white-space: nowrap;
+  word-break: keep-all;
 }
 
 .course-review-card .reading {

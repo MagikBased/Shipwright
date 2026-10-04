@@ -66,6 +66,19 @@ test.describe("public game catalog", () => {
     await page.locator("#course-review-card").click();
     await expect(page.locator("#course-review-card .example")).not.toHaveText("");
     await expect(page.locator("#course-review-card .meaning")).toHaveCSS("color", "rgb(238, 246, 248)");
+    const headword = page.locator("#course-review-card .written");
+    const originalHeadword = await headword.textContent();
+    await headword.evaluate(node => { node.textContent = "ながら"; });
+    const headwordLayout = await headword.evaluate(node => {
+      const range = document.createRange();
+      range.selectNodeContents(node);
+      return {
+        lineCount: range.getClientRects().length,
+        whiteSpace: getComputedStyle(node).whiteSpace,
+      };
+    });
+    expect(headwordLayout).toEqual({ lineCount: 1, whiteSpace: "nowrap" });
+    await headword.evaluate((node, text) => { node.textContent = text; }, originalHeadword);
     for (const viewport of [{ width: 1024, height: 768 }, { width: 1920, height: 1080 }]) {
       await page.setViewportSize(viewport);
       const lessonLayout = await page.evaluate(() => {
