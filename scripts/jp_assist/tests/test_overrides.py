@@ -48,7 +48,18 @@ class OverrideTest(unittest.TestCase):
         self.assertEqual(button["meaning"], "button; control button")
         self.assertEqual(buy["meaning"], "can buy; to be able to purchase")
         self.assertEqual(middle["partOfSpeech"], "suffix")
+        self.assertEqual(middle["dictionaryReading"], "ちゅう")
         self.assertEqual(defeated["meaning"], "to defeat; to knock down; to bring down")
+
+    def test_contextual_tutorial_and_dialogue_senses_are_selected(self):
+        thing = apply_override("もの", "もの", {"meaning": "person"})
+        yield_word = apply_override("まいる", "まいる", {"meaning": "to come"})
+        mask = apply_override("面", "めん", {"meaning": "face"})
+        target = apply_override("相手", "あいて", {"meaning": "companion"})
+        self.assertEqual(thing["meaning"], "thing; that which; nominalizer")
+        self.assertIn("give up", yield_word["meaning"])
+        self.assertEqual(mask["meaning"], "mask")
+        self.assertIn("target", target["meaning"])
 
 
 if __name__ == "__main__":

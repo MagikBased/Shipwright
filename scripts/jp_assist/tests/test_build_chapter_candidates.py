@@ -89,6 +89,9 @@ class BuildChapterCandidatesTest(unittest.TestCase):
         self.assertEqual(by_chapter["one"][0]["gameFrequency"], 2)
 
     def test_styled_katakana_particle_counts_toward_canonical_card(self):
+        self.catalog["chapters"][0]["sampleCards"].append({
+            "corpusEvidence": {"identity": "ヨ|よ|override:ヨ|よ"}
+        })
         runtime = {"messages": {
             "0x1000": self.message("よ", "よ", "override:よ|よ", "emphasis"),
             "0x2000": self.message("ヨ", "よ", "override:ヨ|よ", "emphasis"),
@@ -99,6 +102,7 @@ class BuildChapterCandidatesTest(unittest.TestCase):
         rows = [row for row in by_chapter["one"] if row["written"] == "よ"]
         self.assertEqual(len(rows), 1)
         self.assertEqual(rows[0]["gameFrequency"], 2)
+        self.assertEqual(rows[0]["reviewStatus"], "published")
 
     def test_interface_labels_do_not_inflate_core_coverage_target(self):
         self.mapping["chapters"][0]["messageIds"].append("0x1001")

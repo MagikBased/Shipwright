@@ -64,6 +64,15 @@ def token_identity(token: dict[str, Any]) -> tuple[str, str, str]:
     return CANONICAL_IDENTITY_ALIASES.get(identity, identity)
 
 
+def canonical_identity_text(value: str) -> str:
+    """Apply display-variant aliases while retaining exact card provenance."""
+    parts = value.split("|", 2)
+    if len(parts) != 3:
+        return value
+    identity = CANONICAL_IDENTITY_ALIASES.get(tuple(parts), tuple(parts))
+    return "|".join(identity)
+
+
 def core_eligible(identity: tuple[str, str, str]) -> bool:
     """Exclude controls/markup while retaining names and speech learners see."""
     return not identity[2].startswith(("interface:", "proper:"))
@@ -176,7 +185,7 @@ def collect_candidates(
                 })
 
     published = {
-        (card["corpusEvidence"]["identity"], chapter["id"])
+        (canonical_identity_text(card["corpusEvidence"]["identity"]), chapter["id"])
         for chapter in catalog["chapters"]
         for card in reviewed_cards(chapter)
         if card.get("corpusEvidence")

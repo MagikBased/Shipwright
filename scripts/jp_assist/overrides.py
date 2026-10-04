@@ -214,11 +214,43 @@ OVERRIDES: dict[tuple[str, str], dict] = {
         "meaning": "during; while; in the middle of",
         "note": "The 中 suffix marking an ongoing state or activity.",
         "partOfSpeech": "suffix",
+        "dictionaryReading": "ちゅう",
+        "senseId": "override:中|ちゅう",
     },
     ("モード", "もーど"): {
         "meaning": "mode; operating state or interface screen",
         "note": "The interface/operating-mode sense.",
         "partOfSpeech": "noun",
+    },
+    ("つく", "つく"): {
+        "meaning": "to become attached; to appear; to catch fire",
+        "note": "Covers attachment, displayed marks, and ignition in tutorial text.",
+        "partOfSpeech": "verb",
+    },
+    ("もの", "もの"): {
+        "meaning": "thing; that which; nominalizer",
+        "note": "The thing or nominalizing sense, not 者 (person).",
+        "partOfSpeech": "noun",
+    },
+    ("まいる", "まいる"): {
+        "meaning": "to give up; to be defeated; to be beaten",
+        "note": "参った as an admission of defeat, not the humble go/come verb.",
+        "partOfSpeech": "verb",
+    },
+    ("面", "めん"): {
+        "meaning": "mask",
+        "note": "The wearable mask sense in item dialogue.",
+        "partOfSpeech": "noun",
+    },
+    ("相手", "あいて"): {
+        "meaning": "opponent; other party; target",
+        "note": "The person or object being targeted or faced.",
+        "partOfSpeech": "noun",
+    },
+    ("ゼ", "ぜ"): {
+        "meaning": "sentence-ending emphasis; you know; I tell you",
+        "note": "Stylized masculine sentence-ending particle.",
+        "partOfSpeech": "particle",
     },
 }
 
