@@ -78,6 +78,19 @@ class OverrideTest(unittest.TestCase):
         self.assertEqual(holy["senseId"], "override:聖|せい")
         self.assertIn("anyway", apply_override("ま", "ま", {"meaning": "just"})["meaning"])
 
+    def test_castle_and_ranch_dialogue_homographs_use_contextual_senses(self):
+        self.assertEqual(apply_override("マロン", "まろん", {"meaning": "chestnut"})["meaning"], "Malon")
+        self.assertIn("Cucco", apply_override("コッコ", "こっこ", {"meaning": "treasury"})["meaning"])
+        self.assertIn("to go", apply_override("いく", "いく", {"meaning": "awe"})["meaning"])
+        self.assertIn("emphasis", apply_override("よ〜", "よ", {"meaning": "other"})["meaning"])
+        self.assertIn("announcement", apply_override("告げ", "つげ", {"meaning": "boxwood"})["meaning"])
+        self.assertIn("mask shop", apply_override("面屋", "おもや", {"meaning": "main building"})["meaning"])
+        self.assertEqual(apply_override("ワン", "わん", {"meaning": "WAN"})["meaning"], "woof; bark")
+        self.assertIn("everything", apply_override("ぜんぶ", "ぜんぶ", {"meaning": "front"})["meaning"])
+        self.assertEqual(apply_override("カンバン", "かんばん", {"meaning": "kanban"})["meaning"], "signboard; sign")
+        self.assertIn("appearance", apply_override("カッコ", "かっこ", {"meaning": "brackets"})["meaning"])
+        self.assertEqual(apply_override("ザマス", "ざます", {"meaning": "noun"})["partOfSpeech"], "auxiliary verb")
+
     def test_ki_wo_tsukeru_is_split_from_attach_and_equip(self):
         equipped = apply_override("つける", "つける", {"meaning": "install"})
         careful = apply_context_override("つける", "つける", "気をつける", 2, equipped)

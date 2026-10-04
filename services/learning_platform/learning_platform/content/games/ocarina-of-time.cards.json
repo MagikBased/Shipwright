@@ -2628,6 +2628,131 @@
           },
           "wordAudio": null,
           "sentenceAudio": null
+        },
+        {
+          "id": "だー|だー|dialectal-copula", "written": "だー", "reading": "だー", "partOfSpeech": "auxiliary verb", "meaning": "dialectal or stylized form of だ; to be",
+          "sentenceJapanese": "あの古い塔は魔法使いの家だー。", "sentenceEnglish": "That old tower is the wizard's home.",
+          "corpusEvidence": {"identity": "だー|だー|override:だー|だー", "messageIds": ["0x0229"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "あなた|あなた|you", "written": "あなた", "reading": "あなた", "partOfSpeech": "pronoun", "meaning": "you",
+          "sentenceJapanese": "あなたなら銀の扉を開けられるでしょう。", "sentenceEnglish": "You should be able to open the silver door.",
+          "corpusEvidence": {"identity": "あなた|あなた|jmdict:1223615:0", "messageIds": ["0x2007"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "ビン|びん|bottle", "written": "ビン", "reading": "びん", "partOfSpeech": "noun", "meaning": "bottle; jar; vial",
+          "sentenceJapanese": "旅人は青い薬を小さなビンに入れた。", "sentenceEnglish": "The traveler put the blue medicine into a small bottle.",
+          "corpusEvidence": {"identity": "ビン|びん|jmdict:1491120:0", "messageIds": ["0x0043"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "さん|さん|honorific", "written": "さん", "reading": "さん", "partOfSpeech": "suffix", "meaning": "Mr.; Mrs.; Miss; -san",
+          "sentenceJapanese": "宿屋の主人は旅人さんに温かい食事を出した。", "sentenceEnglish": "The innkeeper served the traveler a warm meal.",
+          "corpusEvidence": {"identity": "さん|さん|jmdict:1005340:0", "messageIds": ["0x2042"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "歌|うた|song", "written": "歌", "reading": "うた", "partOfSpeech": "noun", "meaning": "song",
+          "sentenceJapanese": "月の神殿で古い歌が静かに響いた。", "sentenceEnglish": "An ancient song echoed softly in the moon temple.",
+          "corpusEvidence": {"identity": "歌|うた|jmdict:1193180:0", "messageIds": ["0x00d2"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "ザマス|ざます|stylized-copula", "written": "ザマス", "reading": "ざます", "partOfSpeech": "auxiliary verb", "meaning": "polite or stylized form of です; to be",
+          "sentenceJapanese": "この宝石は王家の品ザマス。", "sentenceEnglish": "This jewel is an article belonging to the royal family.",
+          "corpusEvidence": {"identity": "ザマス|ざます|override:ザマス|ざます", "messageIds": ["0x709b"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "町|まち|town", "written": "町", "reading": "まち", "partOfSpeech": "noun", "meaning": "town; neighborhood",
+          "sentenceJapanese": "日が沈む前に城下の町へ着いた。", "sentenceEnglish": "We reached the castle town before sunset.",
+          "corpusEvidence": {"identity": "町|まち|jmdict:1603990:0", "messageIds": ["0x2041"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "ッ|っ|emphatic-ending", "written": "ッ", "reading": "っ", "partOfSpeech": "suffix", "meaning": "emphatic final small tsu; abrupt ending",
+          "sentenceJapanese": "魔物を見た兵士は「危ないッ」と叫んだ。", "sentenceEnglish": "The soldier saw the monster and shouted, “Danger!”",
+          "corpusEvidence": {"identity": "ッ|っ|override:ッ|っ", "messageIds": ["0x2067"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "わたし|わたし|i-me", "written": "わたし", "reading": "わたし", "partOfSpeech": "pronoun", "meaning": "I; me",
+          "sentenceJapanese": "わたしが森の出口まで案内します。", "sentenceEnglish": "I will guide you to the forest exit.",
+          "corpusEvidence": {"identity": "わたし|わたし|jmdict:1311110:0", "messageIds": ["0x200b"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "ムニャ|むにゃ|sleepy-mumble", "written": "ムニャ", "reading": "むにゃ", "partOfSpeech": "noun", "meaning": "mumble; sleepy murmuring",
+          "sentenceJapanese": "門番は「ムニャ」と言いながら眠っていた。", "sentenceEnglish": "The gatekeeper slept while mumbling, “Munya.”",
+          "corpusEvidence": {"identity": "ムニャ|むにゃ|override:ムニャ|むにゃ", "messageIds": ["0x200d"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "い|い|emphatic-particle", "written": "い", "reading": "い", "partOfSpeech": "particle", "meaning": "strengthens a question or assertion",
+          "sentenceJapanese": "本当に一人で洞窟へ行くのかい。", "sentenceEnglish": "Are you really going to the cave alone?",
+          "corpusEvidence": {"identity": "い|い|jmdict:2428180:0", "messageIds": ["0x006d"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "そこ|そこ|there", "written": "そこ", "reading": "そこ", "partOfSpeech": "pronoun", "meaning": "there; that place near the listener",
+          "sentenceJapanese": "そこにある石を動かしてみて。", "sentenceEnglish": "Try moving the stone there.",
+          "corpusEvidence": {"identity": "そこ|そこ|jmdict:1006670:0", "messageIds": ["0x200e"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "くださる|くださる|give-honorific", "written": "くださる", "reading": "くださる", "partOfSpeech": "verb", "meaning": "to give; to bestow (honorific)",
+          "sentenceJapanese": "賢者が旅人に光の護符をくださった。", "sentenceEnglish": "The sage gave the traveler a charm of light.",
+          "corpusEvidence": {"identity": "くださる|くださる|jmdict:1184280:0", "messageIds": ["0x0207"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "でしゅ|でしゅ|childish-copula", "written": "でしゅ", "reading": "でしゅ", "partOfSpeech": "auxiliary verb", "meaning": "childish pronunciation of です; to be",
+          "sentenceJapanese": "これは森で見つけた宝物でしゅ。", "sentenceEnglish": "This is a treasure I found in the forest.",
+          "corpusEvidence": {"identity": "でしゅ|でしゅ|override:でしゅ|でしゅ", "messageIds": ["0x2022"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "牛乳|ぎゅうにゅう|milk", "written": "牛乳", "reading": "ぎゅうにゅう", "partOfSpeech": "noun", "meaning": "cow's milk; milk",
+          "sentenceJapanese": "牧場の牛乳を飲むと元気が戻った。", "sentenceEnglish": "Drinking the ranch's milk restored my strength.",
+          "corpusEvidence": {"identity": "牛乳|ぎゅうにゅう|jmdict:1231590:0", "messageIds": ["0x0098"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "私|わたくし|formal-i", "written": "私", "reading": "わたくし", "partOfSpeech": "pronoun", "meaning": "I; me (formal)",
+          "sentenceJapanese": "私が王の間までご案内いたします。", "sentenceEnglish": "I shall guide you to the royal chamber.",
+          "corpusEvidence": {"identity": "私|わたくし|jmdict:2842390:0", "messageIds": ["0x2029"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "見つける|みつける|find", "written": "見つける", "reading": "みつける", "partOfSpeech": "verb", "meaning": "to find; to discover; to spot",
+          "sentenceJapanese": "盗賊より先に隠された鍵を見つけよう。", "sentenceEnglish": "Let us find the hidden key before the thieves do.",
+          "corpusEvidence": {"identity": "見つける|みつける|jmdict:1604570:0", "messageIds": ["0x2043"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "だれ|だれ|who", "written": "だれ", "reading": "だれ", "partOfSpeech": "pronoun", "meaning": "who",
+          "sentenceJapanese": "だれが夜中に古い鐘を鳴らしたの。", "sentenceEnglish": "Who rang the old bell in the middle of the night?",
+          "corpusEvidence": {"identity": "だれ|だれ|jmdict:1416830:0", "messageIds": ["0x207e"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "ハッ|はっ|oh", "written": "ハッ", "reading": "はっ", "partOfSpeech": "interjection", "meaning": "oh!; gasp of realization",
+          "sentenceJapanese": "ハッ、あの影は竜だったのか。", "sentenceEnglish": "Oh! Was that shadow a dragon?",
+          "corpusEvidence": {"identity": "ハッ|はっ|jmdict:2835840:0", "messageIds": ["0x200a"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "オラ|おら|rustic-i", "written": "オラ", "reading": "おら", "partOfSpeech": "pronoun", "meaning": "I; me (rustic or dialectal)",
+          "sentenceJapanese": "オラがこの馬を町まで連れていくよ。", "sentenceEnglish": "I'll take this horse to town.",
+          "corpusEvidence": {"identity": "オラ|おら|jmdict:2080360:0", "messageIds": ["0x0229"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "ちゃん|ちゃん|familiar-suffix", "written": "ちゃん", "reading": "ちゃん", "partOfSpeech": "suffix", "meaning": "familiar or affectionate name suffix",
+          "sentenceJapanese": "村の子は白い子馬をユキちゃんと呼んだ。", "sentenceEnglish": "The village child called the white foal Yuki-chan.",
+          "corpusEvidence": {"identity": "ちゃん|ちゃん|jmdict:1007660:0", "messageIds": ["0x2025"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "いく|いく|go", "written": "いく", "reading": "いく", "partOfSpeech": "verb", "meaning": "to go; to proceed",
+          "sentenceJapanese": "朝になったら北の塔へいくつもりだ。", "sentenceEnglish": "I intend to go to the northern tower in the morning.",
+          "corpusEvidence": {"identity": "いく|いく|override:いく|いく", "messageIds": ["0x00f6"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "なさる|なさる|do-honorific", "written": "なさる", "reading": "なさる", "partOfSpeech": "verb", "meaning": "to do (honorific)",
+          "sentenceJapanese": "王様は今夜どの道をお選びなさるのでしょう。", "sentenceEnglish": "Which road will the king choose tonight?",
+          "corpusEvidence": {"identity": "なさる|なさる|jmdict:1157090:0", "messageIds": ["0x7038"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "ウチ|うち|house", "written": "ウチ", "reading": "うち", "partOfSpeech": "noun", "meaning": "house; home",
+          "sentenceJapanese": "雨が強くなる前にウチへ帰ろう。", "sentenceEnglish": "Let us return home before the rain grows stronger.",
+          "corpusEvidence": {"identity": "ウチ|うち|jmdict:1191740:0", "messageIds": ["0x200d"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "ぼうや|ぼうや|boy", "written": "ぼうや", "reading": "ぼうや", "partOfSpeech": "noun", "meaning": "boy; child; son",
+          "sentenceJapanese": "勇敢なぼうやが迷子の妖精を助けた。", "sentenceEnglish": "A brave boy helped a lost fairy.",
+          "corpusEvidence": {"identity": "ぼうや|ぼうや|jmdict:1519060:0", "messageIds": ["0x207e"]}, "wordAudio": null, "sentenceAudio": null
         }
       ]
     },

@@ -329,6 +329,61 @@ OVERRIDES: dict[tuple[str, str], dict] = {
         "note": "Conversational interjection used to soften or redirect a statement.",
         "partOfSpeech": "interjection",
     },
+    ("マロン", "まろん"): {
+        "meaning": "Malon",
+        "note": "Character name.",
+        "partOfSpeech": "proper noun",
+    },
+    ("コッコ", "こっこ"): {
+        "meaning": "Cucco (a game-specific chicken-like creature)",
+        "note": "Game-specific creature name.",
+        "partOfSpeech": "proper noun",
+    },
+    ("いく", "いく"): {
+        "meaning": "to go; to proceed",
+        "note": "Kana spelling of 行く, not 畏懼 (awe or fear).",
+        "partOfSpeech": "verb",
+    },
+    ("よ〜", "よ"): {
+        "meaning": "sentence-ending emphasis/information marker",
+        "note": "Elongated spelling of the particle よ.",
+        "partOfSpeech": "particle",
+    },
+    ("告げ", "つげ"): {
+        "meaning": "telling; announcement; notice",
+        "note": "Nominal/stem form of 告げる, not the boxwood tree.",
+        "partOfSpeech": "noun",
+    },
+    ("面屋", "おもや"): {
+        "meaning": "mask shop; mask seller",
+        "note": "Shortened game-dialogue form of お面屋, not a manor's main building.",
+        "partOfSpeech": "noun",
+    },
+    ("ワン", "わん"): {
+        "meaning": "woof; bark",
+        "note": "Dog sound, not the networking acronym WAN.",
+        "partOfSpeech": "interjection",
+    },
+    ("ぜんぶ", "ぜんぶ"): {
+        "meaning": "all; everything; the whole thing",
+        "note": "Kana spelling of 全部, not a front portion.",
+        "partOfSpeech": "noun",
+    },
+    ("カンバン", "かんばん"): {
+        "meaning": "signboard; sign",
+        "note": "看板, stylized in katakana; not the production scheduling system.",
+        "partOfSpeech": "noun",
+    },
+    ("カッコ", "かっこ"): {
+        "meaning": "appearance; style; form",
+        "note": "Colloquial spelling of 格好, not brackets or parentheses.",
+        "partOfSpeech": "noun",
+    },
+    ("ザマス", "ざます"): {
+        "meaning": "polite/stylized form of です; to be",
+        "note": "Character speech pattern used as a copula.",
+        "partOfSpeech": "auxiliary verb",
+    },
 }
 
 
