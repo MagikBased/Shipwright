@@ -425,7 +425,7 @@
       "startMarker": "Follow the river toward Zora's Domain",
       "endMarker": "Receive the water spiritual stone",
       "prerequisites": ["02-princess-of-destiny"],
-      "deck": {"status": "pilot", "downloadAvailable": false, "reviewedCardCount": 5, "audioStatus": "none"},
+      "deck": {"status": "pilot", "downloadAvailable": false, "reviewedCardCount": 30, "terminologyCount": 4, "audioStatus": "none"},
       "sampleCards": [
         {"id": "川|かわ|river", "written": "川", "reading": "かわ", "partOfSpeech": "noun", "meaning": "river; stream", "sentenceJapanese": "旅人は川の流れに沿って北の谷へ進んだ。", "sentenceEnglish": "The traveler followed the river's current toward the northern valley.", "corpusEvidence": {"identity": "川|かわ|jmdict:1390020:0", "messageIds": ["0x4003"]}, "wordAudio": null, "sentenceAudio": null},
         {"id": "湖|みずうみ|lake", "written": "湖", "reading": "みずうみ", "partOfSpeech": "noun", "meaning": "lake", "sentenceJapanese": "静かな湖の底に忘れられた神殿が眠っている。", "sentenceEnglish": "A forgotten temple sleeps at the bottom of the quiet lake.", "corpusEvidence": {"identity": "湖|みずうみ|jmdict:1267280:0", "messageIds": ["0x4003"]}, "wordAudio": null, "sentenceAudio": null},

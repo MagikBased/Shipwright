@@ -1676,7 +1676,7 @@
           "meaning": "honorific title; Lord, Lady, Mr., or Ms.",
           "sentenceJapanese": "王さまは旅人を広間へ招いた。",
           "sentenceEnglish": "The king invited the traveler into the great hall.",
-          "corpusEvidence": {"identity": "さま|さま|jmdict:1545790:0", "messageIds": ["0x033c"]},
+          "corpusEvidence": {"identity": "さま|さま|override:さま|さま", "messageIds": ["0x033c"]},
           "wordAudio": null,
           "sentenceAudio": null
         },
@@ -4172,7 +4172,138 @@
           },
           "wordAudio": null,
           "sentenceAudio": null
+        },
+        {
+          "id": "ポリ|ぽり|munch", "written": "ポリ", "reading": "ぽり", "partOfSpeech": "interjection", "meaning": "munch; crunch; scratch-scratch",
+          "sentenceJapanese": "旅商人は木の実をポリポリ食べながら値段を数えた。", "sentenceEnglish": "The traveling merchant crunched on nuts while counting the price.",
+          "corpusEvidence": {"identity": "ポリ|ぽり|override:ポリ|ぽり", "messageIds": ["0x405e"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "サカナ|さかな|fish", "written": "サカナ", "reading": "さかな", "partOfSpeech": "noun", "meaning": "fish",
+          "sentenceJapanese": "澄んだ泉で銀色のサカナが泳いでいる。", "sentenceEnglish": "Silver fish are swimming in the clear spring.",
+          "corpusEvidence": {"identity": "サカナ|さかな|override:サカナ|さかな", "messageIds": ["0x400d"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "ゾラ|ぞら|zora-ending", "written": "ゾラ", "reading": "ぞら", "partOfSpeech": "suffix", "meaning": "King Zora's sentence-ending speech quirk",
+          "sentenceJapanese": "水の王は「客人を広間へ通すゾラ」と命じた。", "sentenceEnglish": "The water king ordered, 'Admit the visitor to the great hall, zora.'",
+          "corpusEvidence": {"identity": "ゾラ|ぞら|override:ゾラ|ぞら", "messageIds": ["0x401a"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "マメ|まめ|bean", "written": "マメ", "reading": "まめ", "partOfSpeech": "noun", "meaning": "bean; seed",
+          "sentenceJapanese": "魔法のマメを湿った土に植えると一晩で芽が出た。", "sentenceEnglish": "When the magic bean was planted in damp soil, it sprouted overnight.",
+          "corpusEvidence": {"identity": "マメ|まめ|jmdict:1450030:0", "messageIds": ["0x405e"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "魔法|まほう|magic", "written": "魔法", "reading": "まほう", "partOfSpeech": "noun", "meaning": "magic; sorcery; spell",
+          "sentenceJapanese": "泉の巫女は魔法で濁った水を清めた。", "sentenceEnglish": "The shrine maiden purified the murky water with magic.",
+          "corpusEvidence": {"identity": "魔法|まほう|jmdict:1524230:0", "messageIds": ["0x405e"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "もぐる|もぐる|dive", "written": "もぐる", "reading": "もぐる", "partOfSpeech": "verb", "meaning": "to dive; to go underwater",
+          "sentenceJapanese": "湖の底にある鍵を取るため深くもぐった。", "sentenceEnglish": "I dove deep to retrieve the key at the bottom of the lake.",
+          "corpusEvidence": {"identity": "もぐる|もぐる|jmdict:1609715:0", "messageIds": ["0x4007"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "わらわ|わらわ|I", "written": "わらわ", "reading": "わらわ", "partOfSpeech": "pronoun", "meaning": "I; me (archaic, chiefly used by noble women)",
+          "sentenceJapanese": "姫は「わらわが先に参ろう」と静かに告げた。", "sentenceEnglish": "The princess quietly declared, 'I shall go first.'",
+          "corpusEvidence": {"identity": "わらわ|わらわ|jmdict:1347580:0", "messageIds": ["0x4005"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "センチ|せんち|centimeter", "written": "センチ", "reading": "せんち", "partOfSpeech": "unit", "meaning": "centimeter; centimetre",
+          "sentenceJapanese": "古い箱の幅は三十センチほどだった。", "sentenceEnglish": "The old chest was about thirty centimeters wide.",
+          "corpusEvidence": {"identity": "センチ|せんち|jmdict:1075060:0", "messageIds": ["0x4080"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "マジ|まじ|seriously", "written": "マジ", "reading": "まじ", "partOfSpeech": "adjectival noun", "meaning": "serious; for real; not joking",
+          "sentenceJapanese": "あの巨大な影が竜だなんて、マジなのか？", "sentenceEnglish": "Is it for real that the enormous shadow is a dragon?",
+          "corpusEvidence": {"identity": "マジ|まじ|jmdict:1127680:0", "messageIds": ["0x4085"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "モノ|もの|thing", "written": "モノ", "reading": "もの", "partOfSpeech": "noun", "meaning": "thing; object; item",
+          "sentenceJapanese": "祭壇には見たことのない青いモノが置かれていた。", "sentenceEnglish": "An unfamiliar blue object had been placed on the altar.",
+          "corpusEvidence": {"identity": "モノ|もの|override:モノ|もの", "messageIds": ["0x4018"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "つぶ|つぶ|grain", "written": "つぶ", "reading": "つぶ", "partOfSpeech": "noun", "meaning": "grain; bead; drop; small particle",
+          "sentenceJapanese": "薬師は赤い木の実を一つぶだけ薬に加えた。", "sentenceEnglish": "The healer added just one red berry to the medicine.",
+          "corpusEvidence": {"identity": "つぶ|つぶ|jmdict:1552890:0", "messageIds": ["0x405e"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "キープ|きーぷ|keep", "written": "キープ", "reading": "きーぷ", "partOfSpeech": "noun", "meaning": "keeping; holding; setting aside",
+          "sentenceJapanese": "いちばん大きな魚だけキープして、残りは湖へ返した。", "sentenceEnglish": "We kept only the largest fish and returned the rest to the lake.",
+          "corpusEvidence": {"identity": "キープ|きーぷ|jmdict:1040870:0", "messageIds": ["0x4080"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "ルアー|るあー|lure", "written": "ルアー", "reading": "るあー", "partOfSpeech": "noun", "meaning": "fishing lure",
+          "sentenceJapanese": "漁師は光るルアーを深い水へ投げた。", "sentenceEnglish": "The fisherman cast a shining lure into the deep water.",
+          "corpusEvidence": {"identity": "ルアー|るあー|jmdict:1143950:0", "messageIds": ["0x407f"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "ホンマ|ほんま|really", "written": "ホンマ", "reading": "ほんま", "partOfSpeech": "noun", "meaning": "truth; reality; really",
+          "sentenceJapanese": "ホンマに湖の底で金色の魚を見たんか？", "sentenceEnglish": "Did you really see a golden fish at the bottom of the lake?",
+          "corpusEvidence": {"identity": "ホンマ|ほんま|jmdict:2001000:0", "messageIds": ["0x407e"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "曲|きょく|song", "written": "曲", "reading": "きょく", "partOfSpeech": "noun", "meaning": "composition; piece of music; song",
+          "sentenceJapanese": "蛙たちは雨を呼ぶ不思議な曲に合わせて歌った。", "sentenceEnglish": "The frogs sang along with a mysterious song that summoned rain.",
+          "corpusEvidence": {"identity": "曲|きょく|jmdict:1239700:0", "messageIds": ["0x4077"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "王|おう|king", "written": "王", "reading": "おう", "partOfSpeech": "noun", "meaning": "king; ruler; sovereign",
+          "sentenceJapanese": "水の王は玉座から旅人に問いかけた。", "sentenceEnglish": "The water king addressed the traveler from his throne.",
+          "corpusEvidence": {"identity": "王|おう|jmdict:1629200:0", "messageIds": ["0x4003"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "泉|いずみ|spring", "written": "泉", "reading": "いずみ", "partOfSpeech": "noun", "meaning": "spring; fountain",
+          "sentenceJapanese": "岩山の奥に清らかな泉が湧いている。", "sentenceEnglish": "A pure spring wells up deep within the rocky mountain.",
+          "corpusEvidence": {"identity": "泉|いずみ|jmdict:1390780:0", "messageIds": ["0x4008"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "ゲコ|げこ|ribbit", "written": "ゲコ", "reading": "げこ", "partOfSpeech": "interjection", "meaning": "ribbit; croak",
+          "sentenceJapanese": "月夜の池からゲコゲコと楽しそうな声がした。", "sentenceEnglish": "Cheerful croaking came from the pond on the moonlit night.",
+          "corpusEvidence": {"identity": "ゲコ|げこ|override:ゲコ|げこ", "messageIds": ["0x40a9"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "記録|きろく|record", "written": "記録", "reading": "きろく", "partOfSpeech": "noun", "meaning": "record; document; result",
+          "sentenceJapanese": "若い漁師は村の最大記録を更新した。", "sentenceEnglish": "The young fisherman set a new village record.",
+          "corpusEvidence": {"identity": "記録|きろく|jmdict:1223440:0", "messageIds": ["0x4080"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "ひと|ひと|person", "written": "ひと", "reading": "ひと", "partOfSpeech": "noun", "meaning": "person; people",
+          "sentenceJapanese": "湖の近くに住むひとはみんな泳ぎが上手だ。", "sentenceEnglish": "Everyone who lives near the lake is a skilled swimmer.",
+          "corpusEvidence": {"identity": "ひと|ひと|override:ひと|ひと", "messageIds": ["0x4089"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "流れる|ながれる|flow", "written": "流れる", "reading": "ながれる", "partOfSpeech": "verb", "meaning": "to flow; to stream; to run",
+          "sentenceJapanese": "青い川は深い谷を通って湖へ流れている。", "sentenceEnglish": "The blue river flows through the deep valley into the lake.",
+          "corpusEvidence": {"identity": "流れる|ながれる|jmdict:1552140:0", "messageIds": ["0x4011"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "カカシ|かかし|scarecrow", "written": "カカシ", "reading": "かかし", "partOfSpeech": "noun", "meaning": "scarecrow",
+          "sentenceJapanese": "畑のカカシは風が吹くたびに腕を揺らした。", "sentenceEnglish": "The scarecrow in the field waved its arms whenever the wind blew.",
+          "corpusEvidence": {"identity": "カカシ|かかし|jmdict:1154840:0", "messageIds": ["0x4076"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "m|めーとる|meter", "written": "m", "reading": "めーとる", "partOfSpeech": "unit", "meaning": "meter; metre (unit of length)",
+          "sentenceJapanese": "潜水士は水面から十m下の洞窟を見つけた。", "sentenceEnglish": "The diver found a cave ten meters below the surface.",
+          "corpusEvidence": {"identity": "m|めーとる|override:m|めーとる", "messageIds": ["0x406d"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "つる|つる|fish", "written": "つる", "reading": "つる", "partOfSpeech": "verb", "meaning": "to fish; to catch with a line",
+          "sentenceJapanese": "夜明け前なら大きな魚がつれるらしい。", "sentenceEnglish": "They say you can catch large fish before dawn.",
+          "corpusEvidence": {"identity": "つる|つる|override:つる|つる", "messageIds": ["0x408d"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "ねん|ねん|emphasis", "written": "ねん", "reading": "ねん", "partOfSpeech": "particle", "meaning": "sentence-ending emphasis in Kansai-style speech",
+          "sentenceJapanese": "この湖でいちばん大きい魚をつったんはオレやねん。", "sentenceEnglish": "I'm the one who caught the biggest fish in this lake, you know.",
+          "corpusEvidence": {"identity": "ねん|ねん|jmdict:2719560:0", "messageIds": ["0x4082"]}, "wordAudio": null, "sentenceAudio": null
         }
+      ],
+      "terminology": [
+        {"id": "ゾーラ|ぞーら|zora-term", "written": "ゾーラ", "reading": "ぞーら", "meaning": "Zora; the aquatic people", "corpusEvidence": {"identity": "ゾーラ|ぞーら|proper:ゾーラ|ぞーら", "messageIds": ["0x4003"]}},
+        {"id": "ルト|ると|ruto-term", "written": "ルト", "reading": "ると", "meaning": "Ruto; a princess of the aquatic people", "corpusEvidence": {"identity": "ルト|ると|proper:ルト|ると", "messageIds": ["0x4005"]}},
+        {"id": "キングゾーラ|きんぐぞーら|king-zora-term", "written": "キングゾーラ", "reading": "きんぐぞーら", "meaning": "King Zora; ruler of the aquatic people", "corpusEvidence": {"identity": "キングゾーラ|きんぐぞーら|proper:キングゾーラ|きんぐぞーら", "messageIds": ["0x400a"]}},
+        {"id": "ジャブジャブ|じゃぶじゃぶ|jabu-jabu-term", "written": "ジャブジャブ", "reading": "じゃぶじゃぶ", "meaning": "Jabu-Jabu; a revered aquatic being", "corpusEvidence": {"identity": "ジャブジャブ|じゃぶじゃぶ|proper:ジャブジャブ|じゃぶじゃぶ", "messageIds": ["0x4005"]}}
       ]
     },
     {

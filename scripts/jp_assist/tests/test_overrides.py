@@ -132,6 +132,15 @@ class OverrideTest(unittest.TestCase):
         self.assertIn("in return", apply_override("かわり", "かわり", {"meaning": "transaction"})["meaning"])
         self.assertEqual(apply_override("アラ", "あら", {"meaning": "fish"})["partOfSpeech"], "interjection")
         self.assertIn("a lot", apply_override("いっぱい", "いっぱい", {"meaning": "defeat"})["meaning"])
+        self.assertTrue(apply_override("ジャブジャブ", "じゃぶじゃぶ", {"meaning": "splashing"})["senseId"].startswith("proper:"))
+        self.assertTrue(apply_override("キングゾーラ", "きんぐぞーら", {"meaning": ""})["senseId"].startswith("proper:"))
+        self.assertEqual(apply_override("サカナ", "さかな", {"meaning": "snack"})["meaning"], "fish")
+        self.assertEqual(apply_override("さま", "さま", {"meaning": "state"})["partOfSpeech"], "suffix")
+        self.assertIn("thing", apply_override("モノ", "もの", {"meaning": "mono"})["meaning"])
+        self.assertIn("croak", apply_override("ゲコ", "げこ", {"meaning": "non-drinker"})["meaning"])
+        self.assertIn("person", apply_override("ひと", "ひと", {"meaning": "bandit"})["meaning"])
+        self.assertIn("unit", apply_override("m", "めーとる", {"meaning": "M"})["note"])
+        self.assertIn("fish", apply_override("つる", "つる", {"meaning": "hang"})["meaning"])
 
     def test_ki_wo_tsukeru_is_split_from_attach_and_equip(self):
         equipped = apply_override("つける", "つける", {"meaning": "install"})
