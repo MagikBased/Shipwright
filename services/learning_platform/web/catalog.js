@@ -188,11 +188,26 @@ function chapterCard(chapter, chapterNames) {
     item.append(note);
   }
 
+  if (chapter.deck.downloadAvailable) {
+    const actions = document.createElement("div");
+    actions.className = "chapter-actions";
+    const download = document.createElement("a");
+    download.className = "button-link chapter-download";
+    download.href = `/v1/catalog/games/${GAME_ID}/chapters/${chapter.id}/deck`;
+    download.setAttribute("download", "");
+    text(download, `Download ${chapter.deck.reviewedCardCount} Anki cards`);
+    const audio = document.createElement("span");
+    audio.className = "muted small";
+    text(audio, chapter.deck.audioStatus === "none" ? "Text-only deck" : "Includes reviewed audio");
+    actions.append(download, audio);
+    item.append(actions);
+  }
+
   if (chapter.sampleCards?.length) {
     const details = document.createElement("details");
     details.className = "pilot-cards";
     const summary = document.createElement("summary");
-    text(summary, `Preview ${chapter.sampleCards.length} reviewed pilot cards`);
+    text(summary, `Preview ${chapter.sampleCards.length} of ${chapter.deck.reviewedCardCount} reviewed cards`);
     const grid = document.createElement("div");
     grid.className = "pilot-grid";
     for (const card of chapter.sampleCards) {

@@ -33,12 +33,12 @@
       "endMarker": "Receive the forest spiritual stone",
       "prerequisites": [],
       "deck": {
-        "status": "pilot",
-        "downloadAvailable": false,
+        "status": "ready",
+        "downloadAvailable": true,
         "reviewedCardCount": 243,
         "terminologyCount": 2,
         "audioStatus": "none",
-        "description": "A small reviewed sample proves the content and export format before full corpus assignment."
+        "description": "A reviewed, progression-aware vocabulary deck with stable Anki note identities and corpus provenance."
       },
       "sampleCards": [
         {
@@ -388,7 +388,7 @@
       "startMarker": "Leave Kokiri Forest",
       "endMarker": "Learn the royal song",
       "prerequisites": ["01-boy-without-a-fairy"],
-      "deck": {"status": "pilot", "downloadAvailable": false, "reviewedCardCount": 141, "terminologyCount": 15, "audioStatus": "none"},
+      "deck": {"status": "ready", "downloadAvailable": true, "reviewedCardCount": 141, "terminologyCount": 15, "audioStatus": "none"},
       "sampleCards": [
         {"id": "姫|ひめ|princess", "written": "姫", "reading": "ひめ", "partOfSpeech": "noun", "meaning": "princess; noble young woman", "sentenceJapanese": "姫は星空の下で旅人に秘密の地図を渡した。", "sentenceEnglish": "The princess gave the traveler a secret map beneath the starry sky.", "corpusEvidence": {"identity": "姫|ひめ|jmdict:1602150:0", "messageIds": ["0x0142"]}, "wordAudio": null, "sentenceAudio": null},
         {"id": "会う|あう|meet", "written": "会う", "reading": "あう", "partOfSpeech": "verb", "meaning": "to meet; to encounter", "sentenceJapanese": "旅人は城へ向かう道で不思議な少女に会った。", "sentenceEnglish": "The traveler met a mysterious girl on the road to the castle.", "corpusEvidence": {"identity": "会う|あう|jmdict:1198180:0", "messageIds": ["0x0142"]}, "wordAudio": null, "sentenceAudio": null},
@@ -406,7 +406,7 @@
       "startMarker": "Open the path to Death Mountain",
       "endMarker": "Receive the fire spiritual stone",
       "prerequisites": ["02-princess-of-destiny"],
-      "deck": {"status": "pilot", "downloadAvailable": false, "reviewedCardCount": 136, "audioStatus": "none"},
+      "deck": {"status": "ready", "downloadAvailable": true, "reviewedCardCount": 136, "audioStatus": "none"},
       "sampleCards": [
         {"id": "山|やま|mountain", "written": "山", "reading": "やま", "partOfSpeech": "noun", "meaning": "mountain; hill", "sentenceJapanese": "高い山の頂上には、火を守る民が住んでいる。", "sentenceEnglish": "People who guard the flame live at the summit of the high mountain.", "corpusEvidence": {"identity": "山|やま|jmdict:1302680:0", "messageIds": ["0x300d"]}, "wordAudio": null, "sentenceAudio": null},
         {"id": "岩|いわ|rock", "written": "岩", "reading": "いわ", "partOfSpeech": "noun", "meaning": "rock; boulder", "sentenceJapanese": "巨大な岩が洞窟への道をふさいでいた。", "sentenceEnglish": "A gigantic boulder blocked the path to the cavern.", "corpusEvidence": {"identity": "岩|いわ|jmdict:1217270:0", "messageIds": ["0x3014"]}, "wordAudio": null, "sentenceAudio": null},
@@ -425,7 +425,7 @@
       "startMarker": "Follow the river toward Zora's Domain",
       "endMarker": "Receive the water spiritual stone",
       "prerequisites": ["02-princess-of-destiny"],
-      "deck": {"status": "pilot", "downloadAvailable": false, "reviewedCardCount": 119, "terminologyCount": 4, "audioStatus": "none"},
+      "deck": {"status": "ready", "downloadAvailable": true, "reviewedCardCount": 119, "terminologyCount": 4, "audioStatus": "none"},
       "sampleCards": [
         {"id": "川|かわ|river", "written": "川", "reading": "かわ", "partOfSpeech": "noun", "meaning": "river; stream", "sentenceJapanese": "旅人は川の流れに沿って北の谷へ進んだ。", "sentenceEnglish": "The traveler followed the river's current toward the northern valley.", "corpusEvidence": {"identity": "川|かわ|jmdict:1390020:0", "messageIds": ["0x4003"]}, "wordAudio": null, "sentenceAudio": null},
         {"id": "湖|みずうみ|lake", "written": "湖", "reading": "みずうみ", "partOfSpeech": "noun", "meaning": "lake", "sentenceJapanese": "静かな湖の底に忘れられた神殿が眠っている。", "sentenceEnglish": "A forgotten temple sleeps at the bottom of the quiet lake.", "corpusEvidence": {"identity": "湖|みずうみ|jmdict:1267280:0", "messageIds": ["0x4003"]}, "wordAudio": null, "sentenceAudio": null},
@@ -443,7 +443,7 @@
       "startMarker": "Collect all three spiritual stones",
       "endMarker": "Awaken as the Hero of Time",
       "prerequisites": ["03-gorons-ruby", "04-zoras-sapphire"],
-      "deck": {"status": "pilot", "downloadAvailable": false, "reviewedCardCount": 5, "audioStatus": "none"},
+      "deck": {"status": "ready", "downloadAvailable": true, "reviewedCardCount": 5, "audioStatus": "none"},
       "sampleCards": [
         {"id": "扉|とびら|door", "written": "扉", "reading": "とびら", "partOfSpeech": "noun", "meaning": "door; gate", "sentenceJapanese": "古い呪文を唱えると、聖なる扉がゆっくり開いた。", "sentenceEnglish": "When the ancient spell was recited, the sacred door slowly opened.", "corpusEvidence": {"identity": "扉|とびら|jmdict:1483380:0", "messageIds": ["0x0200"]}, "wordAudio": null, "sentenceAudio": null},
         {"id": "白馬|はくば|white-horse", "written": "白馬", "reading": "はくば", "partOfSpeech": "noun", "meaning": "white horse", "sentenceJapanese": "夜明けに白馬が霧の谷を駆け抜けた。", "sentenceEnglish": "At dawn, a white horse raced through the misty valley.", "corpusEvidence": {"identity": "白馬|はくば|jmdict:1841490:0", "messageIds": ["0x014c"]}, "wordAudio": null, "sentenceAudio": null},
@@ -461,7 +461,7 @@
       "startMarker": "Receive the adult quest",
       "endMarker": "Awaken the Forest Sage",
       "prerequisites": ["05-door-of-time"],
-      "deck": {"status": "pilot", "downloadAvailable": false, "reviewedCardCount": 38, "audioStatus": "none"},
+      "deck": {"status": "ready", "downloadAvailable": true, "reviewedCardCount": 38, "audioStatus": "none"},
       "sampleCards": [
         {"id": "目覚める|めざめる|awaken", "written": "目覚める", "reading": "めざめる", "partOfSpeech": "verb", "meaning": "to awaken; to wake up", "sentenceJapanese": "長い眠りから目覚めると、森の姿は変わっていた。", "sentenceEnglish": "Upon awakening from a long sleep, the forest had changed.", "corpusEvidence": {"identity": "目覚める|めざめる|jmdict:1535350:0", "messageIds": ["0x106a"]}, "wordAudio": null, "sentenceAudio": null},
         {"id": "帰る|かえる|return", "written": "帰る", "reading": "かえる", "partOfSpeech": "verb", "meaning": "to return; to go home; to go back", "sentenceJapanese": "森の道が暗くなる前に村へ帰ろう。", "sentenceEnglish": "Let us return to the village before the forest path grows dark.", "corpusEvidence": {"identity": "帰る|かえる|jmdict:1221270:0", "messageIds": ["0x105b", "0x105c", "0x106e"]}, "wordAudio": null, "sentenceAudio": null},
@@ -480,7 +480,7 @@
       "endMarker": "Awaken the Fire Sage",
       "prerequisites": ["05-door-of-time"],
       "recommendedAfter": ["06-forest-awakens"],
-      "deck": {"status": "pilot", "downloadAvailable": false, "reviewedCardCount": 16, "audioStatus": "none"},
+      "deck": {"status": "ready", "downloadAvailable": true, "reviewedCardCount": 16, "audioStatus": "none"},
       "sampleCards": [
         {"id": "火口|かこう|crater", "written": "火口", "reading": "かこう", "partOfSpeech": "noun", "meaning": "crater; caldera", "sentenceJapanese": "火口から立ち上る煙が空を灰色に染めた。", "sentenceEnglish": "Smoke rising from the crater stained the sky gray.", "corpusEvidence": {"identity": "火口|かこう|jmdict:1193860:0", "messageIds": ["0x0323"]}, "wordAudio": null, "sentenceAudio": null},
         {"id": "溶岩|ようがん|lava", "written": "溶岩", "reading": "ようがん", "partOfSpeech": "noun", "meaning": "lava", "sentenceJapanese": "赤い溶岩の上では、石の足場だけが安全だった。", "sentenceEnglish": "Above the red lava, only the stone platforms were safe.", "corpusEvidence": {"identity": "溶岩|ようがん|jmdict:1546120:0", "messageIds": ["0x0115"]}, "wordAudio": null, "sentenceAudio": null},
@@ -499,7 +499,7 @@
       "endMarker": "Awaken the Water Sage",
       "prerequisites": ["05-door-of-time"],
       "recommendedAfter": ["06-forest-awakens", "07-fire-sage"],
-      "deck": {"status": "pilot", "downloadAvailable": false, "reviewedCardCount": 28, "audioStatus": "none"},
+      "deck": {"status": "ready", "downloadAvailable": true, "reviewedCardCount": 28, "audioStatus": "none"},
       "sampleCards": [
         {"id": "氷|こおり|ice", "written": "氷", "reading": "こおり", "partOfSpeech": "noun", "meaning": "ice", "sentenceJapanese": "青い氷の壁が洞窟の奥への道を閉ざしていた。", "sentenceEnglish": "A wall of blue ice blocked the way deeper into the cavern.", "corpusEvidence": {"identity": "氷|こおり|jmdict:1488840:0", "messageIds": ["0x4019"]}, "wordAudio": null, "sentenceAudio": null},
         {"id": "凍る|こおる|freeze", "written": "凍る", "reading": "こおる", "partOfSpeech": "verb", "meaning": "to freeze; to become frozen", "sentenceJapanese": "夜になると泉が凍り、月の光を映した。", "sentenceEnglish": "At night the spring froze and reflected the moonlight.", "corpusEvidence": {"identity": "凍る|こおる|jmdict:1593100:0", "messageIds": ["0x0197"]}, "wordAudio": null, "sentenceAudio": null},
@@ -518,7 +518,7 @@
       "startMarker": "Witness the disaster in Kakariko",
       "endMarker": "Awaken the Shadow Sage",
       "prerequisites": ["06-forest-awakens", "07-fire-sage", "08-beneath-the-ice"],
-      "deck": {"status": "pilot", "downloadAvailable": false, "reviewedCardCount": 5, "audioStatus": "none"},
+      "deck": {"status": "ready", "downloadAvailable": true, "reviewedCardCount": 5, "audioStatus": "none"},
       "sampleCards": [
         {"id": "復活|ふっかつ|revival", "written": "復活", "reading": "ふっかつ", "partOfSpeech": "noun", "meaning": "revival; restoration", "sentenceJapanese": "封じられた怪物の復活を止めるため、鐘を鳴らした。", "sentenceEnglish": "The bell was rung to stop the sealed monster's revival.", "corpusEvidence": {"identity": "復活|ふっかつ|jmdict:1500700:0", "messageIds": ["0x0629"]}, "wordAudio": null, "sentenceAudio": null},
         {"id": "井戸|いど|well", "written": "井戸", "reading": "いど", "partOfSpeech": "noun", "meaning": "water well", "sentenceJapanese": "枯れた井戸の底から不思議な声が聞こえた。", "sentenceEnglish": "A mysterious voice came from the bottom of the dry well.", "corpusEvidence": {"identity": "井戸|いど|jmdict:1160330:0", "messageIds": ["0x5085"]}, "wordAudio": null, "sentenceAudio": null},
@@ -537,7 +537,7 @@
       "endMarker": "Awaken the Spirit Sage",
       "prerequisites": ["05-door-of-time"],
       "recommendedAfter": ["08-beneath-the-ice"],
-      "deck": {"status": "pilot", "downloadAvailable": false, "reviewedCardCount": 66, "audioStatus": "none"},
+      "deck": {"status": "ready", "downloadAvailable": true, "reviewedCardCount": 66, "audioStatus": "none"},
       "sampleCards": [
         {"id": "宝|たから|treasure", "written": "宝", "reading": "たから", "partOfSpeech": "noun", "meaning": "treasure", "sentenceJapanese": "盗賊は砂の神殿に眠る宝の話を聞いた。", "sentenceEnglish": "The bandit heard a tale of treasure sleeping in the desert temple.", "corpusEvidence": {"identity": "宝|たから|jmdict:1516160:0", "messageIds": ["0x6024"]}, "wordAudio": null, "sentenceAudio": null},
         {"id": "盗賊|とうぞく|bandit", "written": "盗賊", "reading": "とうぞく", "partOfSpeech": "noun", "meaning": "thief; robber; bandit", "sentenceJapanese": "素早い盗賊は見張りの鍵を奪って姿を消した。", "sentenceEnglish": "The swift bandit stole the guard's key and vanished.", "corpusEvidence": {"identity": "盗賊|とうぞく|jmdict:1448470:0", "messageIds": ["0x606a"]}, "wordAudio": null, "sentenceAudio": null},
@@ -555,7 +555,7 @@
       "startMarker": "Awaken all six sages",
       "endMarker": "Complete the final battle",
       "prerequisites": ["09-darkness-beneath-kakariko", "10-spirit-of-the-desert"],
-      "deck": {"status": "pilot", "downloadAvailable": false, "reviewedCardCount": 5, "audioStatus": "none"},
+      "deck": {"status": "ready", "downloadAvailable": true, "reviewedCardCount": 5, "audioStatus": "none"},
       "sampleCards": [
         {"id": "結界|けっかい|barrier", "written": "結界", "reading": "けっかい", "partOfSpeech": "noun", "meaning": "magical or sacred barrier", "sentenceJapanese": "三人の魔法使いが杖を掲げると、城を囲む結界が消えた。", "sentenceEnglish": "When three mages raised their staffs, the barrier surrounding the castle vanished.", "corpusEvidence": {"identity": "結界|けっかい|jmdict:2020220:0", "messageIds": ["0x70e0"]}, "wordAudio": null, "sentenceAudio": null},
         {"id": "野望|やぼう|ambition", "written": "野望", "reading": "やぼう", "partOfSpeech": "noun", "meaning": "ambition; aspiration", "sentenceJapanese": "王の野望は国中に長い争いをもたらした。", "sentenceEnglish": "The king's ambition brought a long conflict across the realm.", "corpusEvidence": {"identity": "野望|やぼう|jmdict:1537650:0", "messageIds": ["0x707e"]}, "wordAudio": null, "sentenceAudio": null},

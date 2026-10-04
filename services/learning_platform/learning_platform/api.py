@@ -13,6 +13,7 @@ from pydantic import BaseModel, Field, StrictInt
 
 from .config import Settings
 from .catalog import GameCatalog
+from .anki_export import build_chapter_package
 from .database import LATEST_SCHEMA_VERSION
 from .errors import AuthenticationError, PlatformError
 from .mailer import Mailer, mailer_from_settings
@@ -324,6 +325,25 @@ def create_app(
         if game is None:
             raise HTTPException(status_code=404, detail="Catalog game not found")
         return game
+
+    @app.get("/v1/catalog/games/{game_id}/chapters/{chapter_id}/deck")
+    def catalog_chapter_deck(game_id: str, chapter_id: str) -> Response:
+        source = catalog.get_chapter_for_export(game_id, chapter_id)
+        if source is None:
+            raise HTTPException(status_code=404, detail="Catalog chapter not found")
+        game, chapter = source
+        if chapter.get("deck", {}).get("downloadAvailable") is not True:
+            raise HTTPException(status_code=404, detail="Chapter deck is not available")
+        try:
+            package = build_chapter_package(game, chapter, catalog.content_root)
+        except ValueError as error:
+            raise HTTPException(status_code=503, detail=str(error)) from error
+        filename = f"{game_id}-{chapter['order']:02d}-{chapter_id}.apkg"
+        return Response(
+            content=package,
+            media_type="application/octet-stream",
+            headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+        )
 
     @app.get("/v1/catalog/games/{game_id}/vocabulary")
     def catalog_vocabulary(

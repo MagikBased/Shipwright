@@ -135,14 +135,22 @@ clips for review and never changes the catalog automatically. Installation,
 license evidence, quality limitations, and commands are documented in
 [`KOKORO_TTS.md`](KOKORO_TTS.md). `none` remains the default provider.
 
-## All-chapter pilot
+## Complete chapter course
 
-Every chapter has a reviewed pilot set, and the opening chapter is being
-expanded toward the core coverage gate first. Every sentence card has stable
-corpus provenance and a newly written example sentence. The chapter mappings
-remain `seeded`, not `reviewed`: the current cards can be exercised now, while
-comprehensive vocabulary selection and native-speaker language review are still
-release gates.
+All eleven chapters meet the configured 80% core-token coverage target. The
+course contains 802 prerequisite-aware sentence cards and 21 game-specific
+terminology entries across all 2,002 mapped dialogue messages. Every sentence
+card has stable corpus provenance, a newly written non-IP example sentence, and
+a stable Anki note identity. Audio remains optional, so every chapter is
+available as a fully usable text-only deck.
+
+Each ready chapter can be downloaded from the game catalog. The public download
+endpoint builds the package from the same repository-owned card manifest used by
+the local tooling:
+
+```text
+/v1/catalog/games/ocarina-of-time/chapters/{chapter-id}/deck
+```
 
 Build an individual chapter with:
 
@@ -150,13 +158,13 @@ Build an individual chapter with:
 python3 scripts/jp_assist/build_catalog_deck.py --chapter 1 --require-corpus-evidence
 ```
 
-To produce all eleven local pilot decks:
+To reproduce all eleven decks locally:
 
 ```bash
 for chapter in $(seq 1 11); do
   python3 scripts/jp_assist/build_catalog_deck.py \
     --chapter "$chapter" --require-corpus-evidence \
-    --output-prefix "oot_chapter_$(printf '%02d' "$chapter")_pilot"
+    --output-prefix "oot_jp_assist_chapter_$(printf '%02d' "$chapter")"
 done
 ```
 

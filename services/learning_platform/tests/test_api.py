@@ -1,5 +1,8 @@
+import io
+import sqlite3
 import tempfile
 import unittest
+import zipfile
 from pathlib import Path
 
 from learning_platform.database import LATEST_SCHEMA_VERSION
@@ -131,7 +134,7 @@ class LearningPlatformApiTest(unittest.TestCase):
         self.assertIn("Game catalog", catalog_page.text)
         self.assertIn('id="catalog-tab" href="/catalog"', page.text)
 
-    def test_public_catalog_exposes_ordered_oot_chapters_and_pilot_cards(self):
+    def test_public_catalog_exposes_ordered_oot_chapters_and_ready_decks(self):
         listing = self.client.get("/v1/catalog/games")
         self.assertEqual(listing.status_code, 200)
         self.assertEqual(listing.json()["games"][0]["id"], "ocarina-of-time")
@@ -142,7 +145,8 @@ class LearningPlatformApiTest(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         game = response.json()
         self.assertEqual([chapter["order"] for chapter in game["chapters"]], list(range(1, 12)))
-        self.assertTrue(all(chapter["deck"]["status"] == "pilot" for chapter in game["chapters"]))
+        self.assertTrue(all(chapter["deck"]["status"] == "ready" for chapter in game["chapters"]))
+        self.assertTrue(all(chapter["deck"]["downloadAvailable"] for chapter in game["chapters"]))
         cards = [card for chapter in game["chapters"] for card in chapter["sampleCards"]]
         self.assertLessEqual(
             len(cards),
@@ -169,6 +173,33 @@ class LearningPlatformApiTest(unittest.TestCase):
         self.assertGreater(vocabulary["total"], 0)
         self.assertEqual(vocabulary["words"][0]["written"], "森")
         self.assertEqual(self.client.get("/v1/catalog/games/not-a-game").status_code, 404)
+
+        chapter = game["chapters"][0]
+        deck = self.client.get(
+            f"/v1/catalog/games/ocarina-of-time/chapters/{chapter['id']}/deck"
+        )
+        self.assertEqual(deck.status_code, 200)
+        self.assertEqual(deck.headers["content-type"], "application/octet-stream")
+        self.assertIn(".apkg", deck.headers["content-disposition"])
+        with zipfile.ZipFile(io.BytesIO(deck.content)) as package:
+            database_name = next(
+                name for name in ("collection.anki2", "collection.anki21")
+                if name in package.namelist()
+            )
+            database_path = Path(self.temporary.name) / database_name
+            database_path.write_bytes(package.read(database_name))
+        database = sqlite3.connect(database_path)
+        try:
+            note_count = database.execute("SELECT COUNT(*) FROM notes").fetchone()[0]
+        finally:
+            database.close()
+        self.assertEqual(note_count, chapter["deck"]["reviewedCardCount"])
+        self.assertEqual(
+            self.client.get(
+                "/v1/catalog/games/ocarina-of-time/chapters/not-a-chapter/deck"
+            ).status_code,
+            404,
+        )
 
     def test_catalog_known_words_are_global_and_drive_game_coverage(self):
         self.client.post(

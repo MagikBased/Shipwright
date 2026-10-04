@@ -3,23 +3,26 @@ const { test, expect } = require("./fixtures");
 
 
 test.describe("public game catalog", () => {
-  test("shows the OoT chapter roadmap and reviewed pilot without an account", async ({ page }) => {
+  test("shows the OoT chapter roadmap and ready decks without an account", async ({ page }) => {
     await page.goto("/catalog");
 
     await expect(page.locator("#game-title")).toHaveText("Ocarina of Time");
     await expect(page.locator("#chapter-list > li")).toHaveCount(11);
     await expect(page.locator("#chapter-list > li").first()).toContainText("The Boy Without a Fairy");
-    await expect(page.locator("#chapter-list > li").first()).toContainText("Pilot content");
+    await expect(page.locator("#chapter-list > li").first()).toContainText("Ready");
+    await expect(page.locator("#chapter-list > li").first().getByRole("link", { name: /Download 243 Anki cards/ })).toBeVisible();
     await expect(page.locator("#language-profile-title")).toHaveText("What level is this adventure?");
     await expect(page.locator("#jlpt-breakdown .level-row")).toHaveCount(6);
     await expect(page.locator("#language-method")).toContainText("4,158 unique words");
     await expect(page.locator("#coverage-signed-out")).toContainText("Sign in");
     await expect(page.locator("#vocabulary-list > li")).toHaveCount(40);
 
-    await page.locator(".pilot-cards summary").click();
-    await expect(page.locator(".pilot-grid article")).toHaveCount(6);
-    await expect(page.locator(".pilot-grid article").first()).toContainText("森");
-    await expect(page.locator(".pilot-grid article").first()).toContainText("ancient spirit");
+    const firstChapter = page.locator("#chapter-list > li").first();
+    const firstPreview = firstChapter.locator(".pilot-cards").first();
+    await firstPreview.locator("summary").click();
+    await expect(firstPreview.locator(".pilot-grid article")).toHaveCount(28);
+    await expect(firstPreview.locator(".pilot-grid article").first()).toContainText("森");
+    await expect(firstPreview.locator(".pilot-grid article").first()).toContainText("ancient spirit");
 
     const violations = await new AxeBuilder({ page }).analyze();
     expect(violations.violations).toEqual([]);

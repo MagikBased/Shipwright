@@ -36,6 +36,23 @@ class GameCatalog:
             result["languageProfile"]["methodology"] = deepcopy(vocabulary["methodology"])
         return result
 
+    def get_chapter_for_export(
+        self, game_id: str, chapter_id: str,
+    ) -> tuple[dict[str, Any], dict[str, Any]] | None:
+        game = self._games.get(game_id)
+        manifest = self._card_manifests.get(game_id)
+        if game is None or manifest is None:
+            return None
+        chapter = next((item for item in game["chapters"] if item["id"] == chapter_id), None)
+        content = next(
+            (item for item in manifest["chapters"] if item["chapterId"] == chapter_id), None
+        )
+        if chapter is None or content is None:
+            return None
+        result = deepcopy(chapter)
+        result["reviewedCards"] = deepcopy(content.get("cards", []))
+        return deepcopy(game), result
+
     def list_vocabulary(
         self, game_id: str, search: str = "", jlpt_level: str | None = None,
         limit: int = 50, offset: int = 0,

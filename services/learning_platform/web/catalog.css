@@ -203,6 +203,11 @@
   color: var(--gold);
 }
 
+.catalog-badge.ready {
+  border-color: color-mix(in srgb, var(--cyan) 60%, var(--line));
+  color: var(--cyan);
+}
+
 .chapter-scope {
   color: var(--text) !important;
   margin-bottom: 10px;
@@ -220,6 +225,19 @@
   color: var(--cyan) !important;
   font-size: 0.82rem;
   margin-bottom: 0;
+}
+
+.chapter-actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+  margin-top: 16px;
+}
+
+.chapter-download {
+  background: var(--cyan);
+  color: #06131a;
 }
 
 .pilot-cards {
