@@ -18,7 +18,7 @@ import re
 from pathlib import Path
 
 from message_codes import parse_english, parse_japanese
-from overrides import apply_override
+from overrides import apply_context_override, apply_override
 
 # Katakana -> hiragana, to match the reading convention in the design doc's
         # schema example ("あう", not "アウ"). SudachiPy's reading_form() returns
@@ -132,6 +132,10 @@ class Tokenizer:
             lemma = morpheme.dictionary_form()
             reading = katakana_to_hiragana(morpheme.reading_form())
             normalized_pos = english_part_of_speech(pos)
+            start = japanese_text.find(surface, search_from)
+            if start < 0:
+                start = search_from
+            search_from = start + len(surface)
             if lemma.isascii() and lemma.isdigit():
                 dictionary_reading = japanese_number_reading(int(lemma))
                 sense = {
@@ -144,12 +148,10 @@ class Tokenizer:
                 dictionary_reading = self._dictionary_reading(lemma) or reading
                 sense = self._lookup_sense(lemma, dictionary_reading, normalized_pos)
             sense = apply_override(lemma, dictionary_reading, sense)
+            sense = apply_context_override(
+                lemma, dictionary_reading, japanese_text, start, sense,
+            )
             dictionary_reading = sense.get("dictionaryReading", dictionary_reading)
-
-            start = japanese_text.find(surface, search_from)
-            if start < 0:
-                start = search_from
-            search_from = start + len(surface)
             if any(span_start <= start < span_end for span_start, span_end in placeholder_spans):
                 continue
             vocabulary_id = f"{lemma}|{dictionary_reading}"

@@ -6,7 +6,7 @@ from pathlib import Path
 SCRIPT_DIR = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SCRIPT_DIR))
 
-from overrides import apply_override  # noqa: E402
+from overrides import apply_context_override, apply_override  # noqa: E402
 
 
 class OverrideTest(unittest.TestCase):
@@ -62,6 +62,23 @@ class OverrideTest(unittest.TestCase):
         self.assertEqual(mask["meaning"], "mask")
         self.assertIn("target", target["meaning"])
         self.assertIn("camera", viewpoint["meaning"])
+
+    def test_contractions_and_action_senses_replace_unrelated_homographs(self):
+        self.assertIn("home", apply_override("ち", "ち", {"meaning": "blood"})["meaning"])
+        self.assertIn("contraction", apply_override("ちゃ", "ちゃ", {"meaning": "tea"})["note"])
+        self.assertIn("equip", apply_override("つける", "つける", {"meaning": "install"})["meaning"])
+        self.assertIn("stance", apply_override("かまえる", "かまえる", {"meaning": "build"})["meaning"])
+        self.assertEqual(apply_override("おうち", "おうち", {"meaning": "hollow"})["meaning"], "home; house")
+
+    def test_ki_wo_tsukeru_is_split_from_attach_and_equip(self):
+        equipped = apply_override("つける", "つける", {"meaning": "install"})
+        careful = apply_context_override("つける", "つける", "気をつける", 2, equipped)
+        self.assertEqual(careful["meaning"], "to be careful; to take care")
+        self.assertEqual(careful["senseId"], "override:気をつける|きをつける")
+        self.assertEqual(
+            apply_context_override("つける", "つける", "盾をつける", 2, equipped),
+            equipped,
+        )
 
 
 if __name__ == "__main__":

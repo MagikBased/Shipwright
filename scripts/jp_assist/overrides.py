@@ -257,6 +257,41 @@ OVERRIDES: dict[tuple[str, str], dict] = {
         "note": "The visual/camera perspective sense used in control tutorials.",
         "partOfSpeech": "noun",
     },
+    ("つける", "つける"): {
+        "meaning": "to attach; to put on; to equip",
+        "note": "The attachment/equipment sense used for worn items.",
+        "partOfSpeech": "verb",
+    },
+    ("ち", "ち"): {
+        "meaning": "home; house (colloquial shortening of うち)",
+        "note": "The home suffix in forms such as 自分ち, not 血 (blood).",
+        "partOfSpeech": "noun",
+    },
+    ("き", "き"): {
+        "meaning": "classical attributive adjective ending",
+        "note": "The literary adjective ending in forms such as 黒き and 悪しき.",
+        "partOfSpeech": "auxiliary",
+    },
+    ("ちゃ", "ちゃ"): {
+        "meaning": "if; when; must, contraction involving ては or なくては",
+        "note": "Conversational contraction, not 茶 (tea).",
+        "partOfSpeech": "particle",
+    },
+    ("かける", "かける"): {
+        "meaning": "to cast; to place or apply (a spell or curse)",
+        "note": "The spell/curse application sense.",
+        "partOfSpeech": "verb",
+    },
+    ("かまえる", "かまえる"): {
+        "meaning": "to ready; to hold at the ready; to take a stance",
+        "note": "The weapon or shield stance sense.",
+        "partOfSpeech": "verb",
+    },
+    ("おうち", "おうち"): {
+        "meaning": "home; house",
+        "note": "Polite/familiar お家, not a hollow or depression.",
+        "partOfSpeech": "noun",
+    },
 }
 
 
@@ -287,3 +322,20 @@ def apply_override(lemma: str, reading: str, sense: dict) -> dict:
         merged["note"] = override["note"]
     merged["source"] = "override"
     return merged
+
+
+def apply_context_override(
+    lemma: str, reading: str, japanese_text: str, start: int, sense: dict,
+) -> dict:
+    """Resolve phrases whose intended sense cannot be selected by lemma alone."""
+    if lemma == "つける" and japanese_text[max(0, start - 2):start] == "気を":
+        merged = dict(sense)
+        merged.update({
+            "meaning": "to be careful; to take care",
+            "senseId": "override:気をつける|きをつける",
+            "partOfSpeech": "verb",
+            "note": "The fixed expression 気をつける.",
+            "source": "override",
+        })
+        return merged
+    return sense
