@@ -155,6 +155,7 @@ download endpoint both use the same repository-owned card manifest used by the
 local tooling:
 
 ```text
+/catalog/ocarina-of-time
 /study/ocarina-of-time/{chapter-id}
 /study/ocarina-of-time/{chapter-id}/cards
 /v1/catalog/games/ocarina-of-time/chapters/{chapter-id}/cards

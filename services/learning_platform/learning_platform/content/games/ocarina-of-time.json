@@ -5,6 +5,11 @@
   "series": "The Legend of Zelda",
   "platform": "Ship of Harkinian",
   "status": "in-development",
+  "artwork": {
+    "heroImage": "/static/assets/catalog/ocarina-of-time-hero.svg",
+    "heroAlt": "A moonlit fantasy forest opening toward a distant castle",
+    "accentColor": "#78d7b1"
+  },
   "cardManifest": "ocarina-of-time.cards.json",
   "summary": "A progression-aware Japanese vocabulary course organized around the major stages of the adventure.",
   "chapterModel": {

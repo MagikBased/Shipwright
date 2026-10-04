@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" role="img" aria-labelledby="title description">
+  <title id="title">Moonlit fantasy forest</title>
+  <desc id="description">A forest path passes ancient trees and opens toward a distant castle beneath a green-blue moon.</desc>
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#07131f"/>
+      <stop offset=".58" stop-color="#153d46"/>
+      <stop offset="1" stop-color="#244f3f"/>
+    </linearGradient>
+    <radialGradient id="moonGlow">
+      <stop offset="0" stop-color="#dcfff1" stop-opacity=".95"/>
+      <stop offset=".28" stop-color="#83e4c1" stop-opacity=".48"/>
+      <stop offset="1" stop-color="#60cba7" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="path" x1=".5" y1="0" x2=".5" y2="1">
+      <stop offset="0" stop-color="#658674"/>
+      <stop offset="1" stop-color="#c1b17b"/>
+    </linearGradient>
+    <linearGradient id="trunk" x1="0" y1="0" x2="1" y2="0">
+      <stop stop-color="#081613"/>
+      <stop offset=".55" stop-color="#183a2d"/>
+      <stop offset="1" stop-color="#0a1c17"/>
+    </linearGradient>
+    <filter id="blur"><feGaussianBlur stdDeviation="20"/></filter>
+  </defs>
+  <rect width="1600" height="900" fill="url(#sky)"/>
+  <circle cx="1180" cy="180" r="250" fill="url(#moonGlow)"/>
+  <circle cx="1180" cy="180" r="68" fill="#d9fff1" opacity=".86"/>
+  <g fill="#b5f9dd" opacity=".8">
+    <circle cx="180" cy="145" r="3"/><circle cx="350" cy="86" r="4"/><circle cx="720" cy="120" r="3"/>
+    <circle cx="940" cy="70" r="4"/><circle cx="1370" cy="104" r="3"/><circle cx="1490" cy="235" r="4"/>
+  </g>
+  <g fill="#10281f">
+    <path d="M0 540 170 320 320 530 455 300 620 550 0 650Z"/>
+    <path d="m1600 520-170-235-170 250-130-180-160 220 630 85Z"/>
+  </g>
+  <path d="M690 560h220l24 80H666Z" fill="#07120f"/>
+  <path d="M721 560v-142h32v-66h35v66h31v-94h38v94h29v142Z" fill="#0a1715"/>
+  <path d="m739 352 31-48 30 48m37-28 19-42 21 42" fill="#0a1715"/>
+  <path d="M800 900c-35-170-46-274 0-358 46 84 35 188 0 358Z" fill="url(#path)" opacity=".88"/>
+  <path d="M0 680c250-105 474-112 694-63l106 283H0Z" fill="#122c22"/>
+  <path d="M1600 680c-250-105-474-112-694-63L800 900h800Z" fill="#0c241b"/>
+  <g fill="url(#trunk)">
+    <path d="M0 0h245l-32 214 68 170-90-14 24 530H0Z"/>
+    <path d="M1600 0h-260l42 220-72 174 92-18-28 524h226Z"/>
+    <path d="M260 0h155l-19 180 55 125-72-12 15 395-165 75 66-420-71 14 62-170Z" opacity=".92"/>
+    <path d="M1325 0h-150l20 175-52 120 67-10-13 400 161 78-62-424 68 16-59-169Z" opacity=".9"/>
+  </g>
+  <g fill="#3b8f68" opacity=".8" filter="url(#blur)">
+    <circle cx="275" cy="218" r="128"/><circle cx="1325" cy="220" r="138"/><circle cx="55" cy="420" r="150"/><circle cx="1540" cy="430" r="155"/>
+  </g>
+  <g fill="#9cf6cb">
+    <circle cx="488" cy="500" r="5"/><circle cx="553" cy="575" r="4"/><circle cx="1030" cy="472" r="5"/>
+    <circle cx="1090" cy="553" r="3"/><circle cx="370" cy="625" r="3"/><circle cx="1250" cy="625" r="4"/>
+  </g>
+  <rect width="1600" height="900" fill="none" stroke="#8de3c2" stroke-opacity=".15" stroke-width="8"/>
+</svg>

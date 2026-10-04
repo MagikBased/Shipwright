@@ -6,7 +6,15 @@ test.describe("public game catalog", () => {
   test("shows the OoT chapter roadmap and ready decks without an account", async ({ page }) => {
     await page.goto("/catalog");
 
+    await expect(page.locator("#game-rail > li")).toHaveCount(1);
+    const gameTile = page.locator(".game-tile").first();
+    await expect(gameTile).toContainText("Ocarina of Time");
+    await expect(gameTile.locator("img")).toBeVisible();
+    await expect(gameTile.locator("img")).toHaveAttribute("src", /ocarina-of-time-hero\.svg$/);
+    await gameTile.click();
+    await expect(page).toHaveURL(/\/catalog\/ocarina-of-time$/);
     await expect(page.locator("#game-title")).toHaveText("Ocarina of Time");
+    await expect(page.locator("#game-hero-image")).toBeVisible();
     await expect(page.locator("#chapter-list > li")).toHaveCount(11);
     await expect(page.locator("#chapter-list > li").first()).toContainText("The Boy Without a Fairy");
     await expect(page.locator("#chapter-list > li").first()).toContainText("Ready");
@@ -32,7 +40,7 @@ test.describe("public game catalog", () => {
     await page.goto("/");
     await page.getByRole("link", { name: "Browse the game catalog" }).click();
     await expect(page).toHaveURL(/\/catalog$/);
-    await expect(page.locator("#game-title")).toHaveText("Ocarina of Time");
+    await expect(page.locator(".game-tile")).toContainText("Ocarina of Time");
   });
 
   test("studies a reviewed chapter directly on the site", async ({ page }) => {
@@ -92,7 +100,7 @@ test.describe("public game catalog", () => {
     await page.locator("#register-form input[name=password]").fill("catalog coverage password");
     await page.locator("#register-form button[type=submit]").click();
     await expect(page.locator("#dashboard")).toBeVisible();
-    await page.goto("/catalog");
+    await page.goto("/catalog/ocarina-of-time");
     await expect(page.locator("#coverage-signed-in")).toBeVisible();
     const firstToggle = page.locator(".known-toggle").first();
     await expect(firstToggle).toHaveText("Mark known");

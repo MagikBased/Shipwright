@@ -195,7 +195,10 @@ PYTHONPATH=services/learning_platform \
 ## Chapter study and Anki handoff
 
 The public game catalog is available at `/catalog`, with machine-readable data at
-`/v1/catalog/games`. Every ready chapter has a **Study on site** action. Signed-in
+`/v1/catalog/games`. The catalog root is a horizontally scrollable game shelf;
+selecting a game opens its detail route at `/catalog/{game-id}`. Each game
+manifest supplies reusable hero artwork metadata, so future games join the same
+layout without game-specific HTML. Every ready chapter has a **Study on site** action. Signed-in
 learners can enroll in a chapter, reveal its reviewed examples, and rate cards
 with the shared account-wide FSRS scheduler. Known words and mastered senses
 carry across games, while pausing a chapter removes its course-only cards from

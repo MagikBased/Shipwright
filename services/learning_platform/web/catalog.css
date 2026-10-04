@@ -29,6 +29,138 @@
   color: var(--red);
 }
 
+.catalog-shelf-heading {
+  align-items: end;
+  display: flex;
+  gap: 24px;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.catalog-shelf-heading h2 {
+  font-size: clamp(1.7rem, 3vw, 2.5rem);
+  margin: 6px 0 0;
+}
+
+.rail-controls {
+  display: flex;
+  gap: 8px;
+}
+
+.rail-controls button {
+  font-size: 1.35rem;
+  height: 44px;
+  padding: 0;
+  width: 44px;
+}
+
+.game-rail {
+  display: grid;
+  gap: 18px;
+  grid-auto-columns: clamp(320px, 42vw, 560px);
+  grid-auto-flow: column;
+  list-style: none;
+  margin: 0 -16px;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  padding: 8px 16px 24px;
+  scroll-padding-inline: 16px;
+  scroll-snap-type: inline mandatory;
+  scrollbar-color: var(--line) transparent;
+}
+
+.game-rail > li {
+  min-width: 0;
+  scroll-snap-align: start;
+}
+
+.game-tile {
+  aspect-ratio: 16 / 9;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  box-shadow: 0 18px 50px #0007;
+  color: var(--text);
+  display: block;
+  overflow: hidden;
+  position: relative;
+  text-decoration: none;
+  transform: translateY(0);
+  transition: border-color .18s ease, transform .18s ease, box-shadow .18s ease;
+}
+
+.game-tile:hover,
+.game-tile:focus-visible {
+  border-color: var(--game-accent, var(--cyan));
+  box-shadow: 0 24px 65px #0009;
+  outline: none;
+  transform: translateY(-5px);
+}
+
+.game-tile img {
+  height: 100%;
+  object-fit: cover;
+  transition: transform .35s ease;
+  width: 100%;
+}
+
+.game-tile:hover img,
+.game-tile:focus-visible img {
+  transform: scale(1.035);
+}
+
+.game-tile-shade {
+  background: linear-gradient(180deg, transparent 22%, #06101833 48%, #061018f2 100%);
+  inset: 0;
+  position: absolute;
+}
+
+.game-tile-copy {
+  bottom: 0;
+  left: 0;
+  padding: clamp(18px, 4vw, 30px);
+  position: absolute;
+  right: 0;
+}
+
+.game-tile-copy h3 {
+  font-size: clamp(1.6rem, 3.2vw, 2.6rem);
+  margin: 5px 0 8px;
+}
+
+.game-tile-copy p {
+  color: #d8e6e8;
+  margin: 0;
+  max-width: 42rem;
+}
+
+.game-tile-meta {
+  color: var(--game-accent, var(--cyan));
+  display: flex;
+  flex-wrap: wrap;
+  font-size: .8rem;
+  font-weight: 750;
+  gap: 8px 18px;
+  margin-top: 14px;
+}
+
+.catalog-coming-soon {
+  margin: 42px 0 64px;
+  max-width: 760px;
+}
+
+.catalog-coming-soon h2 {
+  margin-bottom: 8px;
+}
+
+.catalog-back {
+  color: var(--cyan);
+  display: inline-block;
+  font-weight: 750;
+  margin: 0 0 14px;
+  text-decoration: none;
+}
+
 .language-section,
 .known-words {
   margin-top: 40px;
@@ -112,26 +244,55 @@
 .known-toggle[aria-pressed="true"] { border-color: var(--cyan); color: var(--cyan); }
 
 .catalog-hero {
-  align-items: start;
-  display: grid;
-  gap: 32px;
-  grid-template-columns: minmax(0, 1fr) minmax(300px, 0.55fr);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  box-shadow: 0 24px 80px #0008;
+  height: clamp(430px, 57vw, 660px);
+  overflow: hidden;
+  position: relative;
+}
+
+.catalog-hero > img {
+  height: 100%;
+  object-fit: cover;
+  width: 100%;
+}
+
+.catalog-hero-shade {
+  background: linear-gradient(90deg, #061018f7 0, #061018c9 39%, #06101833 72%, transparent 100%), linear-gradient(0deg, #061018d6, transparent 52%);
+  inset: 0;
+  position: absolute;
+}
+
+.catalog-hero-copy {
+  bottom: 0;
+  left: 0;
+  max-width: 770px;
+  padding: clamp(26px, 5vw, 68px);
+  position: absolute;
 }
 
 .catalog-hero h2 {
-  font-size: clamp(2rem, 4vw, 3.4rem);
+  font-size: clamp(2.6rem, 6vw, 5.2rem);
   margin: 8px 0 12px;
+}
+
+.catalog-hero-copy > p {
+  color: #d8e6e8;
+  font-size: 1.05rem;
+  max-width: 620px;
 }
 
 .catalog-facts {
   display: grid;
   gap: 10px;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  margin: 0;
+  margin: 24px 0 0;
 }
 
 .catalog-facts div {
-  background: var(--panel2);
+  background: #07131dcc;
+  border: 1px solid #ffffff1c;
   border-radius: 10px;
   padding: 13px;
 }
@@ -286,7 +447,6 @@
 }
 
 @media (max-width: 780px) {
-  .catalog-hero,
   .catalog-explainer,
   .language-grid,
   .pilot-grid {
@@ -310,5 +470,33 @@
   .catalog-badge {
     grid-column: 2;
     justify-self: start;
+  }
+
+  .rail-controls {
+    display: none;
+  }
+
+  .game-rail {
+    grid-auto-columns: min(86vw, 480px);
+  }
+
+  .game-tile-copy p {
+    display: none;
+  }
+
+  .catalog-hero {
+    height: 560px;
+  }
+
+  .catalog-hero-shade {
+    background: linear-gradient(0deg, #061018fa 0, #061018bd 58%, #06101822 100%);
+  }
+
+  .catalog-hero-copy {
+    padding: 24px;
+  }
+
+  .catalog-facts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }

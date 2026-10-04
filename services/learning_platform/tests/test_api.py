@@ -139,6 +139,11 @@ class LearningPlatformApiTest(unittest.TestCase):
         listing = self.client.get("/v1/catalog/games")
         self.assertEqual(listing.status_code, 200)
         self.assertEqual(listing.json()["games"][0]["id"], "ocarina-of-time")
+        self.assertTrue(
+            listing.json()["games"][0]["artwork"]["heroImage"].endswith(
+                "ocarina-of-time-hero.svg"
+            )
+        )
         self.assertEqual(listing.json()["games"][0]["chapterCount"], 11)
         self.assertEqual(listing.json()["games"][0]["languageProfile"]["uniqueWords"], 3762)
 

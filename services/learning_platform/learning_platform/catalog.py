@@ -326,6 +326,7 @@ class GameCatalog:
             "platform": game["platform"],
             "status": game["status"],
             "summary": game["summary"],
+            "artwork": deepcopy(game.get("artwork", {})),
             "chapterCount": len(chapters),
             "reviewedCardCount": sum(chapter["deck"]["reviewedCardCount"] for chapter in chapters),
             "audioStatus": game["audio"]["status"],

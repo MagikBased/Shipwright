@@ -728,6 +728,10 @@ def create_app(
     def catalog_website() -> FileResponse:
         return FileResponse(web_root / "catalog.html")
 
+    @app.get("/catalog/{game_id}", include_in_schema=False)
+    def catalog_game_website(game_id: str) -> FileResponse:
+        return FileResponse(web_root / "catalog.html")
+
     @app.get("/study/{game_id}/{chapter_id}", include_in_schema=False)
     def study_website(game_id: str, chapter_id: str) -> FileResponse:
         return FileResponse(web_root / "study.html")

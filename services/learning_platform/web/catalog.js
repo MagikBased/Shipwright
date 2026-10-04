@@ -1,6 +1,8 @@
 const statusBox = document.querySelector("#catalog-status");
 const catalog = document.querySelector("#game-catalog");
-const GAME_ID = "ocarina-of-time";
+const catalogIndex = document.querySelector("#catalog-index");
+const pathParts = location.pathname.split("/").filter(Boolean);
+const GAME_ID = pathParts.length > 1 ? decodeURIComponent(pathParts[1]) : null;
 let signedIn = false;
 let knownWordIds = new Set();
 let vocabularyOffset = 0;
@@ -22,6 +24,60 @@ function fact(term, description) {
   text(dt, term); text(dd, description);
   wrapper.append(dt, dd);
   return wrapper;
+}
+
+function gameTile(game) {
+  const item = document.createElement("li");
+  const link = document.createElement("a");
+  const image = document.createElement("img");
+  const shade = document.createElement("div");
+  const copy = document.createElement("div");
+  const series = document.createElement("span");
+  const title = document.createElement("h3");
+  const summary = document.createElement("p");
+  const meta = document.createElement("div");
+  link.className = "game-tile";
+  link.href = `/catalog/${encodeURIComponent(game.id)}`;
+  link.style.setProperty("--game-accent", game.artwork?.accentColor || "var(--cyan)");
+  image.src = game.artwork?.heroImage || "";
+  image.alt = game.artwork?.heroAlt || "";
+  image.loading = "eager";
+  shade.className = "game-tile-shade";
+  copy.className = "game-tile-copy";
+  series.className = "eyebrow";
+  meta.className = "game-tile-meta";
+  text(series, `${game.series} · ${game.platform}`);
+  text(title, game.title);
+  text(summary, game.summary);
+  text(meta, `${game.chapterCount} chapters · ${game.reviewedCardCount.toLocaleString()} reviewed cards`);
+  copy.append(series, title, summary, meta);
+  link.append(image, shade, copy);
+  item.append(link);
+  return item;
+}
+
+function updateRailControls() {
+  const rail = document.querySelector("#game-rail");
+  const previous = document.querySelector("#catalog-previous");
+  const next = document.querySelector("#catalog-next");
+  previous.disabled = rail.scrollLeft <= 2;
+  next.disabled = rail.scrollLeft + rail.clientWidth >= rail.scrollWidth - 2;
+}
+
+async function loadCatalogIndex() {
+  try {
+    const response = await fetch("/v1/catalog/games", { headers: { Accept: "application/json" } });
+    if (!response.ok) throw new Error(`Catalog request failed (${response.status})`);
+    const games = (await response.json()).games;
+    const rail = document.querySelector("#game-rail");
+    rail.replaceChildren(...games.map(gameTile));
+    statusBox.classList.add("hidden");
+    catalogIndex.classList.remove("hidden");
+    updateRailControls();
+  } catch (error) {
+    statusBox.classList.add("error");
+    text(statusBox, `The catalog could not be loaded. ${error.message}`);
+  }
 }
 
 function csrfToken() {
@@ -239,11 +295,15 @@ function chapterCard(chapter, chapterNames) {
   return item;
 }
 
-async function loadCatalog() {
+async function loadGameDetail() {
   try {
     const response = await fetch(`/v1/catalog/games/${GAME_ID}`, { headers: { Accept: "application/json" } });
     if (!response.ok) throw new Error(`Catalog request failed (${response.status})`);
     const game = await response.json();
+    document.title = `${game.title} — JP Assist Learning`;
+    const heroImage = document.querySelector("#game-hero-image");
+    heroImage.src = game.artwork?.heroImage || "";
+    heroImage.alt = game.artwork?.heroAlt || "";
     text(document.querySelector("#game-series"), `${game.series} · ${game.platform}`);
     text(document.querySelector("#game-title"), game.title);
     text(document.querySelector("#game-summary"), game.summary);
@@ -253,7 +313,7 @@ async function loadCatalog() {
     const facts = document.querySelector("#game-facts");
     facts.append(
       fact("Chapters", String(game.chapters.length)),
-      fact("Reviewed pilot cards", String(reviewed)),
+      fact("Reviewed cards", String(reviewed)),
       fact("Audio", game.audio.status === "optional-not-generated" ? "Optional · not generated" : game.audio.status),
       fact("Deck status", "In development")
     );
@@ -279,4 +339,13 @@ document.querySelector("#vocabulary-more").addEventListener("click", () => {
   loadVocabulary(false).catch(error => text(document.querySelector("#vocabulary-status"), error.message));
 });
 
-loadCatalog();
+document.querySelector("#catalog-previous").addEventListener("click", () => {
+  document.querySelector("#game-rail").scrollBy({ left: -560, behavior: "smooth" });
+});
+document.querySelector("#catalog-next").addEventListener("click", () => {
+  document.querySelector("#game-rail").scrollBy({ left: 560, behavior: "smooth" });
+});
+document.querySelector("#game-rail").addEventListener("scroll", updateRailControls, { passive: true });
+window.addEventListener("resize", updateRailControls);
+
+if (GAME_ID) loadGameDetail(); else loadCatalogIndex();
