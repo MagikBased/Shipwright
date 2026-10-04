@@ -3,6 +3,7 @@ const gameId = decodeURIComponent(parts[1] || "");
 const chapterId = decodeURIComponent(parts[2] || "");
 const browseMode = parts[3] === "cards";
 const state = { chapter: null, progress: null, queue: [], revealed: false, reviewOwner: "jp_assist" };
+const RETRY_GAP = 3;
 
 function text(node, value) { node.textContent = value == null ? "" : String(value); }
 function csrfToken() { return document.cookie.split("; ").find(item => item.startsWith("jp_assist_csrf="))?.split("=").slice(1).join("=") || ""; }
@@ -39,7 +40,7 @@ function renderProgress() {
   text(document.querySelector("#enroll"), progress.active ? "Pause chapter" : progress.enrolledAt ? "Resume chapter" : "Start chapter");
   text(document.querySelector("#progress-copy"), `${progress.percentMastered}% mastered. Known vocabulary is skipped automatically.`);
   document.querySelector("#progress-bar").style.width = `${progress.percentMastered}%`;
-  text(document.querySelector("#metric-mastered"), `${progress.masteredCards}/${progress.totalCards}`); text(document.querySelector("#metric-reviewed"), progress.reviewedCards); text(document.querySelector("#metric-new"), progress.newCards); text(document.querySelector("#metric-due"), progress.dueCards);
+  text(document.querySelector("#metric-mastered"), `${progress.masteredCards}/${progress.totalCards}`); text(document.querySelector("#metric-reviewed"), progress.clearedToday); text(document.querySelector("#metric-learning"), progress.learningToday); text(document.querySelector("#metric-attempts"), progress.attemptsToday); text(document.querySelector("#metric-due"), progress.dueCards);
 }
 function renderReview() {
   const card = state.queue[0], box = document.querySelector("#course-review-card"), actions = document.querySelector("#course-review-actions");
@@ -77,6 +78,6 @@ async function load() {
 }
 document.querySelector("#enroll").addEventListener("click", async event => { const button = event.currentTarget; button.disabled = true; try { state.progress = await request(`/v1/me/courses/${encodeURIComponent(gameId)}/chapters/${encodeURIComponent(chapterId)}`, { method: "PUT", body: JSON.stringify({ active: !state.progress.active }) }); renderProgress(); state.queue = []; if (state.progress.active) await loadQueue(); } catch (error) { alert(error.message); } finally { button.disabled = false; } });
 document.querySelector("#course-review-card").addEventListener("click", () => { if (!state.queue[0]) return; state.revealed = true; renderReview(); });
-document.querySelector("#course-review-actions").addEventListener("click", async event => { const button = event.target.closest("[data-rating]"), card = state.queue[0]; if (!button || !card) return; button.disabled = true; try { await request("/v1/me/reviews", { method: "POST", body: JSON.stringify({ wordId: card.wordId, senseId: card.senseId, rating: Number(button.dataset.rating) }) }); state.queue.shift(); state.progress = await request(`/v1/me/courses/${encodeURIComponent(gameId)}/chapters/${encodeURIComponent(chapterId)}`); state.revealed = false; renderProgress(); renderReview(); } catch (error) { alert(error.message); button.disabled = false; } });
+document.querySelector("#course-review-actions").addEventListener("click", async event => { const button = event.target.closest("[data-rating]"), card = state.queue[0]; if (!button || !card) return; const rating = Number(button.dataset.rating); button.disabled = true; try { const result = await request("/v1/me/reviews", { method: "POST", body: JSON.stringify({ wordId: card.wordId, senseId: card.senseId, rating }) }); state.queue.shift(); if (rating <= 2) { card.ratingPreviews = result.ratingPreviews; card.repetitions = result.repetitions; const retryAt = Math.min(RETRY_GAP, state.queue.length); state.queue.splice(retryAt, 0, card); } state.progress = await request(`/v1/me/courses/${encodeURIComponent(gameId)}/chapters/${encodeURIComponent(chapterId)}`); state.revealed = false; renderProgress(); renderReview(); } catch (error) { alert(error.message); button.disabled = false; } });
 document.querySelector("#course-bury").addEventListener("click", async event => { const card = state.queue[0]; if (!card) return; event.currentTarget.disabled = true; try { await request("/v1/me/reviews/bury", { method: "POST", body: JSON.stringify({ wordId: card.wordId, senseId: card.senseId }) }); state.queue.shift(); state.revealed = false; renderReview(); } catch (error) { alert(error.message); event.currentTarget.disabled = false; } });
 load();

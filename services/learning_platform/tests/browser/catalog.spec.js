@@ -95,13 +95,30 @@ test.describe("public game catalog", () => {
       expect(lessonLayout.cardBottom).toBeLessThan(lessonLayout.actionsBottom);
       expect(lessonLayout.actionsBottom).toBeLessThanOrEqual(lessonLayout.viewportHeight);
     }
+    const firstWord = await page.locator("#course-review-card .written").textContent();
+    await page.locator("#course-review-actions [data-rating='1']").click();
+    await expect(page.locator("#metric-learning")).toHaveText("1");
+    await expect(page.locator("#metric-attempts")).toHaveText("1");
+    await expect(page.locator("#course-review-card .written")).not.toHaveText(firstWord);
     const good = page.locator("#course-review-actions [data-rating='3']");
-    await good.click();
-    await expect(page.locator("#metric-reviewed")).toHaveText("1");
+    for (let index = 0; index < 3; index += 1) {
+      await page.locator("#course-review-card").click();
+      await good.click();
+    }
+    await expect(page.locator("#course-review-card .written")).toHaveText(firstWord);
     await page.locator("#course-review-card").click();
-    await expect(good).toBeEnabled();
+    await page.locator("#course-review-actions [data-rating='2']").click();
+    await expect(page.locator("#metric-learning")).toHaveText("1");
+    await page.locator("#course-review-card").click();
     await good.click();
-    await expect(page.locator("#metric-reviewed")).toHaveText("2");
+    await expect(page.locator("#course-review-card .written")).toHaveText(firstWord);
+    await page.locator("#course-review-card").click();
+    await good.click();
+    await expect(page.locator("#metric-reviewed")).toHaveText("5");
+    await expect(page.locator("#metric-learning")).toHaveText("0");
+    await expect(page.locator("#metric-attempts")).toHaveText("7");
+    await expect(page.locator("#metric-due")).toHaveText("0");
+    await expect(page.locator("#course-review-card")).toContainText("caught up");
     accessibility = await new AxeBuilder({ page }).analyze();
     expect(accessibility.violations.filter(item => ["critical", "serious"].includes(item.impact))).toEqual([]);
   });

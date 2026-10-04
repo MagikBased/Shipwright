@@ -1317,6 +1317,25 @@ class LearningPlatform:
                 """,
                 (user["id"], game_id, chapter_id),
             ).fetchone()
+            goals = connection.execute(
+                "SELECT timezone FROM learning_goals WHERE user_id = ?", (user["id"],),
+            ).fetchone()
+            day_start, day_end = self._review_day(goals["timezone"] if goals else "UTC")
+            today_reviews = connection.execute(
+                """
+                SELECT review.word_id, review.sense_id, review.rating
+                FROM reviews AS review
+                WHERE review.user_id = ?
+                  AND review.reviewed_at >= ? AND review.reviewed_at < ?
+                  AND EXISTS (
+                      SELECT 1 FROM catalog_cards AS card
+                      WHERE card.game_id = ? AND card.chapter_id = ?
+                        AND card.word_id = review.word_id AND card.sense_id = review.sense_id
+                  )
+                ORDER BY review.reviewed_at, review.rowid
+                """,
+                (user["id"], isoformat(day_start), isoformat(day_end), game_id, chapter_id),
+            ).fetchall()
             cards = connection.execute(
                 """
                 SELECT card.word_id, card.sense_id,
@@ -1335,6 +1354,10 @@ class LearningPlatform:
                 """,
                 (user["id"], user["id"], user["id"], game_id, chapter_id),
             ).fetchall()
+        latest_ratings: dict[tuple[str, str], int] = {}
+        for review in today_reviews:
+            latest_ratings[(review["word_id"], review["sense_id"])] = review["rating"]
+        retrying = {key for key, rating in latest_ratings.items() if rating in {1, 2}}
         total = len(cards)
         known = sum(bool(row["manually_known"]) for row in cards)
         mastered = sum(bool(row["manually_known"] or row["reviewed_known"]) for row in cards)
@@ -1349,6 +1372,7 @@ class LearningPlatform:
             and (
                 (row["repetitions"] or 0) == 0
                 or bool(row["due_at"] and row["due_at"] <= now)
+                or (row["word_id"], row["sense_id"]) in retrying
             )
             for row in cards
         )
@@ -1358,6 +1382,8 @@ class LearningPlatform:
             "enrolledAt": enrollment["enrolled_at"] if enrollment else None,
             "totalCards": total, "knownCards": known, "masteredCards": mastered,
             "reviewedCards": reviewed, "newCards": new, "dueCards": due,
+            "clearedToday": sum(rating in {3, 4} for rating in latest_ratings.values()),
+            "learningToday": len(retrying), "attemptsToday": len(today_reviews),
             "percentMastered": round(mastered * 100 / total, 1) if total else 100.0,
         }
 
@@ -1706,12 +1732,39 @@ class LearningPlatform:
                               AND selected_card.sense_id = progress.sense_id
                         )
                     )
-                    AND (review.due_at IS NULL OR review.due_at <= ?)
+                    AND (
+                        review.due_at IS NULL OR review.due_at <= ?
+                        OR (
+                            review.last_reviewed_at >= ? AND review.last_reviewed_at < ?
+                            AND (
+                                SELECT latest.rating FROM reviews AS latest
+                                WHERE latest.user_id = progress.user_id
+                                  AND latest.word_id = progress.word_id
+                                  AND latest.sense_id = progress.sense_id
+                                ORDER BY latest.reviewed_at DESC, latest.rowid DESC
+                                LIMIT 1
+                            ) IN (1, 2)
+                        )
+                    )
                     AND (buried.buried_until IS NULL OR buried.buried_until <= ?)
-                ORDER BY COALESCE(review.due_at, progress.first_seen_at), progress.encounter_count DESC
+                ORDER BY
+                    CASE WHEN review.last_reviewed_at >= ? AND review.last_reviewed_at < ?
+                         AND (
+                             SELECT latest.rating FROM reviews AS latest
+                             WHERE latest.user_id = progress.user_id
+                               AND latest.word_id = progress.word_id
+                               AND latest.sense_id = progress.sense_id
+                             ORDER BY latest.reviewed_at DESC, latest.rowid DESC
+                             LIMIT 1
+                         ) IN (1, 2)
+                         THEN 0 ELSE 1 END,
+                    COALESCE(review.due_at, progress.first_seen_at), progress.encounter_count DESC
                 LIMIT 1000
                 """,
-                (user["id"], game_id, game_id, chapter_id, now, now),
+                (
+                    user["id"], game_id, game_id, chapter_id, now, start_text, end_text,
+                    now, start_text, end_text,
+                ),
             ).fetchall()
             course_arguments: list[Any] = [user["id"]]
             course_filter = ""
@@ -1730,19 +1783,33 @@ class LearningPlatform:
                 """,
                 course_arguments,
             ).fetchall()
+            latest_today = connection.execute(
+                """
+                SELECT word_id, sense_id, rating FROM reviews
+                WHERE user_id = ? AND reviewed_at >= ? AND reviewed_at < ?
+                ORDER BY reviewed_at, rowid
+                """,
+                (user["id"], start_text, end_text),
+            ).fetchall()
         course_cards: dict[tuple[str, str], Any] = {}
         for course_card in course_rows:
             course_cards.setdefault((course_card["word_id"], course_card["sense_id"]), course_card)
         queue = []
         remaining_new = max(0, daily_new_words - new_today)
         remaining_reviews = max(0, daily_reviews - established_today)
+        retrying = {
+            key for key, rating in {
+                (item["word_id"], item["sense_id"]): item["rating"] for item in latest_today
+            }.items() if rating in {1, 2}
+        }
         for row in rows:
             card_state = row["card_state"]
-            if card_state is None:
+            is_retry = (row["word_id"], row["sense_id"]) in retrying
+            if card_state is None and not is_retry:
                 if remaining_new <= 0:
                     continue
                 remaining_new -= 1
-            elif card_state == 2:
+            elif card_state == 2 and not is_retry:
                 if remaining_reviews <= 0:
                     continue
                 remaining_reviews -= 1
@@ -1848,9 +1915,13 @@ class LearningPlatform:
                     projection["difficulty"], projection["scheduledDays"], projection["elapsedDays"],
                 ),
             )
+        rating_previews = previews(card, now_value)
         return {"id": review_id, "wordId": word_id, "senseId": sense_id or None, "rating": rating,
                 "reviewedAt": now, "dueAt": due_at, "intervalDays": interval,
-                "repetitions": repetitions, "lapses": lapses, **projection}
+                "repetitions": repetitions, "lapses": lapses,
+                "ratingPreviews": [
+                    {**item, "dueAt": isoformat(item["dueAt"])} for item in rating_previews
+                ], **projection}
 
     def import_anki_reviews(
         self, session_token: str, reviews: list[dict[str, Any]], game_id: str | None = None,

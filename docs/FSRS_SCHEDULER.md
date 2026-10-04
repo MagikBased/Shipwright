@@ -36,3 +36,8 @@ learner's goals. Boundaries are computed as local calendar midnights and then
 converted to UTC, so 23- and 25-hour daylight-saving days behave correctly.
 Learning and relearning steps remain available even after a daily review limit
 is reached; otherwise a ten-minute step could be stranded until the next day.
+During an active website session, Again and Hard remain in the queue and are
+spaced behind up to three other cards. A card is cleared from that day's
+session only by Good or Easy. The latest rating is used to recover unresolved
+cards after a refresh, pause, or sign-in later on the same local review day;
+this session rule does not replace the FSRS due date stored for future days.

@@ -301,15 +301,48 @@ class LearningPlatformApiTest(unittest.TestCase):
         reviewed = self.client.post(
             "/v1/me/reviews",
             json={
-                "wordId": queue[0]["wordId"], "senseId": queue[0]["senseId"], "rating": 3,
+                "wordId": queue[0]["wordId"], "senseId": queue[0]["senseId"], "rating": 1,
             },
             headers=self.csrf_headers(),
         )
         self.assertEqual(reviewed.status_code, 200)
+        self.assertEqual(len(reviewed.json()["ratingPreviews"]), 4)
+        retry_key = (queue[0]["wordId"], queue[0]["senseId"])
+        self.client.put(
+            "/v1/me/goals", json={"dailyNewWords": 1, "dailyReviews": 10},
+            headers=self.csrf_headers(),
+        )
+        retry_queue = self.client.get(
+            f"/v1/me/reviews/queue?gameId={game_id}&chapterId={chapter_id}&limit=1"
+        ).json()
+        self.assertEqual(len(retry_queue), 1)
+        self.assertIn(retry_key, {(card["wordId"], card["senseId"]) for card in retry_queue})
         progress = self.client.get(
             f"/v1/me/courses/{game_id}/chapters/{chapter_id}"
         ).json()
         self.assertEqual(progress["reviewedCards"], 1)
+        self.assertEqual(progress["clearedToday"], 0)
+        self.assertEqual(progress["learningToday"], 1)
+        self.assertEqual(progress["attemptsToday"], 1)
+        self.assertEqual(progress["dueCards"], 5)
+
+        passed = self.client.post(
+            "/v1/me/reviews",
+            json={"wordId": retry_key[0], "senseId": retry_key[1], "rating": 3},
+            headers=self.csrf_headers(),
+        )
+        self.assertEqual(passed.status_code, 200)
+        retry_queue = self.client.get(
+            f"/v1/me/reviews/queue?gameId={game_id}&chapterId={chapter_id}&limit=10"
+        ).json()
+        self.assertNotIn(retry_key, {(card["wordId"], card["senseId"]) for card in retry_queue})
+        progress = self.client.get(
+            f"/v1/me/courses/{game_id}/chapters/{chapter_id}"
+        ).json()
+        self.assertEqual(progress["clearedToday"], 1)
+        self.assertEqual(progress["learningToday"], 0)
+        self.assertEqual(progress["attemptsToday"], 2)
+        self.assertEqual(progress["dueCards"], 4)
 
         paused = self.client.put(
             f"/v1/me/courses/{game_id}/chapters/{chapter_id}",
