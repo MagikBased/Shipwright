@@ -1,3 +1,4 @@
+import importlib.util
 import sys
 import tempfile
 import unittest
@@ -6,6 +7,7 @@ from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SCRIPT_DIR))
+SERVICE_DIR = SCRIPT_DIR.parents[1] / "services" / "learning_platform"
 
 from build_catalog_deck import (  # noqa: E402
     build_deck,
@@ -19,6 +21,13 @@ from build_catalog_deck import (  # noqa: E402
     validate_prerequisite_uniqueness,
     validate_terminology_evidence,
 )
+SERVICE_EXPORT_PATH = SERVICE_DIR / "learning_platform" / "anki_export.py"
+SERVICE_EXPORT_SPEC = importlib.util.spec_from_file_location(
+    "learning_platform_anki_export_contract", SERVICE_EXPORT_PATH
+)
+assert SERVICE_EXPORT_SPEC and SERVICE_EXPORT_SPEC.loader
+SERVICE_EXPORT = importlib.util.module_from_spec(SERVICE_EXPORT_SPEC)
+SERVICE_EXPORT_SPEC.loader.exec_module(SERVICE_EXPORT)
 
 
 class BuildCatalogDeckTest(unittest.TestCase):
@@ -65,6 +74,19 @@ class BuildCatalogDeckTest(unittest.TestCase):
         self.assertNotEqual(
             stable_note_guid("ocarina-of-time", "one", "森|もり|forest"),
             stable_note_guid("another-game", "one", "森|もり|forest"),
+        )
+
+    def test_cli_and_public_download_use_the_same_stable_id_contract(self):
+        game_id = "ocarina-of-time"
+        chapter_id = "01-boy-without-a-fairy"
+        card_id = "森|もり|forest"
+        self.assertEqual(
+            stable_deck_id(game_id, chapter_id),
+            SERVICE_EXPORT.stable_deck_id(game_id, chapter_id),
+        )
+        self.assertEqual(
+            stable_note_guid(game_id, chapter_id, card_id),
+            SERVICE_EXPORT.stable_note_guid(game_id, chapter_id, card_id),
         )
 
     def test_chapter_without_reviewed_content_refuses_empty_package(self):

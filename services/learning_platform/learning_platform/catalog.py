@@ -6,6 +6,15 @@ from pathlib import Path
 from typing import Any
 
 
+REQUIRED_CONTENT_REVIEW_CRITERIA = {
+    "japanese-usage-and-reading",
+    "english-translation-and-sense",
+    "original-non-corpus-example",
+    "fantasy-tone-without-unrelated-ip-names",
+    "spoiler-appropriate-for-chapter",
+}
+
+
 class GameCatalog:
     """Loads the reviewed, repository-owned game learning catalog."""
 
@@ -125,6 +134,7 @@ class GameCatalog:
             card_manifest = self._card_manifests.get(game["id"])
             self._validate(game, path, card_manifest)
             if card_manifest is not None:
+                game["contentReview"] = deepcopy(card_manifest["contentReview"])
                 content_by_chapter = {
                     item["chapterId"]: item for item in card_manifest["chapters"]
                 }
@@ -187,6 +197,33 @@ class GameCatalog:
             raise ValueError(f"Catalog game {game_id} references a missing card manifest")
         if card_manifest is not None and set(manifest_chapters) != known:
             raise ValueError(f"Card manifest for {game_id} must contain every chapter")
+        if card_manifest is not None:
+            review = card_manifest.get("contentReview") or {}
+            reviewed_card_count = sum(
+                len(item.get("cards", [])) for item in manifest_chapters.values()
+            )
+            reviewed_term_count = sum(
+                len(item.get("terminology", [])) for item in manifest_chapters.values()
+            )
+            if review.get("status") != "reviewed":
+                raise ValueError(f"Card manifest for {game_id} is not reviewed")
+            if review.get("criteriaVersion") != 1:
+                raise ValueError(
+                    f"Card manifest for {game_id} has an unsupported review criteria version"
+                )
+            if review.get("reviewedCardCount") != reviewed_card_count:
+                raise ValueError(f"Card manifest for {game_id} has a stale review card count")
+            if review.get("reviewedTerminologyCount") != reviewed_term_count:
+                raise ValueError(
+                    f"Card manifest for {game_id} has a stale review terminology count"
+                )
+            missing_criteria = REQUIRED_CONTENT_REVIEW_CRITERIA - set(
+                review.get("criteria", [])
+            )
+            if missing_criteria:
+                raise ValueError(
+                    f"Card manifest for {game_id} has incomplete review criteria"
+                )
         for chapter in chapters:
             references = chapter.get("prerequisites", []) + chapter.get("recommendedAfter", [])
             if any(reference not in known for reference in references):

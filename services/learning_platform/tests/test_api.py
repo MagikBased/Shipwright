@@ -5,6 +5,7 @@ import unittest
 import zipfile
 from pathlib import Path
 
+from learning_platform.anki_export import stable_note_guid
 from learning_platform.database import LATEST_SCHEMA_VERSION
 
 try:
@@ -147,6 +148,8 @@ class LearningPlatformApiTest(unittest.TestCase):
         self.assertEqual([chapter["order"] for chapter in game["chapters"]], list(range(1, 12)))
         self.assertTrue(all(chapter["deck"]["status"] == "ready" for chapter in game["chapters"]))
         self.assertTrue(all(chapter["deck"]["downloadAvailable"] for chapter in game["chapters"]))
+        self.assertEqual(game["contentReview"]["status"], "reviewed")
+        self.assertEqual(game["contentReview"]["reviewedCardCount"], 802)
         cards = [card for chapter in game["chapters"] for card in chapter["sampleCards"]]
         self.assertLessEqual(
             len(cards),
@@ -174,26 +177,35 @@ class LearningPlatformApiTest(unittest.TestCase):
         self.assertEqual(vocabulary["words"][0]["written"], "森")
         self.assertEqual(self.client.get("/v1/catalog/games/not-a-game").status_code, 404)
 
-        chapter = game["chapters"][0]
-        deck = self.client.get(
-            f"/v1/catalog/games/ocarina-of-time/chapters/{chapter['id']}/deck"
-        )
-        self.assertEqual(deck.status_code, 200)
-        self.assertEqual(deck.headers["content-type"], "application/octet-stream")
-        self.assertIn(".apkg", deck.headers["content-disposition"])
-        with zipfile.ZipFile(io.BytesIO(deck.content)) as package:
-            database_name = next(
-                name for name in ("collection.anki2", "collection.anki21")
-                if name in package.namelist()
+        for chapter in game["chapters"]:
+            deck = self.client.get(
+                f"/v1/catalog/games/ocarina-of-time/chapters/{chapter['id']}/deck"
             )
-            database_path = Path(self.temporary.name) / database_name
-            database_path.write_bytes(package.read(database_name))
-        database = sqlite3.connect(database_path)
-        try:
-            note_count = database.execute("SELECT COUNT(*) FROM notes").fetchone()[0]
-        finally:
-            database.close()
-        self.assertEqual(note_count, chapter["deck"]["reviewedCardCount"])
+            self.assertEqual(deck.status_code, 200)
+            self.assertEqual(deck.headers["content-type"], "application/octet-stream")
+            self.assertIn(".apkg", deck.headers["content-disposition"])
+            with zipfile.ZipFile(io.BytesIO(deck.content)) as package:
+                database_name = next(
+                    name for name in ("collection.anki2", "collection.anki21")
+                    if name in package.namelist()
+                )
+                database_path = Path(self.temporary.name) / database_name
+                database_path.write_bytes(package.read(database_name))
+            database = sqlite3.connect(database_path)
+            try:
+                note_count = database.execute("SELECT COUNT(*) FROM notes").fetchone()[0]
+                exported_notes = {
+                    fields.split("\x1f")[9]: guid
+                    for guid, fields in database.execute("SELECT guid, flds FROM notes")
+                }
+            finally:
+                database.close()
+            self.assertEqual(note_count, chapter["deck"]["reviewedCardCount"])
+            for card_id, guid in exported_notes.items():
+                self.assertEqual(
+                    guid,
+                    stable_note_guid("ocarina-of-time", chapter["id"], card_id),
+                )
         self.assertEqual(
             self.client.get(
                 "/v1/catalog/games/ocarina-of-time/chapters/not-a-chapter/deck"

@@ -75,6 +75,7 @@ def load_game(game_id: str, catalog_root: Path = DEFAULT_CATALOG_ROOT) -> dict[s
         manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
         if manifest.get("gameId") != game_id:
             raise ValueError(f"Card manifest game id does not match {game_id}")
+        game["contentReview"] = manifest.get("contentReview")
         content_by_chapter = {
             item["chapterId"]: item for item in manifest.get("chapters", [])
         }

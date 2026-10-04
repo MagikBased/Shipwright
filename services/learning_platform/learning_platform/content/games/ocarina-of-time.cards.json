@@ -1,6 +1,19 @@
 {
   "schemaVersion": 1,
   "gameId": "ocarina-of-time",
+  "contentReview": {
+    "status": "reviewed",
+    "criteriaVersion": 1,
+    "reviewedCardCount": 802,
+    "reviewedTerminologyCount": 21,
+    "criteria": [
+      "japanese-usage-and-reading",
+      "english-translation-and-sense",
+      "original-non-corpus-example",
+      "fantasy-tone-without-unrelated-ip-names",
+      "spoiler-appropriate-for-chapter"
+    ]
+  },
   "chapters": [
     {
       "chapterId": "01-boy-without-a-fairy",
@@ -5567,7 +5580,7 @@
           "reading": "とりで",
           "partOfSpeech": "noun",
           "meaning": "fort; fortress; stronghold",
-          "sentenceJapanese": "砂の砦は高い壁と鋭い見張りに守られていた。",
+          "sentenceJapanese": "砂の砦は高い壁と厳重な見張りに守られていた。",
           "sentenceEnglish": "The desert fortress was protected by high walls and vigilant guards.",
           "corpusEvidence": {
             "identity": "砦|とりで|jmdict:1295240:0",
@@ -5648,7 +5661,7 @@
         {"id":"弓|ゆみ|bow","written":"弓","reading":"ゆみ","partOfSpeech":"noun","meaning":"bow; archery bow","sentenceJapanese":"少女は古い弓を手に取り、空の標的を狙った。","sentenceEnglish":"The girl took up the old bow and aimed at the target in the sky.","corpusEvidence":{"identity":"弓|ゆみ|jmdict:1228490:0","messageIds":["0x600d","0x6040","0x6064"]},"wordAudio":null,"sentenceAudio":null},
         {"id":"女神|めがみ|goddess","written":"女神","reading":"めがみ","partOfSpeech":"noun","meaning":"goddess; female deity","sentenceJapanese":"旅人は泉の女神に安全な旅を祈った。","sentenceEnglish":"The traveler prayed to the goddess of the spring for a safe journey.","corpusEvidence":{"identity":"女神|めがみ|jmdict:1345210:0","messageIds":["0x0124","0x0168","0x605e"]},"wordAudio":null,"sentenceAudio":null},
         {"id":"約束|やくそく|promise","written":"約束","reading":"やくそく","partOfSpeech":"noun","meaning":"promise; agreement; one's word","sentenceJapanese":"騎士は必ず村へ戻ると約束した。","sentenceEnglish":"The knight promised that he would return to the village without fail.","corpusEvidence":{"identity":"約束|やくそく|jmdict:1538130:0","messageIds":["0x005b","0x6036","0x603a"]},"wordAudio":null,"sentenceAudio":null},
-        {"id":"幼し|おさなし|young","written":"幼し","reading":"おさなし","partOfSpeech":"adjective","meaning":"young; childish","sentenceJapanese":"幼し勇者は小さな木剣で村を守ろうとした。","sentenceEnglish":"The young hero tried to defend the village with a small wooden sword.","corpusEvidence":{"identity":"幼し|おさなし|override:幼し|おさなし","messageIds":["0x0168","0x0221","0x600c"]},"wordAudio":null,"sentenceAudio":null},
+        {"id":"幼し|おさなし|young","written":"幼し","reading":"おさなし","partOfSpeech":"adjective","meaning":"young; childish","sentenceJapanese":"幼き勇者は小さな木剣で村を守ろうとした。","sentenceEnglish":"The young hero tried to defend the village with a small wooden sword.","corpusEvidence":{"identity":"幼し|おさなし|override:幼し|おさなし","messageIds":["0x0168","0x0221","0x600c"]},"wordAudio":null,"sentenceAudio":null},
         {"id":"流れ|ながれ|current","written":"流れ","reading":"ながれ","partOfSpeech":"noun","meaning":"flow; stream; current","sentenceJapanese":"川の流れが速く、古い橋が大きく揺れた。","sentenceEnglish":"The river's current was swift, and the old bridge shook violently.","corpusEvidence":{"identity":"流れ|ながれ|jmdict:1552130:0","messageIds":["0x600c","0x601a"]},"wordAudio":null,"sentenceAudio":null},
         {"id":"まだまだ|まだまだ|still a long way","written":"まだまだ","reading":"まだまだ","partOfSpeech":"adverb","meaning":"still; much more; not yet","sentenceJapanese":"剣の修行はまだまだ終わらない。","sentenceEnglish":"The sword training is still far from over.","corpusEvidence":{"identity":"まだまだ|まだまだ|jmdict:1527150:0","messageIds":["0x6045","0x6081","0x6084"]},"wordAudio":null,"sentenceAudio":null},
         {"id":"用|よう|business","written":"用","reading":"よう","partOfSpeech":"noun","meaning":"business; task; errand","sentenceJapanese":"王都に用があるなら、夜になる前に門を通れ。","sentenceEnglish":"If you have business in the capital, pass through the gate before nightfall.","corpusEvidence":{"identity":"用|よう|jmdict:1546200:0","messageIds":["0x6010","0x601d","0x6020"]},"wordAudio":null,"sentenceAudio":null},
