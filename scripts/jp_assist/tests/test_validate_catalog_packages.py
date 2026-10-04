@@ -15,7 +15,7 @@ class ValidateCatalogPackagesTest(unittest.TestCase):
         game = load_game("ocarina-of-time")
         results = validate_packages(game)
         self.assertEqual(len(results), 11)
-        self.assertEqual(sum(result["noteCount"] for result in results), 802)
+        self.assertEqual(sum(result["noteCount"] for result in results), 796)
 
 
 if __name__ == "__main__":

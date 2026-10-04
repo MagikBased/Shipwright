@@ -15,6 +15,11 @@ from collections import Counter, defaultdict
 from pathlib import Path
 from typing import Any
 
+try:
+    from .vocabulary_policy import is_transferable_identity
+except ImportError:  # Direct script execution.
+    from vocabulary_policy import is_transferable_identity
+
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_RUNTIME_DATA = Path(__file__).parent / "out" / "runtime_data.json"
@@ -76,8 +81,8 @@ def canonical_identity_text(value: str) -> str:
 
 
 def core_eligible(identity: tuple[str, str, str]) -> bool:
-    """Exclude controls/markup while retaining names and speech learners see."""
-    return not identity[2].startswith(("interface:", "proper:"))
+    """Restrict coverage to reusable Japanese vocabulary."""
+    return is_transferable_identity(identity)
 
 
 def message_number(value: str) -> int:
@@ -195,13 +200,13 @@ def collect_candidates(
     by_chapter: dict[str, list[dict[str, Any]]] = {chapter["id"]: [] for chapter in catalog["chapters"]}
     excluded_by_prerequisite: Counter[str] = Counter()
     prerequisite_covered_occurrences: Counter[str] = Counter()
-    excluded_interface_occurrences: Counter[str] = Counter()
+    excluded_non_transferable_occurrences: Counter[str] = Counter()
     for identity, counts in occurrences.items():
         identity_text = "|".join(identity)
         mapped_frequency = sum(counts.values())
         for chapter_id in sorted(counts, key=chapter_order.get):
             if not core_eligible(identity):
-                excluded_interface_occurrences[chapter_id] += counts[chapter_id]
+                excluded_non_transferable_occurrences[chapter_id] += counts[chapter_id]
             taught_by_prerequisite = any(
                 (identity_text, prerequisite) in published
                 for prerequisite in prerequisites[chapter_id]
@@ -292,11 +297,11 @@ def collect_candidates(
                 sum(row["reviewStatus"] == "published" for row in rows)
                 + additional_cards_to_target
             ),
-            "excludedInterfaceOccurrences": excluded_interface_occurrences[chapter_id],
+            "excludedNonTransferableOccurrences": excluded_non_transferable_occurrences[chapter_id],
         })
 
     summary = {
-        "schemaVersion": 2,
+        "schemaVersion": 3,
         "gameId": catalog["id"],
         "sourceVariant": mapping["sourceVariant"],
         "sourceCorpusVersion": runtime_root.get("metadata", {}).get("corpusVersion"),
@@ -305,6 +310,8 @@ def collect_candidates(
         "selectionRule": (
             "Rank by frequency in this chapter, then full-game recurrence; "
             "exclude words taught by any transitive hard-prerequisite deck. "
+            "Exclude proper names, interface tokens, invented speech endings, "
+            "and unresolved tokenizer fragments from language coverage. "
             "A core deck is complete at 80% of mapped token occurrences; "
             "reviewers may add rarer story-essential vocabulary beyond that gate."
         ),

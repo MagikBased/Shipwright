@@ -15,7 +15,7 @@ class GameCatalogReviewTest(unittest.TestCase):
             "chapters": [{
                 "id": "one", "order": 1, "title": "One", "prerequisites": [],
                 "recommendedAfter": [], "sampleCards": [],
-                "deck": {"reviewedCardCount": 1, "terminologyCount": 0},
+                "deck": {"reviewedCardCount": 1},
             }],
         }
         manifest = {
@@ -40,7 +40,7 @@ class GameCatalogReviewTest(unittest.TestCase):
     def test_catalog_exposes_current_content_review(self):
         review = {
             "status": "reviewed", "reviewedCardCount": 1,
-            "reviewedTerminologyCount": 0, "criteriaVersion": 1,
+            "criteriaVersion": 1,
             "criteria": sorted(REQUIRED_CONTENT_REVIEW_CRITERIA),
         }
         catalog = GameCatalog(self.write_catalog(review))
@@ -49,7 +49,7 @@ class GameCatalogReviewTest(unittest.TestCase):
     def test_catalog_rejects_stale_review_count(self):
         review = {
             "status": "reviewed", "reviewedCardCount": 0,
-            "reviewedTerminologyCount": 0, "criteriaVersion": 1,
+            "criteriaVersion": 1,
             "criteria": sorted(REQUIRED_CONTENT_REVIEW_CRITERIA),
         }
         with self.assertRaisesRegex(ValueError, "stale review card count"):

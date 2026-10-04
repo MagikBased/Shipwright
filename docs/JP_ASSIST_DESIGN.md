@@ -333,7 +333,9 @@ Dialogue should therefore be tokenized offline and reviewed. Runtime tokenizatio
 5. Run a Japanese morphological tokenizer.
 6. Look up lemmas and candidate senses in a licensed dictionary.
 7. Select the intended sense using the English line and sentence context.
-8. Apply manual overrides for names, compounds, archaic forms, and Zelda terminology.
+8. Apply manual overrides so names and game-specific tokens are recognized and
+   can be excluded from reusable study content, while retaining corrections for
+   compounds and archaic forms.
 9. Validate token coverage and page alignment.
 10. Emit a compact runtime data file and Anki source data.
 
@@ -402,7 +404,8 @@ Vocabulary alone is not enough to “fully understand” the game. Ocarina of Ti
 - Grammar and contractions.
 - Casual and character-specific speech.
 - Archaic or fantasy-flavored language.
-- Proper names and Zelda terminology.
+- Proper names and game-specific terms, which the public decks and vocabulary
+  profile intentionally exclude rather than placing in a glossary.
 - Context that is implied rather than stated.
 
 The deck should begin with vocabulary but leave room for grammar and expression notes.

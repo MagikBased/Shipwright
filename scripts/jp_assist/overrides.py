@@ -1,10 +1,10 @@
 """Manual overrides for lemmas that a general-purpose dictionary (JMdict via
 jamdict) doesn't have, or gets wrong for this game: proper nouns, invented
-Zelda terminology, and archaic/compound forms (docs/JP_ASSIST_DESIGN.md
+game-specific tokens, and archaic/compound forms (docs/JP_ASSIST_DESIGN.md
 section 7.2 step 8). Keyed by (lemma, reading) so the override is specific
 to the actual word sense encountered, not just the surface string.
 
-This is a hand-authored review layer covering game terminology plus frequent
+This is a hand-authored recognition layer covering game-specific tokens plus frequent
 stylized speech that general dictionaries do not represent well.
 """
 
@@ -25,7 +25,7 @@ OVERRIDES: dict[tuple[str, str], dict] = {
         "meaning": "Saria (character name)",
         "note": "Proper noun.",
     },
-    ("デク", "でく"): {"meaning": "Deku (game-specific name/category)", "note": "Zelda terminology."},
+    ("デク", "でく"): {"meaning": "Deku (game-specific name/category)", "note": "Excluded game-specific token."},
     ("ゴロン", "ごろん"): {"meaning": "Goron (the rock-dwelling people)", "note": "Zelda proper noun."},
     ("ハイラル", "はいらる"): {"meaning": "Hyrule", "note": "Place name."},
     ("ガノンドロフ", "がのんどろふ"): {"meaning": "Ganondorf", "note": "Character name."},
@@ -42,7 +42,7 @@ OVERRIDES: dict[tuple[str, str], dict] = {
     ("ドドンゴ", "どどんご"): {"meaning": "Dodongo", "note": "Enemy name."},
     ("ダンペイ", "だんぺい"): {"meaning": "Dampé", "note": "Character name."},
     ("エポナ", "えぽな"): {"meaning": "Epona", "note": "Character name."},
-    ("ポウ", "ぽう"): {"meaning": "Poe (a ghost enemy)", "note": "Zelda terminology."},
+    ("ポウ", "ぽう"): {"meaning": "Poe (a ghost enemy)", "note": "Excluded game-specific token."},
     ("キングゾーラ", "きんぐぞーら"): {"meaning": "King Zora", "note": "Character name/title.", "partOfSpeech": "proper noun"},
     ("ジャブ", "じゃぶ"): {"meaning": "Jabu; name fragment referring to Jabu-Jabu", "note": "Character name produced when the displayed Jabu-Jabu name is tokenized in parts.", "partOfSpeech": "proper noun"},
     ("ジャブジャブ", "じゃぶじゃぶ"): {"meaning": "Jabu-Jabu", "note": "Character name.", "partOfSpeech": "proper noun"},

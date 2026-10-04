@@ -135,13 +135,6 @@ class GameCatalog:
             self._validate(game, path, card_manifest)
             if card_manifest is not None:
                 game["contentReview"] = deepcopy(card_manifest["contentReview"])
-                content_by_chapter = {
-                    item["chapterId"]: item for item in card_manifest["chapters"]
-                }
-                for chapter in game["chapters"]:
-                    chapter["terminology"] = deepcopy(
-                        content_by_chapter[chapter["id"]].get("terminology", [])
-                    )
             games[game["id"]] = game
         return games
 
@@ -202,9 +195,6 @@ class GameCatalog:
             reviewed_card_count = sum(
                 len(item.get("cards", [])) for item in manifest_chapters.values()
             )
-            reviewed_term_count = sum(
-                len(item.get("terminology", [])) for item in manifest_chapters.values()
-            )
             if review.get("status") != "reviewed":
                 raise ValueError(f"Card manifest for {game_id} is not reviewed")
             if review.get("criteriaVersion") != 1:
@@ -213,10 +203,6 @@ class GameCatalog:
                 )
             if review.get("reviewedCardCount") != reviewed_card_count:
                 raise ValueError(f"Card manifest for {game_id} has a stale review card count")
-            if review.get("reviewedTerminologyCount") != reviewed_term_count:
-                raise ValueError(
-                    f"Card manifest for {game_id} has a stale review terminology count"
-                )
             missing_criteria = REQUIRED_CONTENT_REVIEW_CRITERIA - set(
                 review.get("criteria", [])
             )
@@ -250,24 +236,6 @@ class GameCatalog:
                 evidence = card.get("corpusEvidence", {})
                 if not evidence.get("identity") or not evidence.get("messageIds"):
                     raise ValueError(f"Catalog card {card['id']} has no corpus evidence")
-            terminology = (
-                manifest_chapter.get("terminology", [])
-                if manifest_chapter is not None else []
-            )
-            if not isinstance(terminology, list):
-                raise ValueError(f"Card manifest chapter {chapter['id']} has invalid terminology")
-            terminology_ids = [entry.get("id") for entry in terminology]
-            if any(not entry_id for entry_id in terminology_ids) or len(terminology_ids) != len(set(terminology_ids)):
-                raise ValueError(f"Catalog chapter {chapter['id']} terminology ids must be unique")
-            expected_terms = chapter.get("deck", {}).get("terminologyCount", 0)
-            if expected_terms != len(terminology):
-                raise ValueError(f"Catalog chapter {chapter['id']} terminology count is stale")
-            for entry in terminology:
-                evidence = entry.get("corpusEvidence", {})
-                if not evidence.get("identity") or not evidence.get("messageIds"):
-                    raise ValueError(
-                        f"Catalog terminology entry {entry['id']} has no corpus evidence"
-                    )
 
     @staticmethod
     def _summary(game: dict[str, Any]) -> dict[str, Any]:

@@ -3,15 +3,19 @@
 Game catalog profiles count unique `lemma|reading` identities in the Japanese
 runtime corpus. They also retain token occurrence counts for future
 frequency-weighted views, but the current catalog percentage is based on unique
-words so repeated particles do not dominate the chart.
+words so repeated particles do not dominate the chart. The profile uses the
+same transferable-vocabulary policy as the chapter decks: proper names,
+fictional locations, invented character speech endings, interface labels, and
+unresolved tokenizer fragments are omitted rather than presented as learnable
+Japanese or placed in a separate glossary.
 
 N5 through N1 classifications come from
 [OpenJLPT](https://github.com/evanclan/OpenJLPT), licensed CC BY-SA 4.0. OpenJLPT
 derives its vocabulary levels from Jonathan Waller's community lists and checks
 entries against JMdict. The modern JLPT does not publish official vocabulary
 lists, so these levels are estimates. Words without a reliable match remain
-`unclassified`; they are never silently dropped from the game or personal
-coverage denominator.
+`unclassified`; dictionary-resolved words without a JLPT match remain in the
+game and personal coverage denominator.
 
 Regenerate a game manifest after rebuilding the local runtime corpus:
 

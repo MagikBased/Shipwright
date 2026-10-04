@@ -140,7 +140,7 @@ class LearningPlatformApiTest(unittest.TestCase):
         self.assertEqual(listing.status_code, 200)
         self.assertEqual(listing.json()["games"][0]["id"], "ocarina-of-time")
         self.assertEqual(listing.json()["games"][0]["chapterCount"], 11)
-        self.assertEqual(listing.json()["games"][0]["languageProfile"]["uniqueWords"], 4158)
+        self.assertEqual(listing.json()["games"][0]["languageProfile"]["uniqueWords"], 3762)
 
         response = self.client.get("/v1/catalog/games/ocarina-of-time")
         self.assertEqual(response.status_code, 200)
@@ -149,7 +149,7 @@ class LearningPlatformApiTest(unittest.TestCase):
         self.assertTrue(all(chapter["deck"]["status"] == "ready" for chapter in game["chapters"]))
         self.assertTrue(all(chapter["deck"]["downloadAvailable"] for chapter in game["chapters"]))
         self.assertEqual(game["contentReview"]["status"], "reviewed")
-        self.assertEqual(game["contentReview"]["reviewedCardCount"], 802)
+        self.assertEqual(game["contentReview"]["reviewedCardCount"], 796)
         cards = [card for chapter in game["chapters"] for card in chapter["sampleCards"]]
         self.assertLessEqual(
             len(cards),
@@ -160,15 +160,10 @@ class LearningPlatformApiTest(unittest.TestCase):
             game["chapters"][0]["deck"]["reviewedCardCount"],
             len(game["chapters"][0]["sampleCards"]),
         )
-        self.assertEqual(game["chapters"][0]["deck"]["terminologyCount"], 2)
-        self.assertEqual(
-            {entry["written"] for entry in game["chapters"][0]["terminology"]},
-            {"デク", "コキリ"},
-        )
         self.assertTrue(all(card["corpusEvidence"]["messageIds"] for card in cards))
         self.assertTrue(all(card["wordAudio"] is None for card in cards))
         self.assertTrue(all(card["sentenceAudio"] is None for card in cards))
-        self.assertEqual(game["languageProfile"]["uniqueWords"], 4158)
+        self.assertEqual(game["languageProfile"]["uniqueWords"], 3762)
         self.assertGreater(game["languageProfile"]["uniqueByLevel"]["N5"], 0)
         vocabulary = self.client.get(
             "/v1/catalog/games/ocarina-of-time/vocabulary?search=森&jlptLevel=N4"

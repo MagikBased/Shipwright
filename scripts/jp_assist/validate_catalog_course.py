@@ -15,10 +15,8 @@ from build_catalog_deck import (
     load_game,
     reviewed_cards,
     stable_note_guid,
-    terminology_entries,
     validate_corpus_evidence,
     validate_prerequisite_uniqueness,
-    validate_terminology_evidence,
 )
 
 
@@ -62,9 +60,6 @@ def validate_content_review(game: dict[str, Any]) -> list[str]:
     review = game.get("contentReview") or {}
     issues: list[str] = []
     card_count = sum(len(reviewed_cards(chapter)) for chapter in game["chapters"])
-    terminology_count = sum(
-        len(terminology_entries(chapter)) for chapter in game["chapters"]
-    )
     if review.get("status") != "reviewed":
         issues.append("card manifest content review status is not reviewed")
     if review.get("criteriaVersion") != 1:
@@ -73,12 +68,6 @@ def validate_content_review(game: dict[str, Any]) -> list[str]:
         issues.append(
             "card manifest content review count "
             f"{review.get('reviewedCardCount')} does not match {card_count} cards"
-        )
-    if review.get("reviewedTerminologyCount") != terminology_count:
-        issues.append(
-            "card manifest terminology review count "
-            f"{review.get('reviewedTerminologyCount')} does not match "
-            f"{terminology_count} entries"
         )
     criteria = set(review.get("criteria", []))
     missing = sorted(REQUIRED_REVIEW_CRITERIA - criteria)
@@ -161,12 +150,6 @@ def audit_course(
                     issues.append(
                         f"Duplicate {field}: {previous_example} and {chapter_id}/{card_id}"
                     )
-        terms = terminology_entries(chapter)
-        term_ids = [entry.get("id") for entry in terms]
-        if len(term_ids) != len(set(term_ids)) or any(not value for value in term_ids):
-            issues.append(f"{chapter_id}: terminology ids must be present and unique")
-        if any(not entry.get("corpusEvidence") for entry in terms):
-            issues.append(f"{chapter_id}: terminology entry has no corpus evidence")
         coverage = summary_by_chapter.get(chapter_id)
         if coverage is None:
             issues.append(f"{chapter_id}: missing candidate coverage summary")
@@ -194,7 +177,6 @@ def audit_course(
         chapter_results.append({
             "chapterId": chapter_id,
             "cardCount": len(cards),
-            "terminologyCount": len(terms),
             "coveragePercent": coverage_percent,
             "targetPercent": target,
             "mappingStatus": mapping_status,
@@ -203,7 +185,6 @@ def audit_course(
     return {
         "gameId": game["id"],
         "cardCount": sum(item["cardCount"] for item in chapter_results),
-        "terminologyCount": sum(item["terminologyCount"] for item in chapter_results),
         "readyChapterCount": sum(item["ready"] for item in chapter_results),
         "chapterCount": len(chapter_results),
         "chapters": chapter_results,
@@ -227,18 +208,16 @@ def main() -> None:
     for chapter in game["chapters"]:
         try:
             validate_corpus_evidence(chapter, runtime)
-            validate_terminology_evidence(chapter, runtime)
         except ValueError as error:
             report["issues"].append(str(error))
     for chapter in report["chapters"]:
         print(
             f"{chapter['chapterId']}: {chapter['cardCount']} cards, "
-            f"{chapter['terminologyCount']} terms, "
             f"{chapter['coveragePercent']:.2f}%/{chapter['targetPercent']}% coverage, "
             f"{'ready' if chapter['ready'] else 'in progress'}"
         )
     print(
-        f"Total: {report['cardCount']} cards, {report['terminologyCount']} terms; "
+        f"Total: {report['cardCount']} cards; "
         f"{report['readyChapterCount']}/{report['chapterCount']} chapters ready"
     )
     if report["issues"]:

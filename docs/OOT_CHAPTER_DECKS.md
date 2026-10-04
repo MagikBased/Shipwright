@@ -28,18 +28,17 @@ The complete reviewed card corpus is stored separately in
 `ocarina-of-time.cards.json`; `sampleCards` in the roadmap are only lightweight
 catalog previews. Export, audio, coverage, and prerequisite tools always load
 the complete card manifest. Its `contentReview` record names the editorial
-criteria and exact reviewed card and terminology counts. The strict release
+criteria and the exact reviewed card count. The strict release
 validator rejects that record as stale whenever content is added or removed, so
 new material cannot inherit a previous review accidentally. It also rejects
 missing fields, sentence fragments, and unrelated game-specific names in the
 original examples; corpus validation independently rejects copied dialogue.
 
-Game-specific names are maintained as separate terminology entries rather than
-ordinary sentence cards. They are excluded from the core vocabulary coverage
-target, and their glossary definitions may name the game concept. This keeps
-every reviewed sentence card's example original and useful outside the source
-game's intellectual property. Controller labels and other interface tokens are
-likewise excluded from language-learning coverage.
+Proper names, fictional locations, invented character speech endings,
+controller labels, unresolved tokenizer fragments, and other interface tokens
+are excluded from decks, vocabulary statistics, and the core coverage target.
+There is no separate game glossary. Published cards therefore teach reusable
+Japanese rather than facts or vocabulary specific to the source game.
 
 It uses story and dungeon milestones rather than save-file names: OoT has no
 first-class chapter field, and the adult portion allows some nonlinear progress.
@@ -143,8 +142,8 @@ license evidence, quality limitations, and commands are documented in
 ## Complete chapter course
 
 All eleven chapters meet the configured 80% core-token coverage target. The
-course contains 802 prerequisite-aware sentence cards and 21 game-specific
-terminology entries across all 2,002 mapped dialogue messages. Every sentence
+course contains 796 prerequisite-aware sentence cards across all 2,002 mapped
+dialogue messages. Every sentence
 card has stable corpus provenance, a newly written non-IP example sentence, and
 a stable Anki note identity. Audio remains optional, so every chapter is
 available as a fully usable text-only deck.

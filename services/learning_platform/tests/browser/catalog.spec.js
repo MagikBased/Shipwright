@@ -13,7 +13,7 @@ test.describe("public game catalog", () => {
     await expect(page.locator("#chapter-list > li").first().getByRole("link", { name: /Download 243 Anki cards/ })).toBeVisible();
     await expect(page.locator("#language-profile-title")).toHaveText("What level is this adventure?");
     await expect(page.locator("#jlpt-breakdown .level-row")).toHaveCount(6);
-    await expect(page.locator("#language-method")).toContainText("4,158 unique words");
+    await expect(page.locator("#language-method")).toContainText("3,762 unique words");
     await expect(page.locator("#coverage-signed-out")).toContainText("Sign in");
     await expect(page.locator("#vocabulary-list > li")).toHaveCount(40);
 
@@ -48,6 +48,6 @@ test.describe("public game catalog", () => {
     await expect(firstToggle).toHaveText("Mark known");
     await firstToggle.click();
     await expect(firstToggle).toHaveText("Known ✓");
-    await expect(page.locator("#coverage-count")).toContainText("1 of 4,158");
+    await expect(page.locator("#coverage-count")).toContainText("1 of 3,762");
   });
 });

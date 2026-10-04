@@ -4,8 +4,7 @@
   "contentReview": {
     "status": "reviewed",
     "criteriaVersion": 1,
-    "reviewedCardCount": 802,
-    "reviewedTerminologyCount": 21,
+    "reviewedCardCount": 796,
     "criteria": [
       "japanese-usage-and-reading",
       "english-translation-and-sense",
@@ -2536,22 +2535,6 @@
         {
           "id": "三角|さんかく|triangle", "written": "三角", "reading": "さんかく", "partOfSpeech": "noun", "meaning": "triangle; triangular shape", "sentenceJapanese": "石の扉に金色の三角が刻まれている。", "sentenceEnglish": "A golden triangle is carved into the stone door.", "corpusEvidence": {"identity": "三角|さんかく|jmdict:1299970:0", "messageIds": ["0x107e"]}, "wordAudio": null, "sentenceAudio": null
         }
-      ],
-      "terminology": [
-        {
-          "id": "デク|でく|deku-term",
-          "written": "デク",
-          "reading": "でく",
-          "meaning": "Deku; a game-specific name associated with tree-like beings and objects",
-          "corpusEvidence": {"identity": "デク|でく|proper:デク|でく", "messageIds": ["0x0007"]}
-        },
-        {
-          "id": "コキリ|こきり|kokiri-term",
-          "written": "コキリ",
-          "reading": "こきり",
-          "meaning": "Kokiri; the forest-dwelling children",
-          "corpusEvidence": {"identity": "コキリ|こきり|proper:コキリ|こきり", "messageIds": ["0x0080"]}
-        }
       ]
     },
     {
@@ -3322,23 +3305,6 @@
           "sentenceJapanese": "当店では旅人向けの丈夫な靴を売っています。", "sentenceEnglish": "Our shop sells sturdy boots for travelers.",
           "corpusEvidence": {"identity": "当店|とうてん|jmdict:1449200:0", "messageIds": ["0x0207"]}, "wordAudio": null, "sentenceAudio": null
         }
-      ],
-      "terminology": [
-        {"id": "ハイラル|はいらる|hyrule-term", "written": "ハイラル", "reading": "はいらる", "meaning": "Hyrule; the kingdom and wider setting", "corpusEvidence": {"identity": "ハイラル|はいらる|proper:ハイラル|はいらる", "messageIds": ["0x0142"]}},
-        {"id": "ゼルダ|ぜるだ|zelda-term", "written": "ゼルダ", "reading": "ぜるだ", "meaning": "Zelda; the princess's name", "corpusEvidence": {"identity": "ゼルダ|ぜるだ|proper:ゼルダ|ぜるだ", "messageIds": ["0x0069"]}},
-        {"id": "マロン|まろん|malon-term", "written": "マロン", "reading": "まろん", "meaning": "Malon; a ranch girl", "corpusEvidence": {"identity": "マロン|まろん|proper:マロン|まろん", "messageIds": ["0x0229"]}},
-        {"id": "ロンロン|ろんろん|lon-lon-term", "written": "ロンロン", "reading": "ろんろん", "meaning": "Lon Lon; the ranch name", "corpusEvidence": {"identity": "ロンロン|ろんろん|proper:ロンロン|ろんろん", "messageIds": ["0x0098"]}},
-        {"id": "コッコ|こっこ|cucco-term", "written": "コッコ", "reading": "こっこ", "meaning": "Cucco; a game-specific chicken-like creature", "corpusEvidence": {"identity": "コッコ|こっこ|proper:コッコ|こっこ", "messageIds": ["0x207e"]}},
-        {"id": "ハイリア|はいりあ|hylian-term", "written": "ハイリア", "reading": "はいりあ", "meaning": "Hylia or Hylian; a game-specific cultural and people name", "corpusEvidence": {"identity": "ハイリア|はいりあ|proper:ハイリア|はいりあ", "messageIds": ["0x004d"]}},
-        {"id": "ダンペイ|だんぺい|dampe-term", "written": "ダンペイ", "reading": "だんぺい", "meaning": "Dampé; the gravekeeper's name", "corpusEvidence": {"identity": "ダンペイ|だんぺい|proper:ダンペイ|だんぺい", "messageIds": ["0x2022"]}},
-        {"id": "エポナ|えぽな|epona-term", "written": "エポナ", "reading": "えぽな", "meaning": "Epona; a horse's name", "corpusEvidence": {"identity": "エポナ|えぽな|proper:エポナ|えぽな", "messageIds": ["0x00d2"]}},
-        {"id": "ガノンドロフ|がのんどろふ|ganondorf-term", "written": "ガノンドロフ", "reading": "がのんどろふ", "meaning": "Ganondorf; a character name", "corpusEvidence": {"identity": "ガノンドロフ|がのんどろふ|proper:ガノンドロフ|がのんどろふ", "messageIds": ["0x207a"]}},
-        {"id": "デスマウンテン|ですまうんてん|death-mountain-term", "written": "デスマウンテン", "reading": "ですまうんてん", "meaning": "Death Mountain; a place name", "corpusEvidence": {"identity": "デスマウンテン|ですまうんてん|proper:デスマウンテン|ですまうんてん", "messageIds": ["0x204f"]}},
-        {"id": "ゲルド|げるど|gerudo-term", "written": "ゲルド", "reading": "げるど", "meaning": "Gerudo; a game-specific people name", "corpusEvidence": {"identity": "ゲルド|げるど|proper:ゲルド|げるど", "messageIds": ["0x206f"]}},
-        {"id": "インゴー|いんごー|ingo-term", "written": "インゴー", "reading": "いんごー", "meaning": "Ingo; a ranch worker's name", "corpusEvidence": {"identity": "インゴー|いんごー|proper:インゴー|いんごー", "messageIds": ["0x2014"]}},
-        {"id": "タロン|たろん|talon-term", "written": "タロン", "reading": "たろん", "meaning": "Talon; a ranch owner's name", "corpusEvidence": {"identity": "タロン|たろん|proper:タロン|たろん", "messageIds": ["0x0315"]}},
-        {"id": "インパ|いんぱ|impa-term", "written": "インパ", "reading": "いんぱ", "meaning": "Impa; a character name", "corpusEvidence": {"identity": "インパ|いんぱ|proper:インパ|いんぱ", "messageIds": ["0x708d"]}},
-        {"id": "シーカー|しーかー|sheikah-term", "written": "シーカー", "reading": "しーかー", "meaning": "Sheikah; a game-specific people name", "corpusEvidence": {"identity": "シーカー|しーかー|proper:シーカー|しーかー", "messageIds": ["0x7027"]}}
       ]
     },
     {
@@ -3445,11 +3411,6 @@
           },
           "wordAudio": null,
           "sentenceAudio": null
-        },
-        {
-          "id": "ゴロ|ごろ|goron-ending", "written": "ゴロ", "reading": "ごろ", "partOfSpeech": "suffix", "meaning": "Goron sentence-ending speech quirk",
-          "sentenceJapanese": "岩の民は『山は静かだゴロ』と笑った。", "sentenceEnglish": "The rock-dweller laughed, saying, “The mountain is quiet, goro.”",
-          "corpusEvidence": {"identity": "ゴロ|ごろ|override:ゴロ|ごろ", "messageIds": ["0x0325"]}, "wordAudio": null, "sentenceAudio": null
         },
         {
           "id": "らしい|らしい|seems", "written": "らしい", "reading": "らしい", "partOfSpeech": "auxiliary verb", "meaning": "seems; apparently; reportedly",
@@ -3660,11 +3621,6 @@
           "id": "へる|へる|become-hungry", "written": "へる", "reading": "へる", "partOfSpeech": "verb", "meaning": "to decrease; to run low; to become hungry (of one's stomach)",
           "sentenceJapanese": "山を登るとすぐにハラがへる。", "sentenceEnglish": "Climbing the mountain quickly makes one hungry.",
           "corpusEvidence": {"identity": "へる|へる|override:へる|へる", "messageIds": ["0x3014"]}, "wordAudio": null, "sentenceAudio": null
-        },
-        {
-          "id": "ゾラ|ぞら|zora-ending", "written": "ゾラ", "reading": "ぞら", "partOfSpeech": "suffix", "meaning": "King Zora's sentence-ending speech quirk",
-          "sentenceJapanese": "王はゆっくり立ち上がり、「道をあけるゾラ」と告げた。", "sentenceEnglish": "The king slowly rose and declared, 'I shall clear the way, zora.'",
-          "corpusEvidence": {"identity": "ゾラ|ぞら|override:ゾラ|ぞら", "messageIds": ["0x718c"]}, "wordAudio": null, "sentenceAudio": null
         },
         {
           "id": "魂|たましい|soul", "written": "魂", "reading": "たましい", "partOfSpeech": "noun", "meaning": "soul; spirit",
@@ -4195,11 +4151,6 @@
           "id": "サカナ|さかな|fish", "written": "サカナ", "reading": "さかな", "partOfSpeech": "noun", "meaning": "fish",
           "sentenceJapanese": "澄んだ泉で銀色のサカナが泳いでいる。", "sentenceEnglish": "Silver fish are swimming in the clear spring.",
           "corpusEvidence": {"identity": "サカナ|さかな|override:サカナ|さかな", "messageIds": ["0x400d"]}, "wordAudio": null, "sentenceAudio": null
-        },
-        {
-          "id": "ゾラ|ぞら|zora-ending", "written": "ゾラ", "reading": "ぞら", "partOfSpeech": "suffix", "meaning": "King Zora's sentence-ending speech quirk",
-          "sentenceJapanese": "水の王は「客人を広間へ通すゾラ」と命じた。", "sentenceEnglish": "The water king ordered, 'Admit the visitor to the great hall, zora.'",
-          "corpusEvidence": {"identity": "ゾラ|ぞら|override:ゾラ|ぞら", "messageIds": ["0x401a"]}, "wordAudio": null, "sentenceAudio": null
         },
         {
           "id": "マメ|まめ|bean", "written": "マメ", "reading": "まめ", "partOfSpeech": "noun", "meaning": "bean; seed",
@@ -4756,12 +4707,6 @@
           "sentenceJapanese": "湖の北岸には漁師たちが住んでいる。", "sentenceEnglish": "Fishermen live on the northern shore of the lake.",
           "corpusEvidence": {"identity": "住む|すむ|jmdict:1334040:0", "messageIds": ["0x2071", "0x4008"]}, "wordAudio": null, "sentenceAudio": null
         }
-      ],
-      "terminology": [
-        {"id": "ゾーラ|ぞーら|zora-term", "written": "ゾーラ", "reading": "ぞーら", "meaning": "Zora; the aquatic people", "corpusEvidence": {"identity": "ゾーラ|ぞーら|proper:ゾーラ|ぞーら", "messageIds": ["0x4003"]}},
-        {"id": "ルト|ると|ruto-term", "written": "ルト", "reading": "ると", "meaning": "Ruto; a princess of the aquatic people", "corpusEvidence": {"identity": "ルト|ると|proper:ルト|ると", "messageIds": ["0x4005"]}},
-        {"id": "キングゾーラ|きんぐぞーら|king-zora-term", "written": "キングゾーラ", "reading": "きんぐぞーら", "meaning": "King Zora; ruler of the aquatic people", "corpusEvidence": {"identity": "キングゾーラ|きんぐぞーら|proper:キングゾーラ|きんぐぞーら", "messageIds": ["0x400a"]}},
-        {"id": "ジャブジャブ|じゃぶじゃぶ|jabu-jabu-term", "written": "ジャブジャブ", "reading": "じゃぶじゃぶ", "meaning": "Jabu-Jabu; a revered aquatic being", "corpusEvidence": {"identity": "ジャブジャブ|じゃぶじゃぶ|proper:ジャブジャブ|じゃぶじゃぶ", "messageIds": ["0x4005"]}}
       ]
     },
     {
@@ -5174,16 +5119,6 @@
           "sentenceAudio": null
         },
         {
-          "id": "コロ|ころ|speech-ending", "written": "コロ", "reading": "ころ", "partOfSpeech": "suffix", "meaning": "Goron sentence-ending speech quirk",
-          "sentenceJapanese": "岩の民は元気よく『山へ帰るコロ！』と叫んだ。", "sentenceEnglish": "The rock folk cheerfully cried, 'We're going back to the mountain!'",
-          "corpusEvidence": {"identity": "コロ|ころ|override:コロ|ころ", "messageIds": ["0x3030", "0x3031", "0x3032", "0x3035", "0x3036", "0x3037", "0x3038", "0x3041", "0x3042"]}, "wordAudio": null, "sentenceAudio": null
-        },
-        {
-          "id": "ゴロォ|ごろぉ|stretched-ending", "written": "ゴロォ", "reading": "ごろぉ", "partOfSpeech": "suffix", "meaning": "stretched Goron sentence ending",
-          "sentenceJapanese": "大きな職人はゆっくり『任せるゴロォ』と答えた。", "sentenceEnglish": "The large craftsman slowly replied, 'Leave it to me.'",
-          "corpusEvidence": {"identity": "ゴロォ|ごろぉ|override:ゴロォ|ごろぉ", "messageIds": ["0x3053", "0x3054", "0x3056"]}, "wordAudio": null, "sentenceAudio": null
-        },
-        {
           "id": "服|ふく|clothes", "written": "服", "reading": "ふく", "partOfSpeech": "noun", "meaning": "clothes; clothing",
           "sentenceJapanese": "火山へ行く前に熱に強い服を着た。", "sentenceEnglish": "Before going to the volcano, I put on heat-resistant clothes.",
           "corpusEvidence": {"identity": "服|ふく|jmdict:1500940:0", "messageIds": ["0x3036", "0x3060", "0x3061"]}, "wordAudio": null, "sentenceAudio": null
@@ -5334,11 +5269,6 @@
           },
           "wordAudio": null,
           "sentenceAudio": null
-        },
-        {
-          "id": "ゴロォ|ごろぉ|stretched-ending", "written": "ゴロォ", "reading": "ごろぉ", "partOfSpeech": "suffix", "meaning": "stretched Goron sentence ending",
-          "sentenceJapanese": "山の職人は『もう少し待つゴロォ』と答えた。", "sentenceEnglish": "The mountain craftsman replied, 'Wait a little longer.'",
-          "corpusEvidence": {"identity": "ゴロォ|ごろぉ|override:ゴロォ|ごろぉ", "messageIds": ["0x3058", "0x3059", "0x305a", "0x305c", "0x305d", "0x305e"]}, "wordAudio": null, "sentenceAudio": null
         },
         {
           "id": "重い|おもい|heavy", "written": "重い", "reading": "おもい", "partOfSpeech": "adjective", "meaning": "heavy; weighty",

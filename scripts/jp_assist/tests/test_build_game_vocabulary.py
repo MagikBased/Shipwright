@@ -14,15 +14,16 @@ class BuildGameVocabularyTest(unittest.TestCase):
             runtime.write_text(json.dumps({"messages": {"0x1": {"pages": [{"tokens": [
                 {"id": "森|もり", "lemma": "森", "dictionaryReading": "もり", "partOfSpeech": "noun", "meaning": "forest"},
                 {"id": "森|もり", "lemma": "森", "dictionaryReading": "もり", "partOfSpeech": "noun", "meaning": "forest"},
-                {"id": "ハイラル|はいらる", "lemma": "ハイラル", "dictionaryReading": "はいらる", "partOfSpeech": "noun", "meaning": "proper name"},
+                {"id": "ハイラル|はいらる", "lemma": "ハイラル", "dictionaryReading": "はいらる", "senseId": "proper:ハイラル|はいらる", "partOfSpeech": "noun", "meaning": "proper name"},
+                {"id": "ゴロ|ごろ", "lemma": "ゴロ", "dictionaryReading": "ごろ", "senseId": "override:ゴロ|ごろ", "partOfSpeech": "suffix", "meaning": "speech ending"},
             ]}]}}}), encoding="utf-8")
             for level in ("n5", "n4", "n3", "n2", "n1"):
                 payload = [{"word": "森", "reading": "もり", "level": "N4"}] if level == "n4" else []
                 (root / f"{level}.json").write_text(json.dumps(payload), encoding="utf-8")
             result = build(runtime, root, "test-game")
-        self.assertEqual(result["summary"]["uniqueWords"], 2)
+        self.assertEqual(result["summary"]["uniqueWords"], 1)
         self.assertEqual(result["summary"]["uniqueByLevel"]["N4"], 1)
-        self.assertEqual(result["summary"]["uniqueByLevel"]["unclassified"], 1)
+        self.assertEqual(result["summary"]["uniqueByLevel"]["unclassified"], 0)
         self.assertEqual(result["words"][0]["occurrenceCount"], 2)
 
 
