@@ -292,6 +292,43 @@ OVERRIDES: dict[tuple[str, str], dict] = {
         "note": "Polite/familiar お家, not a hollow or depression.",
         "partOfSpeech": "noun",
     },
+    ("タマ", "たま"): {
+        "meaning": "ammunition; pellet; projectile",
+        "note": "The weapon-ammunition sense, not a generic ball.",
+        "partOfSpeech": "noun",
+    },
+    ("ごらん", "ごらん"): {
+        "meaning": "try doing; take a look; please see",
+        "note": "The conversational auxiliary/imperative usage.",
+        "partOfSpeech": "auxiliary",
+    },
+    ("わ", "わ"): {
+        "meaning": "sentence-ending emphasis, often with a softer or feminine tone",
+        "note": "Sentence-ending particle, not 和 (Japan/Japanese style).",
+        "partOfSpeech": "particle",
+    },
+    ("え", "え"): {
+        "meaning": "eh?; what?; expression of surprise or doubt",
+        "note": "Interjection, not egoma/perilla.",
+        "partOfSpeech": "interjection",
+    },
+    ("ヘン", "へん"): {
+        "meaning": "strange; odd; unusual",
+        "note": "変, stylized in katakana; not a kanji radical.",
+        "partOfSpeech": "adjectival noun",
+    },
+    ("聖", "きよし"): {
+        "meaning": "sacred; holy",
+        "note": "The 聖 prefix in compounds, not the personal-name reading Kiyoshi.",
+        "partOfSpeech": "prefix",
+        "dictionaryReading": "せい",
+        "senseId": "override:聖|せい",
+    },
+    ("ま", "ま"): {
+        "meaning": "well; anyway; come now",
+        "note": "Conversational interjection used to soften or redirect a statement.",
+        "partOfSpeech": "interjection",
+    },
 }
 
 

@@ -69,6 +69,14 @@ class OverrideTest(unittest.TestCase):
         self.assertIn("equip", apply_override("つける", "つける", {"meaning": "install"})["meaning"])
         self.assertIn("stance", apply_override("かまえる", "かまえる", {"meaning": "build"})["meaning"])
         self.assertEqual(apply_override("おうち", "おうち", {"meaning": "hollow"})["meaning"], "home; house")
+        self.assertIn("ammunition", apply_override("タマ", "たま", {"meaning": "ball"})["meaning"])
+        self.assertIn("try doing", apply_override("ごらん", "ごらん", {"meaning": "seeing"})["meaning"])
+        self.assertIn("surprise", apply_override("え", "え", {"meaning": "perilla"})["meaning"])
+        self.assertEqual(apply_override("ヘン", "へん", {"meaning": "radical"})["meaning"], "strange; odd; unusual")
+        holy = apply_override("聖", "きよし", {"meaning": "personal name"})
+        self.assertEqual(holy["dictionaryReading"], "せい")
+        self.assertEqual(holy["senseId"], "override:聖|せい")
+        self.assertIn("anyway", apply_override("ま", "ま", {"meaning": "just"})["meaning"])
 
     def test_ki_wo_tsukeru_is_split_from_attach_and_equip(self):
         equipped = apply_override("つける", "つける", {"meaning": "install"})

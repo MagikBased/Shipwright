@@ -2339,6 +2339,189 @@
           "corpusEvidence": {"identity": "ち|ち|override:ち|ち", "messageIds": ["0x1004"]},
           "wordAudio": null,
           "sentenceAudio": null
+        },
+        {
+          "id": "き|き|classical-adjective-ending", "written": "き", "reading": "き", "partOfSpeech": "auxiliary", "meaning": "classical attributive adjective ending", "sentenceJapanese": "悪しき王が北の国に長い冬をもたらした。", "sentenceEnglish": "A wicked king brought a long winter to the northern realm.", "corpusEvidence": {"identity": "き|き|override:き|き", "messageIds": ["0x1027"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "ちゃ|ちゃ|contraction", "written": "ちゃ", "reading": "ちゃ", "partOfSpeech": "particle", "meaning": "if; when; must, contraction involving ては or なくては", "sentenceJapanese": "夜になる前に村へ戻らなくちゃ。", "sentenceEnglish": "I have to return to the village before nightfall.", "corpusEvidence": {"identity": "ちゃ|ちゃ|override:ちゃ|ちゃ", "messageIds": ["0x1008"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "青い|あおい|blue", "written": "青い", "reading": "あおい", "partOfSpeech": "adjective", "meaning": "blue; azure", "sentenceJapanese": "青い炎が石の祭壇を照らしている。", "sentenceEnglish": "A blue flame illuminates the stone altar.", "corpusEvidence": {"identity": "青い|あおい|jmdict:1381390:0", "messageIds": ["0x0066"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "演奏|えんそう|performance", "written": "演奏", "reading": "えんそう", "partOfSpeech": "noun", "meaning": "musical performance; playing an instrument", "sentenceJapanese": "笛の演奏が終わると石像が動き始めた。", "sentenceEnglish": "When the flute performance ended, the stone statue began to move.", "corpusEvidence": {"identity": "演奏|えんそう|jmdict:1607520:0", "messageIds": ["0x004a"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "スタート|すたーと|start", "written": "スタート", "reading": "すたーと", "partOfSpeech": "noun", "meaning": "start; beginning", "sentenceJapanese": "鐘の音を合図に競走がスタートした。", "sentenceEnglish": "The race started at the sound of the bell.", "corpusEvidence": {"identity": "スタート|すたーと|jmdict:1069370:0", "messageIds": ["0x1039"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "物|もの|object", "written": "物", "reading": "もの", "partOfSpeech": "noun", "meaning": "thing; object; item", "sentenceJapanese": "床に光る物が落ちている。", "sentenceEnglish": "A shining object is lying on the floor.", "corpusEvidence": {"identity": "物|もの|jmdict:1502390:0", "messageIds": ["0x0067"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "4|よん|four", "written": "4", "reading": "よん", "partOfSpeech": "noun", "meaning": "four; the number 4", "sentenceJapanese": "広間の四隅には石像が4体ある。", "sentenceEnglish": "There are four stone statues in the corners of the hall.", "corpusEvidence": {"identity": "4|よん|number:4", "messageIds": ["0x004a"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "どー|どー|how-elongated", "written": "どー", "reading": "どー", "partOfSpeech": "adverb", "meaning": "how; in what way, elongated どう", "sentenceJapanese": "この大きな岩をどーやって動かすんだ。", "sentenceEnglish": "How are we supposed to move this enormous rock?", "corpusEvidence": {"identity": "どー|どー|override:どー|どー", "messageIds": ["0x1028"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "かける|かける|cast-spell", "written": "かける", "reading": "かける", "partOfSpeech": "verb", "meaning": "to cast; to place or apply a spell or curse", "sentenceJapanese": "魔法使いは古い門に眠りの術をかけた。", "sentenceEnglish": "The wizard cast a sleeping spell upon the old gate.", "corpusEvidence": {"identity": "かける|かける|override:かける|かける", "messageIds": ["0x1016"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "ヒヒッ|ひひっ|giggle", "written": "ヒヒッ", "reading": "ひひっ", "partOfSpeech": "interjection", "meaning": "hee hee; a mischievous giggle", "sentenceJapanese": "小鬼はヒヒッと笑って宝箱の後ろへ隠れた。", "sentenceEnglish": "The little goblin giggled and hid behind the treasure chest.", "corpusEvidence": {"identity": "ヒヒッ|ひひっ|override:ヒヒッ|ひひっ", "messageIds": ["0x101b"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "ダンジョン|だんじょん|dungeon", "written": "ダンジョン", "reading": "だんじょん", "partOfSpeech": "noun", "meaning": "dungeon", "sentenceJapanese": "地下のダンジョンには危険な罠が多い。", "sentenceEnglish": "The underground dungeon contains many dangerous traps.", "corpusEvidence": {"identity": "ダンジョン|だんじょん|jmdict:2251270:0", "messageIds": ["0x0066"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "変える|かえる|change", "written": "変える", "reading": "かえる", "partOfSpeech": "verb", "meaning": "to change; to alter; to transform", "sentenceJapanese": "石像の向きを変えると隠し扉が開いた。", "sentenceEnglish": "Changing the statue's direction opened a hidden door.", "corpusEvidence": {"identity": "変える|かえる|jmdict:1510650:0", "messageIds": ["0x0340"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "15|じゅうご|fifteen", "written": "15", "reading": "じゅうご", "partOfSpeech": "noun", "meaning": "fifteen; the number 15", "sentenceJapanese": "商人は松明を銀貨15枚で売っている。", "sentenceEnglish": "The merchant sells a torch for fifteen silver coins.", "corpusEvidence": {"identity": "15|じゅうご|number:15", "messageIds": ["0x007f"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "かまえる|かまえる|ready-stance", "written": "かまえる", "reading": "かまえる", "partOfSpeech": "verb", "meaning": "to ready; to hold at the ready; to take a stance", "sentenceJapanese": "騎士は盾をかまえて炎を防いだ。", "sentenceEnglish": "The knight readied a shield and blocked the flames.", "corpusEvidence": {"identity": "かまえる|かまえる|override:かまえる|かまえる", "messageIds": ["0x0030"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "器|うつわ|vessel", "written": "器", "reading": "うつわ", "partOfSpeech": "noun", "meaning": "vessel; container; bowl", "sentenceJapanese": "銀の器に泉の水をくんだ。", "sentenceEnglish": "The traveler drew spring water into a silver vessel.", "corpusEvidence": {"identity": "器|うつわ|jmdict:1218880:0", "messageIds": ["0x00c2"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "ごらん|ごらん|try-look", "written": "ごらん", "reading": "ごらん", "partOfSpeech": "auxiliary", "meaning": "try doing; take a look; please see", "sentenceJapanese": "あの石碑の裏を調べてごらん。", "sentenceEnglish": "Try examining the back of that stone monument.", "corpusEvidence": {"identity": "ごらん|ごらん|override:ごらん|ごらん", "messageIds": ["0x1039"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "やっと|やっと|finally", "written": "やっと", "reading": "やっと", "partOfSpeech": "adverb", "meaning": "at last; finally; barely", "sentenceJapanese": "長い夜が明けて、やっと太陽が昇った。", "sentenceEnglish": "The long night ended, and at last the sun rose.", "corpusEvidence": {"identity": "やっと|やっと|jmdict:1012800:0", "messageIds": ["0x1000"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "地|ち|land", "written": "地", "reading": "ち", "partOfSpeech": "noun", "meaning": "earth; ground; land", "sentenceJapanese": "竜は人の来ない北の地で眠っている。", "sentenceEnglish": "The dragon sleeps in a northern land where no people come.", "corpusEvidence": {"identity": "地|ち|jmdict:1420730:0", "messageIds": ["0x1080"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "表示|ひょうじ|display", "written": "表示", "reading": "ひょうじ", "partOfSpeech": "noun", "meaning": "display; indication; showing", "sentenceJapanese": "地図には現在の場所が青く表示される。", "sentenceEnglish": "The current location is displayed in blue on the map.", "corpusEvidence": {"identity": "表示|ひょうじ|jmdict:1489610:0", "messageIds": ["0x1036"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "切りかえる|きりかえる|switch", "written": "切りかえる", "reading": "きりかえる", "partOfSpeech": "verb", "meaning": "to switch; to change over; to exchange", "sentenceJapanese": "暗い部屋ではランタンに切りかえよう。", "sentenceEnglish": "In the dark room, let us switch to the lantern.", "corpusEvidence": {"identity": "切りかえる|きりかえる|jmdict:1591780:0", "messageIds": ["0x004c"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "草|くさ|grass", "written": "草", "reading": "くさ", "partOfSpeech": "noun", "meaning": "grass; weed; herb", "sentenceJapanese": "背の高い草の中に小さな入口が隠れていた。", "sentenceEnglish": "A small entrance was hidden among the tall grass.", "corpusEvidence": {"identity": "草|くさ|jmdict:1401910:0", "messageIds": ["0x0338"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "おうち|おうち|home", "written": "おうち", "reading": "おうち", "partOfSpeech": "noun", "meaning": "home; house", "sentenceJapanese": "雨が降る前におうちへ帰りなさい。", "sentenceEnglish": "Return home before the rain begins.", "corpusEvidence": {"identity": "おうち|おうち|override:おうち|おうち", "messageIds": ["0x031f"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "カニ歩き|かにあるき|sidestep", "written": "カニ歩き", "reading": "かにあるき", "partOfSpeech": "noun", "meaning": "crab walking; sidestepping", "sentenceJapanese": "細い足場ではカニ歩きで壁に沿って進んだ。", "sentenceEnglish": "On the narrow ledge, the traveler sidestepped along the wall.", "corpusEvidence": {"identity": "カニ歩き|かにあるき|jmdict:2841664:0", "messageIds": ["0x0107"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "ジャンプ|じゃんぷ|jump", "written": "ジャンプ", "reading": "じゃんぷ", "partOfSpeech": "noun", "meaning": "jump; leap", "sentenceJapanese": "大きなジャンプで崩れた橋を飛び越えた。", "sentenceEnglish": "With a great leap, the traveler cleared the broken bridge.", "corpusEvidence": {"identity": "ジャンプ|じゃんぷ|jmdict:1065860:0", "messageIds": ["0x1007"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "タマ|たま|ammunition", "written": "タマ", "reading": "たま", "partOfSpeech": "noun", "meaning": "ammunition; pellet; projectile", "sentenceJapanese": "袋には小さな弓のタマが残っている。", "sentenceEnglish": "A few small projectiles for the bow remain in the bag.", "corpusEvidence": {"identity": "タマ|たま|override:タマ|たま", "messageIds": ["0x0007"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "ま|ま|well-anyway", "written": "ま", "reading": "ま", "partOfSpeech": "interjection", "meaning": "well; anyway; come now", "sentenceJapanese": "ま、夜が明けるまでここで休もう。", "sentenceEnglish": "Well, let us rest here until dawn.", "corpusEvidence": {"identity": "ま|ま|override:ま|ま", "messageIds": ["0x101a"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "気|き|spirit-mind", "written": "気", "reading": "き", "partOfSpeech": "noun", "meaning": "spirit; mind; feeling; attention", "sentenceJapanese": "暗い森では足元に気をつけて。", "sentenceEnglish": "Watch your footing in the dark forest.", "corpusEvidence": {"identity": "気|き|jmdict:1221520:0", "messageIds": ["0x061f"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "わ|わ|soft-ending", "written": "わ", "reading": "わ", "partOfSpeech": "particle", "meaning": "sentence-ending emphasis, often soft or feminine", "sentenceJapanese": "この泉の水はとても冷たいわ。", "sentenceEnglish": "The water of this spring is very cold.", "corpusEvidence": {"identity": "わ|わ|override:わ|わ", "messageIds": ["0x1005"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "せる|せる|causative", "written": "せる", "reading": "せる", "partOfSpeech": "auxiliary verb", "meaning": "causative auxiliary; makes or lets someone do something", "sentenceJapanese": "王は兵士に夜の門を守らせる。", "sentenceEnglish": "The king makes the soldiers guard the gate at night.", "corpusEvidence": {"identity": "せる|せる|jmdict:2568020:0", "messageIds": ["0x1004"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "人|ひと|person", "written": "人", "reading": "ひと", "partOfSpeech": "noun", "meaning": "person; human being", "sentenceJapanese": "あの人は北の国から来た旅人だ。", "sentenceEnglish": "That person is a traveler from the northern realm.", "corpusEvidence": {"identity": "人|ひと|jmdict:1580640:0", "messageIds": ["0x100d"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "そう|そう|seems", "written": "そう", "reading": "そう", "partOfSpeech": "adjectival noun", "meaning": "appears; seems; looks like", "sentenceJapanese": "空が暗いから、もうすぐ雨が降りそうだ。", "sentenceEnglish": "The sky is dark, so it looks as though rain will fall soon.", "corpusEvidence": {"identity": "そう|そう|jmdict:1006610:0", "messageIds": ["0x0102"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "心|こころ|heart-mind", "written": "心", "reading": "こころ", "partOfSpeech": "noun", "meaning": "heart; mind; spirit", "sentenceJapanese": "勇者は恐れに負けない強い心を持っていた。", "sentenceEnglish": "The hero possessed a strong heart that would not yield to fear.", "corpusEvidence": {"identity": "心|こころ|jmdict:1360480:0", "messageIds": ["0x1027"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "一度|いちど|once", "written": "一度", "reading": "いちど", "partOfSpeech": "noun", "meaning": "once; one time", "sentenceJapanese": "この仕掛けをもう一度動かしてみよう。", "sentenceEnglish": "Let us try operating this mechanism once more.", "corpusEvidence": {"identity": "一度|いちど|jmdict:1576250:0", "messageIds": ["0x0030"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "ず|ず|negative-auxiliary", "written": "ず", "reading": "ず", "partOfSpeech": "auxiliary verb", "meaning": "without doing; not doing", "sentenceJapanese": "騎士は何も言わずに塔へ入った。", "sentenceEnglish": "The knight entered the tower without saying anything.", "corpusEvidence": {"identity": "ず|ず|jmdict:2829645:0", "messageIds": ["0x0310"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "50|ごじゅう|fifty", "written": "50", "reading": "ごじゅう", "partOfSpeech": "noun", "meaning": "fifty; the number 50", "sentenceJapanese": "この大きな袋には金貨が50枚入る。", "sentenceEnglish": "This large bag holds fifty gold coins.", "corpusEvidence": {"identity": "50|ごじゅう|number:50", "messageIds": ["0x006c"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "アタシ|あたし|i-feminine", "written": "アタシ", "reading": "あたし", "partOfSpeech": "pronoun", "meaning": "I; me, casual and often feminine", "sentenceJapanese": "アタシが村まで安全な道を案内するわ。", "sentenceEnglish": "I will guide you along a safe road to the village.", "corpusEvidence": {"identity": "アタシ|あたし|jmdict:1311125:0", "messageIds": ["0x1003"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "来る|くる|come", "written": "来る", "reading": "くる", "partOfSpeech": "verb", "meaning": "to come; to approach; to arrive", "sentenceJapanese": "春になると白い鳥がこの湖へ来る。", "sentenceEnglish": "When spring arrives, white birds come to this lake.", "corpusEvidence": {"identity": "来る|くる|jmdict:1547720:0", "messageIds": ["0x0140"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "え|え|surprise", "written": "え", "reading": "え", "partOfSpeech": "interjection", "meaning": "eh?; what?; expression of surprise or doubt", "sentenceJapanese": "え、あの古い橋を一人で渡ったの？", "sentenceEnglish": "What, you crossed that old bridge alone?", "corpusEvidence": {"identity": "え|え|override:え|え", "messageIds": ["0x1005"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "待つ|まつ|wait", "written": "待つ", "reading": "まつ", "partOfSpeech": "verb", "meaning": "to wait", "sentenceJapanese": "月が昇るまで森の入口で待つ。", "sentenceEnglish": "The traveler waits at the forest entrance until the moon rises.", "corpusEvidence": {"identity": "待つ|まつ|jmdict:1410590:0", "messageIds": ["0x0344"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "そして|そして|and-then", "written": "そして", "reading": "そして", "partOfSpeech": "conjunction", "meaning": "and; and then; finally", "sentenceJapanese": "旅人は剣を抜いた。そして静かに扉を開けた。", "sentenceEnglish": "The traveler drew a sword and then quietly opened the door.", "corpusEvidence": {"identity": "そして|そして|jmdict:1006730:0", "messageIds": ["0x1015"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "ヘン|へん|strange", "written": "ヘン", "reading": "へん", "partOfSpeech": "adjectival noun", "meaning": "strange; odd; unusual", "sentenceJapanese": "森の奥からヘンな音が聞こえる。", "sentenceEnglish": "A strange sound can be heard from deep in the forest.", "corpusEvidence": {"identity": "ヘン|へん|override:ヘン|へん", "messageIds": ["0x0201"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "赤い|あかい|red", "written": "赤い", "reading": "あかい", "partOfSpeech": "adjective", "meaning": "red; crimson", "sentenceJapanese": "赤い月が砂漠の塔の上に昇った。", "sentenceEnglish": "A red moon rose above the desert tower.", "corpusEvidence": {"identity": "赤い|あかい|jmdict:1383240:0", "messageIds": ["0x00f0"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "仲間|なかま|companion", "written": "仲間", "reading": "なかま", "partOfSpeech": "noun", "meaning": "companion; comrade; member of a group", "sentenceJapanese": "仲間と力を合わせて石の門を押した。", "sentenceEnglish": "The companions joined forces to push the stone gate.", "corpusEvidence": {"identity": "仲間|なかま|jmdict:1425790:0", "messageIds": ["0x00a4"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "世界|せかい|world", "written": "世界", "reading": "せかい", "partOfSpeech": "noun", "meaning": "world; realm", "sentenceJapanese": "古い鏡の向こうには別の世界が広がっていた。", "sentenceEnglish": "Another world stretched beyond the ancient mirror.", "corpusEvidence": {"identity": "世界|せかい|jmdict:1373860:0", "messageIds": ["0x1015"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "ほしい|ほしい|wanted", "written": "ほしい", "reading": "ほしい", "partOfSpeech": "adjective", "meaning": "wanted; desired; wished for", "sentenceJapanese": "寒い山を越えるために暖かい服がほしい。", "sentenceEnglish": "I want warm clothes in order to cross the cold mountain.", "corpusEvidence": {"identity": "ほしい|ほしい|jmdict:1547330:0", "messageIds": ["0x1015"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "使える|つかえる|usable", "written": "使える", "reading": "つかえる", "partOfSpeech": "verb", "meaning": "can use; to be usable or useful", "sentenceJapanese": "この古いカギは地下の扉にも使える。", "sentenceEnglish": "This old key can also be used on the underground door.", "corpusEvidence": {"identity": "使える|つかえる|jmdict:1607180:0", "messageIds": ["0x0060"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "とこ|とこ|place-colloquial", "written": "とこ", "reading": "とこ", "partOfSpeech": "noun", "meaning": "place; spot; colloquial shortening of ところ", "sentenceJapanese": "危ないとこだから足元をよく見て。", "sentenceEnglish": "This is a dangerous place, so watch your footing carefully.", "corpusEvidence": {"identity": "とこ|とこ|jmdict:1343100:0", "messageIds": ["0x1002"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "穴|あな|hole", "written": "穴", "reading": "あな", "partOfSpeech": "noun", "meaning": "hole; opening", "sentenceJapanese": "壁の小さな穴から冷たい風が吹いている。", "sentenceEnglish": "A cold wind blows through a small hole in the wall.", "corpusEvidence": {"identity": "穴|あな|jmdict:1254480:0", "messageIds": ["0x0337"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "聖|せい|sacred-prefix", "written": "聖", "reading": "せい", "partOfSpeech": "prefix", "meaning": "sacred; holy", "sentenceJapanese": "聖なる泉の水が傷ついた騎士を癒やした。", "sentenceEnglish": "Water from the sacred spring healed the wounded knight.", "corpusEvidence": {"identity": "聖|せい|override:聖|せい", "messageIds": ["0x107e"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "すぐ|すぐ|immediately", "written": "すぐ", "reading": "すぐ", "partOfSpeech": "adverb", "meaning": "immediately; right away; directly", "sentenceJapanese": "鐘が鳴ったらすぐ城門へ向かって。", "sentenceEnglish": "When the bell rings, head to the castle gate immediately.", "corpusEvidence": {"identity": "すぐ|すぐ|jmdict:1430610:0", "messageIds": ["0x0030"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "投げる|なげる|throw", "written": "投げる", "reading": "なげる", "partOfSpeech": "verb", "meaning": "to throw; to hurl; to toss", "sentenceJapanese": "少年は池の向こうへ小さな石を投げた。", "sentenceEnglish": "The boy threw a small stone across the pond.", "corpusEvidence": {"identity": "投げる|なげる|jmdict:1447000:0", "messageIds": ["0x0034"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "いらっしゃる|いらっしゃる|honorific-be", "written": "いらっしゃる", "reading": "いらっしゃる", "partOfSpeech": "verb", "meaning": "to be; to come; to go, honorific", "sentenceJapanese": "王さまは今、広間にいらっしゃいます。", "sentenceEnglish": "The king is presently in the great hall.", "corpusEvidence": {"identity": "いらっしゃる|いらっしゃる|jmdict:1000940:0", "messageIds": ["0x006a"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "子|こ|child", "written": "子", "reading": "こ", "partOfSpeech": "noun", "meaning": "child; young person", "sentenceJapanese": "あの子は森の動物と話すことができる。", "sentenceEnglish": "That child can speak with the animals of the forest.", "corpusEvidence": {"identity": "子|こ|jmdict:1307770:0", "messageIds": ["0x109a"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "高い|たかい|high", "written": "高い", "reading": "たかい", "partOfSpeech": "adjective", "meaning": "high; tall; expensive", "sentenceJapanese": "高い塔の窓から遠い山が見える。", "sentenceEnglish": "Distant mountains can be seen from the window of the tall tower.", "corpusEvidence": {"identity": "高い|たかい|jmdict:1283190:0", "messageIds": ["0x101a"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "ざんねん|ざんねん|regrettable", "written": "ざんねん", "reading": "ざんねん", "partOfSpeech": "adjectival noun", "meaning": "regrettable; unfortunate; disappointing", "sentenceJapanese": "ざんねんだが、今夜は橋を渡れない。", "sentenceEnglish": "Unfortunately, we cannot cross the bridge tonight.", "corpusEvidence": {"identity": "ざんねん|ざんねん|jmdict:1304680:0", "messageIds": ["0x0085"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "他|ほか|other", "written": "他", "reading": "ほか", "partOfSpeech": "noun", "meaning": "other; another; the rest", "sentenceJapanese": "この道が危険なら他の道を探そう。", "sentenceEnglish": "If this road is dangerous, let us look for another one.", "corpusEvidence": {"identity": "他|ほか|jmdict:1203260:0", "messageIds": ["0x006b"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "迷い|まよい|hesitation", "written": "迷い", "reading": "まよい", "partOfSpeech": "noun", "meaning": "hesitation; uncertainty; being lost", "sentenceJapanese": "騎士は迷いを捨てて暗い門をくぐった。", "sentenceEnglish": "The knight cast aside hesitation and passed through the dark gate.", "corpusEvidence": {"identity": "迷い|まよい|jmdict:1641170:0", "messageIds": ["0x0314"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "お店|おみせ|shop", "written": "お店", "reading": "おみせ", "partOfSpeech": "noun", "meaning": "store; shop", "sentenceJapanese": "村のお店で旅に必要な道具を買った。", "sentenceEnglish": "The traveler bought necessary supplies at the village shop.", "corpusEvidence": {"identity": "お店|おみせ|jmdict:2842661:0", "messageIds": ["0x1032"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "はなす|はなす|release", "written": "はなす", "reading": "はなす", "partOfSpeech": "verb", "meaning": "to release; to let go; to set free", "sentenceJapanese": "傷が治った鳥を森へはなした。", "sentenceEnglish": "The traveler released the healed bird into the forest.", "corpusEvidence": {"identity": "はなす|はなす|jmdict:1516460:0", "messageIds": ["0x0030"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "ホント|ほんと|truth-really", "written": "ホント", "reading": "ほんと", "partOfSpeech": "noun", "meaning": "truth; really; actually", "sentenceJapanese": "その古い剣がホントに光ったの？", "sentenceEnglish": "Did that old sword really shine?", "corpusEvidence": {"identity": "ホント|ほんと|jmdict:1523060:0", "messageIds": ["0x1006"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "三角|さんかく|triangle", "written": "三角", "reading": "さんかく", "partOfSpeech": "noun", "meaning": "triangle; triangular shape", "sentenceJapanese": "石の扉に金色の三角が刻まれている。", "sentenceEnglish": "A golden triangle is carved into the stone door.", "corpusEvidence": {"identity": "三角|さんかく|jmdict:1299970:0", "messageIds": ["0x107e"]}, "wordAudio": null, "sentenceAudio": null
         }
       ],
       "terminology": [
