@@ -107,6 +107,13 @@ class OverrideTest(unittest.TestCase):
         self.assertIn("remaining", apply_override("あと", "あと", {"meaning": "rear"})["meaning"])
         self.assertIn("again", apply_override("また", "また", {"meaning": "crotch"})["meaning"])
         self.assertIn("request", apply_override("ねがう", "ねがう", {"meaning": "wish"})["meaning"])
+        self.assertIn("no thanks", apply_override("いや", "いや", {"meaning": "head house"})["meaning"])
+        self.assertIn("as is", apply_override("まま", "まま", {"meaning": "wet nurse"})["meaning"])
+        self.assertIn("reason", apply_override("わけ", "わけ", {"meaning": "division"})["meaning"])
+        self.assertIn("owl", apply_override("ホホ", "ほほ", {"meaning": "cheek"})["meaning"])
+        self.assertEqual(apply_override("いま", "いま", {"meaning": "living room"})["meaning"], "now; the present time")
+        self.assertIn("father", apply_override("オヤジ", "おやじ", {"meaning": "dictionary entry"})["meaning"])
+        self.assertEqual(apply_override("かえす", "かえす", {"meaning": "send home"})["meaning"], "to return; to give back")
 
     def test_ki_wo_tsukeru_is_split_from_attach_and_equip(self):
         equipped = apply_override("つける", "つける", {"meaning": "install"})

@@ -461,6 +461,41 @@ OVERRIDES: dict[tuple[str, str], dict] = {
         "note": "Includes the request usage in おねがいします.",
         "partOfSpeech": "verb",
     },
+    ("いや", "いや"): {
+        "meaning": "no; no thanks; refusal",
+        "note": "Interjection used as a negative choice, not 居屋 (head house).",
+        "partOfSpeech": "interjection",
+    },
+    ("まま", "まま"): {
+        "meaning": "as is; while remaining; unchanged state",
+        "note": "State-continuation grammar, not a wet nurse.",
+        "partOfSpeech": "noun",
+    },
+    ("わけ", "わけ"): {
+        "meaning": "reason; circumstances; conclusion; meaning",
+        "note": "Reason/explanatory grammar, not sharing or division.",
+        "partOfSpeech": "noun",
+    },
+    ("ホホ", "ほほ"): {
+        "meaning": "hoo-hoo; owl-like call or laugh",
+        "note": "Vocal sound in dialogue, not cheek.",
+        "partOfSpeech": "interjection",
+    },
+    ("いま", "いま"): {
+        "meaning": "now; the present time",
+        "note": "Kana spelling of 今, not a living room.",
+        "partOfSpeech": "noun",
+    },
+    ("オヤジ", "おやじ"): {
+        "meaning": "father; old man; boss",
+        "note": "Colloquial 親父, not a kanji-dictionary entry.",
+        "partOfSpeech": "noun",
+    },
+    ("かえす", "かえす"): {
+        "meaning": "to return; to give back",
+        "note": "Kana spelling of 返す in this dialogue, not sending a person home.",
+        "partOfSpeech": "verb",
+    },
 }
 
 

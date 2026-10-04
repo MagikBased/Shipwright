@@ -3128,6 +3128,186 @@
           "id": "思う|おもう|think", "written": "思う", "reading": "おもう", "partOfSpeech": "verb", "meaning": "to think; to believe; to consider",
           "sentenceJapanese": "あの旅人なら呪いを解けると思う。", "sentenceEnglish": "I think that traveler can break the curse.",
           "corpusEvidence": {"identity": "思う|おもう|jmdict:1589350:0", "messageIds": ["0x10bc"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "顔|かお|face", "written": "顔", "reading": "かお", "partOfSpeech": "noun", "meaning": "face",
+          "sentenceJapanese": "仮面を外すと、旅人の顔に古い傷が見えた。", "sentenceEnglish": "When the mask came off, an old scar was visible on the traveler's face.",
+          "corpusEvidence": {"identity": "顔|かお|jmdict:1217730:0", "messageIds": ["0x10bc"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "いや|いや|no", "written": "いや", "reading": "いや", "partOfSpeech": "interjection", "meaning": "no; no thanks; refusal",
+          "sentenceJapanese": "『その剣を売るか』『いや、大切な形見だ』。", "sentenceEnglish": "“Will you sell that sword?” “No, it is an important keepsake.”",
+          "corpusEvidence": {"identity": "いや|いや|override:いや|いや", "messageIds": ["0x200b"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "伝わる|つたわる|handed-down", "written": "伝わる", "reading": "つたわる", "partOfSpeech": "verb", "meaning": "to be handed down; to be transmitted; to spread",
+          "sentenceJapanese": "この歌は何百年も村に伝わっている。", "sentenceEnglish": "This song has been handed down in the village for centuries.",
+          "corpusEvidence": {"identity": "伝わる|つたわる|jmdict:1441900:0", "messageIds": ["0x2075"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "いっしょ|いっしょ|together", "written": "いっしょ", "reading": "いっしょ", "partOfSpeech": "noun", "meaning": "together; with each other",
+          "sentenceJapanese": "夜が明けるまでいっしょに塔を守ろう。", "sentenceEnglish": "Let us guard the tower together until dawn.",
+          "corpusEvidence": {"identity": "いっしょ|いっしょ|jmdict:1163400:0", "messageIds": ["0x10bd"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "まま|まま|unchanged-state", "written": "まま", "reading": "まま", "partOfSpeech": "noun", "meaning": "as is; while remaining; unchanged state",
+          "sentenceJapanese": "石像は千年もの間、眠ったままだった。", "sentenceEnglish": "The stone statue remained asleep for a thousand years.",
+          "corpusEvidence": {"identity": "まま|まま|override:まま|まま", "messageIds": ["0x2042"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "少年|しょうねん|boy", "written": "少年", "reading": "しょうねん", "partOfSpeech": "noun", "meaning": "boy; youth",
+          "sentenceJapanese": "勇敢な少年は一人で暗い森へ入った。", "sentenceEnglish": "The brave boy entered the dark forest alone.",
+          "corpusEvidence": {"identity": "少年|しょうねん|jmdict:1349170:0", "messageIds": ["0x2060"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "方|ほう|direction", "written": "方", "reading": "ほう", "partOfSpeech": "noun", "meaning": "direction; side; way",
+          "sentenceJapanese": "光が見える方へ進んでください。", "sentenceEnglish": "Please proceed in the direction where you can see the light.",
+          "corpusEvidence": {"identity": "方|ほう|jmdict:1516930:0", "messageIds": ["0x2046"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "神|かみ|deity", "written": "神", "reading": "かみ", "partOfSpeech": "noun", "meaning": "god; deity; divine spirit",
+          "sentenceJapanese": "山の神に旅の安全を祈った。", "sentenceEnglish": "We prayed to the mountain deity for a safe journey.",
+          "corpusEvidence": {"identity": "神|かみ|jmdict:1364440:0", "messageIds": ["0x7015"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "あれ|あれ|that", "written": "あれ", "reading": "あれ", "partOfSpeech": "pronoun", "meaning": "that; that thing over there",
+          "sentenceJapanese": "あれが古い地図に描かれた塔だ。", "sentenceEnglish": "That is the tower depicted on the old map.",
+          "corpusEvidence": {"identity": "あれ|あれ|jmdict:1000580:0", "messageIds": ["0x200d"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "あ〜|ああ|ah", "written": "あ〜", "reading": "ああ", "partOfSpeech": "interjection", "meaning": "ah!; oh!; alas!",
+          "sentenceJapanese": "あ〜、大事な鍵を宿に忘れてきた。", "sentenceEnglish": "Oh, I left the important key at the inn.",
+          "corpusEvidence": {"identity": "あ〜|ああ|jmdict:1565440:0", "messageIds": ["0x70f1"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "あら|あら|oh", "written": "あら", "reading": "あら", "partOfSpeech": "interjection", "meaning": "oh; ah",
+          "sentenceJapanese": "あら、泉の水が金色に光っているわ。", "sentenceEnglish": "Oh, the water in the spring is glowing gold.",
+          "corpusEvidence": {"identity": "あら|あら|jmdict:1000520:0", "messageIds": ["0x2013"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "ほんと|ほんと|truth", "written": "ほんと", "reading": "ほんと", "partOfSpeech": "noun", "meaning": "truth; reality; really",
+          "sentenceJapanese": "その古い伝説はほんとなのだろうか。", "sentenceEnglish": "Could that ancient legend really be true?",
+          "corpusEvidence": {"identity": "ほんと|ほんと|jmdict:1523060:0", "messageIds": ["0x2044"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "メロディ|めろでぃ|melody", "written": "メロディ", "reading": "めろでぃ", "partOfSpeech": "noun", "meaning": "melody",
+          "sentenceJapanese": "静かなメロディが月夜の谷に響いた。", "sentenceEnglish": "A quiet melody echoed through the moonlit valley.",
+          "corpusEvidence": {"identity": "メロディ|めろでぃ|jmdict:1134150:0", "messageIds": ["0x7090"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "入口|いりぐち|entrance", "written": "入口", "reading": "いりぐち", "partOfSpeech": "noun", "meaning": "entrance; entry; gateway",
+          "sentenceJapanese": "洞窟の入口は滝の裏に隠されていた。", "sentenceEnglish": "The cave entrance was hidden behind the waterfall.",
+          "corpusEvidence": {"identity": "入口|いりぐち|jmdict:1582820:0", "messageIds": ["0x701e"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "わけ|わけ|reason", "written": "わけ", "reading": "わけ", "partOfSpeech": "noun", "meaning": "reason; circumstances; conclusion; meaning",
+          "sentenceJapanese": "門が閉じているわけを兵士に聞いた。", "sentenceEnglish": "I asked the soldier why the gate was closed.",
+          "corpusEvidence": {"identity": "わけ|わけ|override:わけ|わけ", "messageIds": ["0x032a"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "ホホ|ほほ|owl-call", "written": "ホホ", "reading": "ほほ", "partOfSpeech": "interjection", "meaning": "hoo-hoo; owl-like call or laugh",
+          "sentenceJapanese": "古い木の上からホホという声が聞こえた。", "sentenceEnglish": "A hoo-hoo call came from the top of the old tree.",
+          "corpusEvidence": {"identity": "ホホ|ほほ|override:ホホ|ほほ", "messageIds": ["0x2067"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "伝える|つたえる|convey", "written": "伝える", "reading": "つたえる", "partOfSpeech": "verb", "meaning": "to convey; to tell; to transmit; to pass down",
+          "sentenceJapanese": "使者は王の命令を村人に伝えた。", "sentenceEnglish": "The messenger conveyed the king's command to the villagers.",
+          "corpusEvidence": {"identity": "伝える|つたえる|jmdict:1441870:0", "messageIds": ["0x7035"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "いま|いま|now", "written": "いま", "reading": "いま", "partOfSpeech": "noun", "meaning": "now; the present time",
+          "sentenceJapanese": "いま出発すれば日暮れ前に町へ着く。", "sentenceEnglish": "If we leave now, we will reach town before sunset.",
+          "corpusEvidence": {"identity": "いま|いま|override:いま|いま", "messageIds": ["0x2029"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "店|みせ|shop", "written": "店", "reading": "みせ", "partOfSpeech": "noun", "meaning": "shop; store; establishment",
+          "sentenceJapanese": "町の店で旅に必要な縄を買った。", "sentenceEnglish": "I bought rope needed for the journey at a town shop.",
+          "corpusEvidence": {"identity": "店|みせ|jmdict:1582120:0", "messageIds": ["0x700d"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "身|み|body-self", "written": "身", "reading": "み", "partOfSpeech": "noun", "meaning": "body; oneself; one's position",
+          "sentenceJapanese": "危険な魔法から身を守る護符を持っている。", "sentenceEnglish": "I carry a charm that protects my body from dangerous magic.",
+          "corpusEvidence": {"identity": "身|み|jmdict:1365520:0", "messageIds": ["0x0329"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "ほる|ほる|dig", "written": "ほる", "reading": "ほる", "partOfSpeech": "verb", "meaning": "to dig; to excavate",
+          "sentenceJapanese": "古い木の根元をほると小さな箱が出てきた。", "sentenceEnglish": "When I dug beneath the old tree's roots, a small box appeared.",
+          "corpusEvidence": {"identity": "ほる|ほる|jmdict:1246690:0", "messageIds": ["0x2028"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "オヤジ|おやじ|father", "written": "オヤジ", "reading": "おやじ", "partOfSpeech": "noun", "meaning": "father; old man; boss",
+          "sentenceJapanese": "宿屋のオヤジは昔、腕のいい剣士だった。", "sentenceEnglish": "The old innkeeper was once a skilled swordsman.",
+          "corpusEvidence": {"identity": "オヤジ|おやじ|override:オヤジ|おやじ", "messageIds": ["0x2046"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "寝る|ねる|sleep", "written": "寝る", "reading": "ねる", "partOfSpeech": "verb", "meaning": "to sleep; to lie down",
+          "sentenceJapanese": "旅人は大きな木の下で寝ることにした。", "sentenceEnglish": "The traveler decided to sleep beneath a great tree.",
+          "corpusEvidence": {"identity": "寝る|ねる|jmdict:1360010:0", "messageIds": ["0x0229"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "悪し|あし|evil", "written": "悪し", "reading": "あし", "partOfSpeech": "adjective", "meaning": "bad; evil",
+          "sentenceJapanese": "悪しき心を持つ者には聖なる剣を抜けない。", "sentenceEnglish": "One with an evil heart cannot draw the sacred sword.",
+          "corpusEvidence": {"identity": "悪し|あし|jmdict:1151290:0", "messageIds": ["0x2079"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "平原|へいげん|plain", "written": "平原", "reading": "へいげん", "partOfSpeech": "noun", "meaning": "plain; prairie; open field",
+          "sentenceJapanese": "広い平原を白い馬が駆けていった。", "sentenceEnglish": "A white horse galloped across the broad plain.",
+          "corpusEvidence": {"identity": "平原|へいげん|jmdict:1507260:0", "messageIds": ["0x0301"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "我々|われわれ|we", "written": "我々", "reading": "われわれ", "partOfSpeech": "pronoun", "meaning": "we; us",
+          "sentenceJapanese": "我々は夜明けまでこの門を守る。", "sentenceEnglish": "We will guard this gate until dawn.",
+          "corpusEvidence": {"identity": "我々|われわれ|jmdict:1607050:0", "messageIds": ["0x2060"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "がる|がる|show-feeling", "written": "がる", "reading": "がる", "partOfSpeech": "suffix", "meaning": "to show signs of feeling; to appear to feel",
+          "sentenceJapanese": "子馬は暗い洞窟をこわがっている。", "sentenceEnglish": "The foal appears frightened of the dark cave.",
+          "corpusEvidence": {"identity": "がる|がる|jmdict:1631750:0", "messageIds": ["0x2048"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "ぞ〜|ぞ|forceful-ending", "written": "ぞ〜", "reading": "ぞ", "partOfSpeech": "particle", "meaning": "forceful sentence ending; command or emphasis",
+          "sentenceJapanese": "今夜こそ秘密の宝を見つけるぞ〜。", "sentenceEnglish": "Tonight, we will finally find the secret treasure!",
+          "corpusEvidence": {"identity": "ぞ〜|ぞ|jmdict:2029130:0", "messageIds": ["0x2028"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "つめる|つめる|fill", "written": "つめる", "reading": "つめる", "partOfSpeech": "verb", "meaning": "to fill; to pack; to stuff into",
+          "sentenceJapanese": "空のビンに泉の水をつめた。", "sentenceEnglish": "I filled an empty bottle with spring water.",
+          "corpusEvidence": {"identity": "つめる|つめる|jmdict:1226510:0", "messageIds": ["0x0046"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "読む|よむ|read", "written": "読む", "reading": "よむ", "partOfSpeech": "verb", "meaning": "to read",
+          "sentenceJapanese": "旅人は石碑に刻まれた文字を読んだ。", "sentenceEnglish": "The traveler read the writing carved into the monument.",
+          "corpusEvidence": {"identity": "読む|よむ|jmdict:1456360:0", "messageIds": ["0x0207"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "かえす|かえす|return", "written": "かえす", "reading": "かえす", "partOfSpeech": "verb", "meaning": "to return; to give back",
+          "sentenceJapanese": "借りた盾は旅が終わったら店にかえす。", "sentenceEnglish": "I will return the borrowed shield to the shop when the journey ends.",
+          "corpusEvidence": {"identity": "かえす|かえす|override:かえす|かえす", "messageIds": ["0x70f1"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "入れ物|いれもの|container", "written": "入れ物", "reading": "いれもの", "partOfSpeech": "noun", "meaning": "container; case; receptacle",
+          "sentenceJapanese": "魔法の粉を入れる小さな入れ物が必要だ。", "sentenceEnglish": "We need a small container for the magic powder.",
+          "corpusEvidence": {"identity": "入れ物|いれもの|jmdict:1587840:0", "messageIds": ["0x0096"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "ぼーや|ぼーや|boy", "written": "ぼーや", "reading": "ぼーや", "partOfSpeech": "noun", "meaning": "boy; kid",
+          "sentenceJapanese": "勇敢なぼーやに村長が古い地図を渡した。", "sentenceEnglish": "The village chief gave the brave boy an old map.",
+          "corpusEvidence": {"identity": "ぼーや|ぼーや|override:ぼーや|ぼーや", "messageIds": ["0x200d"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "ヒゲ|ひげ|beard", "written": "ヒゲ", "reading": "ひげ", "partOfSpeech": "noun", "meaning": "beard; moustache; whiskers",
+          "sentenceJapanese": "長い白いヒゲの老人が門を開けた。", "sentenceEnglish": "An old man with a long white beard opened the gate.",
+          "corpusEvidence": {"identity": "ヒゲ|ひげ|jmdict:1601810:0", "messageIds": ["0x701a"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "幸せ|しあわせ|happiness-kanji", "written": "幸せ", "reading": "しあわせ", "partOfSpeech": "noun", "meaning": "happiness; good fortune; blessing",
+          "sentenceJapanese": "平和な村で暮らすことが彼女の幸せだった。", "sentenceEnglish": "Living in a peaceful village was her happiness.",
+          "corpusEvidence": {"identity": "幸せ|しあわせ|jmdict:1594060:0", "messageIds": ["0x70a1"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "当店|とうてん|this-store", "written": "当店", "reading": "とうてん", "partOfSpeech": "noun", "meaning": "this store; our shop",
+          "sentenceJapanese": "当店では旅人向けの丈夫な靴を売っています。", "sentenceEnglish": "Our shop sells sturdy boots for travelers.",
+          "corpusEvidence": {"identity": "当店|とうてん|jmdict:1449200:0", "messageIds": ["0x0207"]}, "wordAudio": null, "sentenceAudio": null
         }
       ]
     },
