@@ -3682,6 +3682,131 @@
           "id": "墓守り|はかもり|grave-keeper", "written": "墓守り", "reading": "はかもり", "partOfSpeech": "noun", "meaning": "grave keeper; cemetery caretaker",
           "sentenceJapanese": "墓守りは夜明けまで霊廟の門を見張った。", "sentenceEnglish": "The grave keeper watched the mausoleum gate until dawn.",
           "corpusEvidence": {"identity": "墓守り|はかもり|jmdict:1670650:0", "messageIds": ["0x0205"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "耳|みみ|ear", "written": "耳", "reading": "みみ", "partOfSpeech": "noun", "meaning": "ear",
+          "sentenceJapanese": "森の番人は耳をすませて獣の足音を聞いた。", "sentenceEnglish": "The forest watchman listened closely and heard an animal's footsteps.",
+          "corpusEvidence": {"identity": "耳|みみ|jmdict:1317170:0", "messageIds": ["0x0013"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "緑|みどり|green", "written": "緑", "reading": "みどり", "partOfSpeech": "noun", "meaning": "green; greenery",
+          "sentenceJapanese": "雨のあと、谷は鮮やかな緑に包まれた。", "sentenceEnglish": "After the rain, the valley was wrapped in vivid green.",
+          "corpusEvidence": {"identity": "緑|みどり|jmdict:1555300:0", "messageIds": ["0x3020"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "こわい|こわい|frightening", "written": "こわい", "reading": "こわい", "partOfSpeech": "adjective", "meaning": "scary; frightening; dreadful",
+          "sentenceJapanese": "夜の沼からこわい鳴き声が響いてきた。", "sentenceEnglish": "A frightening cry echoed from the marsh at night.",
+          "corpusEvidence": {"identity": "こわい|こわい|jmdict:1593480:0", "messageIds": ["0x0307"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "オバケ|おばけ|ghost", "written": "オバケ", "reading": "おばけ", "partOfSpeech": "noun", "meaning": "ghost; monster; goblin",
+          "sentenceJapanese": "子供たちは廃屋にオバケが出ると信じている。", "sentenceEnglish": "The children believe a ghost appears in the abandoned house.",
+          "corpusEvidence": {"identity": "オバケ|おばけ|jmdict:1001670:0", "messageIds": ["0x0205"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "気分|きぶん|mood", "written": "気分", "reading": "きぶん", "partOfSpeech": "noun", "meaning": "feeling; mood",
+          "sentenceJapanese": "明るい笛の音を聞くと気分が軽くなった。", "sentenceEnglish": "Hearing the cheerful flute made my mood lighter.",
+          "corpusEvidence": {"identity": "気分|きぶん|jmdict:1222590:0", "messageIds": ["0x301c"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "回転|かいてん|rotation", "written": "回転", "reading": "かいてん", "partOfSpeech": "noun", "meaning": "rotation; revolution; turning",
+          "sentenceJapanese": "戦士は回転しながら剣で周りの敵を払った。", "sentenceEnglish": "The warrior spun and swept away the surrounding foes with his sword.",
+          "corpusEvidence": {"identity": "回転|かいてん|jmdict:1199640:0", "messageIds": ["0x00dd"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "にげる|にげる|escape", "written": "にげる", "reading": "にげる", "partOfSpeech": "verb", "meaning": "to escape; to run away",
+          "sentenceJapanese": "魔物が目を覚ます前に洞窟からにげるんだ。", "sentenceEnglish": "Escape from the cave before the monster awakens.",
+          "corpusEvidence": {"identity": "にげる|にげる|jmdict:1450330:0", "messageIds": ["0x5037"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "吹く|ふく|blow", "written": "吹く", "reading": "ふく", "partOfSpeech": "verb", "meaning": "to blow; to play a wind instrument",
+          "sentenceJapanese": "山頂で強い風が吹き、旗を揺らした。", "sentenceEnglish": "A strong wind blew at the summit and shook the banner.",
+          "corpusEvidence": {"identity": "吹く|ふく|jmdict:1370760:0", "messageIds": ["0x0899"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "ふく|ふく|wipe", "written": "ふく", "reading": "ふく", "partOfSpeech": "verb", "meaning": "to wipe; to dry",
+          "sentenceJapanese": "宿屋の主人は古い地図のほこりを布でふいた。", "sentenceEnglish": "The innkeeper wiped the dust from the old map with a cloth.",
+          "corpusEvidence": {"identity": "ふく|ふく|jmdict:1357240:0", "messageIds": ["0x10a8"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "攻撃|こうげき|attack", "written": "攻撃", "reading": "こうげき", "partOfSpeech": "noun", "meaning": "attack; assault; offensive",
+          "sentenceJapanese": "騎士は盾で魔物の攻撃を受け止めた。", "sentenceEnglish": "The knight blocked the monster's attack with a shield.",
+          "corpusEvidence": {"identity": "攻撃|こうげき|jmdict:1279170:0", "messageIds": ["0x00ad"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "うまい|うまい|skillful", "written": "うまい", "reading": "うまい", "partOfSpeech": "adjective", "meaning": "skillful; clever; expert",
+          "sentenceJapanese": "あの弓使いは遠い的を射るのがうまい。", "sentenceEnglish": "That archer is skilled at hitting distant targets.",
+          "corpusEvidence": {"identity": "うまい|うまい|jmdict:1310460:0", "messageIds": ["0x060d"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "な〜|な|do-not", "written": "な〜", "reading": "な", "partOfSpeech": "particle", "meaning": "don't; do not",
+          "sentenceJapanese": "危ないから、その封印に触るな〜！", "sentenceEnglish": "It's dangerous, so don't touch that seal!",
+          "corpusEvidence": {"identity": "な〜|な|jmdict:2029110:0", "messageIds": ["0x3009"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "見える|みえる|visible", "written": "見える", "reading": "みえる", "partOfSpeech": "verb", "meaning": "to be seen; to be visible; to be in sight",
+          "sentenceJapanese": "霧が晴れると遠くの城が見えた。", "sentenceEnglish": "When the fog cleared, the distant castle became visible.",
+          "corpusEvidence": {"identity": "見える|みえる|jmdict:1259140:0", "messageIds": ["0x3018"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "すむ|すむ|reside", "written": "すむ", "reading": "すむ", "partOfSpeech": "verb", "meaning": "to live; to reside; to inhabit",
+          "sentenceJapanese": "この山には石を食べる巨人がすんでいる。", "sentenceEnglish": "A giant that eats stones lives on this mountain.",
+          "corpusEvidence": {"identity": "すむ|すむ|override:すむ|すむ", "messageIds": ["0x3064"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "こう|こう|this-way", "written": "こう", "reading": "こう", "partOfSpeech": "adverb", "meaning": "in this way; thus; like this",
+          "sentenceJapanese": "こう剣を構えれば、盾もすぐ使える。", "sentenceEnglish": "If you hold the sword like this, you can use the shield at once too.",
+          "corpusEvidence": {"identity": "こう|こう|jmdict:1004310:0", "messageIds": ["0x300c"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "火|ひ|fire", "written": "火", "reading": "ひ", "partOfSpeech": "noun", "meaning": "fire; flame; blaze",
+          "sentenceJapanese": "旅人たちは火を囲んで夜の寒さをしのいだ。", "sentenceEnglish": "The travelers gathered around the fire to endure the cold night.",
+          "corpusEvidence": {"identity": "火|ひ|jmdict:1193610:0", "messageIds": ["0x3022"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "つかまえる|つかまえる|catch", "written": "つかまえる", "reading": "つかまえる", "partOfSpeech": "verb", "meaning": "to catch; to capture; to seize",
+          "sentenceJapanese": "猟師は逃げた白い鳥を傷つけずにつかまえた。", "sentenceEnglish": "The hunter caught the escaped white bird without harming it.",
+          "corpusEvidence": {"identity": "つかまえる|つかまえる|jmdict:1597780:0", "messageIds": ["0x5036"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "オトコ|おとこ|man", "written": "オトコ", "reading": "おとこ", "partOfSpeech": "noun", "meaning": "man; male",
+          "sentenceJapanese": "そのオトコは重い門を一人で持ち上げた。", "sentenceEnglish": "That man lifted the heavy gate by himself.",
+          "corpusEvidence": {"identity": "オトコ|おとこ|jmdict:1419990:0", "messageIds": ["0x3009"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "スキ|すき|opening", "written": "スキ", "reading": "すき", "partOfSpeech": "noun", "meaning": "gap; opening; unguarded moment",
+          "sentenceJapanese": "魔物が振り向いたスキに細い道を通り抜けた。", "sentenceEnglish": "We slipped through the narrow path while the monster was distracted.",
+          "corpusEvidence": {"identity": "スキ|すき|jmdict:1253780:0", "messageIds": ["0x0408"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "この世|このよ|living-world", "written": "この世", "reading": "このよ", "partOfSpeech": "noun", "meaning": "this world; the world of the living",
+          "sentenceJapanese": "その幽霊にはこの世で果たせなかった約束がある。", "sentenceEnglish": "That ghost has a promise it could not fulfill in this world.",
+          "corpusEvidence": {"identity": "この世|このよ|jmdict:2002260:0", "messageIds": ["0x0026"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "匹|ひき|small-animal-counter", "written": "匹", "reading": "ひき", "partOfSpeech": "counter", "meaning": "counter for small animals",
+          "sentenceJapanese": "泉のそばで三匹の白いキツネを見た。", "sentenceEnglish": "I saw three white foxes beside the spring.",
+          "corpusEvidence": {"identity": "匹|ひき|jmdict:1583370:0", "messageIds": ["0x0024"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "恐ろしい|おそろしい|terrifying", "written": "恐ろしい", "reading": "おそろしい", "partOfSpeech": "adjective", "meaning": "terrible; dreadful; terrifying",
+          "sentenceJapanese": "封じられた扉の向こうから恐ろしい声がした。", "sentenceEnglish": "A terrifying voice came from beyond the sealed door.",
+          "corpusEvidence": {"identity": "恐ろしい|おそろしい|jmdict:1236690:0", "messageIds": ["0x70aa"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "最近|さいきん|lately", "written": "最近", "reading": "さいきん", "partOfSpeech": "noun", "meaning": "recently; lately; these days",
+          "sentenceJapanese": "最近、森の動物たちが村へ近づかなくなった。", "sentenceEnglish": "Lately, the forest animals have stopped approaching the village.",
+          "corpusEvidence": {"identity": "最近|さいきん|jmdict:1293780:0", "messageIds": ["0x2015"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "走り|はしり|running", "written": "走り", "reading": "はしり", "partOfSpeech": "noun", "meaning": "running; a run",
+          "sentenceJapanese": "伝令は朝から晩まで走り続けた。", "sentenceEnglish": "The messenger kept running from morning until night.",
+          "corpusEvidence": {"identity": "走り|はしり|jmdict:1402420:0", "messageIds": ["0x0325"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "完成|かんせい|completion", "written": "完成", "reading": "かんせい", "partOfSpeech": "noun", "meaning": "completion; finish",
+          "sentenceJapanese": "石工たちの新しい橋がついに完成した。", "sentenceEnglish": "The stonemasons' new bridge was finally completed.",
+          "corpusEvidence": {"identity": "完成|かんせい|jmdict:1211490:0", "messageIds": ["0x5010"]}, "wordAudio": null, "sentenceAudio": null
         }
       ]
     },

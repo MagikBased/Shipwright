@@ -86,6 +86,7 @@ OVERRIDES: dict[tuple[str, str], dict] = {
     ("ゴロ", "ごろ"): {"meaning": "Goron sentence-ending speech quirk", "note": "Character speech pattern.", "partOfSpeech": "suffix"},
     ("ハラ", "はら"): {"meaning": "belly; stomach; abdomen", "note": "Katakana spelling of 腹; used in expressions such as ハラがへる (to become hungry).", "partOfSpeech": "noun"},
     ("へる", "へる"): {"meaning": "to decrease; to run low; to become hungry (of one's stomach)", "note": "The corpus use is 減る, especially in ハラがへる; not 経る (for time to elapse).", "partOfSpeech": "verb"},
+    ("すむ", "すむ"): {"meaning": "to live; to reside; to inhabit", "note": "The corpus use is 住む; not 済む (to finish).", "partOfSpeech": "verb"},
     ("って", "って"): {"meaning": "casual quotation/topic marker", "note": "Common grammar."},
     ("てる", "てる"): {"meaning": "contracted progressive/resultative ending (-ている)", "note": "Common grammar."},
     ("ない", "ない"): {"meaning": "not; nonexistent", "note": "Negative form."},
