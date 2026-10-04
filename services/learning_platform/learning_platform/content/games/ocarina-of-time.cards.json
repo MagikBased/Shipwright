@@ -4297,6 +4297,131 @@
           "id": "ねん|ねん|emphasis", "written": "ねん", "reading": "ねん", "partOfSpeech": "particle", "meaning": "sentence-ending emphasis in Kansai-style speech",
           "sentenceJapanese": "この湖でいちばん大きい魚をつったんはオレやねん。", "sentenceEnglish": "I'm the one who caught the biggest fish in this lake, you know.",
           "corpusEvidence": {"identity": "ねん|ねん|jmdict:2719560:0", "messageIds": ["0x4082"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "はず|はず|expected", "written": "はず", "reading": "はず", "partOfSpeech": "noun", "meaning": "should; expected to; supposed to",
+          "sentenceJapanese": "地図が正しければ、この先に泉があるはずだ。", "sentenceEnglish": "If the map is correct, there should be a spring ahead.",
+          "corpusEvidence": {"identity": "はず|はず|override:はず|はず", "messageIds": ["0x400b"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "さがす|さがす|search", "written": "さがす", "reading": "さがす", "partOfSpeech": "verb", "meaning": "to search for; to look for; to seek",
+          "sentenceJapanese": "姫をさがすため、騎士たちは川沿いに進んだ。", "sentenceEnglish": "The knights followed the river to search for the princess.",
+          "corpusEvidence": {"identity": "さがす|さがす|jmdict:1593670:0", "messageIds": ["0x400f"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "ゆう|ゆう|say", "written": "ゆう", "reading": "ゆう", "partOfSpeech": "verb", "meaning": "to say; colloquial pronunciation of いう",
+          "sentenceJapanese": "そんな無茶なことをゆうたら仲間が心配するで。", "sentenceEnglish": "If you say something that reckless, your companions will worry.",
+          "corpusEvidence": {"identity": "ゆう|ゆう|override:ゆう|ゆう", "messageIds": ["0x408d"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "っと|っと|quotative", "written": "っと", "reading": "っと", "partOfSpeech": "particle", "meaning": "quotative or emphatic ending",
+          "sentenceJapanese": "漁師は大物が来たぞっと声を上げた。", "sentenceEnglish": "The fisherman shouted that a big one had come.",
+          "corpusEvidence": {"identity": "っと|っと|override:っと|っと", "messageIds": ["0x402a"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "商品|しょうひん|merchandise", "written": "商品", "reading": "しょうひん", "partOfSpeech": "noun", "meaning": "goods; merchandise; article for sale",
+          "sentenceJapanese": "商人は新しい商品を川辺の店に並べた。", "sentenceEnglish": "The merchant displayed new goods at the riverside shop.",
+          "corpusEvidence": {"identity": "商品|しょうひん|jmdict:1347310:0", "messageIds": ["0x4061"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "しずむ|しずむ|sink", "written": "しずむ", "reading": "しずむ", "partOfSpeech": "verb", "meaning": "to sink; to submerge; to go under",
+          "sentenceJapanese": "重い石は音もなく湖の底へしずんだ。", "sentenceEnglish": "The heavy stone silently sank to the bottom of the lake.",
+          "corpusEvidence": {"identity": "しずむ|しずむ|jmdict:1431670:0", "messageIds": ["0x4090"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "ブヨブヨ|ぶよぶよ|flabby", "written": "ブヨブヨ", "reading": "ぶよぶよ", "partOfSpeech": "adjectival noun", "meaning": "soft and flabby; squishy",
+          "sentenceJapanese": "沼の魔物はブヨブヨした体で道をふさいだ。", "sentenceEnglish": "The swamp monster blocked the path with its soft, flabby body.",
+          "corpusEvidence": {"identity": "ブヨブヨ|ぶよぶよ|jmdict:1011210:0", "messageIds": ["0x012f"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "大|おお|great-prefix", "written": "大", "reading": "おお", "partOfSpeech": "prefix", "meaning": "large; great; major",
+          "sentenceJapanese": "大広間の奥には水晶の玉座があった。", "sentenceEnglish": "A crystal throne stood at the rear of the great hall.",
+          "corpusEvidence": {"identity": "大|おお|jmdict:2082140:0", "messageIds": ["0x4063"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "イイ|いい|good", "written": "イイ", "reading": "いい", "partOfSpeech": "adjective", "meaning": "good; fine; okay",
+          "sentenceJapanese": "この入り江は波が静かでイイ釣り場だ。", "sentenceEnglish": "This inlet has calm waves and is a good fishing spot.",
+          "corpusEvidence": {"identity": "イイ|いい|override:イイ|いい", "messageIds": ["0x4056"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "はやい|はやい|fast", "written": "はやい", "reading": "はやい", "partOfSpeech": "adjective", "meaning": "fast; quick; early",
+          "sentenceJapanese": "川の流れがはやいから足元に気をつけよう。", "sentenceEnglish": "The river current is fast, so let us watch our footing.",
+          "corpusEvidence": {"identity": "はやい|はやい|jmdict:1404975:0", "messageIds": ["0x401c"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "なし|なし|without", "written": "なし", "reading": "なし", "partOfSpeech": "noun", "meaning": "without; none; no",
+          "sentenceJapanese": "王の許可なしで聖なる泉へ入ってはいけない。", "sentenceEnglish": "You must not enter the sacred spring without the king's permission.",
+          "corpusEvidence": {"identity": "なし|なし|jmdict:1529560:0", "messageIds": ["0x030f"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "ノ|の|possessive", "written": "ノ", "reading": "の", "partOfSpeech": "particle", "meaning": "possessive or attributive particle の",
+          "sentenceJapanese": "池ノほとりで蛙たちが歌っていた。", "sentenceEnglish": "The frogs were singing beside the pond.",
+          "corpusEvidence": {"identity": "ノ|の|jmdict:1469800:0", "messageIds": ["0x40aa"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "ベイベー|べいべー|baby", "written": "ベイベー", "reading": "べいべー", "partOfSpeech": "noun", "meaning": "baby; affectionate form of address",
+          "sentenceJapanese": "旅の楽師は観客に向かって歌おうぜ、ベイベーと叫んだ。", "sentenceEnglish": "The traveling musician shouted to the crowd, 'Let's sing, baby!'",
+          "corpusEvidence": {"identity": "ベイベー|べいべー|override:ベイベー|べいべー", "messageIds": ["0x40a0"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "かわいい|かわいい|cute", "written": "かわいい", "reading": "かわいい", "partOfSpeech": "adjective", "meaning": "cute; adorable; charming",
+          "sentenceJapanese": "泉のそばでかわいい青い鳥が水を飲んでいた。", "sentenceEnglish": "A cute blue bird was drinking water beside the spring.",
+          "corpusEvidence": {"identity": "かわいい|かわいい|jmdict:1577200:0", "messageIds": ["0x401a"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "ナニ|なに|what", "written": "ナニ", "reading": "なに", "partOfSpeech": "pronoun", "meaning": "what",
+          "sentenceJapanese": "湖の底で光ったものはナニだったんだ？", "sentenceEnglish": "What was the thing that shone at the bottom of the lake?",
+          "corpusEvidence": {"identity": "ナニ|なに|jmdict:1577100:0", "messageIds": ["0x404b"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "余|よ|I", "written": "余", "reading": "よ", "partOfSpeech": "pronoun", "meaning": "I; me (archaic, used by rulers)",
+          "sentenceJapanese": "王は「余が責任を持とう」と家臣に告げた。", "sentenceEnglish": "The king told his retainers, 'I shall take responsibility.'",
+          "corpusEvidence": {"identity": "余|よ|jmdict:1543840:2", "messageIds": ["0x401a"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "大切|たいせつ|important", "written": "大切", "reading": "たいせつ", "partOfSpeech": "adjectival noun", "meaning": "important; precious; necessary",
+          "sentenceJapanese": "姫は母から受け継いだ石を大切に守っている。", "sentenceEnglish": "The princess carefully protects the stone inherited from her mother.",
+          "corpusEvidence": {"identity": "大切|たいせつ|jmdict:1414340:0", "messageIds": ["0x4027"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "つう|つう|called", "written": "つう", "reading": "つう", "partOfSpeech": "auxiliary", "meaning": "called; saying; contraction of という",
+          "sentenceJapanese": "銀の魚を見たっつう話は本当か？", "sentenceEnglish": "Is the story saying you saw a silver fish true?",
+          "corpusEvidence": {"identity": "つう|つう|override:つう|つう", "messageIds": ["0x4089"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "イチバン|いちばん|number-one", "written": "イチバン", "reading": "いちばん", "partOfSpeech": "noun", "meaning": "number one; first; best",
+          "sentenceJapanese": "この湖でイチバン大きな魚をつるのが夢だ。", "sentenceEnglish": "My dream is to catch the biggest fish in this lake.",
+          "corpusEvidence": {"identity": "イチバン|いちばん|jmdict:1165970:0", "messageIds": ["0x4027"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "父|ちち|father", "written": "父", "reading": "ちち", "partOfSpeech": "noun", "meaning": "father",
+          "sentenceJapanese": "姫は父に内緒で城を抜け出した。", "sentenceEnglish": "The princess slipped out of the castle without telling her father.",
+          "corpusEvidence": {"identity": "父|ちち|jmdict:1497610:0", "messageIds": ["0x4005"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "もぐれる|もぐれる|can-dive", "written": "もぐれる", "reading": "もぐれる", "partOfSpeech": "verb", "meaning": "can dive; to be able to go underwater",
+          "sentenceJapanese": "この銀の鱗があればもっと深くもぐれる。", "sentenceEnglish": "With this silver scale, you can dive much deeper.",
+          "corpusEvidence": {"identity": "もぐれる|もぐれる|override:もぐれる|もぐれる", "messageIds": ["0x4056"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "サファイア|さふぁいあ|sapphire", "written": "サファイア", "reading": "さふぁいあ", "partOfSpeech": "noun", "meaning": "sapphire",
+          "sentenceJapanese": "王家の冠には青いサファイアがはめられている。", "sentenceEnglish": "A blue sapphire is set into the royal crown.",
+          "corpusEvidence": {"identity": "サファイア|さふぁいあ|jmdict:1057110:0", "messageIds": ["0x4026"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "キミ|きみ|you", "written": "キミ", "reading": "きみ", "partOfSpeech": "pronoun", "meaning": "you; buddy; pal",
+          "sentenceJapanese": "キミなら急流の向こう岸まで泳げるだろう。", "sentenceEnglish": "You should be able to swim to the far bank of the rapids.",
+          "corpusEvidence": {"identity": "キミ|きみ|jmdict:1247250:0", "messageIds": ["0x4006"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "でる|でる|contracted-progressive", "written": "でる", "reading": "でる", "partOfSpeech": "auxiliary verb", "meaning": "contracted progressive or resulting-state ending",
+          "sentenceJapanese": "漁師は岸で大物を待ってる。", "sentenceEnglish": "The fisherman is waiting on the shore for a big catch.",
+          "corpusEvidence": {"identity": "でる|でる|override:でる|でる", "messageIds": ["0x402a"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "ところ|ところ|place", "written": "ところ", "reading": "ところ", "partOfSpeech": "noun", "meaning": "place; spot; site",
+          "sentenceJapanese": "ここは旅人が川を渡るのに安全なところだ。", "sentenceEnglish": "This is a safe place for travelers to cross the river.",
+          "corpusEvidence": {"identity": "ところ|ところ|jmdict:1343100:0", "messageIds": ["0x4003"]}, "wordAudio": null, "sentenceAudio": null
         }
       ],
       "terminology": [
