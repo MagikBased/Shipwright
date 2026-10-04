@@ -426,6 +426,41 @@ OVERRIDES: dict[tuple[str, str], dict] = {
         "note": "Often an auxiliary expressing completion or an unintended result.",
         "partOfSpeech": "verb",
     },
+    ("発", "はつ"): {
+        "meaning": "shot; round; counter for shots or projectiles",
+        "note": "Counter usage in the shooting-gallery dialogue, not departure.",
+        "partOfSpeech": "counter",
+    },
+    ("しゃん", "しゃん"): {
+        "meaning": "childish pronunciation of さん; familiar name suffix",
+        "note": "Character speech pattern.",
+        "partOfSpeech": "suffix",
+    },
+    ("一", "いち"): {
+        "meaning": "one; one thing",
+        "note": "Cardinal-number sense, not 'best'.",
+        "partOfSpeech": "number",
+    },
+    ("あげる", "あげる"): {
+        "meaning": "to give; to offer",
+        "note": "Giving sense in this chapter, not physically raising something.",
+        "partOfSpeech": "verb",
+    },
+    ("あと", "あと"): {
+        "meaning": "after; later; remaining; more",
+        "note": "Temporal or remaining-quantity sense, not only the rear/behind sense.",
+        "partOfSpeech": "noun",
+    },
+    ("また", "また"): {
+        "meaning": "again; also; another time",
+        "note": "Adverb/conjunction, not 股 (crotch).",
+        "partOfSpeech": "adverb",
+    },
+    ("ねがう", "ねがう"): {
+        "meaning": "to wish; to request; to ask",
+        "note": "Includes the request usage in おねがいします.",
+        "partOfSpeech": "verb",
+    },
 }
 
 

@@ -3003,6 +3003,131 @@
           "id": "売れる|うれる|sell", "written": "売れる", "reading": "うれる", "partOfSpeech": "verb", "meaning": "to sell; to be sold; to sell well",
           "sentenceJapanese": "この珍しい羽なら市場で高く売れる。", "sentenceEnglish": "This rare feather should sell for a high price at the market.",
           "corpusEvidence": {"identity": "売れる|うれる|jmdict:1473960:0", "messageIds": ["0x0096"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "発|はつ|shots-counter", "written": "発", "reading": "はつ", "partOfSpeech": "counter", "meaning": "shot; round; counter for projectiles",
+          "sentenceJapanese": "弓の試練では十発すべてを的に当てた。", "sentenceEnglish": "In the archery trial, all ten shots struck their targets.",
+          "corpusEvidence": {"identity": "発|はつ|override:発|はつ", "messageIds": ["0x0329"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "カッコ|かっこ|appearance", "written": "カッコ", "reading": "かっこ", "partOfSpeech": "noun", "meaning": "appearance; style; form",
+          "sentenceJapanese": "その黒い鎧は強そうでカッコいい。", "sentenceEnglish": "That black armor looks strong and stylish.",
+          "corpusEvidence": {"identity": "カッコ|かっこ|override:カッコ|かっこ", "messageIds": ["0x2041"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "貸す|かす|lend", "written": "貸す", "reading": "かす", "partOfSpeech": "verb", "meaning": "to lend; to loan",
+          "sentenceJapanese": "旅人に予備のランタンを貸した。", "sentenceEnglish": "I lent the traveler a spare lantern.",
+          "corpusEvidence": {"identity": "貸す|かす|jmdict:1411160:0", "messageIds": ["0x00eb"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "カワイイ|かわいい|cute", "written": "カワイイ", "reading": "かわいい", "partOfSpeech": "adjective", "meaning": "cute; adorable; charming",
+          "sentenceJapanese": "森の店にはカワイイ木彫りの鳥が並んでいる。", "sentenceEnglish": "Cute wooden birds line the shelves of the forest shop.",
+          "corpusEvidence": {"identity": "カワイイ|かわいい|jmdict:1577200:0", "messageIds": ["0x2022"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "フフフ|ふふふ|soft-laugh", "written": "フフフ", "reading": "ふふふ", "partOfSpeech": "interjection", "meaning": "hee hee hee; soft laughter",
+          "sentenceJapanese": "魔女はフフフと笑って鏡の中へ消えた。", "sentenceEnglish": "The witch laughed softly and vanished into the mirror.",
+          "corpusEvidence": {"identity": "フフフ|ふふふ|jmdict:1111010:0", "messageIds": ["0x2043"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "飲む|のむ|drink", "written": "飲む", "reading": "のむ", "partOfSpeech": "verb", "meaning": "to drink; to swallow; to take medicine",
+          "sentenceJapanese": "疲れた騎士は泉の水を飲んだ。", "sentenceEnglish": "The tired knight drank water from the spring.",
+          "corpusEvidence": {"identity": "飲む|のむ|jmdict:1169870:0", "messageIds": ["0x0098"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "ぜんぶ|ぜんぶ|all", "written": "ぜんぶ", "reading": "ぜんぶ", "partOfSpeech": "noun", "meaning": "all; everything; the whole thing",
+          "sentenceJapanese": "三つの松明をぜんぶ灯すと石門が開いた。", "sentenceEnglish": "When all three torches were lit, the stone gate opened.",
+          "corpusEvidence": {"identity": "ぜんぶ|ぜんぶ|override:ぜんぶ|ぜんぶ", "messageIds": ["0x0329"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "ねがう|ねがう|request", "written": "ねがう", "reading": "ねがう", "partOfSpeech": "verb", "meaning": "to wish; to request; to ask",
+          "sentenceJapanese": "旅人は星に村の平和をねがった。", "sentenceEnglish": "The traveler wished upon a star for peace in the village.",
+          "corpusEvidence": {"identity": "ねがう|ねがう|override:ねがう|ねがう", "messageIds": ["0x700c"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "カンバン|かんばん|signboard", "written": "カンバン", "reading": "かんばん", "partOfSpeech": "noun", "meaning": "signboard; sign",
+          "sentenceJapanese": "古いカンバンには山道の注意が書かれていた。", "sentenceEnglish": "A warning about the mountain path was written on the old sign.",
+          "corpusEvidence": {"identity": "カンバン|かんばん|override:カンバン|かんばん", "messageIds": ["0x200e"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "勝ち|かち|victory", "written": "勝ち", "reading": "かち", "partOfSpeech": "noun", "meaning": "win; victory",
+          "sentenceJapanese": "最後の的に当てれば旅人の勝ちだ。", "sentenceEnglish": "If the traveler hits the final target, victory is theirs.",
+          "corpusEvidence": {"identity": "勝ち|かち|jmdict:1609560:0", "messageIds": ["0x207e"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "雲|くも|cloud", "written": "雲", "reading": "くも", "partOfSpeech": "noun", "meaning": "cloud",
+          "sentenceJapanese": "黒い雲が北の山を覆い始めた。", "sentenceEnglish": "Dark clouds began to cover the northern mountain.",
+          "corpusEvidence": {"identity": "雲|くも|jmdict:1173100:0", "messageIds": ["0x2078"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "しゃん|しゃん|childish-san", "written": "しゃん", "reading": "しゃん", "partOfSpeech": "suffix", "meaning": "childish pronunciation of さん; familiar name suffix",
+          "sentenceJapanese": "幼い子は門番しゃんに元気よく手を振った。", "sentenceEnglish": "The little child waved cheerfully to the gatekeeper.",
+          "corpusEvidence": {"identity": "しゃん|しゃん|override:しゃん|しゃん", "messageIds": ["0x2022"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "はっ|はっ|oh", "written": "はっ", "reading": "はっ", "partOfSpeech": "interjection", "meaning": "oh!; gasp of realization",
+          "sentenceJapanese": "はっ、扉の紋章が光っている。", "sentenceEnglish": "Oh! The crest on the door is glowing.",
+          "corpusEvidence": {"identity": "はっ|はっ|jmdict:2835840:0", "messageIds": ["0x00f4"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "ムシ|むし|insect", "written": "ムシ", "reading": "むし", "partOfSpeech": "noun", "meaning": "insect; bug",
+          "sentenceJapanese": "光るムシが夜の森を飛んでいた。", "sentenceEnglish": "Glowing insects flew through the forest at night.",
+          "corpusEvidence": {"identity": "ムシ|むし|jmdict:1426680:0", "messageIds": ["0x007a"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "オレ|おれ|casual-i", "written": "オレ", "reading": "おれ", "partOfSpeech": "pronoun", "meaning": "I; me (casual or masculine)",
+          "sentenceJapanese": "オレが先に洞窟の中を調べてくる。", "sentenceEnglish": "I'll go inspect the cave first.",
+          "corpusEvidence": {"identity": "オレ|おれ|override:オレ|おれ", "messageIds": ["0x2014"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "もらう|もらう|receive", "written": "もらう", "reading": "もらう", "partOfSpeech": "verb", "meaning": "to receive; to get; to accept",
+          "sentenceJapanese": "村長から旅に必要な地図をもらった。", "sentenceEnglish": "I received a map needed for the journey from the village chief.",
+          "corpusEvidence": {"identity": "もらう|もらう|jmdict:1535910:0", "messageIds": ["0x202e"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "一|いち|one", "written": "一", "reading": "いち", "partOfSpeech": "number", "meaning": "one; one thing",
+          "sentenceJapanese": "古い箱の中には鍵が一つだけあった。", "sentenceEnglish": "There was only one key inside the old box.",
+          "corpusEvidence": {"identity": "一|いち|override:一|いち", "messageIds": ["0x7006"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "こんな|こんな|this-kind", "written": "こんな", "reading": "こんな", "partOfSpeech": "adnominal", "meaning": "this kind of; like this; such",
+          "sentenceJapanese": "こんな深い森で人に会うとは思わなかった。", "sentenceEnglish": "I did not expect to meet anyone in such a deep forest.",
+          "corpusEvidence": {"identity": "こんな|こんな|jmdict:1004880:0", "messageIds": ["0x2045"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "まだ|まだ|still", "written": "まだ", "reading": "まだ", "partOfSpeech": "adverb", "meaning": "still; not yet; only",
+          "sentenceJapanese": "太陽は沈んだが、門はまだ開いている。", "sentenceEnglish": "The sun has set, but the gate is still open.",
+          "corpusEvidence": {"identity": "まだ|まだ|jmdict:1527110:0", "messageIds": ["0x00eb"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "あげる|あげる|give", "written": "あげる", "reading": "あげる", "partOfSpeech": "verb", "meaning": "to give; to offer",
+          "sentenceJapanese": "寒そうな旅人に赤い外套をあげた。", "sentenceEnglish": "I gave a red cloak to the traveler who looked cold.",
+          "corpusEvidence": {"identity": "あげる|あげる|override:あげる|あげる", "messageIds": ["0x2007"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "目|め|eye", "written": "目", "reading": "め", "partOfSpeech": "noun", "meaning": "eye",
+          "sentenceJapanese": "石像の赤い目が突然光った。", "sentenceEnglish": "The stone statue's red eye suddenly lit up.",
+          "corpusEvidence": {"identity": "目|め|jmdict:1604890:0", "messageIds": ["0x2053"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "あと|あと|remaining", "written": "あと", "reading": "あと", "partOfSpeech": "noun", "meaning": "after; later; remaining; more",
+          "sentenceJapanese": "封印を解くにはあと二つの石が必要だ。", "sentenceEnglish": "Two more stones are needed to break the seal.",
+          "corpusEvidence": {"identity": "あと|あと|override:あと|あと", "messageIds": ["0x2047"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "また|また|again", "written": "また", "reading": "また", "partOfSpeech": "adverb", "meaning": "again; also; another time",
+          "sentenceJapanese": "満月の夜にまたこの泉で会おう。", "sentenceEnglish": "Let us meet at this spring again on the night of the full moon.",
+          "corpusEvidence": {"identity": "また|また|override:また|また", "messageIds": ["0x10bd"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "さあ|さあ|come-now", "written": "さあ", "reading": "さあ", "partOfSpeech": "interjection", "meaning": "come; come now; go on",
+          "sentenceJapanese": "さあ、夜になる前に出発しよう。", "sentenceEnglish": "Come now, let us depart before night falls.",
+          "corpusEvidence": {"identity": "さあ|さあ|jmdict:1005110:0", "messageIds": ["0x2083"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "思う|おもう|think", "written": "思う", "reading": "おもう", "partOfSpeech": "verb", "meaning": "to think; to believe; to consider",
+          "sentenceJapanese": "あの旅人なら呪いを解けると思う。", "sentenceEnglish": "I think that traveler can break the curse.",
+          "corpusEvidence": {"identity": "思う|おもう|jmdict:1589350:0", "messageIds": ["0x10bc"]}, "wordAudio": null, "sentenceAudio": null
         }
       ]
     },
