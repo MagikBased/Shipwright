@@ -67,6 +67,16 @@ OVERRIDES: dict[tuple[str, str], dict] = {
     ("ファントムガノン", "ふぁんとむがのん"): {"meaning": "Phantom Ganon", "note": "Enemy name."},
     ("スタルフォス", "すたるふぉす"): {"meaning": "Stalfos", "note": "Enemy name."},
     ("ピエール", "ぴえーる"): {"meaning": "Pierre", "note": "Character name."},
+    ("ニイ", "にい"): {
+        "meaning": "older brother; young man (clipped form used in ニイちゃん/ニイさん)",
+        "note": "Stylized clipped form of 兄 used as a familiar form of address; not 'second place'.",
+        "partOfSpeech": "noun",
+    },
+    ("デス", "です"): {
+        "meaning": "polite copula; to be",
+        "note": "Katakana spelling of です used as a character speech pattern; not 'death'.",
+        "partOfSpeech": "auxiliary verb",
+    },
     ("だー", "だー"): {"meaning": "dialectal/stylized form of だ (to be)", "note": "Character speech pattern."},
     ("ッ", "っ"): {"meaning": "emphatic final small tsu", "note": "Marks an abrupt or forceful ending."},
     ("ッピ", "っぴ"): {"meaning": "Deku Scrub sentence-ending speech quirk", "note": "Character speech pattern.", "partOfSpeech": "suffix"},

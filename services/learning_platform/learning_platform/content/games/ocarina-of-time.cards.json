@@ -4904,6 +4904,171 @@
           },
           "wordAudio": null,
           "sentenceAudio": null
+        },
+        {
+          "id": "矢|や|arrow", "written": "矢", "reading": "や", "partOfSpeech": "noun", "meaning": "arrow",
+          "sentenceJapanese": "狩人は白い羽の矢を弓につがえた。", "sentenceEnglish": "The hunter nocked a white-feathered arrow to the bow.",
+          "corpusEvidence": {"identity": "矢|や|jmdict:1537760:0", "messageIds": ["0x1057", "0x10cd"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "ヒト|ひと|person", "written": "ヒト", "reading": "ひと", "partOfSpeech": "noun", "meaning": "person; human being",
+          "sentenceJapanese": "この森に入ったヒトは同じ道へ戻れないという。", "sentenceEnglish": "They say a person who enters this forest cannot return by the same path.",
+          "corpusEvidence": {"identity": "ヒト|ひと|jmdict:1580640:0", "messageIds": ["0x1057", "0x1058", "0x10b7", "0x10df"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "プレゼント|ぷれぜんと|gift", "written": "プレゼント", "reading": "ぷれぜんと", "partOfSpeech": "noun", "meaning": "present; gift",
+          "sentenceJapanese": "森の妖精から小さな笛をプレゼントされた。", "sentenceEnglish": "A forest fairy gave me a small flute as a gift.",
+          "corpusEvidence": {"identity": "プレゼント|ぷれぜんと|jmdict:1116840:0", "messageIds": ["0x203b", "0x208f", "0x2090", "0x2092", "0x502d", "0x502e"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "あやしい|あやしい|suspicious", "written": "あやしい", "reading": "あやしい", "partOfSpeech": "adjective", "meaning": "suspicious; dubious; strange",
+          "sentenceJapanese": "古井戸の近くであやしい影が動いた。", "sentenceEnglish": "A suspicious shadow moved near the old well.",
+          "corpusEvidence": {"identity": "あやしい|あやしい|jmdict:1586700:0", "messageIds": ["0x0003", "0x0004", "0x0005", "0x5048", "0x5049"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "幽霊|ゆうれい|ghost", "written": "幽霊", "reading": "ゆうれい", "partOfSpeech": "noun", "meaning": "ghost; specter; phantom",
+          "sentenceJapanese": "真夜中になると墓地に幽霊が現れる。", "sentenceEnglish": "Ghosts appear in the graveyard at midnight.",
+          "corpusEvidence": {"identity": "幽霊|ゆうれい|jmdict:1540590:0", "messageIds": ["0x064f", "0x0650", "0x0651", "0x0652", "0x0653", "0x505c"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "消える|きえる|disappear", "written": "消える", "reading": "きえる", "partOfSpeech": "verb", "meaning": "to vanish; to disappear; to go out",
+          "sentenceJapanese": "朝日が差すと森の霧はすぐに消えた。", "sentenceEnglish": "The forest mist vanished as soon as the morning sun shone through.",
+          "corpusEvidence": {"identity": "消える|きえる|jmdict:1350040:0", "messageIds": ["0x061e", "0x065a", "0x10b3", "0x10b6", "0x507b"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "レース|れーす|race", "written": "レース", "reading": "れーす", "partOfSpeech": "noun", "meaning": "race; contest of speed",
+          "sentenceJapanese": "草原を一周する馬のレースが始まった。", "sentenceEnglish": "A horse race around the meadow began.",
+          "corpusEvidence": {"identity": "レース|れーす|jmdict:1144380:0", "messageIds": ["0x2003", "0x2038", "0x203b", "0x2058", "0x205b"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "台|だい|stand", "written": "台", "reading": "だい", "partOfSpeech": "noun", "meaning": "stand; platform; pedestal",
+          "sentenceJapanese": "石の台の上に古い弓が置かれていた。", "sentenceEnglish": "An old bow rested on the stone pedestal.",
+          "corpusEvidence": {"identity": "台|だい|jmdict:1412560:0", "messageIds": ["0x002e", "0x018c", "0x018d", "0x0194", "0x0195"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "とぶ|とぶ|fly", "written": "とぶ", "reading": "とぶ", "partOfSpeech": "verb", "meaning": "to fly; to soar",
+          "sentenceJapanese": "黒い鳥が森の向こうへ高くとんでいった。", "sentenceEnglish": "A black bird flew high beyond the forest.",
+          "corpusEvidence": {"identity": "とぶ|とぶ|jmdict:1429700:0", "messageIds": ["0x2003", "0x2035", "0x208c", "0x208e"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "アンタ|あんた|you", "written": "アンタ", "reading": "あんた", "partOfSpeech": "pronoun", "meaning": "you",
+          "sentenceJapanese": "アンタ、この森で何を探しているんだ？", "sentenceEnglish": "You there—what are you searching for in this forest?",
+          "corpusEvidence": {"identity": "アンタ|あんた|jmdict:1979920:0", "messageIds": ["0x503e", "0x5043", "0x5049"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "ありがとう|ありがとう|thanks", "written": "ありがとう", "reading": "ありがとう", "partOfSpeech": "interjection", "meaning": "thank you; thanks",
+          "sentenceJapanese": "助けてくれてありがとう、と少女は微笑んだ。", "sentenceEnglish": "Thank you for helping me, the girl said with a smile.",
+          "corpusEvidence": {"identity": "ありがとう|ありがとう|jmdict:1586820:0", "messageIds": ["0x1062", "0x106a", "0x2000"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "事|こと|matter", "written": "事", "reading": "こと", "partOfSpeech": "noun", "meaning": "thing; matter; fact",
+          "sentenceJapanese": "森で見た事を村の長老に話した。", "sentenceEnglish": "I told the village elder about what I saw in the forest.",
+          "corpusEvidence": {"identity": "事|こと|jmdict:1313580:0", "messageIds": ["0x2000"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "ポイント|ぽいんと|point", "written": "ポイント", "reading": "ぽいんと", "partOfSpeech": "noun", "meaning": "point; score point; key point",
+          "sentenceJapanese": "的の中心に当てると高いポイントがもらえる。", "sentenceEnglish": "Hitting the center of the target earns a high score.",
+          "corpusEvidence": {"identity": "ポイント|ぽいんと|jmdict:1124860:0", "messageIds": ["0x70f7", "0x70f8"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "風|かぜ|wind", "written": "風", "reading": "かぜ", "partOfSpeech": "noun", "meaning": "wind; breeze",
+          "sentenceJapanese": "森を抜ける風が木の葉を揺らした。", "sentenceEnglish": "The wind passing through the forest stirred the leaves.",
+          "corpusEvidence": {"identity": "風|かぜ|jmdict:1499720:0", "messageIds": ["0x104e", "0x104f", "0x1079", "0x107a"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "ねえ|ねえ|right", "written": "ねえ", "reading": "ねえ", "partOfSpeech": "interjection", "meaning": "hey; right?; don't you think?",
+          "sentenceJapanese": "ねえ、あの木の上に光が見えるでしょう？", "sentenceEnglish": "Hey, you can see a light above that tree, right?",
+          "corpusEvidence": {"identity": "ねえ|ねえ|jmdict:2029080:0", "messageIds": ["0x2039", "0x504c", "0x504f"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "始める|はじめる|begin", "written": "始める", "reading": "はじめる", "partOfSpeech": "verb", "meaning": "to start; to begin",
+          "sentenceJapanese": "鐘が鳴ると村人たちは祭りを始めた。", "sentenceEnglish": "When the bell rang, the villagers began the festival.",
+          "corpusEvidence": {"identity": "始める|はじめる|jmdict:1307550:0", "messageIds": ["0x2035", "0x2090", "0x2091", "0x2092"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "心配|しんぱい|worry", "written": "心配", "reading": "しんぱい", "partOfSpeech": "noun", "meaning": "worry; concern; anxiety",
+          "sentenceJapanese": "帰りが遅い仲間を心配して森へ探しに行った。", "sentenceEnglish": "Worried about our late companion, we went to search the forest.",
+          "corpusEvidence": {"identity": "心配|しんぱい|jmdict:1360930:0", "messageIds": ["0x0150", "0x5015", "0x5016", "0x70f8"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "返す|かえす|return-something", "written": "返す", "reading": "かえす", "partOfSpeech": "verb", "meaning": "to return; to give back; to restore",
+          "sentenceJapanese": "借りた弓を狩人に返した。", "sentenceEnglish": "I returned the borrowed bow to the hunter.",
+          "corpusEvidence": {"identity": "返す|かえす|jmdict:1512130:0", "messageIds": ["0x0001", "0x0002", "0x0005", "0x10b8"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "おっきい|おっきい|big", "written": "おっきい", "reading": "おっきい", "partOfSpeech": "adjective", "meaning": "big; large; great",
+          "sentenceJapanese": "森の奥にはおっきい古木が立っている。", "sentenceEnglish": "A great old tree stands deep in the forest.",
+          "corpusEvidence": {"identity": "おっきい|おっきい|jmdict:2137230:0", "messageIds": ["0x105d", "0x105e"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "アイツ|あいつ|that-guy", "written": "アイツ", "reading": "あいつ", "partOfSpeech": "pronoun", "meaning": "that guy; he; she",
+          "sentenceJapanese": "アイツなら夜の森でも迷わず歩ける。", "sentenceEnglish": "That one can walk through the forest at night without getting lost.",
+          "corpusEvidence": {"identity": "アイツ|あいつ|jmdict:1483160:0", "messageIds": ["0x1068", "0x1070", "0x1071", "0x204c"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "ゴースト|ごーすと|ghost", "written": "ゴースト", "reading": "ごーすと", "partOfSpeech": "noun", "meaning": "ghost",
+          "sentenceJapanese": "古い屋敷には青いゴーストが出るらしい。", "sentenceEnglish": "A blue ghost is said to haunt the old manor.",
+          "corpusEvidence": {"identity": "ゴースト|ごーすと|jmdict:1054170:0", "messageIds": ["0x00f9", "0x508f", "0x70f4", "0x70f8"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "少女|しょうじょ|girl", "written": "少女", "reading": "しょうじょ", "partOfSpeech": "noun", "meaning": "girl; maiden; young lady",
+          "sentenceJapanese": "緑の服を着た少女が森の歌を教えてくれた。", "sentenceEnglish": "A girl dressed in green taught me a song of the forest.",
+          "corpusEvidence": {"identity": "少女|しょうじょ|jmdict:1580290:0", "messageIds": ["0x700f", "0x7010", "0x707a"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "満足|まんぞく|satisfaction", "written": "満足", "reading": "まんぞく", "partOfSpeech": "noun", "meaning": "satisfaction; contentment",
+          "sentenceJapanese": "狩人は見事な弓の腕に満足した。", "sentenceEnglish": "The hunter was satisfied with the fine display of archery.",
+          "corpusEvidence": {"identity": "満足|まんぞく|jmdict:1526860:0", "messageIds": ["0x5027", "0x503e", "0x5042", "0x5043"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "メヌエット|めぬえっと|minuet", "written": "メヌエット", "reading": "めぬえっと", "partOfSpeech": "noun", "meaning": "minuet",
+          "sentenceJapanese": "宮廷楽師が静かなメヌエットを奏でた。", "sentenceEnglish": "The court musician performed a gentle minuet.",
+          "corpusEvidence": {"identity": "メヌエット|めぬえっと|jmdict:1133800:0", "messageIds": ["0x0073", "0x0870", "0x0893", "0x106c"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "四|よん|four", "written": "四", "reading": "よん", "partOfSpeech": "noun", "meaning": "four",
+          "sentenceJapanese": "墓地の四つの石像が同じ方向を向いている。", "sentenceEnglish": "The four stone statues in the graveyard face the same direction.",
+          "corpusEvidence": {"identity": "四|よん|jmdict:1579470:0", "messageIds": ["0x0650", "0x0651", "0x0652", "0x0653"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "日|ひ|day", "written": "日", "reading": "ひ", "partOfSpeech": "noun", "meaning": "day; sunlight; sun",
+          "sentenceJapanese": "あの日から森には静けさが戻った。", "sentenceEnglish": "Peace and quiet returned to the forest after that day.",
+          "corpusEvidence": {"identity": "日|ひ|jmdict:1463770:0", "messageIds": ["0x1065", "0x106c", "0x2000"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "姿|すがた|form", "written": "姿", "reading": "すがた", "partOfSpeech": "noun", "meaning": "figure; form; appearance",
+          "sentenceJapanese": "霧の中に白い鹿の姿が見えた。", "sentenceEnglish": "The figure of a white deer appeared in the mist.",
+          "corpusEvidence": {"identity": "姿|すがた|jmdict:1307710:0", "messageIds": ["0x0651", "0x0652", "0x0653"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "平和|へいわ|peace", "written": "平和", "reading": "へいわ", "partOfSpeech": "noun", "meaning": "peace; harmony",
+          "sentenceJapanese": "森に平和が戻り、鳥たちが再び歌い始めた。", "sentenceEnglish": "Peace returned to the forest, and the birds began to sing again.",
+          "corpusEvidence": {"identity": "平和|へいわ|jmdict:1508070:0", "messageIds": ["0x1066", "0x2000", "0x7057"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "目覚め|めざめ|awakening", "written": "目覚め", "reading": "めざめ", "partOfSpeech": "noun", "meaning": "awakening; waking",
+          "sentenceJapanese": "長い眠りからの目覚めは突然だった。", "sentenceEnglish": "The awakening from the long sleep was sudden.",
+          "corpusEvidence": {"identity": "目覚め|めざめ|jmdict:1954950:0", "messageIds": ["0x003e", "0x7079", "0x707a"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "乗る|のる|ride", "written": "乗る", "reading": "のる", "partOfSpeech": "verb", "meaning": "to ride; to get on; to board",
+          "sentenceJapanese": "旅人は白い馬に乗って草原を駆けた。", "sentenceEnglish": "The traveler mounted a white horse and raced across the meadow.",
+          "corpusEvidence": {"identity": "乗る|のる|jmdict:1355120:0", "messageIds": ["0x2035", "0x2036", "0x208e"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "腕|うで|arm", "written": "腕", "reading": "うで", "partOfSpeech": "noun", "meaning": "arm; skill; ability",
+          "sentenceJapanese": "弓の腕を上げるため毎朝練習している。", "sentenceEnglish": "I practice every morning to improve my archery skill.",
+          "corpusEvidence": {"identity": "腕|うで|jmdict:1562850:0", "messageIds": ["0x108e", "0x2030", "0x2038"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "ニイ|にい|young-man", "written": "ニイ", "reading": "にい", "partOfSpeech": "noun", "meaning": "older brother; young man (used in ニイちゃん and ニイさん)",
+          "sentenceJapanese": "村の子供が旅人をニイちゃんと呼んだ。", "sentenceEnglish": "A village child addressed the traveler as big brother.",
+          "corpusEvidence": {"identity": "ニイ|にい|override:ニイ|にい", "messageIds": ["0x1052", "0x1053", "0x1055", "0x1057", "0x1058", "0x105a", "0x105b", "0x105d", "0x105f", "0x1073", "0x1074", "0x1076"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "デス|です|polite-copula", "written": "デス", "reading": "です", "partOfSpeech": "auxiliary verb", "meaning": "polite copula; to be",
+          "sentenceJapanese": "ボクは森を守る小さな精霊デス。", "sentenceEnglish": "I am a small spirit who protects the forest.",
+          "corpusEvidence": {"identity": "デス|です|override:デス|です", "messageIds": ["0x1062", "0x1063", "0x1064", "0x1065", "0x1066", "0x1078"]}, "wordAudio": null, "sentenceAudio": null
         }
       ]
     },
@@ -5356,21 +5521,9 @@
           "sentenceAudio": null
         },
         {
-          "id": "消える|きえる|vanish",
-          "written": "消える",
-          "reading": "きえる",
-          "partOfSpeech": "verb",
-          "meaning": "to vanish; to disappear",
-          "sentenceJapanese": "最後の鐘が鳴ると、空を覆う黒い雲が消えた。",
-          "sentenceEnglish": "When the final bell rang, the black clouds covering the sky vanished.",
-          "corpusEvidence": {
-            "identity": "消える|きえる|jmdict:1350040:0",
-            "messageIds": [
-              "0x7084"
-            ]
-          },
-          "wordAudio": null,
-          "sentenceAudio": null
+          "id": "魔王|まおう|demon-king", "written": "魔王", "reading": "まおう", "partOfSpeech": "noun", "meaning": "demon king; lord of darkness",
+          "sentenceJapanese": "魔王は黒い塔から王国を支配しようとした。", "sentenceEnglish": "The demon king sought to rule the realm from a black tower.",
+          "corpusEvidence": {"identity": "魔王|まおう|jmdict:1524060:0", "messageIds": ["0x705b", "0x7061", "0x707e", "0x7084"]}, "wordAudio": null, "sentenceAudio": null
         }
       ]
     }

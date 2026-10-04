@@ -461,7 +461,7 @@
       "startMarker": "Receive the adult quest",
       "endMarker": "Awaken the Forest Sage",
       "prerequisites": ["05-door-of-time"],
-      "deck": {"status": "pilot", "downloadAvailable": false, "reviewedCardCount": 5, "audioStatus": "none"},
+      "deck": {"status": "pilot", "downloadAvailable": false, "reviewedCardCount": 38, "audioStatus": "none"},
       "sampleCards": [
         {"id": "目覚める|めざめる|awaken", "written": "目覚める", "reading": "めざめる", "partOfSpeech": "verb", "meaning": "to awaken; to wake up", "sentenceJapanese": "長い眠りから目覚めると、森の姿は変わっていた。", "sentenceEnglish": "Upon awakening from a long sleep, the forest had changed.", "corpusEvidence": {"identity": "目覚める|めざめる|jmdict:1535350:0", "messageIds": ["0x106a"]}, "wordAudio": null, "sentenceAudio": null},
         {"id": "帰る|かえる|return", "written": "帰る", "reading": "かえる", "partOfSpeech": "verb", "meaning": "to return; to go home; to go back", "sentenceJapanese": "森の道が暗くなる前に村へ帰ろう。", "sentenceEnglish": "Let us return to the village before the forest path grows dark.", "corpusEvidence": {"identity": "帰る|かえる|jmdict:1221270:0", "messageIds": ["0x105b", "0x105c", "0x106e"]}, "wordAudio": null, "sentenceAudio": null},
@@ -561,7 +561,7 @@
         {"id": "野望|やぼう|ambition", "written": "野望", "reading": "やぼう", "partOfSpeech": "noun", "meaning": "ambition; aspiration", "sentenceJapanese": "王の野望は国中に長い争いをもたらした。", "sentenceEnglish": "The king's ambition brought a long conflict across the realm.", "corpusEvidence": {"identity": "野望|やぼう|jmdict:1537650:0", "messageIds": ["0x707e"]}, "wordAudio": null, "sentenceAudio": null},
         {"id": "光|ひかり|light", "written": "光", "reading": "ひかり", "partOfSpeech": "noun", "meaning": "light", "sentenceJapanese": "朝の光が差し込み、暗い塔の階段を照らした。", "sentenceEnglish": "Morning light streamed in and illuminated the dark tower's stairs.", "corpusEvidence": {"identity": "光|ひかり|jmdict:1272780:0", "messageIds": ["0x7084"]}, "wordAudio": null, "sentenceAudio": null},
         {"id": "封印|ふういん|seal", "written": "封印", "reading": "ふういん", "partOfSpeech": "noun", "meaning": "seal; magical sealing", "sentenceJapanese": "賢者たちは闇の力を聖なる場所に封印した。", "sentenceEnglish": "The sages sealed the power of darkness in a sacred place.", "corpusEvidence": {"identity": "封印|ふういん|jmdict:1499610:0", "messageIds": ["0x706c"]}, "wordAudio": null, "sentenceAudio": null},
-        {"id": "消える|きえる|vanish", "written": "消える", "reading": "きえる", "partOfSpeech": "verb", "meaning": "to vanish; to disappear", "sentenceJapanese": "最後の鐘が鳴ると、空を覆う黒い雲が消えた。", "sentenceEnglish": "When the final bell rang, the black clouds covering the sky vanished.", "corpusEvidence": {"identity": "消える|きえる|jmdict:1350040:0", "messageIds": ["0x7084"]}, "wordAudio": null, "sentenceAudio": null}
+        {"id": "魔王|まおう|demon-king", "written": "魔王", "reading": "まおう", "partOfSpeech": "noun", "meaning": "demon king; lord of darkness", "sentenceJapanese": "魔王は黒い塔から王国を支配しようとした。", "sentenceEnglish": "The demon king sought to rule the realm from a black tower.", "corpusEvidence": {"identity": "魔王|まおう|jmdict:1524060:0", "messageIds": ["0x705b", "0x7061", "0x707e", "0x7084"]}, "wordAudio": null, "sentenceAudio": null}
       ]
     }
   ]
