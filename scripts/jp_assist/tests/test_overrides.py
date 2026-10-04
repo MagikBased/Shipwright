@@ -62,6 +62,10 @@ class OverrideTest(unittest.TestCase):
         self.assertEqual(mask["meaning"], "mask")
         self.assertIn("target", target["meaning"])
         self.assertIn("camera", viewpoint["meaning"])
+        speech = apply_override("コロ", "ころ", {"meaning": "time"})
+        pebble = apply_context_override("コロ", "ころ", "石コロ", 1, speech)
+        self.assertEqual(pebble["meaning"], "small stone; pebble")
+        self.assertEqual(pebble["senseId"], "override:石コロ|いしころ")
 
     def test_contractions_and_action_senses_replace_unrelated_homographs(self):
         self.assertIn("home", apply_override("ち", "ち", {"meaning": "blood"})["meaning"])
@@ -134,6 +138,8 @@ class OverrideTest(unittest.TestCase):
         self.assertIn("a lot", apply_override("いっぱい", "いっぱい", {"meaning": "defeat"})["meaning"])
         self.assertIn("older brother", apply_override("ニイ", "にい", {"meaning": "second place"})["meaning"])
         self.assertEqual(apply_override("デス", "です", {"meaning": "death"})["meaning"], "polite copula; to be")
+        self.assertIn("sentence-ending", apply_override("コロ", "ころ", {"meaning": "time"})["meaning"])
+        self.assertEqual(apply_override("リュウ", "りゅう", {"meaning": "style"})["meaning"], "dragon")
         self.assertTrue(apply_override("ジャブジャブ", "じゃぶじゃぶ", {"meaning": "splashing"})["senseId"].startswith("proper:"))
         self.assertTrue(apply_override("キングゾーラ", "きんぐぞーら", {"meaning": ""})["senseId"].startswith("proper:"))
         self.assertEqual(apply_override("サカナ", "さかな", {"meaning": "snack"})["meaning"], "fish")

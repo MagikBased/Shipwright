@@ -77,6 +77,16 @@ OVERRIDES: dict[tuple[str, str], dict] = {
         "note": "Katakana spelling of です used as a character speech pattern; not 'death'.",
         "partOfSpeech": "auxiliary verb",
     },
+    ("コロ", "ころ"): {
+        "meaning": "Goron sentence-ending speech quirk",
+        "note": "Character speech pattern; context handling preserves the separate 石コロ 'small stone' usage.",
+        "partOfSpeech": "suffix",
+    },
+    ("リュウ", "りゅう"): {
+        "meaning": "dragon",
+        "note": "Katakana spelling of 竜 in the volcanic-mountain dialogue; not 流 (style or manner).",
+        "partOfSpeech": "noun",
+    },
     ("だー", "だー"): {"meaning": "dialectal/stylized form of だ (to be)", "note": "Character speech pattern."},
     ("ッ", "っ"): {"meaning": "emphatic final small tsu", "note": "Marks an abrupt or forceful ending."},
     ("ッピ", "っぴ"): {"meaning": "Deku Scrub sentence-ending speech quirk", "note": "Character speech pattern.", "partOfSpeech": "suffix"},
@@ -599,6 +609,16 @@ def apply_context_override(
             "senseId": "override:気をつける|きをつける",
             "partOfSpeech": "verb",
             "note": "The fixed expression 気をつける.",
+            "source": "override",
+        })
+        return merged
+    if lemma == "コロ" and japanese_text[max(0, start - 1):start] == "石":
+        merged = dict(sense)
+        merged.update({
+            "meaning": "small stone; pebble",
+            "senseId": "override:石コロ|いしころ",
+            "partOfSpeech": "noun",
+            "note": "The コロ element of 石コロ, not the Goron sentence-ending speech quirk.",
             "source": "override",
         })
         return merged

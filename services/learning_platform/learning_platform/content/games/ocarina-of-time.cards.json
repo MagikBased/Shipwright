@@ -5159,6 +5159,61 @@
           },
           "wordAudio": null,
           "sentenceAudio": null
+        },
+        {
+          "id": "コロ|ころ|speech-ending", "written": "コロ", "reading": "ころ", "partOfSpeech": "suffix", "meaning": "Goron sentence-ending speech quirk",
+          "sentenceJapanese": "岩の民は元気よく『山へ帰るコロ！』と叫んだ。", "sentenceEnglish": "The rock folk cheerfully cried, 'We're going back to the mountain!'",
+          "corpusEvidence": {"identity": "コロ|ころ|override:コロ|ころ", "messageIds": ["0x3030", "0x3031", "0x3032", "0x3035", "0x3036", "0x3037", "0x3038", "0x3041", "0x3042"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "ゴロォ|ごろぉ|stretched-ending", "written": "ゴロォ", "reading": "ごろぉ", "partOfSpeech": "suffix", "meaning": "stretched Goron sentence ending",
+          "sentenceJapanese": "大きな職人はゆっくり『任せるゴロォ』と答えた。", "sentenceEnglish": "The large craftsman slowly replied, 'Leave it to me.'",
+          "corpusEvidence": {"identity": "ゴロォ|ごろぉ|override:ゴロォ|ごろぉ", "messageIds": ["0x3053", "0x3054", "0x3056"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "服|ふく|clothes", "written": "服", "reading": "ふく", "partOfSpeech": "noun", "meaning": "clothes; clothing",
+          "sentenceJapanese": "火山へ行く前に熱に強い服を着た。", "sentenceEnglish": "Before going to the volcano, I put on heat-resistant clothes.",
+          "corpusEvidence": {"identity": "服|ふく|jmdict:1500940:0", "messageIds": ["0x3036", "0x3060", "0x3061"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "お礼|おれい|thanks", "written": "お礼", "reading": "おれい", "partOfSpeech": "noun", "meaning": "thanks; gratitude; reward",
+          "sentenceJapanese": "鍛冶屋は手伝いのお礼に立派な盾をくれた。", "sentenceEnglish": "As thanks for the help, the smith gave me a fine shield.",
+          "corpusEvidence": {"identity": "お礼|おれい|jmdict:1270810:0", "messageIds": ["0x3069", "0x306a", "0x306b", "0x306c", "0x306d", "0x306e", "0x306f", "0x3070"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "リュウ|りゅう|dragon", "written": "リュウ", "reading": "りゅう", "partOfSpeech": "noun", "meaning": "dragon",
+          "sentenceJapanese": "山の頂に赤いリュウが住んでいるという。", "sentenceEnglish": "They say a red dragon lives at the mountain summit.",
+          "corpusEvidence": {"identity": "リュウ|りゅう|override:リュウ|りゅう", "messageIds": ["0x3032", "0x3034", "0x3035", "0x3041"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "ちまう|ちまう|completion", "written": "ちまう", "reading": "ちまう", "partOfSpeech": "auxiliary verb", "meaning": "to do completely; contracted form of てしまう",
+          "sentenceJapanese": "急がないと炎が橋を焼いちまうぞ。", "sentenceEnglish": "If we do not hurry, the flames will burn the bridge down.",
+          "corpusEvidence": {"identity": "ちまう|ちまう|jmdict:2210750:0", "messageIds": ["0x3039", "0x3045", "0x3047", "0x3048"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "名物|めいぶつ|specialty", "written": "名物", "reading": "めいぶつ", "partOfSpeech": "noun", "meaning": "local specialty; famous product",
+          "sentenceJapanese": "この村の名物は火山石で焼いた丸いパンだ。", "sentenceEnglish": "This village's specialty is round bread baked on volcanic stone.",
+          "corpusEvidence": {"identity": "名物|めいぶつ|jmdict:1531810:0", "messageIds": ["0x3069", "0x306b", "0x306c", "0x306f", "0x3070"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "光|ひかり|light", "written": "光", "reading": "ひかり", "partOfSpeech": "noun", "meaning": "light; radiance",
+          "sentenceJapanese": "洞窟の奥から赤い光が漏れていた。", "sentenceEnglish": "A red light leaked from the depths of the cavern.",
+          "corpusEvidence": {"identity": "光|ひかり|jmdict:1272780:0", "messageIds": ["0x0078", "0x0875", "0x0898", "0x708c"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "プレリュード|ぷれりゅーど|prelude", "written": "プレリュード", "reading": "ぷれりゅーど", "partOfSpeech": "noun", "meaning": "prelude",
+          "sentenceJapanese": "旅の始まりを告げるプレリュードが広間に響いた。", "sentenceEnglish": "A prelude announcing the start of the journey echoed through the hall.",
+          "corpusEvidence": {"identity": "プレリュード|ぷれりゅーど|jmdict:1117010:0", "messageIds": ["0x0078", "0x0875", "0x0898", "0x708c"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "ボレロ|ぼれろ|bolero", "written": "ボレロ", "reading": "ぼれろ", "partOfSpeech": "noun", "meaning": "bolero; bolero dance or music",
+          "sentenceJapanese": "炎のように激しいボレロを楽師が奏でた。", "sentenceEnglish": "The musician performed a bolero as fierce as flame.",
+          "corpusEvidence": {"identity": "ボレロ|ぼれろ|jmdict:1124430:0", "messageIds": ["0x0074", "0x0871", "0x0894", "0x303e"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "魔力|まりょく|magic-power", "written": "魔力", "reading": "まりょく", "partOfSpeech": "noun", "meaning": "magical power; supernatural power",
+          "sentenceJapanese": "古い杖には今も強い魔力が残っている。", "sentenceEnglish": "Strong magical power still remains in the old staff.",
+          "corpusEvidence": {"identity": "魔力|まりょく|jmdict:1524280:0", "messageIds": ["0x00d8", "0x00e4", "0x00e8"]}, "wordAudio": null, "sentenceAudio": null
         }
       ]
     },
@@ -5487,21 +5542,9 @@
           "sentenceAudio": null
         },
         {
-          "id": "光|ひかり|light",
-          "written": "光",
-          "reading": "ひかり",
-          "partOfSpeech": "noun",
-          "meaning": "light",
-          "sentenceJapanese": "朝の光が差し込み、暗い塔の階段を照らした。",
-          "sentenceEnglish": "Morning light streamed in and illuminated the dark tower's stairs.",
-          "corpusEvidence": {
-            "identity": "光|ひかり|jmdict:1272780:0",
-            "messageIds": [
-              "0x7084"
-            ]
-          },
-          "wordAudio": null,
-          "sentenceAudio": null
+          "id": "急ぐ|いそぐ|hurry", "written": "急ぐ", "reading": "いそぐ", "partOfSpeech": "verb", "meaning": "to hurry; to rush; to hasten",
+          "sentenceJapanese": "塔が崩れる前に出口へ急ごう。", "sentenceEnglish": "Let us hurry to the exit before the tower collapses.",
+          "corpusEvidence": {"identity": "急ぐ|いそぐ|jmdict:1228650:0", "messageIds": ["0x70d1", "0x70d7", "0x70e0", "0x70e1", "0x70e2", "0x70e5", "0x71a8", "0x71ac"]}, "wordAudio": null, "sentenceAudio": null
         },
         {
           "id": "封印|ふういん|seal",
