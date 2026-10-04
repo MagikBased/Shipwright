@@ -406,7 +406,7 @@
       "startMarker": "Open the path to Death Mountain",
       "endMarker": "Receive the fire spiritual stone",
       "prerequisites": ["02-princess-of-destiny"],
-      "deck": {"status": "pilot", "downloadAvailable": false, "reviewedCardCount": 81, "audioStatus": "none"},
+      "deck": {"status": "pilot", "downloadAvailable": false, "reviewedCardCount": 106, "audioStatus": "none"},
       "sampleCards": [
         {"id": "山|やま|mountain", "written": "山", "reading": "やま", "partOfSpeech": "noun", "meaning": "mountain; hill", "sentenceJapanese": "高い山の頂上には、火を守る民が住んでいる。", "sentenceEnglish": "People who guard the flame live at the summit of the high mountain.", "corpusEvidence": {"identity": "山|やま|jmdict:1302680:0", "messageIds": ["0x300d"]}, "wordAudio": null, "sentenceAudio": null},
         {"id": "岩|いわ|rock", "written": "岩", "reading": "いわ", "partOfSpeech": "noun", "meaning": "rock; boulder", "sentenceJapanese": "巨大な岩が洞窟への道をふさいでいた。", "sentenceEnglish": "A gigantic boulder blocked the path to the cavern.", "corpusEvidence": {"identity": "岩|いわ|jmdict:1217270:0", "messageIds": ["0x3014"]}, "wordAudio": null, "sentenceAudio": null},
@@ -543,7 +543,7 @@
         {"id": "盗賊|とうぞく|bandit", "written": "盗賊", "reading": "とうぞく", "partOfSpeech": "noun", "meaning": "thief; robber; bandit", "sentenceJapanese": "素早い盗賊は見張りの鍵を奪って姿を消した。", "sentenceEnglish": "The swift bandit stole the guard's key and vanished.", "corpusEvidence": {"identity": "盗賊|とうぞく|jmdict:1448470:0", "messageIds": ["0x606a"]}, "wordAudio": null, "sentenceAudio": null},
         {"id": "砦|とりで|fortress", "written": "砦", "reading": "とりで", "partOfSpeech": "noun", "meaning": "fort; fortress; stronghold", "sentenceJapanese": "砂の砦は高い壁と鋭い見張りに守られていた。", "sentenceEnglish": "The desert fortress was protected by high walls and vigilant guards.", "corpusEvidence": {"identity": "砦|とりで|jmdict:1295240:0", "messageIds": ["0x6065"]}, "wordAudio": null, "sentenceAudio": null},
         {"id": "銀|ぎん|silver", "written": "銀", "reading": "ぎん", "partOfSpeech": "noun", "meaning": "silver", "sentenceJapanese": "鍛冶屋は銀を使って王子の腕輪を作った。", "sentenceEnglish": "The blacksmith used silver to craft a bracelet for the prince.", "corpusEvidence": {"identity": "銀|ぎん|jmdict:1595090:0", "messageIds": ["0x6024"]}, "wordAudio": null, "sentenceAudio": null},
-        {"id": "アタイ|あたい|I", "written": "アタイ", "reading": "あたい", "partOfSpeech": "pronoun", "meaning": "I; me", "sentenceJapanese": "アタイが先に砦へ入り、門を開けてやるよ。", "sentenceEnglish": "I'll enter the fortress first and open the gate for you.", "corpusEvidence": {"identity": "アタイ|あたい|jmdict:1311125:0", "messageIds": ["0x6003"]}, "wordAudio": null, "sentenceAudio": null}
+        {"id": "ボーヤ|ぼーや|boy", "written": "ボーヤ", "reading": "ぼーや", "partOfSpeech": "noun", "meaning": "boy; kid", "sentenceJapanese": "砂漠の戦士は若い旅人をボーヤと呼んだ。", "sentenceEnglish": "The desert warrior called the young traveler 'boy.'", "corpusEvidence": {"identity": "ボーヤ|ぼーや|override:ボーヤ|ぼーや", "messageIds": ["0x601d"]}, "wordAudio": null, "sentenceAudio": null}
       ]
     },
     {

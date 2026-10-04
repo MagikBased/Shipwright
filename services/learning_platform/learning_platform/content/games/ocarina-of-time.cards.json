@@ -3807,6 +3807,131 @@
           "id": "完成|かんせい|completion", "written": "完成", "reading": "かんせい", "partOfSpeech": "noun", "meaning": "completion; finish",
           "sentenceJapanese": "石工たちの新しい橋がついに完成した。", "sentenceEnglish": "The stonemasons' new bridge was finally completed.",
           "corpusEvidence": {"identity": "完成|かんせい|jmdict:1211490:0", "messageIds": ["0x5010"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "ぼうず|ぼうず|kid", "written": "ぼうず", "reading": "ぼうず", "partOfSpeech": "noun", "meaning": "boy; kid; lad",
+          "sentenceJapanese": "門番は若い旅人を見て「元気なぼうずだ」と笑った。", "sentenceEnglish": "The gatekeeper saw the young traveler and laughed, 'You're a lively lad.'",
+          "corpusEvidence": {"identity": "ぼうず|ぼうず|override:ぼうず|ぼうず", "messageIds": ["0x5028"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "まわる|まわる|turn", "written": "まわる", "reading": "まわる", "partOfSpeech": "verb", "meaning": "to turn; to revolve; to go around",
+          "sentenceJapanese": "古い水車が川の流れを受けてゆっくりまわる。", "sentenceEnglish": "The old waterwheel turns slowly in the river's current.",
+          "corpusEvidence": {"identity": "まわる|まわる|jmdict:1604300:0", "messageIds": ["0x3024"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "よー|よー|emphasis", "written": "よー", "reading": "よー", "partOfSpeech": "particle", "meaning": "elongated sentence-ending よ; emphasis or insistence",
+          "sentenceJapanese": "オレだって村を守れるんだよー！", "sentenceEnglish": "I can protect the village too, you know!",
+          "corpusEvidence": {"identity": "よー|よー|override:よー|よー", "messageIds": ["0x7134"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "ボーズ|ぼーず|boy", "written": "ボーズ", "reading": "ぼーず", "partOfSpeech": "noun", "meaning": "boy; son; kid",
+          "sentenceJapanese": "鍛冶屋はボーズに小さな木の剣を渡した。", "sentenceEnglish": "The blacksmith handed the boy a small wooden sword.",
+          "corpusEvidence": {"identity": "ボーズ|ぼーず|override:ボーズ|ぼーず", "messageIds": ["0x2015"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "聞こえる|きこえる|audible", "written": "聞こえる", "reading": "きこえる", "partOfSpeech": "verb", "meaning": "to be heard; to be audible",
+          "sentenceJapanese": "静かな夜には谷の向こうの鐘まで聞こえる。", "sentenceEnglish": "On a quiet night, even the bell beyond the valley can be heard.",
+          "corpusEvidence": {"identity": "聞こえる|きこえる|jmdict:1591150:0", "messageIds": ["0x301a"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "食べる|たべる|eat", "written": "食べる", "reading": "たべる", "partOfSpeech": "verb", "meaning": "to eat",
+          "sentenceJapanese": "山の民は焼いた木の実をみんなで食べた。", "sentenceEnglish": "The mountain folk ate roasted nuts together.",
+          "corpusEvidence": {"identity": "食べる|たべる|jmdict:1358280:0", "messageIds": ["0x3014"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "こわす|こわす|destroy", "written": "こわす", "reading": "こわす", "partOfSpeech": "verb", "meaning": "to break; to destroy; to demolish",
+          "sentenceJapanese": "古い壁をこわすと秘密の通路が現れた。", "sentenceEnglish": "When we broke the old wall, a secret passage appeared.",
+          "corpusEvidence": {"identity": "こわす|こわす|jmdict:1199890:0", "messageIds": ["0x0011"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "カオ|かお|face", "written": "カオ", "reading": "かお", "partOfSpeech": "noun", "meaning": "face; visage",
+          "sentenceJapanese": "兵士は兜を上げて疲れたカオを見せた。", "sentenceEnglish": "The soldier raised his helmet and revealed a tired face.",
+          "corpusEvidence": {"identity": "カオ|かお|jmdict:1217730:0", "messageIds": ["0x0014"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "使い|つかい|envoy", "written": "使い", "reading": "つかい", "partOfSpeech": "noun", "meaning": "messenger; envoy; errand; mission",
+          "sentenceJapanese": "王の使いが村へ急ぎの知らせを運んできた。", "sentenceEnglish": "The king's envoy brought urgent news to the village.",
+          "corpusEvidence": {"identity": "使い|つかい|jmdict:1305720:0", "messageIds": ["0x3017"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "熱い|あつい|hot", "written": "熱い", "reading": "あつい", "partOfSpeech": "adjective", "meaning": "hot; heated",
+          "sentenceJapanese": "鍛冶屋は熱い鉄を槌で何度も打った。", "sentenceEnglish": "The blacksmith struck the hot iron again and again with a hammer.",
+          "corpusEvidence": {"identity": "熱い|あつい|jmdict:1467720:0", "messageIds": ["0x3011"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "頂上|ちょうじょう|summit", "written": "頂上", "reading": "ちょうじょう", "partOfSpeech": "noun", "meaning": "top; summit; peak",
+          "sentenceJapanese": "山の頂上から遠くの王城が見えた。", "sentenceEnglish": "The distant royal castle was visible from the mountain summit.",
+          "corpusEvidence": {"identity": "頂上|ちょうじょう|jmdict:1430220:0", "messageIds": ["0x3064"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "おどかす|おどかす|startle", "written": "おどかす", "reading": "おどかす", "partOfSpeech": "verb", "meaning": "to startle; to scare; to frighten",
+          "sentenceJapanese": "暗がりから急に現れて仲間をおどかすな。", "sentenceEnglish": "Don't suddenly appear from the darkness and startle your companions.",
+          "corpusEvidence": {"identity": "おどかす|おどかす|override:おどかす|おどかす", "messageIds": ["0x710c"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "ずきん|ずきん|hood", "written": "ずきん", "reading": "ずきん", "partOfSpeech": "noun", "meaning": "hood; kerchief",
+          "sentenceJapanese": "旅の魔法使いは深い青色のずきんをかぶっていた。", "sentenceEnglish": "The traveling mage wore a deep-blue hood.",
+          "corpusEvidence": {"identity": "ずきん|ずきん|jmdict:1450830:0", "messageIds": ["0x0013"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "取り出し|とりだし|taking-out", "written": "取り出し", "reading": "とりだし", "partOfSpeech": "noun", "meaning": "taking out; removal; retrieval",
+          "sentenceJapanese": "道具袋からの取り出しは素早く行わなければならない。", "sentenceEnglish": "You must retrieve things from the tool bag quickly.",
+          "corpusEvidence": {"identity": "取り出し|とりだし|override:取り出し|とりだし", "messageIds": ["0x001c"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "新型|しんがた|new-model", "written": "新型", "reading": "しんがた", "partOfSpeech": "noun", "meaning": "new type; new model; new style",
+          "sentenceJapanese": "工房では壁を登る新型の機械を作っている。", "sentenceEnglish": "The workshop is building a new type of machine that climbs walls.",
+          "corpusEvidence": {"identity": "新型|しんがた|jmdict:1361770:0", "messageIds": ["0x0033"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "馬|うま|horse", "written": "馬", "reading": "うま", "partOfSpeech": "noun", "meaning": "horse",
+          "sentenceJapanese": "騎士は白い馬に乗って平原を駆けた。", "sentenceEnglish": "The knight rode a white horse across the plain.",
+          "corpusEvidence": {"identity": "馬|うま|jmdict:1471560:0", "messageIds": ["0x0407"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "アタイ|あたい|I", "written": "アタイ", "reading": "あたい", "partOfSpeech": "pronoun", "meaning": "I; me",
+          "sentenceJapanese": "アタイが先に洞窟へ入って道を確かめるよ。", "sentenceEnglish": "I'll enter the cave first and check the path.",
+          "corpusEvidence": {"identity": "アタイ|あたい|jmdict:1311125:0", "messageIds": ["0x3009"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "勇者|ゆうしゃ|hero", "written": "勇者", "reading": "ゆうしゃ", "partOfSpeech": "noun", "meaning": "hero; brave warrior",
+          "sentenceJapanese": "若い勇者は村を救うために剣を取った。", "sentenceEnglish": "The young hero took up a sword to save the village.",
+          "corpusEvidence": {"identity": "勇者|ゆうしゃ|jmdict:1539800:0", "messageIds": ["0x2010"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "みんな|みんな|everyone", "written": "みんな", "reading": "みんな", "partOfSpeech": "noun", "meaning": "everyone; everybody; all",
+          "sentenceJapanese": "夜が明ける前にみんなで橋を直そう。", "sentenceEnglish": "Let's all repair the bridge before dawn.",
+          "corpusEvidence": {"identity": "みんな|みんな|jmdict:1202150:0", "messageIds": ["0x3014"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "記録|きろく|record", "written": "記録", "reading": "きろく", "partOfSpeech": "noun", "meaning": "record; document; chronicle",
+          "sentenceJapanese": "司書は古い戦いの記録を地下の書庫で見つけた。", "sentenceEnglish": "The librarian found a record of an ancient battle in the underground archive.",
+          "corpusEvidence": {"identity": "記録|きろく|jmdict:1223440:0", "messageIds": ["0x022a"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "つける|つける|be-careful", "written": "つける", "reading": "つける", "partOfSpeech": "verb", "meaning": "to be careful; to take care",
+          "sentenceJapanese": "暗い遺跡では足元に気をつけるんだ。", "sentenceEnglish": "Watch your footing in the dark ruins.",
+          "corpusEvidence": {"identity": "つける|つける|override:気をつける|きをつける", "messageIds": ["0x0023"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "受け取る|うけとる|receive", "written": "受け取る", "reading": "うけとる", "partOfSpeech": "verb", "meaning": "to receive; to accept; to get",
+          "sentenceJapanese": "旅人は長老から銀の鍵を受け取った。", "sentenceEnglish": "The traveler received a silver key from the elder.",
+          "corpusEvidence": {"identity": "受け取る|うけとる|jmdict:1329650:0", "messageIds": ["0x3004"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "教える|おしえる|teach", "written": "教える", "reading": "おしえる", "partOfSpeech": "verb", "meaning": "to teach; to instruct; to tell",
+          "sentenceJapanese": "老兵は少年に盾の使い方を教えた。", "sentenceEnglish": "The old soldier taught the boy how to use a shield.",
+          "corpusEvidence": {"identity": "教える|おしえる|jmdict:1236900:0", "messageIds": ["0x2015"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "もつ|もつ|carry", "written": "もつ", "reading": "もつ", "partOfSpeech": "verb", "meaning": "to hold; to carry; to possess",
+          "sentenceJapanese": "雪山へ行くなら丈夫な盾をもつといい。", "sentenceEnglish": "If you are going to the snowy mountain, you should carry a sturdy shield.",
+          "corpusEvidence": {"identity": "もつ|もつ|jmdict:1315720:0", "messageIds": ["0x3065"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "さがす|さがす|search", "written": "さがす", "reading": "さがす", "partOfSpeech": "verb", "meaning": "to search for; to look for; to seek",
+          "sentenceJapanese": "冒険者は失われた王冠を古い神殿でさがした。", "sentenceEnglish": "The adventurer searched the ancient temple for the lost crown.",
+          "corpusEvidence": {"identity": "さがす|さがす|jmdict:1593670:0", "messageIds": ["0x301c"]}, "wordAudio": null, "sentenceAudio": null
         }
       ]
     },
@@ -4439,17 +4564,17 @@
           "sentenceAudio": null
         },
         {
-          "id": "アタイ|あたい|I",
-          "written": "アタイ",
-          "reading": "あたい",
-          "partOfSpeech": "pronoun",
-          "meaning": "I; me",
-          "sentenceJapanese": "アタイが先に砦へ入り、門を開けてやるよ。",
-          "sentenceEnglish": "I'll enter the fortress first and open the gate for you.",
+          "id": "ボーヤ|ぼーや|boy",
+          "written": "ボーヤ",
+          "reading": "ぼーや",
+          "partOfSpeech": "noun",
+          "meaning": "boy; kid",
+          "sentenceJapanese": "砂漠の戦士は若い旅人をボーヤと呼んだ。",
+          "sentenceEnglish": "The desert warrior called the young traveler 'boy.'",
           "corpusEvidence": {
-            "identity": "アタイ|あたい|jmdict:1311125:0",
+            "identity": "ボーヤ|ぼーや|override:ボーヤ|ぼーや",
             "messageIds": [
-              "0x6003"
+              "0x601d"
             ]
           },
           "wordAudio": null,
