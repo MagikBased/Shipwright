@@ -31,6 +31,7 @@ function renderCards() {
 }
 function renderProgress() {
   const progress = state.progress, signedIn = Boolean(progress);
+  document.body.classList.toggle("course-active", Boolean(progress?.active));
   document.querySelector("#sign-in").classList.toggle("hidden", signedIn);
   document.querySelector("#enroll").classList.toggle("hidden", !signedIn);
   document.querySelector("#study-review").classList.toggle("hidden", !progress?.active);
@@ -65,6 +66,7 @@ async function loadQueue() {
 async function load() {
   try {
     state.chapter = await request(`/v1/catalog/games/${encodeURIComponent(gameId)}/chapters/${encodeURIComponent(chapterId)}/cards?limit=250`);
+    document.body.classList.toggle("review-mode", !browseMode);
     const studyPath = `/study/${encodeURIComponent(gameId)}/${encodeURIComponent(chapterId)}`;
     document.querySelectorAll(browseMode ? ".browse-only" : ".review-only").forEach(element => element.classList.remove("hidden"));
     const modeLink = document.querySelector("#mode-link"); modeLink.href = browseMode ? studyPath : `${studyPath}/cards`; text(modeLink, browseMode ? "Study this chapter" : "Browse chapter cards");

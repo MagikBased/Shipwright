@@ -58,6 +58,22 @@ test.describe("public game catalog", () => {
     await page.locator("#course-review-card").click();
     await expect(page.locator("#course-review-card .example")).not.toHaveText("");
     await expect(page.locator("#course-review-card .meaning")).toHaveCSS("color", "rgb(238, 246, 248)");
+    for (const viewport of [{ width: 1024, height: 768 }, { width: 1920, height: 1080 }]) {
+      await page.setViewportSize(viewport);
+      const lessonLayout = await page.evaluate(() => {
+        const card = document.querySelector("#course-review-card").getBoundingClientRect();
+        const actions = document.querySelector("#course-review-actions").getBoundingClientRect();
+        return {
+          viewportWidth: innerWidth, viewportHeight: innerHeight,
+          documentHeight: document.documentElement.scrollHeight,
+          cardWidth: card.width, cardBottom: card.bottom, actionsBottom: actions.bottom,
+        };
+      });
+      expect(lessonLayout.documentHeight).toBeLessThanOrEqual(lessonLayout.viewportHeight + 1);
+      expect(lessonLayout.cardWidth).toBeGreaterThan(lessonLayout.viewportWidth * .9);
+      expect(lessonLayout.cardBottom).toBeLessThan(lessonLayout.actionsBottom);
+      expect(lessonLayout.actionsBottom).toBeLessThanOrEqual(lessonLayout.viewportHeight);
+    }
     const good = page.locator("#course-review-actions [data-rating='3']");
     await good.click();
     await expect(page.locator("#metric-reviewed")).toHaveText("1");
