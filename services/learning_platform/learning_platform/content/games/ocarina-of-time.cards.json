@@ -4422,6 +4422,131 @@
           "id": "ところ|ところ|place", "written": "ところ", "reading": "ところ", "partOfSpeech": "noun", "meaning": "place; spot; site",
           "sentenceJapanese": "ここは旅人が川を渡るのに安全なところだ。", "sentenceEnglish": "This is a safe place for travelers to cross the river.",
           "corpusEvidence": {"identity": "ところ|ところ|jmdict:1343100:0", "messageIds": ["0x4003"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "すべて|すべて|everything", "written": "すべて", "reading": "すべて", "partOfSpeech": "noun", "meaning": "everything; all; the whole",
+          "sentenceJapanese": "洪水が村の橋をすべて流してしまった。", "sentenceEnglish": "The flood washed away all the village bridges.",
+          "corpusEvidence": {"identity": "すべて|すべて|jmdict:1595730:0", "messageIds": ["0x4011"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "うまい|うまい|skillful", "written": "うまい", "reading": "うまい", "partOfSpeech": "adjective", "meaning": "skillful; clever; expert",
+          "sentenceJapanese": "あの漁師は急流でも魚をつるのがうまい。", "sentenceEnglish": "That fisherman is skilled at catching fish even in rapids.",
+          "corpusEvidence": {"identity": "うまい|うまい|jmdict:1310460:0", "messageIds": ["0x407f"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "所|ところ|place-kanji", "written": "所", "reading": "ところ", "partOfSpeech": "noun", "meaning": "place; spot; site",
+          "sentenceJapanese": "川が浅い所を見つけて向こう岸へ渡った。", "sentenceEnglish": "We found a shallow spot in the river and crossed to the other bank.",
+          "corpusEvidence": {"identity": "所|ところ|jmdict:1343100:0", "messageIds": ["0x4003"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "な〜|な|do-not", "written": "な〜", "reading": "な", "partOfSpeech": "particle", "meaning": "don't; do not",
+          "sentenceJapanese": "危険な渦の近くで泳ぐな〜！", "sentenceEnglish": "Don't swim near the dangerous whirlpool!",
+          "corpusEvidence": {"identity": "な〜|な|jmdict:2029110:0", "messageIds": ["0x4055"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "そなた|そなた|you", "written": "そなた", "reading": "そなた", "partOfSpeech": "pronoun", "meaning": "you (archaic or formal)",
+          "sentenceJapanese": "そなたの勇気に報いるため、この宝石を授けよう。", "sentenceEnglish": "To reward your courage, I shall grant you this jewel.",
+          "corpusEvidence": {"identity": "そなた|そなた|override:そなた|そなた", "messageIds": ["0x4025"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "ただいま|ただいま|currently", "written": "ただいま", "reading": "ただいま", "partOfSpeech": "noun", "meaning": "presently; right now; current",
+          "sentenceJapanese": "ただいまの潜水記録は十二メートルです。", "sentenceEnglish": "The current diving record is twelve meters.",
+          "corpusEvidence": {"identity": "ただいま|ただいま|jmdict:1538960:1", "messageIds": ["0x4089"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "おぉ|おぉ|oh", "written": "おぉ", "reading": "おぉ", "partOfSpeech": "interjection", "meaning": "oh!; ooh!",
+          "sentenceJapanese": "おぉ、湖の底から古い宝箱が上がってきた！", "sentenceEnglish": "Oh, an old treasure chest has risen from the bottom of the lake!",
+          "corpusEvidence": {"identity": "おぉ|おぉ|override:おぉ|おぉ", "messageIds": ["0x407d"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "ワープ|わーぷ|teleport", "written": "ワープ", "reading": "わーぷ", "partOfSpeech": "noun", "meaning": "warp; teleportation; instant transport",
+          "sentenceJapanese": "魔法陣に立つと遠い神殿へワープした。", "sentenceEnglish": "Standing on the magic circle teleported us to a distant temple.",
+          "corpusEvidence": {"identity": "ワープ|わーぷ|override:ワープ|わーぷ", "messageIds": ["0x003b"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "里|さと|village", "written": "里", "reading": "さと", "partOfSpeech": "noun", "meaning": "village; hamlet; home region",
+          "sentenceJapanese": "川の上流に水の民が暮らす里がある。", "sentenceEnglish": "A village inhabited by water folk lies upstream.",
+          "corpusEvidence": {"identity": "里|さと|jmdict:1550760:0", "messageIds": ["0x4003"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "かえる|かえる|return", "written": "かえる", "reading": "かえる", "partOfSpeech": "verb", "meaning": "to return; to go home; to go back",
+          "sentenceJapanese": "宝石を見つけたらすぐ城へかえるつもりだ。", "sentenceEnglish": "I intend to return to the castle as soon as I find the jewel.",
+          "corpusEvidence": {"identity": "かえる|かえる|jmdict:1221270:0", "messageIds": ["0x404b"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "ほう|ほう|person-side", "written": "ほう", "reading": "ほう", "partOfSpeech": "noun", "meaning": "person; side; direction; alternative",
+          "sentenceJapanese": "そのほうはどこの国から来た旅人じゃ？", "sentenceEnglish": "From which land have you come, traveler?",
+          "corpusEvidence": {"identity": "ほう|ほう|override:ほう|ほう", "messageIds": ["0x404b"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "とる|とる|progressive", "written": "とる", "reading": "とる", "partOfSpeech": "auxiliary verb", "meaning": "to be doing; contracted progressive auxiliary",
+          "sentenceJapanese": "今日は湖の魚が岩陰に隠れとる。", "sentenceEnglish": "Today the lake fish are hiding behind the rocks.",
+          "corpusEvidence": {"identity": "とる|とる|jmdict:2394890:0", "messageIds": ["0x4092"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "うち|うち|within", "written": "うち", "reading": "うち", "partOfSpeech": "noun", "meaning": "within; among; while; category or range",
+          "sentenceJapanese": "三メートルでは深くもぐったうちに入らない。", "sentenceEnglish": "Three meters does not count as a deep dive.",
+          "corpusEvidence": {"identity": "うち|うち|override:うち|うち", "messageIds": ["0x406d"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "一族|いちぞく|clan", "written": "一族", "reading": "いちぞく", "partOfSpeech": "noun", "meaning": "family; clan; people",
+          "sentenceJapanese": "水辺に暮らす一族は古くから泉を守ってきた。", "sentenceEnglish": "The clan living by the water has protected the spring since ancient times.",
+          "corpusEvidence": {"identity": "一族|いちぞく|jmdict:1164440:0", "messageIds": ["0x4003"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "歩く|あるく|walk", "written": "歩く", "reading": "あるく", "partOfSpeech": "verb", "meaning": "to walk",
+          "sentenceJapanese": "旅人は浅い川の中をゆっくり歩いた。", "sentenceEnglish": "The traveler slowly walked through the shallow river.",
+          "corpusEvidence": {"identity": "歩く|あるく|jmdict:1514320:0", "messageIds": ["0x407f"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "あぶない|あぶない|dangerous", "written": "あぶない", "reading": "あぶない", "partOfSpeech": "adjective", "meaning": "dangerous; risky; hazardous",
+          "sentenceJapanese": "雷の鳴る湖で泳ぐのはあぶない。", "sentenceEnglish": "Swimming in the lake during thunder is dangerous.",
+          "corpusEvidence": {"identity": "あぶない|あぶない|jmdict:1218380:0", "messageIds": ["0x012f"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "お腹|おなか|stomach", "written": "お腹", "reading": "おなか", "partOfSpeech": "noun", "meaning": "belly; stomach; abdomen",
+          "sentenceJapanese": "長く泳いだのでお腹がすいてしまった。", "sentenceEnglish": "After swimming for a long time, I became hungry.",
+          "corpusEvidence": {"identity": "お腹|おなか|jmdict:1002610:0", "messageIds": ["0x4005"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "ねむる|ねむる|sleep", "written": "ねむる", "reading": "ねむる", "partOfSpeech": "verb", "meaning": "to sleep",
+          "sentenceJapanese": "湖の守り神は深い洞窟でねむっている。", "sentenceEnglish": "The lake's guardian deity sleeps in a deep cavern.",
+          "corpusEvidence": {"identity": "ねむる|ねむる|jmdict:1529390:0", "messageIds": ["0x022d"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "深い|ふかい|deep", "written": "深い", "reading": "ふかい", "partOfSpeech": "adjective", "meaning": "deep; profound",
+          "sentenceJapanese": "深い湖の底には光の届かない洞窟がある。", "sentenceEnglish": "At the bottom of the deep lake is a cavern untouched by light.",
+          "corpusEvidence": {"identity": "深い|ふかい|override:深い|ふかい", "messageIds": ["0x00cd"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "禁止|きんし|prohibited", "written": "禁止", "reading": "きんし", "partOfSpeech": "noun", "meaning": "prohibition; ban; forbidden",
+          "sentenceJapanese": "聖なる池では魚をつることが禁止されている。", "sentenceEnglish": "Fishing is prohibited in the sacred pond.",
+          "corpusEvidence": {"identity": "禁止|きんし|jmdict:1241550:0", "messageIds": ["0x4090"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "つり|つり|fishing", "written": "つり", "reading": "つり", "partOfSpeech": "noun", "meaning": "fishing; angling",
+          "sentenceJapanese": "夜明け前のつりは静かで気持ちがいい。", "sentenceEnglish": "Fishing before dawn is peaceful and pleasant.",
+          "corpusEvidence": {"identity": "つり|つり|jmdict:1434040:0", "messageIds": ["0x407b"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "いちおう|いちおう|for-now", "written": "いちおう", "reading": "いちおう", "partOfSpeech": "noun", "meaning": "for now; tentatively; more or less",
+          "sentenceJapanese": "いちおう地図に秘密の入り江を記しておこう。", "sentenceEnglish": "For now, let us mark the secret inlet on the map.",
+          "corpusEvidence": {"identity": "いちおう|いちおう|jmdict:1161170:0", "messageIds": ["0x40a5"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "はるか|はるか|far-away", "written": "はるか", "reading": "はるか", "partOfSpeech": "noun", "meaning": "far away; distant; remote",
+          "sentenceJapanese": "川ははるか北の山から流れてくる。", "sentenceEnglish": "The river flows from mountains far to the north.",
+          "corpusEvidence": {"identity": "はるか|はるか|jmdict:1546930:0", "messageIds": ["0x4003"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "べつ|べつ|different", "written": "べつ", "reading": "べつ", "partOfSpeech": "noun", "meaning": "different; separate; another",
+          "sentenceJapanese": "この道が水没しているなら、べつの道を探そう。", "sentenceEnglish": "If this path is flooded, let us search for another one.",
+          "corpusEvidence": {"identity": "べつ|べつ|jmdict:1509430:0", "messageIds": ["0x4094"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "ほんま|ほんま|truth", "written": "ほんま", "reading": "ほんま", "partOfSpeech": "noun", "meaning": "truth; reality; really",
+          "sentenceJapanese": "ほんまに金色の魚がいるなら見てみたい。", "sentenceEnglish": "If a golden fish really exists, I want to see it.",
+          "corpusEvidence": {"identity": "ほんま|ほんま|jmdict:2001000:0", "messageIds": ["0x4096"]}, "wordAudio": null, "sentenceAudio": null
         }
       ],
       "terminology": [
