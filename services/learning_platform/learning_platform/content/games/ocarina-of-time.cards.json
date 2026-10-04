@@ -3932,6 +3932,156 @@
           "id": "さがす|さがす|search", "written": "さがす", "reading": "さがす", "partOfSpeech": "verb", "meaning": "to search for; to look for; to seek",
           "sentenceJapanese": "冒険者は失われた王冠を古い神殿でさがした。", "sentenceEnglish": "The adventurer searched the ancient temple for the lost crown.",
           "corpusEvidence": {"identity": "さがす|さがす|jmdict:1593670:0", "messageIds": ["0x301c"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "おかげ|おかげ|thanks-to", "written": "おかげ", "reading": "おかげ", "partOfSpeech": "noun", "meaning": "thanks to; owing to; because of",
+          "sentenceJapanese": "薬師のおかげで傷ついた騎士は元気になった。", "sentenceEnglish": "Thanks to the healer, the wounded knight recovered.",
+          "corpusEvidence": {"identity": "おかげ|おかげ|override:おかげ|おかげ", "messageIds": ["0x3023"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "ただいま|ただいま|currently", "written": "ただいま", "reading": "ただいま", "partOfSpeech": "noun", "meaning": "presently; right now; at this time",
+          "sentenceJapanese": "ただいま門を修理しているので、少しお待ちください。", "sentenceEnglish": "We are repairing the gate right now, so please wait a little.",
+          "corpusEvidence": {"identity": "ただいま|ただいま|jmdict:1538960:1", "messageIds": ["0x5063"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "家|いえ|house", "written": "家", "reading": "いえ", "partOfSpeech": "noun", "meaning": "house; home; residence",
+          "sentenceJapanese": "森の外れに小さな木の家が建っている。", "sentenceEnglish": "A small wooden house stands at the edge of the forest.",
+          "corpusEvidence": {"identity": "家|いえ|jmdict:1191730:0", "messageIds": ["0x5057"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "こども|こども|child", "written": "こども", "reading": "こども", "partOfSpeech": "noun", "meaning": "child; children",
+          "sentenceJapanese": "村のこどもは木の枝を剣にして遊んでいた。", "sentenceEnglish": "A village child was playing with a tree branch as a sword.",
+          "corpusEvidence": {"identity": "こども|こども|jmdict:1307850:0", "messageIds": ["0x3016"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "なんか|なんか|something-like", "written": "なんか", "reading": "なんか", "partOfSpeech": "particle", "meaning": "something like; things like; the likes of",
+          "sentenceJapanese": "古い迷信なんか気にせず、塔へ進もう。", "sentenceEnglish": "Let's ignore things like old superstitions and proceed to the tower.",
+          "corpusEvidence": {"identity": "なんか|なんか|jmdict:1009500:0", "messageIds": ["0x3014"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "ふえる|ふえる|increase", "written": "ふえる", "reading": "ふえる", "partOfSpeech": "verb", "meaning": "to increase; to multiply",
+          "sentenceJapanese": "雨が続くと森のキノコが急にふえる。", "sentenceEnglish": "When the rain continues, the forest mushrooms rapidly increase.",
+          "corpusEvidence": {"identity": "ふえる|ふえる|jmdict:1602440:0", "messageIds": ["0x0059"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "100|ひゃく|one-hundred", "written": "100", "reading": "ひゃく", "partOfSpeech": "noun", "meaning": "one hundred; the number 100",
+          "sentenceJapanese": "宝箱には金貨が100枚入っていた。", "sentenceEnglish": "The treasure chest contained one hundred gold coins.",
+          "corpusEvidence": {"identity": "100|ひゃく|number:100", "messageIds": ["0x008c"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "思い出す|おもいだす|remember", "written": "思い出す", "reading": "おもいだす", "partOfSpeech": "verb", "meaning": "to recall; to remember; to recollect",
+          "sentenceJapanese": "古い歌を聞いて、旅人は故郷を思い出した。", "sentenceEnglish": "Hearing the old song, the traveler remembered home.",
+          "corpusEvidence": {"identity": "思い出す|おもいだす|jmdict:1309260:0", "messageIds": ["0x5012"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "いろんな|いろんな|various", "written": "いろんな", "reading": "いろんな", "partOfSpeech": "adnominal", "meaning": "various; all sorts of",
+          "sentenceJapanese": "市場にはいろんな国から商人が集まっていた。", "sentenceEnglish": "Merchants from various lands had gathered at the market.",
+          "corpusEvidence": {"identity": "いろんな|いろんな|jmdict:1609270:0", "messageIds": ["0x0011"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "う〜ん|ううん|hmm", "written": "う〜ん", "reading": "ううん", "partOfSpeech": "interjection", "meaning": "hmm; um; well",
+          "sentenceJapanese": "う〜ん、この謎を解くには別の鍵が必要だ。", "sentenceEnglish": "Hmm, we need another key to solve this puzzle.",
+          "corpusEvidence": {"identity": "う〜ん|ううん|jmdict:2002400:0", "messageIds": ["0x301c"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "ねえ|ねえ|not", "written": "ねえ", "reading": "ねえ", "partOfSpeech": "auxiliary verb", "meaning": "not; colloquial form of ない",
+          "sentenceJapanese": "こんな重い岩、一人じゃ動かせねえ。", "sentenceEnglish": "I can't move such a heavy boulder alone.",
+          "corpusEvidence": {"identity": "ねえ|ねえ|jmdict:2841117:1", "messageIds": ["0x3011"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "ウフフ|うふふ|tee-hee", "written": "ウフフ", "reading": "うふふ", "partOfSpeech": "interjection", "meaning": "tee-hee; feminine chuckle",
+          "sentenceJapanese": "魔女はウフフと笑って紫の煙に消えた。", "sentenceEnglish": "The witch chuckled and vanished into purple smoke.",
+          "corpusEvidence": {"identity": "ウフフ|うふふ|jmdict:2036150:0", "messageIds": ["0x0162"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "少し|すこし|a-little", "written": "少し", "reading": "すこし", "partOfSpeech": "adverb", "meaning": "a little; a few; a small amount",
+          "sentenceJapanese": "夜明けまで少し時間があるから休もう。", "sentenceEnglish": "There is a little time before dawn, so let us rest.",
+          "corpusEvidence": {"identity": "少し|すこし|jmdict:1348870:0", "messageIds": ["0x3062"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "本当|ほんとう|truth", "written": "本当", "reading": "ほんとう", "partOfSpeech": "noun", "meaning": "truth; reality; fact",
+          "sentenceJapanese": "竜が山にいるという話は本当だった。", "sentenceEnglish": "The tale that a dragon lived on the mountain was true.",
+          "corpusEvidence": {"identity": "本当|ほんとう|jmdict:1523060:0", "messageIds": ["0x0029"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "かわり|かわり|in-return", "written": "かわり", "reading": "かわり", "partOfSpeech": "noun", "meaning": "in exchange; in return; instead",
+          "sentenceJapanese": "薬を渡すかわりに、泉まで案内してもらった。", "sentenceEnglish": "In exchange for giving medicine, I was guided to the spring.",
+          "corpusEvidence": {"identity": "かわり|かわり|override:かわり|かわり", "messageIds": ["0x3004"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "たべる|たべる|eat", "written": "たべる", "reading": "たべる", "partOfSpeech": "verb", "meaning": "to eat",
+          "sentenceJapanese": "旅人は焚き火のそばで温かいスープをたべた。", "sentenceEnglish": "The traveler ate warm soup beside the campfire.",
+          "corpusEvidence": {"identity": "たべる|たべる|jmdict:1358280:0", "messageIds": ["0x506b"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "でっかい|でっかい|huge", "written": "でっかい", "reading": "でっかい", "partOfSpeech": "adjective", "meaning": "huge; big; enormous",
+          "sentenceJapanese": "洞窟の奥ででっかい竜が眠っていた。", "sentenceEnglish": "A huge dragon was sleeping deep inside the cave.",
+          "corpusEvidence": {"identity": "でっかい|でっかい|jmdict:1008370:0", "messageIds": ["0x710d"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "まつ|まつ|wait", "written": "まつ", "reading": "まつ", "partOfSpeech": "verb", "meaning": "to wait",
+          "sentenceJapanese": "仲間が戻るまで古い橋の前でまつことにした。", "sentenceEnglish": "We decided to wait before the old bridge until our companion returned.",
+          "corpusEvidence": {"identity": "まつ|まつ|jmdict:1410590:0", "messageIds": ["0x3017"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "悪い|わるい|bad", "written": "悪い", "reading": "わるい", "partOfSpeech": "adjective", "meaning": "bad; poor; undesirable",
+          "sentenceJapanese": "悪い魔法が村の井戸を凍らせてしまった。", "sentenceEnglish": "Evil magic froze the village well.",
+          "corpusEvidence": {"identity": "悪い|わるい|jmdict:1151260:0", "messageIds": ["0x3018"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "迷う|まよう|get-lost", "written": "迷う", "reading": "まよう", "partOfSpeech": "verb", "meaning": "to lose one's way; to get lost; to hesitate",
+          "sentenceJapanese": "霧の深い森では道に迷わないよう気をつけよう。", "sentenceEnglish": "Let us be careful not to get lost in the misty forest.",
+          "corpusEvidence": {"identity": "迷う|まよう|jmdict:1532710:0", "messageIds": ["0x063f"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "願う|ねがう|wish", "written": "願う", "reading": "ねがう", "partOfSpeech": "verb", "meaning": "to wish; to hope; to desire",
+          "sentenceJapanese": "村人たちは勇者の無事を星に願った。", "sentenceEnglish": "The villagers wished upon the stars for the hero's safety.",
+          "corpusEvidence": {"identity": "願う|ねがう|jmdict:1217950:0", "messageIds": ["0x70a5"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "いそがしい|いそがしい|busy", "written": "いそがしい", "reading": "いそがしい", "partOfSpeech": "adjective", "meaning": "busy; occupied; hectic",
+          "sentenceJapanese": "祭りの前日は村の職人たちがいそがしい。", "sentenceEnglish": "The village craftspeople are busy on the day before the festival.",
+          "corpusEvidence": {"identity": "いそがしい|いそがしい|jmdict:1519290:0", "messageIds": ["0x7117"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "ようこそ|ようこそ|welcome", "written": "ようこそ", "reading": "ようこそ", "partOfSpeech": "interjection", "meaning": "welcome; nice to see you",
+          "sentenceJapanese": "ようこそ、旅人よ。今夜は城で休むといい。", "sentenceEnglish": "Welcome, traveler. You may rest at the castle tonight.",
+          "corpusEvidence": {"identity": "ようこそ|ようこそ|jmdict:1013100:0", "messageIds": ["0x0018"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "アラ|あら|oh", "written": "アラ", "reading": "あら", "partOfSpeech": "interjection", "meaning": "oh!; ah!; my!",
+          "sentenceJapanese": "アラ、こんな夜更けにお客さまですか？", "sentenceEnglish": "Oh, a visitor at this late hour?",
+          "corpusEvidence": {"identity": "アラ|あら|override:アラ|あら", "messageIds": ["0x00bf"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "城下町|じょうかまち|castle-town", "written": "城下町", "reading": "じょうかまち", "partOfSpeech": "noun", "meaning": "castle town; town surrounding a castle",
+          "sentenceJapanese": "城下町の広場には朝早くから店が並んだ。", "sentenceEnglish": "Stalls lined the castle-town square from early morning.",
+          "corpusEvidence": {"identity": "城下町|じょうかまち|jmdict:1355730:0", "messageIds": ["0x2015"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "あそぶ|あそぶ|play", "written": "あそぶ", "reading": "あそぶ", "partOfSpeech": "verb", "meaning": "to play; to enjoy oneself",
+          "sentenceJapanese": "子供たちは泉のそばで日が暮れるまであそんだ。", "sentenceEnglish": "The children played beside the spring until sunset.",
+          "corpusEvidence": {"identity": "あそぶ|あそぶ|jmdict:1542160:0", "messageIds": ["0x0205"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "いっぱい|いっぱい|full", "written": "いっぱい", "reading": "いっぱい", "partOfSpeech": "adverb", "meaning": "full; filled; a lot; many",
+          "sentenceJapanese": "洞窟の壁には光る結晶がいっぱいあった。", "sentenceEnglish": "The cave walls were filled with glowing crystals.",
+          "corpusEvidence": {"identity": "いっぱい|いっぱい|override:いっぱい|いっぱい", "messageIds": ["0x300d"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "さっそく|さっそく|at-once", "written": "さっそく", "reading": "さっそく", "partOfSpeech": "adverb", "meaning": "at once; immediately; without delay",
+          "sentenceJapanese": "地図を受け取ると、騎士はさっそく北へ出発した。", "sentenceEnglish": "Upon receiving the map, the knight immediately departed north.",
+          "corpusEvidence": {"identity": "さっそく|さっそく|jmdict:1400300:0", "messageIds": ["0x70a5"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "じゃま|じゃま|hindrance", "written": "じゃま", "reading": "じゃま", "partOfSpeech": "noun", "meaning": "hindrance; obstacle; nuisance; interference",
+          "sentenceJapanese": "倒れた木がじゃまで、荷車は先へ進めなかった。", "sentenceEnglish": "A fallen tree blocked the way, so the wagon could not proceed.",
+          "corpusEvidence": {"identity": "じゃま|じゃま|jmdict:1323500:0", "messageIds": ["0x711c"]}, "wordAudio": null, "sentenceAudio": null
+        },
+        {
+          "id": "定価|ていか|list-price", "written": "定価", "reading": "ていか", "partOfSpeech": "noun", "meaning": "list price; regular price",
+          "sentenceJapanese": "その銀の盾は定価より少し安く売られていた。", "sentenceEnglish": "The silver shield was being sold for slightly less than its list price.",
+          "corpusEvidence": {"identity": "定価|ていか|jmdict:1435410:0", "messageIds": ["0x70b0"]}, "wordAudio": null, "sentenceAudio": null
         }
       ]
     },
