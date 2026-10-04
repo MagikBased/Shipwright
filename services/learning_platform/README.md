@@ -8,6 +8,9 @@ developed and used without running this optional service.
 
 The path from the release candidate to a publicly hosted service is tracked in
 [`docs/LEARNING_SITE_ROADMAP.md`](../../docs/LEARNING_SITE_ROADMAP.md).
+Canonical lexemes, distinct dictionary senses, cross-game knowledge transfer,
+and catalog coverage are documented in
+[`docs/CROSS_GAME_VOCABULARY.md`](../../docs/CROSS_GAME_VOCABULARY.md).
 
 ## Run locally
 

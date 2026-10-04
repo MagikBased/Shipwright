@@ -107,6 +107,47 @@ class LearningPlatformTest(unittest.TestCase):
         self.platform.set_word_known(self.session, "森|もり", False)
         self.assertEqual(self.platform.known_word_ids(self.session), set())
 
+    def test_catalog_knowledge_crosses_games_but_distinct_senses_remain_separate(self):
+        shared_word = {
+            "wordId": "森|もり", "written": "森", "reading": "もり", "jlptLevel": "N4",
+            "occurrenceCount": 3,
+            "senses": [
+                {"senseId": "forest", "partOfSpeech": "noun", "meaning": "forest", "occurrenceCount": 2},
+                {"senseId": "grove", "partOfSpeech": "noun", "meaning": "sacred grove", "occurrenceCount": 1},
+            ],
+        }
+        self.platform.sync_catalog_vocabulary([
+            {"gameId": "game-a", "title": "Game A", "words": [shared_word]},
+            {"gameId": "game-b", "title": "Game B", "words": [{
+                **shared_word,
+                "occurrenceCount": 5,
+                "senses": [{
+                    "senseId": "forest", "partOfSpeech": "noun",
+                    "meaning": "forest", "occurrenceCount": 5,
+                }],
+            }]},
+        ])
+        user_id = self.platform.authenticate_session(self.session)["id"]
+        now = self.clock().isoformat()
+        with self.platform.database.connect() as connection:
+            connection.execute(
+                "INSERT INTO word_annotations VALUES (?, ?, ?, 'known', '', '[]', ?)",
+                (user_id, "森|もり", "forest", now),
+            )
+
+        first = self.platform.catalog_coverage(self.session, "game-a")
+        second = self.platform.catalog_coverage(self.session, "game-b")
+        self.assertEqual((first["knownWords"], first["knownSenses"]), (1, 1))
+        self.assertEqual(first["totalSenses"], 2)
+        self.assertEqual(first["dialogueFamiliarityPercent"], 66.7)
+        self.assertEqual((second["knownWords"], second["knownSenses"]), (1, 1))
+        self.assertEqual(second["dialogueFamiliarityPercent"], 100.0)
+
+        self.platform.set_word_known(self.session, "森|もり", True)
+        fully_known = self.platform.catalog_coverage(self.session, "game-a")
+        self.assertEqual(fully_known["knownSenses"], 2)
+        self.assertEqual(fully_known["dialogueFamiliarityPercent"], 100.0)
+
     def test_email_verification_is_hashed_expiring_and_single_use(self):
         self.assertFalse(self.platform.authenticate_session(self.session)["emailVerified"])
         token = self.latest_mail_token()

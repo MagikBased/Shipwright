@@ -28,4 +28,6 @@ python3 scripts/jp_assist/build_game_vocabulary.py \
 
 Known words are account-wide. A saved identity therefore contributes to every
 catalog game that contains the same `lemma|reading`, while per-game coverage is
-computed at request time from that game's vocabulary manifest.
+computed at request time from that game's relational vocabulary memberships.
+Distinct meanings retain sense-specific mastery and frequency credit; see
+[`CROSS_GAME_VOCABULARY.md`](CROSS_GAME_VOCABULARY.md).

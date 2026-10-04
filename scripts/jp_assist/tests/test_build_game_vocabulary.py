@@ -12,8 +12,9 @@ class BuildGameVocabularyTest(unittest.TestCase):
             root = Path(directory)
             runtime = root / "runtime.json"
             runtime.write_text(json.dumps({"messages": {"0x1": {"pages": [{"tokens": [
-                {"id": "森|もり", "lemma": "森", "dictionaryReading": "もり", "partOfSpeech": "noun", "meaning": "forest"},
-                {"id": "森|もり", "lemma": "森", "dictionaryReading": "もり", "partOfSpeech": "noun", "meaning": "forest"},
+                {"id": "森|もり", "lemma": "森", "dictionaryReading": "もり", "senseId": "forest", "partOfSpeech": "noun", "meaning": "forest"},
+                {"id": "森|もり", "lemma": "森", "dictionaryReading": "もり", "senseId": "forest", "partOfSpeech": "noun", "meaning": "forest"},
+                {"id": "森|もり", "lemma": "森", "dictionaryReading": "もり", "senseId": "shrine-grove", "partOfSpeech": "noun", "meaning": "sacred grove"},
                 {"id": "ハイラル|はいらる", "lemma": "ハイラル", "dictionaryReading": "はいらる", "senseId": "proper:ハイラル|はいらる", "partOfSpeech": "noun", "meaning": "proper name"},
                 {"id": "ゴロ|ごろ", "lemma": "ゴロ", "dictionaryReading": "ごろ", "senseId": "override:ゴロ|ごろ", "partOfSpeech": "suffix", "meaning": "speech ending"},
             ]}]}}}), encoding="utf-8")
@@ -24,7 +25,12 @@ class BuildGameVocabularyTest(unittest.TestCase):
         self.assertEqual(result["summary"]["uniqueWords"], 1)
         self.assertEqual(result["summary"]["uniqueByLevel"]["N4"], 1)
         self.assertEqual(result["summary"]["uniqueByLevel"]["unclassified"], 0)
-        self.assertEqual(result["words"][0]["occurrenceCount"], 2)
+        self.assertEqual(result["words"][0]["occurrenceCount"], 3)
+        self.assertEqual(result["schemaVersion"], 2)
+        self.assertEqual(
+            [(sense["senseId"], sense["occurrenceCount"]) for sense in result["words"][0]["senses"]],
+            [("forest", 2), ("shrine-grove", 1)],
+        )
 
 
 if __name__ == "__main__":

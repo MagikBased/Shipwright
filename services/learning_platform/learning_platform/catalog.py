@@ -76,9 +76,16 @@ class GameCatalog:
         needle = search.strip().casefold()
         words = vocabulary["words"]
         if needle:
-            words = [word for word in words if any(
-                needle in str(word.get(field) or "").casefold()
-                for field in ("wordId", "written", "reading", "meaning")
+            words = [word for word in words if (
+                any(
+                    needle in str(word.get(field) or "").casefold()
+                    for field in ("wordId", "written", "reading", "meaning")
+                )
+                or any(
+                    needle in str(sense.get(field) or "").casefold()
+                    for sense in word.get("senses", [])
+                    for field in ("partOfSpeech", "meaning")
+                )
             )]
         if jlpt_level:
             words = [word for word in words if (word["jlptLevel"] or "unclassified") == jlpt_level]
@@ -96,33 +103,20 @@ class GameCatalog:
             return None
         return {word["wordId"] for word in vocabulary["words"]}
 
-    def coverage(self, game_id: str, known_word_ids: set[str]) -> dict[str, Any] | None:
-        vocabulary = self._vocabulary.get(game_id)
-        if vocabulary is None:
-            return None
-        words = vocabulary["words"]
-        known = [word for word in words if word["wordId"] in known_word_ids]
-        total_by_level = vocabulary["summary"]["uniqueByLevel"]
-        known_by_level = {level: 0 for level in total_by_level}
-        for word in known:
-            known_by_level[word["jlptLevel"] or "unclassified"] += 1
-        levels = {
-            level: {
-                "known": known_by_level[level],
-                "total": total,
-                "percent": round(known_by_level[level] * 100 / total, 1) if total else 0.0,
-            }
-            for level, total in total_by_level.items()
-        }
-        total = len(words)
-        return {
-            "gameId": game_id,
-            "knownWords": len(known),
-            "totalWords": total,
-            "percentKnown": round(len(known) * 100 / total, 1) if total else 0.0,
-            "knownWordIds": [word["wordId"] for word in known],
-            "levels": levels,
-        }
+    def database_records(self) -> list[dict[str, Any]]:
+        """Return content-neutral vocabulary rows for relational synchronization."""
+        records = []
+        for game_id, vocabulary in self._vocabulary.items():
+            game = self._games.get(game_id)
+            if game is None:
+                continue
+            records.append({
+                "gameId": game_id,
+                "title": game["title"],
+                "contentVersion": str(vocabulary.get("sourceCorpusVersion", "")),
+                "words": deepcopy(vocabulary["words"]),
+            })
+        return records
 
     def _load_games(self) -> dict[str, dict[str, Any]]:
         games: dict[str, dict[str, Any]] = {}
@@ -150,6 +144,22 @@ class GameCatalog:
             word_ids = [word.get("wordId") for word in words]
             if any(not word_id for word_id in word_ids) or len(word_ids) != len(set(word_ids)):
                 raise ValueError(f"Vocabulary manifest for {game_id} has invalid word ids")
+            for word in words:
+                canonical_id = f"{word.get('written', '')}|{word.get('reading', '')}"
+                if word["wordId"] != canonical_id:
+                    raise ValueError(
+                        f"Vocabulary word {word['wordId']} does not match its canonical lemma and reading"
+                    )
+                senses = word.get("senses")
+                if senses is None:
+                    continue  # Schema-v1 fixture compatibility.
+                if not isinstance(senses, list) or not senses:
+                    raise ValueError(f"Vocabulary word {word['wordId']} has invalid senses")
+                sense_ids = [sense.get("senseId", "") for sense in senses]
+                if len(sense_ids) != len(set(sense_ids)):
+                    raise ValueError(f"Vocabulary word {word['wordId']} has duplicate senses")
+                if sum(sense.get("occurrenceCount", 0) for sense in senses) != word.get("occurrenceCount"):
+                    raise ValueError(f"Vocabulary word {word['wordId']} has stale sense counts")
             manifests[game_id] = manifest
         return manifests
 

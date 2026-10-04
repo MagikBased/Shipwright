@@ -85,7 +85,31 @@ class DeploymentTest(unittest.TestCase):
             with migrated.connect() as connection:
                 tables = {row[0] for row in connection.execute("SELECT name FROM sqlite_master WHERE type='table'")}
             self.assertTrue({"word_annotations", "known_words", "review_state", "reviews", "learning_goals",
-                             "review_collections"}.issubset(tables))
+                             "review_collections", "lexemes", "lexical_senses", "catalog_games",
+                             "game_vocabulary"}.issubset(tables))
+
+    def test_version_ten_gains_relational_cross_game_vocabulary(self):
+        with tempfile.TemporaryDirectory(prefix="jp-assist-vocabulary-migration-") as temporary:
+            path = Path(temporary) / "version-ten.sqlite3"
+            database = Database(path)
+            with database.connect() as connection:
+                connection.execute("DROP TABLE game_vocabulary")
+                connection.execute("DROP TABLE lexical_senses")
+                connection.execute("DROP TABLE lexemes")
+                connection.execute("DROP TABLE catalog_games")
+                connection.execute("UPDATE metadata SET value = '10' WHERE key = 'schema_version'")
+
+            migrated = Database(path)
+            self.assertEqual(migrated.schema_version(), LATEST_SCHEMA_VERSION)
+            with migrated.connect() as connection:
+                tables = {
+                    row[0] for row in connection.execute(
+                        "SELECT name FROM sqlite_master WHERE type = 'table'"
+                    )
+                }
+            self.assertTrue(
+                {"lexemes", "lexical_senses", "catalog_games", "game_vocabulary"}.issubset(tables)
+            )
 
     def test_legacy_review_schema_gains_versioned_fsrs_projection_columns(self):
         with tempfile.TemporaryDirectory(prefix="jp-assist-review-migration-") as temporary:

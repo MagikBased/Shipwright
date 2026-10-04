@@ -61,7 +61,9 @@ function renderLanguageProfile(profile) {
 function renderCoverage(coverage) {
   knownWordIds = new Set(coverage.knownWordIds);
   text(document.querySelector("#coverage-percent"), `${coverage.percentKnown.toFixed(1)}%`);
-  text(document.querySelector("#coverage-count"), `${coverage.knownWords.toLocaleString()} of ${coverage.totalWords.toLocaleString()} game words`);
+  text(document.querySelector("#coverage-count"), `${coverage.knownWords.toLocaleString()} of ${coverage.totalWords.toLocaleString()} game words · ${coverage.newWords.toLocaleString()} new`);
+  text(document.querySelector("#coverage-dialogue"), `${coverage.dialogueFamiliarityPercent.toFixed(1)}% estimated dialogue familiarity`);
+  text(document.querySelector("#coverage-senses"), `${coverage.knownSenses.toLocaleString()} of ${coverage.totalSenses.toLocaleString()} meanings known`);
   const levels = document.querySelector("#coverage-levels");
   levels.replaceChildren();
   for (const level of ["N5", "N4", "N3", "N2", "N1", "unclassified"]) {
@@ -94,7 +96,10 @@ function vocabularyItem(word) {
   meaning.className = "vocabulary-meaning";
   text(written, word.written);
   text(reading, ` ${word.reading} · ${word.jlptLevel || "Unclassified"} · ${word.occurrenceCount}×`);
-  text(meaning, word.meaning);
+  const senses = word.senses || [];
+  text(meaning, senses.length > 1
+    ? senses.map(sense => `${sense.partOfSpeech}: ${sense.meaning}`).join(" · ")
+    : word.meaning);
   wordLine.append(written, reading);
   copy.append(wordLine, meaning);
   const button = document.createElement("button");

@@ -49,5 +49,8 @@ test.describe("public game catalog", () => {
     await firstToggle.click();
     await expect(firstToggle).toHaveText("Known ✓");
     await expect(page.locator("#coverage-count")).toContainText("1 of 3,762");
+    await expect(page.locator("#coverage-count")).toContainText("new");
+    await expect(page.locator("#coverage-dialogue")).toContainText("dialogue familiarity");
+    await expect(page.locator("#coverage-senses")).toContainText("meanings known");
   });
 });

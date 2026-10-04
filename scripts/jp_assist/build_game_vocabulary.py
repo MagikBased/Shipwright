@@ -68,21 +68,41 @@ def build(
                 identity = (token["lemma"], reading, token.get("senseId", ""))
                 if not is_transferable_identity(identity):
                     continue
-                word_id = token["id"]
+                # Cross-game identity deliberately excludes the dictionary
+                # sense: homographs share a lexeme when both normalized lemma
+                # and reading match, while `senses` keeps meanings distinct.
+                word_id = f"{token['lemma']}|{reading}"
                 entry = words.setdefault(word_id, {
                     "wordId": word_id,
                     "written": token["lemma"],
                     "reading": reading,
+                    "occurrenceCount": 0,
+                    "jlptLevel": None,
+                    "_senses": {},
+                })
+                entry["occurrenceCount"] += 1
+                sense_id = token.get("senseId") or ""
+                sense = entry["_senses"].setdefault(sense_id, {
+                    "senseId": sense_id,
                     "partOfSpeech": token.get("partOfSpeech") or "",
                     "meaning": token.get("meaning") or "",
                     "occurrenceCount": 0,
-                    "jlptLevel": None,
                 })
-                entry["occurrenceCount"] += 1
+                sense["occurrenceCount"] += 1
 
     for entry in words.values():
         key = (entry["written"], entry["reading"])
         entry["jlptLevel"] = exact.get(key) or unambiguous.get(entry["written"])
+        senses = sorted(
+            entry.pop("_senses").values(),
+            key=lambda sense: (-sense["occurrenceCount"], sense["senseId"]),
+        )
+        entry["senses"] = senses
+        primary = senses[0]
+        # Retain these convenience fields for existing catalog clients while
+        # exposing every distinct meaning through `senses`.
+        entry["partOfSpeech"] = primary["partOfSpeech"]
+        entry["meaning"] = primary["meaning"]
 
     ordered = sorted(words.values(), key=lambda item: (-item["occurrenceCount"], item["wordId"]))
     unique_counts = Counter(entry["jlptLevel"] or "unclassified" for entry in ordered)
@@ -90,8 +110,9 @@ def build(
     for entry in ordered:
         occurrence_counts[entry["jlptLevel"] or "unclassified"] += entry["occurrenceCount"]
     return {
-        "schemaVersion": 1,
+        "schemaVersion": 2,
         "gameId": game_id,
+        "sourceCorpusVersion": runtime.get("metadata", {}).get("corpusVersion", ""),
         "methodology": previous_methodology or {
             "unit": "unique lemma and reading identities",
             "levelSource": "OpenJLPT",

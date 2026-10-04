@@ -170,6 +170,14 @@ class LearningPlatformApiTest(unittest.TestCase):
         ).json()
         self.assertGreater(vocabulary["total"], 0)
         self.assertEqual(vocabulary["words"][0]["written"], "森")
+        secondary_sense = self.client.get(
+            "/v1/catalog/games/ocarina-of-time/vocabulary?search=feather"
+        ).json()
+        self.assertTrue(any(
+            sense["meaning"].startswith("feather")
+            for word in secondary_sense["words"]
+            for sense in word["senses"]
+        ))
         self.assertEqual(self.client.get("/v1/catalog/games/not-a-game").status_code, 404)
 
         for chapter in game["chapters"]:
@@ -222,6 +230,12 @@ class LearningPlatformApiTest(unittest.TestCase):
         self.assertEqual(updated.status_code, 200)
         self.assertEqual(updated.json()["coverage"]["knownWords"], 1)
         self.assertIn("森|もり", updated.json()["coverage"]["knownWordIds"])
+        self.assertGreaterEqual(updated.json()["coverage"]["knownSenses"], 1)
+        self.assertGreater(updated.json()["coverage"]["dialogueFamiliarityPercent"], 0)
+        self.assertEqual(
+            updated.json()["coverage"]["newWords"],
+            updated.json()["coverage"]["totalWords"] - 1,
+        )
         all_games = self.client.get("/v1/me/catalog/games").json()["games"]
         self.assertEqual(all_games[0]["knownWords"], 1)
         archive = self.client.get("/v1/me/exports/account").json()

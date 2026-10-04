@@ -216,6 +216,7 @@ def create_app(
         settings.database_path, settings.backup_directory, settings.structured_logs,
     )
     catalog = GameCatalog()
+    platform.sync_catalog_vocabulary(catalog.database_records())
     app = FastAPI(
         title="JP Assist Learning Platform",
         version="0.3.0-rc.1",
@@ -517,7 +518,7 @@ def create_app(
         game_id: str, request: Request, authorization: str | None = Header(default=None),
     ) -> dict[str, Any]:
         token = session_token(request, authorization)
-        result = catalog.coverage(game_id, platform.known_word_ids(token))
+        result = platform.catalog_coverage(token, game_id)
         if result is None:
             raise HTTPException(status_code=404, detail="Catalog vocabulary not found")
         return result
@@ -526,10 +527,10 @@ def create_app(
     def catalog_coverages(
         request: Request, authorization: str | None = Header(default=None),
     ) -> dict[str, Any]:
-        known_word_ids = platform.known_word_ids(session_token(request, authorization))
+        token = session_token(request, authorization)
         games = []
         for game in catalog.list_games():
-            coverage = catalog.coverage(game["id"], known_word_ids)
+            coverage = platform.catalog_coverage(token, game["id"])
             if coverage is not None:
                 games.append(coverage)
         return {"games": games}
@@ -546,7 +547,7 @@ def create_app(
             raise HTTPException(status_code=404, detail="Word not found in this game")
         token = session_token(request, authorization)
         result = platform.set_word_known(token, payload.wordId, payload.known)
-        result["coverage"] = catalog.coverage(game_id, platform.known_word_ids(token))
+        result["coverage"] = platform.catalog_coverage(token, game_id)
         return result
 
     @app.get("/v1/me/activity")

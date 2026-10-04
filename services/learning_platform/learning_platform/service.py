@@ -1034,6 +1034,177 @@ class LearningPlatform:
             ).fetchall()
         return {row["word_id"] for row in rows}
 
+    def sync_catalog_vocabulary(self, games: list[dict[str, Any]]) -> dict[str, int]:
+        """Synchronize reviewed game manifests into the relational vocabulary graph.
+
+        A lexeme is a normalized written-form/reading pair. Meanings remain
+        separate senses so homographs can share familiarity without sharing SRS
+        mastery. The repository manifests remain the reviewed source of truth.
+        """
+        now = isoformat(self.now())
+        lexeme_count = sense_count = membership_count = 0
+        with self.database.connect() as connection:
+            for game in games:
+                game_id = require_identifier("gameId", game.get("gameId"))
+                connection.execute(
+                    """
+                    INSERT INTO catalog_games(game_id, title, content_version, updated_at)
+                    VALUES (?, ?, ?, ?)
+                    ON CONFLICT(game_id) DO UPDATE SET
+                        title = excluded.title,
+                        content_version = excluded.content_version,
+                        updated_at = excluded.updated_at
+                    """,
+                    (game_id, game.get("title", game_id), game.get("contentVersion", ""), now),
+                )
+                connection.execute("DELETE FROM game_vocabulary WHERE game_id = ?", (game_id,))
+                for word in game.get("words", []):
+                    word_id = str(word["wordId"])
+                    written = str(word["written"])
+                    reading = str(word.get("reading") or "")
+                    connection.execute(
+                        """
+                        INSERT INTO lexemes(word_id, language, written, reading, updated_at)
+                        VALUES (?, 'ja', ?, ?, ?)
+                        ON CONFLICT(word_id) DO UPDATE SET
+                            written = excluded.written,
+                            reading = excluded.reading,
+                            updated_at = excluded.updated_at
+                        """,
+                        (word_id, written, reading, now),
+                    )
+                    lexeme_count += 1
+                    senses = word.get("senses") or [{
+                        "senseId": "",
+                        "partOfSpeech": word.get("partOfSpeech", ""),
+                        "meaning": word.get("meaning", ""),
+                        "occurrenceCount": word.get("occurrenceCount", 0),
+                    }]
+                    for sense in senses:
+                        sense_id = str(sense.get("senseId") or "")
+                        connection.execute(
+                            """
+                            INSERT INTO lexical_senses(
+                                word_id, sense_id, part_of_speech, meaning, source, updated_at
+                            ) VALUES (?, ?, ?, ?, 'catalog', ?)
+                            ON CONFLICT(word_id, sense_id) DO UPDATE SET
+                                part_of_speech = excluded.part_of_speech,
+                                meaning = excluded.meaning,
+                                source = excluded.source,
+                                updated_at = excluded.updated_at
+                            """,
+                            (
+                                word_id, sense_id, sense.get("partOfSpeech", ""),
+                                sense.get("meaning", ""), now,
+                            ),
+                        )
+                        connection.execute(
+                            """
+                            INSERT INTO game_vocabulary(
+                                game_id, word_id, sense_id, occurrence_count,
+                                jlpt_level, first_chapter_id
+                            ) VALUES (?, ?, ?, ?, ?, ?)
+                            """,
+                            (
+                                game_id, word_id, sense_id,
+                                int(sense.get("occurrenceCount", 0)),
+                                word.get("jlptLevel"), word.get("firstChapterId"),
+                            ),
+                        )
+                        sense_count += 1
+                        membership_count += 1
+        return {
+            "lexemes": lexeme_count,
+            "senses": sense_count,
+            "gameMemberships": membership_count,
+        }
+
+    def catalog_coverage(self, session_token: str, game_id: str) -> dict[str, Any] | None:
+        """Calculate cross-game familiarity and exact sense/dialogue coverage."""
+        user = self.authenticate_session(session_token)
+        with self.database.connect() as connection:
+            exists = connection.execute(
+                "SELECT 1 FROM catalog_games WHERE game_id = ?", (game_id,),
+            ).fetchone()
+            if exists is None:
+                return None
+            rows = connection.execute(
+                """
+                SELECT vocabulary.word_id, vocabulary.sense_id,
+                       vocabulary.occurrence_count, vocabulary.jlpt_level
+                FROM game_vocabulary AS vocabulary
+                WHERE vocabulary.game_id = ?
+                """,
+                (game_id,),
+            ).fetchall()
+            whole_known = {row["word_id"] for row in connection.execute(
+                """
+                SELECT word_id FROM known_words WHERE user_id = ?
+                UNION
+                SELECT word_id FROM word_annotations
+                WHERE user_id = ? AND sense_id = '' AND learning_state = 'known'
+                """,
+                (user["id"], user["id"]),
+            )}
+            known_senses = {
+                (row["word_id"], row["sense_id"])
+                for row in connection.execute(
+                    """
+                    SELECT word_id, sense_id FROM word_annotations
+                    WHERE user_id = ? AND sense_id != '' AND learning_state = 'known'
+                    UNION
+                    SELECT word_id, sense_id FROM review_state
+                    WHERE user_id = ? AND sense_id != '' AND card_state = 2
+                    """,
+                    (user["id"], user["id"]),
+                )
+            }
+
+        words: dict[str, str] = {}
+        familiar_words: set[str] = set()
+        known_sense_count = 0
+        known_occurrences = 0
+        total_occurrences = 0
+        for row in rows:
+            word_id = row["word_id"]
+            level = row["jlpt_level"] or "unclassified"
+            words.setdefault(word_id, level)
+            sense_known = word_id in whole_known or (word_id, row["sense_id"]) in known_senses
+            if sense_known:
+                familiar_words.add(word_id)
+                known_sense_count += 1
+                known_occurrences += row["occurrence_count"]
+            total_occurrences += row["occurrence_count"]
+
+        levels = {}
+        for level in ("N5", "N4", "N3", "N2", "N1", "unclassified"):
+            level_words = {word_id for word_id, value in words.items() if value == level}
+            known = len(level_words & familiar_words)
+            levels[level] = {
+                "known": known,
+                "total": len(level_words),
+                "percent": round(known * 100 / len(level_words), 1) if level_words else 0.0,
+            }
+        total_words = len(words)
+        total_senses = len(rows)
+        return {
+            "gameId": game_id,
+            "knownWords": len(familiar_words),
+            "totalWords": total_words,
+            "newWords": total_words - len(familiar_words),
+            "percentKnown": round(len(familiar_words) * 100 / total_words, 1) if total_words else 0.0,
+            "knownWordIds": sorted(familiar_words),
+            "knownSenses": known_sense_count,
+            "totalSenses": total_senses,
+            "percentSensesKnown": round(known_sense_count * 100 / total_senses, 1) if total_senses else 0.0,
+            "knownDialogueOccurrences": known_occurrences,
+            "totalDialogueOccurrences": total_occurrences,
+            "dialogueFamiliarityPercent": round(
+                known_occurrences * 100 / total_occurrences, 1
+            ) if total_occurrences else 0.0,
+            "levels": levels,
+        }
+
     def set_word_known(self, session_token: str, word_id: str, known: bool) -> dict[str, Any]:
         user = self.authenticate_session(session_token)
         if not isinstance(word_id, str) or not word_id or len(word_id) > 512:

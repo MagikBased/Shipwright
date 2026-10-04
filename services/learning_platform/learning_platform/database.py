@@ -2,7 +2,7 @@ import sqlite3
 from pathlib import Path
 
 
-LATEST_SCHEMA_VERSION = 10
+LATEST_SCHEMA_VERSION = 11
 
 SCHEMA = """
 PRAGMA foreign_keys = ON;
@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS metadata (
     value TEXT NOT NULL
 );
 
-INSERT OR IGNORE INTO metadata(key, value) VALUES ('schema_version', '10');
+INSERT OR IGNORE INTO metadata(key, value) VALUES ('schema_version', '11');
 
 CREATE TABLE IF NOT EXISTS users (
     id TEXT PRIMARY KEY,
@@ -143,6 +143,49 @@ CREATE TABLE IF NOT EXISTS dictionary_entries (
     updated_at TEXT NOT NULL,
     PRIMARY KEY (word_id, sense_id)
 );
+
+CREATE TABLE IF NOT EXISTS lexemes (
+    word_id TEXT PRIMARY KEY,
+    language TEXT NOT NULL DEFAULT 'ja',
+    written TEXT NOT NULL,
+    reading TEXT NOT NULL DEFAULT '',
+    updated_at TEXT NOT NULL,
+    UNIQUE(language, written, reading)
+);
+
+CREATE TABLE IF NOT EXISTS lexical_senses (
+    word_id TEXT NOT NULL REFERENCES lexemes(word_id) ON DELETE CASCADE,
+    sense_id TEXT NOT NULL DEFAULT '',
+    part_of_speech TEXT NOT NULL DEFAULT '',
+    meaning TEXT NOT NULL DEFAULT '',
+    source TEXT NOT NULL DEFAULT '',
+    updated_at TEXT NOT NULL,
+    PRIMARY KEY (word_id, sense_id)
+);
+
+CREATE TABLE IF NOT EXISTS catalog_games (
+    game_id TEXT PRIMARY KEY,
+    title TEXT NOT NULL,
+    content_version TEXT NOT NULL DEFAULT '',
+    updated_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS game_vocabulary (
+    game_id TEXT NOT NULL REFERENCES catalog_games(game_id) ON DELETE CASCADE,
+    word_id TEXT NOT NULL,
+    sense_id TEXT NOT NULL DEFAULT '',
+    occurrence_count INTEGER NOT NULL DEFAULT 0 CHECK (occurrence_count >= 0),
+    jlpt_level TEXT CHECK (jlpt_level IN ('N5', 'N4', 'N3', 'N2', 'N1') OR jlpt_level IS NULL),
+    first_chapter_id TEXT,
+    PRIMARY KEY (game_id, word_id, sense_id),
+    FOREIGN KEY (word_id, sense_id)
+        REFERENCES lexical_senses(word_id, sense_id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS game_vocabulary_word_idx
+    ON game_vocabulary(word_id, sense_id, game_id);
+CREATE INDEX IF NOT EXISTS game_vocabulary_game_level_idx
+    ON game_vocabulary(game_id, jlpt_level, word_id);
 
 CREATE TABLE IF NOT EXISTS review_state (
     user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -316,7 +359,7 @@ class Database:
             connection.execute("UPDATE sessions SET id = lower(hex(randomblob(16))) WHERE id IS NULL")
             connection.execute("UPDATE sessions SET last_seen_at = created_at WHERE last_seen_at IS NULL")
             connection.execute("CREATE UNIQUE INDEX IF NOT EXISTS sessions_public_id_idx ON sessions(id)")
-            connection.execute("UPDATE metadata SET value = '10' WHERE key = 'schema_version'")
+            connection.execute("UPDATE metadata SET value = '11' WHERE key = 'schema_version'")
 
     @staticmethod
     def _migrate_review_schema(connection: sqlite3.Connection) -> None:
