@@ -1,6 +1,7 @@
 const parts = location.pathname.split("/").filter(Boolean);
 const gameId = decodeURIComponent(parts[1] || "");
 const chapterId = decodeURIComponent(parts[2] || "");
+const browseMode = parts[3] === "cards";
 const state = { chapter: null, progress: null, queue: [], revealed: false, reviewOwner: "jp_assist" };
 
 function text(node, value) { node.textContent = value == null ? "" : String(value); }
@@ -49,7 +50,8 @@ function renderReview() {
     text(reading, `${card.reading} · ${card.partOfSpeech}`); text(meaning, card.meaning || "No meaning available"); text(example, card.courseCard?.sentenceJapanese || ""); text(translation, card.courseCard?.sentenceEnglish || ""); wrap.append(reading, meaning, example, translation);
   } else { const hint = document.createElement("p"); hint.className = "muted"; text(hint, "Select the card to reveal its meaning and example."); wrap.append(hint); }
   box.append(wrap); actions.classList.toggle("hidden", !state.revealed);
-  actions.querySelectorAll("[data-rating]").forEach((button, index) => { const preview = card.ratingPreviews?.find(item => item.rating === index + 1); const labels = ["Again", "Hard", "Good", "Easy"]; button.replaceChildren(document.createTextNode(labels[index])); if (preview) { const small = document.createElement("small"); text(small, formatInterval(preview.intervalDays)); button.append(small); } });
+  actions.querySelectorAll("[data-rating]").forEach((button, index) => { const preview = card.ratingPreviews?.find(item => item.rating === index + 1); const labels = ["Again", "Hard", "Good", "Easy"]; button.disabled = false; button.replaceChildren(document.createTextNode(labels[index])); if (preview) { const small = document.createElement("small"); text(small, formatInterval(preview.intervalDays)); button.append(small); } });
+  document.querySelector("#course-bury").disabled = false;
 }
 async function loadProgress() {
   try { state.progress = await request(`/v1/me/courses/${encodeURIComponent(gameId)}/chapters/${encodeURIComponent(chapterId)}`); state.reviewOwner = (await request("/v1/me/review-collection")).reviewOwner; }
@@ -63,7 +65,12 @@ async function loadQueue() {
 async function load() {
   try {
     state.chapter = await request(`/v1/catalog/games/${encodeURIComponent(gameId)}/chapters/${encodeURIComponent(chapterId)}/cards?limit=250`);
-    document.title = `${state.chapter.chapterTitle} — JP Assist Learning`; text(document.querySelector("#study-title"), `${String(state.chapter.chapterOrder).padStart(2, "0")} ${state.chapter.chapterTitle}`); text(document.querySelector("#study-subtitle"), `${state.chapter.gameTitle} · ${state.chapter.total} reviewed cards`); renderCards(); await loadProgress(); await loadQueue(); document.querySelector("#study-status").classList.add("hidden"); document.querySelector("#study-content").classList.remove("hidden");
+    const studyPath = `/study/${encodeURIComponent(gameId)}/${encodeURIComponent(chapterId)}`;
+    document.querySelectorAll(browseMode ? ".browse-only" : ".review-only").forEach(element => element.classList.remove("hidden"));
+    const modeLink = document.querySelector("#mode-link"); modeLink.href = browseMode ? studyPath : `${studyPath}/cards`; text(modeLink, browseMode ? "Study this chapter" : "Browse chapter cards");
+    document.title = `${browseMode ? "Cards — " : ""}${state.chapter.chapterTitle} — JP Assist Learning`; text(document.querySelector("#study-title"), `${String(state.chapter.chapterOrder).padStart(2, "0")} ${state.chapter.chapterTitle}`); text(document.querySelector("#study-subtitle"), `${state.chapter.gameTitle} · ${state.chapter.total} reviewed cards`);
+    if (browseMode) renderCards(); else { await loadProgress(); await loadQueue(); }
+    document.querySelector("#study-status").classList.add("hidden"); document.querySelector("#study-content").classList.remove("hidden");
   } catch (error) { text(document.querySelector("#study-status"), `The chapter could not be loaded. ${error.message}`); }
 }
 document.querySelector("#enroll").addEventListener("click", async event => { const button = event.currentTarget; button.disabled = true; try { state.progress = await request(`/v1/me/courses/${encodeURIComponent(gameId)}/chapters/${encodeURIComponent(chapterId)}`, { method: "PUT", body: JSON.stringify({ active: !state.progress.active }) }); renderProgress(); state.queue = []; if (state.progress.active) await loadQueue(); } catch (error) { alert(error.message); } finally { button.disabled = false; } });

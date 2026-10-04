@@ -156,9 +156,14 @@ local tooling:
 
 ```text
 /study/ocarina-of-time/{chapter-id}
+/study/ocarina-of-time/{chapter-id}/cards
 /v1/catalog/games/ocarina-of-time/chapters/{chapter-id}/cards
 /v1/catalog/games/ocarina-of-time/chapters/{chapter-id}/deck
 ```
+
+The first route is the focused FSRS review screen. The `/cards` route is the
+separate read-only chapter browser, keeping the active review card large and
+free from the full card list.
 
 Build an individual chapter with:
 

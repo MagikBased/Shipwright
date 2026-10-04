@@ -732,6 +732,10 @@ def create_app(
     def study_website(game_id: str, chapter_id: str) -> FileResponse:
         return FileResponse(web_root / "study.html")
 
+    @app.get("/study/{game_id}/{chapter_id}/cards", include_in_schema=False)
+    def study_cards_website(game_id: str, chapter_id: str) -> FileResponse:
+        return FileResponse(web_root / "study.html")
+
     return app
 
 

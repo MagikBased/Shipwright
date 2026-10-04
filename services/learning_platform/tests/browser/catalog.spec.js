@@ -43,18 +43,30 @@ test.describe("public game catalog", () => {
     await page.locator("#register-form button[type=submit]").click();
     await expect(page.locator("#dashboard")).toBeVisible();
 
-    await page.goto("/study/ocarina-of-time/11-hero-of-time");
+    await page.goto("/study/ocarina-of-time/11-hero-of-time/cards");
     await expect(page.locator("#study-title")).toContainText("The Hero of Time");
     await expect(page.locator("#study-card-list > li")).toHaveCount(5);
-    const accessibility = await new AxeBuilder({ page }).analyze();
+    await expect(page.locator("#mode-link")).toHaveText("Study this chapter");
+    let accessibility = await new AxeBuilder({ page }).analyze();
     expect(accessibility.violations.filter(item => ["critical", "serious"].includes(item.impact))).toEqual([]);
+    await page.locator("#mode-link").click();
+    await expect(page).toHaveURL(/\/study\/ocarina-of-time\/11-hero-of-time$/);
+    await expect(page.locator("#study-card-list")).toBeHidden();
     await page.getByRole("button", { name: "Start chapter" }).click();
     await expect(page.locator("#study-review")).toBeVisible();
     await expect(page.locator("#course-review-card .written")).toBeVisible();
     await page.locator("#course-review-card").click();
     await expect(page.locator("#course-review-card .example")).not.toHaveText("");
-    await page.locator("#course-review-actions [data-rating='3']").click();
+    await expect(page.locator("#course-review-card .meaning")).toHaveCSS("color", "rgb(238, 246, 248)");
+    const good = page.locator("#course-review-actions [data-rating='3']");
+    await good.click();
     await expect(page.locator("#metric-reviewed")).toHaveText("1");
+    await page.locator("#course-review-card").click();
+    await expect(good).toBeEnabled();
+    await good.click();
+    await expect(page.locator("#metric-reviewed")).toHaveText("2");
+    accessibility = await new AxeBuilder({ page }).analyze();
+    expect(accessibility.violations.filter(item => ["critical", "serious"].includes(item.impact))).toEqual([]);
   });
 
   test("lets an account mark a catalog word known and updates coverage", async ({ page }) => {
