@@ -2,6 +2,7 @@
 #include "PluginRuntime.h"
 
 #include <cstddef>
+#include <cstdio>
 #include <cstdint>
 #include <cstring>
 
@@ -39,6 +40,30 @@ uint32_t sHighlightQueryCount = 0;
 uint32_t sOverlayFrameCount = 0;
 uint64_t sConsumeMask = 0;
 JPAssistPlugin::Runtime sRuntime;
+
+const char* StatusMessage(int32_t status) {
+    switch (status) {
+        case Ready:
+            return "Ready";
+        case IncompatibleHost:
+            return "The host does not provide a compatible Study Mod API.";
+        case MissingCapabilities:
+            return "The host is missing one or more required Study Mod capabilities.";
+        case RegistrationFailed:
+            return "The plugin could not register its host callbacks.";
+        case CorpusUnavailable:
+            return "The packaged JP Assist corpus is missing or invalid.";
+        case WrongGame:
+            return "This JP Assist package supports Ocarina of Time only.";
+        default:
+            return "Not initialized";
+    }
+}
+
+void SetStatus(int32_t status) {
+    sPluginStatus = status;
+    std::fprintf(stderr, "[JP Assist plugin] %s\n", StatusMessage(status));
+}
 
 const StudyModHostApi* ResolveHostApi() {
     using GetHostApi = const StudyModHostApi* (*)(uint32_t, uint32_t);
@@ -97,20 +122,20 @@ JPASSIST_PLUGIN_EXPORT void ModInit() {
         sizeof(((StudyModHostApi*)nullptr)->register_overlay_callback);
     if (sHostApi == nullptr || sHostApi->abi_version != STUDY_MOD_HOST_ABI_VERSION_1 ||
         sHostApi->struct_size < requiredHostSize) {
-        sPluginStatus = IncompatibleHost;
+        SetStatus(IncompatibleHost);
         return;
     }
     if (sHostApi->game_id == nullptr || std::strcmp(sHostApi->game_id, "ocarina-of-time") != 0) {
-        sPluginStatus = WrongGame;
+        SetStatus(WrongGame);
         return;
     }
     if ((sHostApi->capabilities & required) != required) {
-        sPluginStatus = MissingCapabilities;
+        SetStatus(MissingCapabilities);
         return;
     }
     if (!sRuntime.Initialize(*sHostApi)) {
         sRuntime.Shutdown();
-        sPluginStatus = CorpusUnavailable;
+        SetStatus(CorpusUnavailable);
         return;
     }
     if (sHostApi->register_dialogue_callback(kModId, OnDialogue, nullptr) == 0 ||
@@ -120,10 +145,10 @@ JPASSIST_PLUGIN_EXPORT void ModInit() {
         sHostApi->register_overlay_callback(kModId, OnOverlay, nullptr) == 0) {
         sHostApi->unregister_mod_callbacks(kModId);
         sRuntime.Shutdown();
-        sPluginStatus = RegistrationFailed;
+        SetStatus(RegistrationFailed);
         return;
     }
-    sPluginStatus = Ready;
+    SetStatus(Ready);
 }
 
 JPASSIST_PLUGIN_EXPORT void ModExit() {
@@ -141,22 +166,7 @@ JPASSIST_PLUGIN_EXPORT int32_t JPAssistPlugin_GetStatus() {
 }
 
 JPASSIST_PLUGIN_EXPORT const char* JPAssistPlugin_GetStatusMessage() {
-    switch (sPluginStatus) {
-        case Ready:
-            return "Ready";
-        case IncompatibleHost:
-            return "The host does not provide a compatible Study Mod API.";
-        case MissingCapabilities:
-            return "The host is missing one or more required Study Mod capabilities.";
-        case RegistrationFailed:
-            return "The plugin could not register its host callbacks.";
-        case CorpusUnavailable:
-            return "The packaged JP Assist corpus is missing or invalid.";
-        case WrongGame:
-            return "This JP Assist package supports Ocarina of Time only.";
-        default:
-            return "Not initialized";
-    }
+    return StatusMessage(sPluginStatus);
 }
 
 JPASSIST_PLUGIN_EXPORT uint32_t JPAssistPlugin_GetDialogueEventCount() {

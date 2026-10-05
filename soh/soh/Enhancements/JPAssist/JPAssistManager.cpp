@@ -571,6 +571,11 @@ void RegisterJPAssistMenu() {
         .Options(UIWidgets::CheckboxOptions().DefaultValue(true).Tooltip(
             "Master toggle for the R/L/Z Study Mode language-learning tools. "
             "Disabling this leaves the game exactly as if the mod weren't installed."));
+    SohGui::mSohMenu->AddWidget(path, "JPAssistRuntimeStatus", WIDGET_CUSTOM)
+        .CustomFunction([](WidgetInfo&) {
+            ImGui::TextDisabled("Runtime: %s", PluginRuntimeEnabled() ? "jp-assist.o2r plugin" : "built-in fallback");
+        })
+        .HideInSearch(true);
     SohGui::mSohMenu->AddWidget(path, "Study card scale: %.2f", WIDGET_CVAR_SLIDER_FLOAT)
         .CVar(CVAR_ENHANCEMENT("JPAssist.CardScale"))
         .Callback([](WidgetInfo&) { MirrorPluginSettings(); })
