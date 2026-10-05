@@ -4,18 +4,18 @@
 #include <set>
 #include <vector>
 
+#include <ship/Context.h>
 #include <ship/utils/StringHelper.h>
-#ifdef ENABLE_SCRIPTING
-#include <ship/scripting/ScriptLoader.h>
-#endif
-#include <spdlog/spdlog.h>
 
 #include "mod_menu.h"
+#include "soh/Enhancements/audio/OotrsArchive.h"
+#include "soh/ModApi/CodeModLoader.h"
 #include "soh/OTRGlobals.h"
 #include "soh/util.h"
 #include "soh/SohGui/MenuTypes.h"
 #include "soh/SohGui/SohMenu.h"
 #include "soh/SohGui/SohGui.hpp"
+#include "soh/SohGui/UIWidgets.hpp"
 
 std::vector<std::string> enabledModFiles;
 std::vector<std::string> disabledModFiles;
@@ -106,7 +106,9 @@ void HandleModSelection(size_t index, const std::string& file) {
     const ImGuiIO& io = ImGui::GetIO();
 
     if (io.KeyShift && lastSelectedModIndex >= 0 && lastSelectedModIndex < static_cast<int>(enabledModFiles.size())) {
-        auto [startIndex, endIndex] = std::minmax(static_cast<size_t>(lastSelectedModIndex), index);
+        const size_t lastIndex = static_cast<size_t>(lastSelectedModIndex);
+        const size_t startIndex = std::min(lastIndex, index);
+        const size_t endIndex = std::max(lastIndex, index);
         selectedEnabledModFiles.clear();
         for (size_t i = startIndex; i <= endIndex; i++)
             selectedEnabledModFiles.insert(enabledModFiles[i]);
@@ -204,6 +206,10 @@ bool IsValidExtension(std::string extension) {
     return false;
 }
 
+bool IsOotrsExtension(std::string extension) {
+    return StringHelper::IEquals(extension, ".ootrs");
+}
+
 void UpdateModFiles(bool init = false, bool reset = false) {
     if (init || reset) {
         enabledModFiles.clear();
@@ -219,6 +225,7 @@ void UpdateModFiles(bool init = false, bool reset = false) {
 #ifdef ENABLE_SCRIPTING
     std::vector<std::shared_ptr<Ship::Archive>> newlyMountedArchives;
 #endif
+    std::vector<std::filesystem::path> ootrsFiles;
     if (modsPath.length() > 0 && std::filesystem::exists(modsPath)) {
         std::vector<std::filesystem::path> enabledFiles;
         if (std::filesystem::is_directory(modsPath)) {
@@ -230,6 +237,10 @@ void UpdateModFiles(bool init = false, bool reset = false) {
                 std::string filename =
                     p.path().filename().generic_string().substr(0, p.path().filename().generic_string().rfind("."));
                 std::string extension = p.path().extension().generic_string();
+                if (IsOotrsExtension(extension)) {
+                    ootrsFiles.push_back(p.path());
+                    continue;
+                }
                 if (!IsValidExtension(extension)) {
                     continue;
                 }
@@ -261,6 +272,8 @@ void UpdateModFiles(bool init = false, bool reset = false) {
                         changed = true;
                     }
                 }
+                std::sort(ootrsFiles.begin(), ootrsFiles.end());
+                SOH::MountOotrsArchives(ootrsFiles);
             }
         }
         if (changed) {
@@ -269,27 +282,7 @@ void UpdateModFiles(bool init = false, bool reset = false) {
     }
 
 #ifdef ENABLE_SCRIPTING
-    // Asset and code mods share the same .o2r mount path. Compile only after
-    // mounting has finished so build.gen and its source files are readable,
-    // then initialize the complete startup batch once dependency ordering can
-    // be resolved. A malformed optional mod is reported without preventing
-    // Shipwright itself from starting.
-    if (!newlyMountedArchives.empty()) {
-        try {
-            Ship::Context* context = Ship::Context::GetRawInstance();
-            const std::vector<std::string> libraryPaths = { Ship::Context::GetAppBundlePath() };
-            if (!context->InitScriptLoader({}, 1, "-g -Wl", {}, libraryPaths, {})) {
-                SPDLOG_ERROR("Failed to initialize the .o2r code-mod loader");
-            } else {
-                for (const auto& archive : newlyMountedArchives) {
-                    context->GetScriptLoader()->Compile(archive);
-                }
-                context->GetScriptLoader()->LoadAll();
-            }
-        } catch (const std::exception& exception) {
-            SPDLOG_ERROR("Failed to load an .o2r code mod: {}", exception.what());
-        }
-    }
+    SOH::LoadCodeModArchives(newlyMountedArchives);
 #endif
 }
 
@@ -462,16 +455,44 @@ void DrawMods(bool enabled) {
 
 bool editing = false;
 
-void ModMenuWindow::DrawElement() {
-    SohGui::mSohMenu->MenuDrawItem(enableModsWidget, 200, THEME_COLOR);
+void DrawCustomMusicSummary() {
+    size_t songCount = SOH::GetOotrsSongCount();
+    const std::vector<std::string>& skipped = SOH::GetOotrsSkippedForCustomBank();
+
+    if (songCount == 0 && skipped.empty()) {
+        return;
+    }
+
+    if (skipped.empty()) {
+        ImGui::Text("Custom Music: %zu song(s) loaded from .ootrs files", songCount);
+        return;
+    }
+
+    ImGui::Text("Custom Music: %zu song(s) loaded from .ootrs files", songCount);
     ImGui::SameLine();
-    SohGui::mSohMenu->MenuDrawItem(tabHotkeyWidget, 200, THEME_COLOR);
+    ImGui::TextColored(UIWidgets::ColorValues.at(UIWidgets::Colors::Yellow), "(%zu skipped)", skipped.size());
+    if (ImGui::IsItemHovered()) {
+        ImGui::BeginTooltip();
+        ImGui::Text("Custom soundbanks are not supported yet:");
+        for (const std::string& file : skipped) {
+            ImGui::BulletText("%s", file.c_str());
+        }
+        ImGui::EndTooltip();
+    }
+}
+
+void ModMenuWindow::DrawElement() {
+    SohGui::mSohMenu->MenuDrawItem(enableModsWidget, THEME_COLOR);
+    ImGui::SameLine();
+    SohGui::mSohMenu->MenuDrawItem(tabHotkeyWidget, THEME_COLOR);
 
     ImGui::TextColored(
         UIWidgets::ColorValues.at(UIWidgets::Colors::Yellow),
         "Mods are currently not reloaded at runtime. Close and re-open Ship for the changes to take effect.\n"
         "Drag ordering for the enabled list is available.\nMod priority is top to bottom. They override mods listed "
         "below them.");
+
+    DrawCustomMusicSummary();
 
     // if (UIWidgets::Button(
     //         "Update", UIWidgets::ButtonOptions({ { .disabled = editing, .disabledTooltip = "Currently editing..." }

@@ -7,7 +7,7 @@
 #include <memory>
 #include <string>
 
-#include <fmt/format.h>
+#include <spdlog/fmt/fmt.h>
 #include <imgui.h>
 
 #include <ship/Context.h>

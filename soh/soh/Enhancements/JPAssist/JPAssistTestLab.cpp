@@ -9,9 +9,9 @@
 #include <string>
 #include <vector>
 
-#include <fmt/format.h>
 #include <imgui.h>
 #include <nlohmann/json.hpp>
+#include <spdlog/fmt/fmt.h>
 #include <spdlog/spdlog.h>
 
 #include <ship/Context.h>
