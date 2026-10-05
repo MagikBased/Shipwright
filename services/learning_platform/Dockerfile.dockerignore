@@ -1,0 +1,10 @@
+**
+!services/
+!services/learning_platform/
+!services/learning_platform/requirements.txt
+!services/learning_platform/learning_platform/
+!services/learning_platform/learning_platform/**
+!services/learning_platform/web/
+!services/learning_platform/web/**
+!games/
+!games/**

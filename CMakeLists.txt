@@ -385,7 +385,7 @@ add_subdirectory(soh)
 
 option(JPASSIST_BUILD_PLUGIN_PACKAGE "Build the JP Assist .o2r plugin package" ON)
 if(JPASSIST_BUILD_PLUGIN_PACKAGE AND ENABLE_SCRIPTING)
-    add_subdirectory(mods/jp_assist_plugin)
+    add_subdirectory(games/ocarina-of-time/adapters/shipwright/plugin)
 endif()
 
 option(JPASSIST_BUILD_TESTS "Build engine-independent JP Assist unit tests" OFF)

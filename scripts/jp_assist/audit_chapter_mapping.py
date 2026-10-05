@@ -22,10 +22,12 @@ from build_chapter_candidates import expand_message_ids, validate_mapping
 REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_RUNTIME = Path(__file__).parent / "out" / "runtime_data.json"
 DEFAULT_CATALOG = (
-    REPOSITORY_ROOT / "services" / "learning_platform" / "learning_platform"
-    / "content" / "games" / "ocarina-of-time.json"
+    REPOSITORY_ROOT / "games" / "ocarina-of-time" / "catalog" / "game.json"
 )
-DEFAULT_MAPPING = Path(__file__).parent / "chapter_mapping" / "ocarina-of-time.json"
+DEFAULT_MAPPING = (
+    REPOSITORY_ROOT / "games" / "ocarina-of-time" / "pipelines"
+    / "chapter-mapping" / "chapters.json"
+)
 DEFAULT_SOURCE_ROOT = REPOSITORY_ROOT / "soh"
 DEFAULT_OUT_DIR = Path(__file__).parent / "out" / "chapter_mapping_audit"
 SOURCE_SUFFIXES = {".c", ".cc", ".cpp"}

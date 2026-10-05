@@ -42,7 +42,8 @@ back the narrow host hooks. The intended high-conflict integration points are:
   to `ModApi/CodeModLoader`;
 - `soh/CMakeLists.txt`: host/plugin dependencies and packaging.
 
-Game-specific behavior belongs in `mods/jp_assist_plugin`; reusable host ABI
+Game-specific behavior belongs in
+`games/ocarina-of-time/adapters/shipwright/plugin`; reusable host ABI
 code belongs in `soh/soh/ModApi` and `soh/include/mods`. Avoid adding JP Assist
 policy to the generic bridge.
 

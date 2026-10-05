@@ -10,7 +10,7 @@ test.describe("public game catalog", () => {
     const gameTile = page.locator(".game-tile").first();
     await expect(gameTile).toContainText("Ocarina of Time");
     await expect(gameTile.locator("img")).toBeVisible();
-    await expect(gameTile.locator("img")).toHaveAttribute("src", /ocarina-of-time-hero\.svg$/);
+    await expect(gameTile.locator("img")).toHaveAttribute("src", /ocarina-of-time\/hero\.svg$/);
     await gameTile.click();
     await expect(page).toHaveURL(/\/catalog\/ocarina-of-time$/);
     await expect(page.locator("#game-title")).toHaveText("Ocarina of Time");

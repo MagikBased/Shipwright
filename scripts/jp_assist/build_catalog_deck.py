@@ -19,7 +19,7 @@ import genanki
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_CATALOG_ROOT = (
-    REPOSITORY_ROOT / "services" / "learning_platform" / "learning_platform" / "content" / "games"
+    REPOSITORY_ROOT / "games"
 )
 DEFAULT_RUNTIME_DATA = Path(__file__).parent / "out" / "runtime_data.json"
 MODEL_ID = 1607000011
@@ -65,13 +65,28 @@ MODEL = genanki.Model(
 
 
 def load_game(game_id: str, catalog_root: Path = DEFAULT_CATALOG_ROOT) -> dict[str, Any]:
-    path = catalog_root / f"{game_id}.json"
+    module_root = catalog_root / game_id
+    descriptor_path = module_root / "module.json"
+    if descriptor_path.is_file():
+        descriptor = json.loads(descriptor_path.read_text(encoding="utf-8"))
+        if descriptor.get("id") != game_id or descriptor.get("schemaVersion") != 1:
+            raise ValueError(f"Invalid game module descriptor: {descriptor_path}")
+        catalog = descriptor.get("catalog", {})
+        path = module_root / catalog.get("game", "")
+        manifest_path = module_root / catalog.get("cards", "")
+        content_root = module_root
+    else:
+        # Compatibility for third-party and test catalogs using the original
+        # flat directory contract.
+        path = catalog_root / f"{game_id}.json"
+        manifest_path = None
+        content_root = catalog_root
     if not path.is_file():
         raise ValueError(f"Unknown catalog game: {game_id}")
     game = json.loads(path.read_text(encoding="utf-8"))
     manifest_name = game.get("cardManifest")
     if manifest_name:
-        manifest_path = catalog_root / manifest_name
+        manifest_path = manifest_path or path.parent / manifest_name
         manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
         if manifest.get("gameId") != game_id:
             raise ValueError(f"Card manifest game id does not match {game_id}")
@@ -82,6 +97,7 @@ def load_game(game_id: str, catalog_root: Path = DEFAULT_CATALOG_ROOT) -> dict[s
         for chapter in game["chapters"]:
             content = content_by_chapter.get(chapter["id"], {})
             chapter["reviewedCards"] = content.get("cards", [])
+    game["_contentRoot"] = str(content_root)
     return game
 
 
@@ -152,7 +168,7 @@ def audio_field(
 def build_deck(
     game: dict[str, Any],
     chapter: dict[str, Any],
-    catalog_root: Path = DEFAULT_CATALOG_ROOT,
+    catalog_root: Path | None = None,
 ) -> tuple[genanki.Deck, list[str]]:
     cards = reviewed_cards(chapter)
     if not cards:
@@ -163,6 +179,7 @@ def build_deck(
         f"{chapter['order']:02d} {chapter['title']}"
     )
     deck = genanki.Deck(stable_deck_id(game["id"], chapter["id"]), deck_name)
+    content_root = catalog_root or Path(game.get("_contentRoot", DEFAULT_CATALOG_ROOT))
     media_files: list[str] = []
     for card in cards:
         note = genanki.Note(
@@ -174,8 +191,8 @@ def build_deck(
                 card["meaning"],
                 card["sentenceJapanese"],
                 card["sentenceEnglish"],
-                audio_field(card.get("wordAudio"), catalog_root, media_files),
-                audio_field(card.get("sentenceAudio"), catalog_root, media_files),
+                audio_field(card.get("wordAudio"), content_root, media_files),
+                audio_field(card.get("sentenceAudio"), content_root, media_files),
                 chapter["id"],
                 card["id"],
             ],
@@ -251,7 +268,7 @@ def main() -> None:
         raise ValueError(f"Runtime corpus is required but missing: {args.runtime_data}")
     else:
         print(f"Warning: corpus provenance not verified; file is missing: {args.runtime_data}")
-    deck, media_files = build_deck(game, chapter, args.catalog_root)
+    deck, media_files = build_deck(game, chapter)
     args.out_dir.mkdir(parents=True, exist_ok=True)
     prefix = args.output_prefix or f"{game['id']}_{chapter['order']:02d}"
 

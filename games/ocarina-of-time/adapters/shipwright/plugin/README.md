@@ -18,7 +18,7 @@ cmake --build build-cmake --target jpassist_plugin_package
 The package is written to:
 
 ```text
-build-cmake/mods/jp_assist_plugin/jp-assist.o2r
+build-cmake/games/ocarina-of-time/adapters/shipwright/plugin/jp-assist.o2r
 ```
 
 If `scripts/jp_assist/out/runtime_data.json` exists at configure time, it is

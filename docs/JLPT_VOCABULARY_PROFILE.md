@@ -23,7 +23,7 @@ Regenerate a game manifest after rebuilding the local runtime corpus:
 python3 scripts/jp_assist/build_game_vocabulary.py \
   --jlpt-dir /path/to/OpenJLPT/data/json/vocab \
   --jlpt-version OPENJLPT_COMMIT_OR_RELEASE \
-  --output services/learning_platform/learning_platform/content/games/ocarina-of-time.vocabulary.json
+  --output games/ocarina-of-time/catalog/vocabulary.json
 ```
 
 Known words are account-wide. A saved identity therefore contributes to every

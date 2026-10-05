@@ -1,6 +1,8 @@
 services:
   app:
-    build: .
+    build:
+      context: ../..
+      dockerfile: services/learning_platform/Dockerfile
     image: ${JP_ASSIST_APP_IMAGE:-jp-assist-learning-platform:local}
     restart: unless-stopped
     env_file: ${JP_ASSIST_ENV_FILE:-.env}

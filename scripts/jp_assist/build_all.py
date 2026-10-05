@@ -25,9 +25,13 @@ def main() -> None:
     args = parser.parse_args()
 
     scripts = Path(__file__).parent
+    repository_root = scripts.parents[1]
     run(scripts, "extract_dialogue.py", "--oot-o2r", args.oot_o2r, "--variant", args.variant)
     extracted = str(scripts / "out" / f"{args.variant}.json")
-    manifest = str(scripts / "alignment" / f"{args.variant}.json")
+    manifest = str(
+        repository_root / "games" / "ocarina-of-time" / "pipelines"
+        / "alignment" / f"{args.variant}.json"
+    )
     run(scripts, "align_dialogue.py", "--extracted", extracted, "--manifest", manifest)
     run(scripts, "tokenize_dialogue.py", "--extracted", extracted)
     validation_args = ["--strict"] if args.strict else []

@@ -24,9 +24,9 @@ notes.
 ## Chapter model
 
 The canonical machine-readable roadmap is
-`services/learning_platform/learning_platform/content/games/ocarina-of-time.json`.
+`games/ocarina-of-time/catalog/game.json`.
 The complete reviewed card corpus is stored separately in
-`ocarina-of-time.cards.json`; `sampleCards` in the roadmap are only lightweight
+`games/ocarina-of-time/catalog/cards.json`; `sampleCards` in the roadmap are only lightweight
 catalog previews. Export, audio, coverage, and prerequisite tools always load
 the complete card manifest. Its `contentReview` record names the editorial
 criteria and the exact reviewed card count. The strict release
@@ -84,7 +84,7 @@ JP Assist::Ocarina of Time::11 The Hero of Time
    paths to `wordAudio` and `sentenceAudio`.
 
 The committed non-text mapping lives at
-`scripts/jp_assist/chapter_mapping/ocarina-of-time.json`. Generate local review
+`games/ocarina-of-time/pipelines/chapter-mapping/chapters.json`. Generate local review
 queues from the private corpus with:
 
 ```bash

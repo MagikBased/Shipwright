@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 from copy import deepcopy
 from pathlib import Path
 from typing import Any
@@ -19,10 +20,81 @@ class GameCatalog:
     """Loads the reviewed, repository-owned game learning catalog."""
 
     def __init__(self, content_root: Path | None = None):
-        self.content_root = content_root or Path(__file__).resolve().parent / "content" / "games"
+        self.content_root = content_root or self._default_content_root()
+        self._modules = self._discover_modules()
         self._vocabulary = self._load_vocabulary()
         self._card_manifests = self._load_card_manifests()
         self._games = self._load_games()
+
+    @staticmethod
+    def _default_content_root() -> Path:
+        configured = os.environ.get("JP_ASSIST_GAMES_ROOT")
+        if configured:
+            return Path(configured).expanduser().resolve()
+
+        source = Path(__file__).resolve()
+        for parent in source.parents:
+            candidate = parent / "games"
+            if candidate.is_dir() and any(candidate.glob("*/module.json")):
+                return candidate
+
+        # Compatibility for an older installed package or a caller that has
+        # not migrated its content into game modules yet.
+        return source.parent / "content" / "games"
+
+    def _discover_modules(self) -> dict[str, dict[str, Path]]:
+        modules: dict[str, dict[str, Path]] = {}
+        for descriptor_path in sorted(self.content_root.glob("*/module.json")):
+            with descriptor_path.open(encoding="utf-8") as source:
+                descriptor = json.load(source)
+            game_id = descriptor.get("id")
+            catalog = descriptor.get("catalog")
+            if descriptor.get("schemaVersion") != 1 or not isinstance(game_id, str):
+                raise ValueError(f"Game module descriptor in {descriptor_path} is invalid")
+            if descriptor_path.parent.name != game_id:
+                raise ValueError(
+                    f"Game module id {game_id} must match directory {descriptor_path.parent.name}"
+                )
+            if not isinstance(catalog, dict):
+                raise ValueError(f"Game module {game_id} has no catalog paths")
+            module_root = descriptor_path.parent.resolve()
+
+            def member(name: str, *, required: bool = True) -> Path | None:
+                value = catalog.get(name)
+                if value is None and not required:
+                    return None
+                if not isinstance(value, str) or not value:
+                    raise ValueError(f"Game module {game_id} has no {name} catalog path")
+                path = (module_root / value).resolve()
+                if not path.is_relative_to(module_root) or not path.is_file():
+                    raise ValueError(f"Game module {game_id} has an invalid {name} path")
+                return path
+
+            assets_value = descriptor.get("assets", "assets")
+            assets = (module_root / assets_value).resolve()
+            if (
+                not isinstance(assets_value, str)
+                or not assets.is_relative_to(module_root)
+                or not assets.is_dir()
+            ):
+                raise ValueError(f"Game module {game_id} has an invalid assets path")
+            if game_id in modules:
+                raise ValueError(f"Duplicate game module id: {game_id}")
+            modules[game_id] = {
+                "game": member("game"),
+                "cards": member("cards", required=False),
+                "vocabulary": member("vocabulary", required=False),
+                "assets": assets,
+                "root": module_root,
+            }
+        return modules
+
+    def asset_roots(self) -> dict[str, Path]:
+        return {game_id: module["assets"] for game_id, module in self._modules.items()}
+
+    def content_root_for_game(self, game_id: str) -> Path:
+        module = self._modules.get(game_id)
+        return module["root"] if module is not None else self.content_root
 
     def list_games(self) -> list[dict[str, Any]]:
         results = []
@@ -180,11 +252,23 @@ class GameCatalog:
 
     def _load_games(self) -> dict[str, dict[str, Any]]:
         games: dict[str, dict[str, Any]] = {}
-        for path in sorted(self.content_root.glob("*.json")):
-            if path.name.endswith((".vocabulary.json", ".cards.json")):
-                continue
+        paths = (
+            [module["game"] for module in self._modules.values()]
+            if self._modules
+            else [
+                path for path in sorted(self.content_root.glob("*.json"))
+                if not path.name.endswith((".vocabulary.json", ".cards.json"))
+            ]
+        )
+        for path in paths:
             with path.open(encoding="utf-8") as source:
                 game = json.load(source)
+            expected_id = next(
+                (game_id for game_id, module in self._modules.items() if module["game"] == path),
+                game.get("id"),
+            )
+            if game.get("id") != expected_id:
+                raise ValueError(f"Game module {expected_id} contains catalog for {game.get('id')}")
             card_manifest = self._card_manifests.get(game["id"])
             self._validate(game, path, card_manifest)
             if card_manifest is not None:
@@ -194,7 +278,12 @@ class GameCatalog:
 
     def _load_vocabulary(self) -> dict[str, dict[str, Any]]:
         manifests: dict[str, dict[str, Any]] = {}
-        for path in sorted(self.content_root.glob("*.vocabulary.json")):
+        paths = (
+            [module["vocabulary"] for module in self._modules.values() if module["vocabulary"]]
+            if self._modules
+            else sorted(self.content_root.glob("*.vocabulary.json"))
+        )
+        for path in paths:
             with path.open(encoding="utf-8") as source:
                 manifest = json.load(source)
             game_id = manifest.get("gameId")
@@ -225,7 +314,12 @@ class GameCatalog:
 
     def _load_card_manifests(self) -> dict[str, dict[str, Any]]:
         manifests: dict[str, dict[str, Any]] = {}
-        for path in sorted(self.content_root.glob("*.cards.json")):
+        paths = (
+            [module["cards"] for module in self._modules.values() if module["cards"]]
+            if self._modules
+            else sorted(self.content_root.glob("*.cards.json"))
+        )
+        for path in paths:
             with path.open(encoding="utf-8") as source:
                 manifest = json.load(source)
             game_id = manifest.get("gameId")

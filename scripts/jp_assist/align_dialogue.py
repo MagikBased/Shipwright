@@ -271,7 +271,11 @@ def main() -> None:
     extracted_path = Path(args.extracted) if args.extracted else out_dir / "N64_NTSC_12.json"
     extracted = json.loads(extracted_path.read_text())
     variant = next(iter(extracted.values()))["variant"] if extracted else extracted_path.stem
-    manifest_path = Path(args.manifest) if args.manifest else scripts / "alignment" / f"{variant}.json"
+    manifest_path = (
+        Path(args.manifest) if args.manifest else
+        scripts.parents[1] / "games" / "ocarina-of-time" / "pipelines"
+        / "alignment" / f"{variant}.json"
+    )
     manifest = json.loads(manifest_path.read_text())
     if manifest.get("schemaVersion") != ALIGNMENT_SCHEMA_VERSION or manifest.get("variant") != variant:
         raise ValueError(f"Alignment manifest does not match schema/variant for {variant}")

@@ -255,6 +255,11 @@ PublishScripts/
 *.nupkg
 # The packages folder can be ignored because of Package Restore
 **/[Pp]ackages/*
+# JP Assist source packages use the repository-root package namespace. This is
+# distinct from generated NuGet Packages directories.
+!/packages/
+!/packages/game-module-contract/
+!/packages/game-module-contract/**
 # except build/, which is used as an MSBuild target.
 !**/[Pp]ackages/build/
 # Uncomment if necessary however generally it will be regenerated when needed

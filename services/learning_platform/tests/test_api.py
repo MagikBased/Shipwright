@@ -141,9 +141,12 @@ class LearningPlatformApiTest(unittest.TestCase):
         self.assertEqual(listing.json()["games"][0]["id"], "ocarina-of-time")
         self.assertTrue(
             listing.json()["games"][0]["artwork"]["heroImage"].endswith(
-                "ocarina-of-time-hero.svg"
+                "/ocarina-of-time/hero.svg"
             )
         )
+        artwork = self.client.get(listing.json()["games"][0]["artwork"]["heroImage"])
+        self.assertEqual(artwork.status_code, 200)
+        self.assertIn("image/svg+xml", artwork.headers["content-type"])
         self.assertEqual(listing.json()["games"][0]["chapterCount"], 11)
         self.assertEqual(listing.json()["games"][0]["languageProfile"]["uniqueWords"], 3762)
 

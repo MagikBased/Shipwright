@@ -60,7 +60,7 @@ if(ENABLE_SCRIPTING AND TARGET jpassist_plugin_package)
     target_compile_definitions(jpassist_plugin_tests PRIVATE
         ENABLE_SCRIPTING
         STUDY_MOD_HOST_EXPORTS
-        JPASSIST_PLUGIN_ARCHIVE_PATH="${CMAKE_BINARY_DIR}/mods/jp_assist_plugin/jp-assist.o2r"
+        JPASSIST_PLUGIN_ARCHIVE_PATH="${CMAKE_BINARY_DIR}/games/ocarina-of-time/adapters/shipwright/plugin/jp-assist.o2r"
         JPASSIST_TCC_RUNTIME_DIR="$<TARGET_FILE_DIR:libtcc1>"
     )
     target_link_libraries(jpassist_plugin_tests PRIVATE libultraship GTest::gtest_main)

@@ -29,7 +29,10 @@ if [[ -z "$syft_command" || -z "$grype_command" ]]; then
 fi
 
 mkdir -p "$output_dir"
-docker build --tag "$image" "$service_dir"
+docker build \
+    --file "$service_dir/Dockerfile" \
+    --tag "$image" \
+    "$repository_root"
 "$script_dir/verify_release_image.sh" "$image"
 docker save --output "$output_dir/jp-assist-learning-platform-$version.tar" "$image"
 git -C "$repository_root" archive \

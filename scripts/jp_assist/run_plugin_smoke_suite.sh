@@ -5,7 +5,7 @@ set -euo pipefail
 script_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 repo_dir=$(cd -- "$script_dir/../.." && pwd)
 app_dir=${JPASSIST_APP_DIR:-"$repo_dir/build-cmake/soh"}
-plugin_package=${JPASSIST_PLUGIN_PACKAGE:-"$repo_dir/build-cmake/mods/jp_assist_plugin/jp-assist.o2r"}
+plugin_package=${JPASSIST_PLUGIN_PACKAGE:-"$repo_dir/build-cmake/games/ocarina-of-time/adapters/shipwright/plugin/jp-assist.o2r"}
 config_file="$app_dir/shipofharkinian.json"
 mods_dir="$app_dir/mods"
 installed_plugin="$mods_dir/jp-assist.o2r"

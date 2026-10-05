@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://jp-assist.invalid/schemas/game-module-v1.json",
+  "title": "JP Assist game module",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "id", "kind", "catalog", "assets", "adapters"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+    },
+    "kind": { "const": "game" },
+    "catalog": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["game", "cards", "vocabulary"],
+      "properties": {
+        "game": { "$ref": "#/$defs/relativePath" },
+        "cards": { "$ref": "#/$defs/relativePath" },
+        "vocabulary": { "$ref": "#/$defs/relativePath" }
+      }
+    },
+    "assets": { "$ref": "#/$defs/relativePath" },
+    "pipelines": { "$ref": "#/$defs/relativePath" },
+    "adapters": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "runtime"],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "runtime": { "type": "string", "minLength": 1 },
+          "source": { "$ref": "#/$defs/relativePath" }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "relativePath": {
+      "type": "string",
+      "minLength": 1,
+      "not": { "pattern": "^(?:/|.*(?:^|/)\\.\\.(?:/|$))" }
+    }
+  }
+}

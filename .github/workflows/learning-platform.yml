@@ -95,7 +95,11 @@ jobs:
           /tmp/gitleaks git --redact --no-banner --log-opts="--all"
 
       - name: Build production image
-        run: docker build --tag jp-assist-learning-platform:test services/learning_platform
+        run: >-
+          docker build
+          --file services/learning_platform/Dockerfile
+          --tag jp-assist-learning-platform:test
+          .
 
       - name: Verify production release image
         run: services/learning_platform/scripts/verify_release_image.sh jp-assist-learning-platform:test

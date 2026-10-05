@@ -12,12 +12,13 @@ RUN addgroup --system --gid 10001 jpassist \
     && mkdir -p /data /backups \
     && chown jpassist:jpassist /data /backups
 
-COPY requirements.txt ./requirements.txt
+COPY services/learning_platform/requirements.txt ./requirements.txt
 RUN pip install --no-cache-dir --requirement requirements.txt \
     && pip uninstall --yes pip
 
-COPY learning_platform ./learning_platform
-COPY web ./web
+COPY services/learning_platform/learning_platform ./learning_platform
+COPY services/learning_platform/web ./web
+COPY games ./games
 
 USER jpassist
 EXPOSE 8766

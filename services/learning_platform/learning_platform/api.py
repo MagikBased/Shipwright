@@ -341,7 +341,9 @@ def create_app(
         if chapter.get("deck", {}).get("downloadAvailable") is not True:
             raise HTTPException(status_code=404, detail="Chapter deck is not available")
         try:
-            package = build_chapter_package(game, chapter, catalog.content_root)
+            package = build_chapter_package(
+                game, chapter, catalog.content_root_for_game(game_id)
+            )
         except ValueError as error:
             raise HTTPException(status_code=503, detail=str(error)) from error
         filename = f"{game_id}-{chapter['order']:02d}-{chapter_id}.apkg"
@@ -719,6 +721,12 @@ def create_app(
 
     web_root = root / "web"
     app.mount("/static", StaticFiles(directory=web_root), name="static")
+    for game_id, asset_root in catalog.asset_roots().items():
+        app.mount(
+            f"/game-assets/{game_id}",
+            StaticFiles(directory=asset_root),
+            name=f"game-assets-{game_id}",
+        )
 
     @app.get("/", include_in_schema=False)
     def website() -> FileResponse:

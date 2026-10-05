@@ -113,7 +113,8 @@ v1 plugins remain binary-compatible.
 ## Current runnable milestone
 
 Desktop builds enable libultraship's code-mod support and package
-`build-cmake/mods/jp_assist_plugin/jp-assist.o2r` with a platform binary.
+`build-cmake/games/ocarina-of-time/adapters/shipwright/plugin/jp-assist.o2r`
+with a platform binary.
 Shipwright initializes code-bearing archives when its mod menu mounts them,
 preserving dependency ordering and normal `ModExit` teardown. Binary loading
 also fixes libultraship's temporary-file bookkeeping, which previously made the
