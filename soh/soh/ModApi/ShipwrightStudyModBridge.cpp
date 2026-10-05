@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <cstdint>
 
-#include "soh/Enhancements/JPAssist/NativePageTracker.h"
+#include "StudyModPageTracker.h"
 #include "soh/Enhancements/game-interactor/GameInteractor.h"
 #include "soh/ShipInit.hpp"
 #include "mods/study_mod_game_bridge.h"
@@ -16,7 +16,7 @@ namespace {
 
 bool sDialogueOpen = false;
 uint16_t sDialogueId = 0;
-JPAssist::NativePageTracker sPageTracker;
+StudyModApi::PageTracker sPageTracker;
 uint16_t sQueuedTestButtons = 0;
 int8_t sQueuedTestStickY = 0;
 bool sQueuedTestHasStickY = false;

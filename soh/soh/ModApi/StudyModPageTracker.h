@@ -2,13 +2,13 @@
 
 #include <cstdint>
 
-namespace JPAssist {
+namespace StudyModApi {
 
-// Converts Ship of Harkinian's decoded textbox counter into the corpus's
-// 0-based page index. The first ready observation becomes the baseline
-// because debug/custom-message injectors do not necessarily reset SoH's
-// private counter the way Message_OpenText does.
-class NativePageTracker {
+// Converts the game's decoded textbox counter into the portable ABI's
+// zero-based page index. The first ready observation becomes the baseline
+// because debug/custom-message injectors may not reset a game's private
+// counter in the same way as its ordinary message-open path.
+class PageTracker {
   public:
     void Reset() {
         mPageIndex = 0;
@@ -47,4 +47,4 @@ class NativePageTracker {
     bool mHasBaseline = false;
 };
 
-} // namespace JPAssist
+} // namespace StudyModApi

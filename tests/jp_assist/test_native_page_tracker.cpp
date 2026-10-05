@@ -1,9 +1,9 @@
 #include <gtest/gtest.h>
 
-#include "NativePageTracker.h"
+#include "soh/ModApi/StudyModPageTracker.h"
 
 TEST(NativePageTracker, IgnoresUndecodedPageAndTracksDecodedPages) {
-    JPAssist::NativePageTracker tracker;
+    StudyModApi::PageTracker tracker;
     int pageIndex = -1;
 
     EXPECT_FALSE(tracker.Observe(0, pageIndex));
@@ -17,7 +17,7 @@ TEST(NativePageTracker, IgnoresUndecodedPageAndTracksDecodedPages) {
 }
 
 TEST(NativePageTracker, SameDecodedPageDoesNotAdvanceTwice) {
-    JPAssist::NativePageTracker tracker;
+    StudyModApi::PageTracker tracker;
     int pageIndex = -1;
 
     EXPECT_FALSE(tracker.Observe(1, pageIndex));
@@ -27,7 +27,7 @@ TEST(NativePageTracker, SameDecodedPageDoesNotAdvanceTwice) {
 }
 
 TEST(NativePageTracker, ResetReturnsToFirstCorpusPage) {
-    JPAssist::NativePageTracker tracker;
+    StudyModApi::PageTracker tracker;
     int pageIndex = -1;
 
     ASSERT_FALSE(tracker.Observe(1, pageIndex));
@@ -40,7 +40,7 @@ TEST(NativePageTracker, ResetReturnsToFirstCorpusPage) {
 }
 
 TEST(NativePageTracker, UsesFirstReadyObservationAsBaseline) {
-    JPAssist::NativePageTracker tracker;
+    StudyModApi::PageTracker tracker;
     int pageIndex = -1;
 
     // MessageViewer's debug injector leaves the private SoH counter running
