@@ -21,6 +21,14 @@ fork because its pinned revision contains the code-mod loading and shutdown
 reliability patches. The fork still tracks the official project through its
 own `upstream` remote.
 
+JP Assist is also pinned as a submodule:
+
+- `jp-assist`: `https://github.com/MagikBased/JP-Assist.git`, branch `main`
+
+That repository owns the website, portable SDK/core, game catalog data, and
+game-specific adapters. Shipwright owns only the generic host implementation
+and the narrow integration hooks needed to load the plugin.
+
 ## Updating Shipwright
 
 Fetch and merge the official development branch from the repository root:
@@ -42,10 +50,25 @@ back the narrow host hooks. The intended high-conflict integration points are:
   to `ModApi/CodeModLoader`;
 - `soh/CMakeLists.txt`: host/plugin dependencies and packaging.
 
-Game-specific behavior belongs in
-`games/ocarina-of-time/adapters/shipwright/plugin`; reusable host ABI
-code belongs in `soh/soh/ModApi` and `soh/include/mods`. Avoid adding JP Assist
-policy to the generic bridge.
+Game-specific behavior belongs in the JP Assist submodule under
+`games/ocarina-of-time/adapters/shipwright/plugin`; reusable host ABI declarations
+belong in its `packages/study-mod-sdk`. Shipwright's host implementation remains
+in `soh/soh/ModApi`, with a compatibility include in `soh/include/mods`. Avoid
+adding JP Assist policy to the generic bridge.
+
+## Updating JP Assist
+
+Advance the pin only after its portable and plugin suites pass:
+
+```sh
+git -C jp-assist fetch origin
+git -C jp-assist switch main
+git -C jp-assist pull --ff-only
+git add jp-assist
+```
+
+Do not edit files inside the submodule while committing Shipwright changes;
+commit and push those changes in `JP-Assist` first, then update this gitlink.
 
 ## Updating libultraship
 

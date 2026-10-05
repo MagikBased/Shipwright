@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-// Shared types for the JP Assist technical spike (docs/JP_ASSIST_DESIGN.md,
+// Shared types for the JP Assist technical spike (jp-assist/docs/JP_ASSIST_DESIGN.md,
 // Milestone 1). Scope is intentionally limited to what the language-switch
 // spike needs: page/choice structure for both languages, plus plain text for
 // English specifically. Decoding Japanese glyph codes into displayable text

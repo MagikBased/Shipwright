@@ -9,7 +9,7 @@
 // both write their result into play->msgCtx.font, mutating the live message
 // state as a side effect of "finding" a message. That makes them unsafe to
 // call just to peek at the other language while a real conversation is in
-// progress (see docs/JP_ASSIST_DESIGN.md section 6.3).
+// progress (see jp-assist/docs/JP_ASSIST_DESIGN.md section 6.3).
 //
 // This lookup never touches msgCtx or font - it walks the same table
 // pointers (sJpnMessageEntryTablePtr / sNesMessageEntryTablePtr) and hands

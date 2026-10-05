@@ -38,7 +38,7 @@ struct StudyPage {
     std::vector<StudyToken> tokens;
 };
 
-// Loads scripts/jp_assist/tokenize_dialogue.py's runtime_data.json. The
+// Loads jp-assist/games/ocarina-of-time/tools/tokenize_dialogue.py's runtime_data.json. The
 // default search path is jp_assist/runtime_data.json across Ship's app dirs;
 // an explicit path is useful for development and future mod packages.
 bool StudyRepository_LoadCorpus(const std::string& explicitPath = "");

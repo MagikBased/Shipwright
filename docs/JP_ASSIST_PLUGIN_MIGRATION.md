@@ -98,7 +98,7 @@ rendering, and writable storage are mandatory for the initial usable plugin.
 ## Host ABI rules
 
 The public interface is declared in
-`packages/study-mod-sdk/include/study_mod/study_mod_api.h` and is resolved
+`jp-assist/packages/study-mod-sdk/include/study_mod/study_mod_api.h` and is resolved
 through `StudyMod_GetHostApi(minimum_version, maximum_version)`. Shipwright
 retains a forwarding header at its former include path for source compatibility. It is
 a C ABI so precompiled plugins do not inherit Shipwright's private C++ layouts.

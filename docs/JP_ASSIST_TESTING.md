@@ -22,7 +22,8 @@ The full suite owns a disposable debug session and returns to File Select when
 it finishes. Do not use it as a starting point for normal play; use **Load
 scenario** or a normal save for interactive testing afterward.
 
-Scenario definitions live in `scripts/jp_assist/test_scenarios.json`. Entrance,
+Scenario definitions live in
+`jp-assist/games/ocarina-of-time/tools/test_scenarios.json`. Entrance,
 text, yaw, and console numeric arguments accept decimal or `0x`-prefixed values.
 Expected page/token/choice counts deliberately make corpus drift visible.
 
@@ -39,7 +40,7 @@ After building `build-cmake/soh/soh.elf`, run the complete suite without menu
 navigation or mouse automation:
 
 ```bash
-./scripts/jp_assist/run_smoke_suite.sh
+./jp-assist/games/ocarina-of-time/tools/run_smoke_suite.sh
 ```
 
 The game starts in an automated temporary session, writes
@@ -53,7 +54,7 @@ To run the same suite specifically through the packaged `.o2r` plugin, use:
 
 ```bash
 cmake --build build-cmake --target jpassist_plugin_package soh
-./scripts/jp_assist/run_plugin_smoke_suite.sh
+./jp-assist/games/ocarina-of-time/tools/run_plugin_smoke_suite.sh
 ```
 
 The plugin wrapper temporarily copies `jp-assist.o2r` into the application

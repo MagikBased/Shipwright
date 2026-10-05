@@ -6,3 +6,7 @@
 	path = torch
 	url = https://github.com/HarbourMasters/Torch.git
 	branch = main
+[submodule "jp-assist"]
+	path = jp-assist
+	url = https://github.com/MagikBased/JP-Assist.git
+	branch = main

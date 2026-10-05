@@ -134,7 +134,7 @@ file(GLOB_RECURSE soh__ CONFIGURE_DEPENDS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "
 
 # JP Assist's feature runtime ships in jp-assist.o2r. Do not link the retired
 # source-integrated audio, overlay, or sync runtime into Shipwright; portable
-# state now lives under packages/study-core and the active UI belongs to the
+# state now lives under jp-assist/packages/study-core and the active UI belongs to the
 # external plugin.
 list(FILTER soh__ EXCLUDE REGEX
     "soh/Enhancements/JPAssist/(JPAssistAudio|JPAssistOverlay|LearningSyncRuntime)\\.cpp$")
@@ -330,8 +330,8 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/include/
     ${CMAKE_CURRENT_SOURCE_DIR}/src/
     ${CMAKE_CURRENT_SOURCE_DIR}/assets/
-    ${CMAKE_SOURCE_DIR}/packages/study-mod-sdk/include
-    ${CMAKE_SOURCE_DIR}/packages/study-core/include/jp_assist
+    ${CMAKE_SOURCE_DIR}/jp-assist/packages/study-mod-sdk/include
+    ${CMAKE_SOURCE_DIR}/jp-assist/packages/study-core/include/jp_assist
     .
 )
 

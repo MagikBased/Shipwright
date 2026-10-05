@@ -36,7 +36,7 @@ target_include_directories(jpassist_tests PRIVATE
     ${CMAKE_SOURCE_DIR}/soh/src
     ${CMAKE_SOURCE_DIR}/libultraship/include
     ${CMAKE_SOURCE_DIR}/soh/soh/Enhancements/JPAssist
-    ${CMAKE_SOURCE_DIR}/packages/study-core/include/jp_assist
+    ${CMAKE_SOURCE_DIR}/jp-assist/packages/study-core/include/jp_assist
 )
 target_compile_definitions(jpassist_tests PRIVATE F3DEX_GBI_2)
 target_link_libraries(jpassist_tests PRIVATE GTest::gtest_main jp_assist_study_core)

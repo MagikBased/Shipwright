@@ -1,4 +1,0 @@
-# Optional heavyweight local TTS environment. The catalog/deck build does not require this file.
-kokoro==0.9.4
-misaki[ja]==0.9.4
-soundfile==0.13.1

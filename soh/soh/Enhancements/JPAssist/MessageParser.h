@@ -12,7 +12,7 @@
 // texture-cache-invalidation graphics commands as side effects of decoding
 // (soh/src/code/z_message_PAL.c, Message_Decode ~line 2241). That makes them
 // unsafe to call mid-conversation just to inspect the other language - see
-// the Milestone 1 spike notes in docs/JP_ASSIST_DESIGN.md section 6.4.
+// the Milestone 1 spike notes in jp-assist/docs/JP_ASSIST_DESIGN.md section 6.4.
 
 namespace JPAssist {
 
