@@ -21,6 +21,12 @@ JP Assist is being split into three layers:
 The website, account service, catalog pipeline, and deck tooling remain outside
 the game plugin and require no migration.
 
+Shipwright retains two deliberately thin companion surfaces: its settings/
+account menu and searchable recent-dialogue window. The latter passively
+observes dialogue opens even when the plugin owns Study Mode, so the migration
+does not remove existing local history. It does not duplicate the plugin's
+account event or participate in study-card state.
+
 ## Dependency boundary
 
 | Capability | Current integration | Required plugin API |

@@ -295,9 +295,11 @@ TEST(PluginPackage, LoadsAndNegotiatesHostAbi) {
                                           CaptureRect, CaptureLine, CaptureText, CaptureMeasureText,
                                           CapturePushClip, CapturePopClip, CaptureButtonGlyph };
     hostApi->set_int_setting("jp-assist", "BeginPairing", 1);
+    hostApi->set_int_setting("jp-assist", "ReloadState", 1);
     StudyModApi::DispatchOverlay(overlayFrame, drawApi);
     EXPECT_EQ(getOverlayFrameCount(), 1U);
     EXPECT_EQ(hostApi->get_int_setting("jp-assist", "BeginPairing", -1), 0);
+    EXPECT_EQ(hostApi->get_int_setting("jp-assist", "ReloadState", -1), 0);
     EXPECT_EQ(drawCapture.filledRects, 1);
     EXPECT_EQ(drawCapture.outlinedRects, 1);
     EXPECT_EQ(drawCapture.lines, 2);

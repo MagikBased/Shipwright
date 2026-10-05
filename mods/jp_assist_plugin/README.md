@@ -35,7 +35,10 @@ visual/account settings remain the user-facing controls.
 
 Plugin-owned writable state is stored below `mods/jp-assist/`. On first use,
 the JP Assist host adapter copies legacy root-level progress and sync files
-there only when the destination does not already exist.
+there only when the destination does not already exist. It also copies any
+saved upper-dialogue, lower-dialogue, and no-dialogue card geometry. Because
+code mods initialize early, this migration sends a one-shot reload request so
+the first plugin session sees the copied state without requiring a restart.
 
 This development package currently requires the Study Mod API and code-mod
 loader changes from this repository. Stock Shipwright releases cannot load it

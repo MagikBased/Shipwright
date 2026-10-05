@@ -62,6 +62,7 @@ JPAssist::StudySession sStudySession;
 uint16_t sQueuedTestButtons = 0;
 int8_t sQueuedTestStickY = 0;
 bool sQueuedTestHasStickY = false;
+uint16_t sLastPluginHistoryTextId = 0xFFFF;
 
 bool sRomCompatibilityChecked = false;
 
@@ -83,10 +84,11 @@ void MirrorPluginSettings() {
                   CVarGetString(CVAR_ENHANCEMENT("JPAssist.AccountSync.Endpoint"), "http://127.0.0.1:8766"));
 }
 
-void MigrateLegacyPluginFiles() {
+void MigrateLegacyPluginState() {
     const std::filesystem::path destinationRoot =
         Ship::Context::GetPathRelativeToAppDirectory("mods/jp-assist");
     std::error_code error;
+    bool changed = false;
     std::filesystem::create_directories(destinationRoot, error);
     for (const char* fileName : { "jp_assist_progress.json", "jp_assist_sync.json" }) {
         const std::filesystem::path source = Ship::Context::GetPathRelativeToAppDirectory(fileName);
@@ -100,7 +102,34 @@ void MigrateLegacyPluginFiles() {
             SPDLOG_WARN("[JPAssist] Could not migrate {} to plugin storage: {}", fileName, error.message());
         } else {
             SPDLOG_INFO("[JPAssist] Migrated {} to plugin storage", fileName);
+            changed = true;
         }
+    }
+
+    for (const char* profile : { "NoDialogue", "UpperDialogue", "LowerDialogue" }) {
+        const std::string sourcePrefix = std::string(CVAR_ENHANCEMENT("JPAssist.Layout.")) + profile + ".";
+        const std::string destinationPrefix =
+            std::string(CVAR_ENHANCEMENT("StudyMods.jp-assist.Layout.")) + profile + ".";
+        if (CVarGetInteger((sourcePrefix + "Valid").c_str(), 0) == 0 ||
+            CVarGetInteger((destinationPrefix + "Valid").c_str(), 0) != 0) {
+            continue;
+        }
+        CVarSetFloat((destinationPrefix + "X").c_str(), CVarGetFloat((sourcePrefix + "X").c_str(), 0.0f));
+        CVarSetFloat((destinationPrefix + "Y").c_str(), CVarGetFloat((sourcePrefix + "Y").c_str(), 0.0f));
+        CVarSetFloat((destinationPrefix + "Width").c_str(),
+                     CVarGetFloat((sourcePrefix + "Width").c_str(), 0.0f));
+        CVarSetFloat((destinationPrefix + "Height").c_str(),
+                     CVarGetFloat((sourcePrefix + "Height").c_str(), 0.0f));
+        CVarSetInteger((destinationPrefix + "Valid").c_str(), 1);
+        changed = true;
+    }
+
+    if (changed) {
+        // Code mods initialize before RegisterJPAssist on current Shipwright
+        // startup. Ask the already-running plugin to reload any files that
+        // were copied after its initial read.
+        CVarSetInteger(CVAR_ENHANCEMENT("StudyMods.jp-assist.ReloadState"), 1);
+        Ship::Context::GetRawInstance()->GetWindow()->GetGui()->SaveConsoleVariablesNextFrame();
     }
 }
 
@@ -197,6 +226,12 @@ void ClearDialogueRuntimeState() {
 
 void MaintainDialogueRuntimeState() {
     if (PluginRuntimeEnabled()) {
+        const bool dialogueActive = gPlayState != nullptr && gPlayState->msgCtx.msgLength != 0 &&
+                                    gPlayState->msgCtx.msgMode != MSGMODE_NONE &&
+                                    gPlayState->msgCtx.msgMode != MSGMODE_TEXT_CLOSING;
+        if (!dialogueActive) {
+            sLastPluginHistoryTextId = 0xFFFF;
+        }
         ClearDialogueRuntimeState();
         return;
     }
@@ -371,10 +406,12 @@ void HandleStudyModeInput(PlayState* play, MessageContext* msgCtx, Input* input)
 // Design doc section 9 / section 11's "dialogue history": records page 0's
 // English text for whatever textId just opened. Prefer the normalized corpus,
 // which retains choice text; use the raw-table parser only as a fallback.
-void RecordHistoryForOpenedMessage(uint16_t textId) {
+void RecordHistoryForOpenedMessage(uint16_t textId, bool recordLearningEvent = true) {
     // Account sync receives stable IDs and counts only. The rendered Japanese
     // and English dialogue remains in the game's local corpus/history.
-    JPAssist::LearningSync_RecordDialogueEvent("dialogue_seen", textId, 0);
+    if (recordLearningEvent) {
+        JPAssist::LearningSync_RecordDialogueEvent("dialogue_seen", textId, 0);
+    }
     std::string text;
     if (const JPAssist::StudyPage* page = JPAssist::StudyRepository_FindPage(textId, 0); page != nullptr) {
         // An empty corpus translation is intentional: the build-time
@@ -410,10 +447,25 @@ void OnDialogMessage() {
     // stop reacting to input - bailing out before any of the tracking
     // below runs means msgMode/textId state isn't even observed, so
     // there's nothing left to clean up if the player re-enables mid-message.
-    if (!CVarGetInteger(CVAR_ENHANCEMENT("JPAssist.Enabled"), 1) || PluginRuntimeEnabled()) {
+    if (!CVarGetInteger(CVAR_ENHANCEMENT("JPAssist.Enabled"), 1)) {
+        sLastPluginHistoryTextId = 0xFFFF;
         ClearDialogueRuntimeState();
         return;
     }
+
+    if (PluginRuntimeEnabled()) {
+        // Dialogue history is a Shipwright companion window rather than part
+        // of the study-card runtime. Keep observing opens while the plugin is
+        // active, but do not duplicate the plugin's account-sync event.
+        if (gPlayState != nullptr && gPlayState->msgCtx.msgMode != MSGMODE_TEXT_CLOSING &&
+            gPlayState->msgCtx.textId != sLastPluginHistoryTextId) {
+            sLastPluginHistoryTextId = gPlayState->msgCtx.textId;
+            RecordHistoryForOpenedMessage(sLastPluginHistoryTextId, false);
+        }
+        ClearDialogueRuntimeState();
+        return;
+    }
+    sLastPluginHistoryTextId = 0xFFFF;
 
     CheckRomCompatibilityOnce();
 
@@ -689,7 +741,7 @@ void RegisterJPAssist() {
     JPAssist::JPAssistAudio_LoadManifest();
     JPAssist::StudyPersistence_Load();
     JPAssist::LearningSync_Initialize();
-    MigrateLegacyPluginFiles();
+    MigrateLegacyPluginState();
     MirrorPluginSettings();
     JPAssist::JPAssistOverlay_Register();
     JPAssist::JPAssistHistory_Register();

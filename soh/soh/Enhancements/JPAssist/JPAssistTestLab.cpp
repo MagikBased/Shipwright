@@ -21,6 +21,7 @@
 #include <ship/window/gui/GuiWindow.h>
 
 #include "JPAssistManager.h"
+#include "StudyPersistence.h"
 #include "StudyRepository.h"
 #include "TestScenario.h"
 
@@ -418,6 +419,13 @@ bool ValidateScenario(const TestScenario& scenario, std::string& detail) {
     }
     if (scenario.expected.choiceCount >= 0 && page->choiceCount != scenario.expected.choiceCount) {
         detail = fmt::format("Expected {} choices, observed {}", scenario.expected.choiceCount, page->choiceCount);
+        return false;
+    }
+    const auto& history = StudyPersistence_GetHistory();
+    if (std::none_of(history.begin(), history.end(), [&](const HistoryEntry& entry) {
+            return entry.textId == scenario.textId;
+        })) {
+        detail = "Message opened, but the dialogue history observer did not record it.";
         return false;
     }
     detail = fmt::format("PASS: text {:#06x}, {} pages, page {}, {} tokens{}", runtime.textId, pageCount,

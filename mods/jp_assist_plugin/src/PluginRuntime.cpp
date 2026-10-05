@@ -174,9 +174,9 @@ bool Runtime::Initialize(const StudyModHostApi& host) {
     mProgress.Initialize(host, "jp-assist");
     mAudio.Initialize(host, "jp-assist");
     mLayout.Initialize(host, "jp-assist");
-    RefreshEnabledSetting();
     const bool corpusLoaded = mCorpus.LoadFromHost(host, kCorpusResource);
     mSync.Initialize(host, "jp-assist", mCorpus.Version());
+    RefreshEnabledSetting();
     return corpusLoaded;
 }
 
@@ -232,6 +232,11 @@ void Runtime::RefreshEnabledSetting() {
     if (mHost != nullptr && mHost->get_int_setting != nullptr) {
         const bool masterEnabled = mHost->get_int_setting("jp-assist", "Enabled", 1) != 0;
         SetEnabled(masterEnabled);
+        if (mHost->get_int_setting("jp-assist", "ReloadState", 0) != 0) {
+            mHost->set_int_setting("jp-assist", "ReloadState", 0);
+            mProgress.Load();
+            mSync.Reload();
+        }
     }
 }
 
