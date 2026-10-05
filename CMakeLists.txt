@@ -391,6 +391,15 @@ if(JPASSIST_BUILD_PLUGIN_PACKAGE AND ENABLE_SCRIPTING)
         jp-assist/games/ocarina-of-time/adapters/shipwright/plugin
         ${CMAKE_BINARY_DIR}/games/ocarina-of-time/adapters/shipwright/plugin
     )
+    add_custom_target(jpassist_plugin_install ALL
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/soh/mods
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            ${CMAKE_BINARY_DIR}/games/ocarina-of-time/adapters/shipwright/plugin/jp-assist.o2r
+            ${CMAKE_BINARY_DIR}/soh/mods/jp-assist.o2r
+        DEPENDS jpassist_plugin_package
+        COMMENT "Installing jp-assist.o2r into the Shipwright runtime mods directory"
+        VERBATIM
+    )
 endif()
 
 option(JPASSIST_BUILD_TESTS "Build engine-independent JP Assist unit tests" OFF)

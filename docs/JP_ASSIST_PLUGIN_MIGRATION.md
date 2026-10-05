@@ -116,6 +116,13 @@ v1 plugins remain binary-compatible.
 
 Desktop builds enable libultraship's code-mod support and package
 `build-cmake/games/ocarina-of-time/adapters/shipwright/plugin/jp-assist.o2r`
+
+For a local Shipwright run, build `jpassist_plugin_install` to package the
+plugin and copy it into `build-cmake/soh/mods/jp-assist.o2r`:
+
+```sh
+cmake --build build-cmake --target jpassist_plugin_install -j4
+```
 with a platform binary.
 Shipwright initializes code-bearing archives when its mod menu mounts them,
 preserving dependency ordering and normal `ModExit` teardown. Binary loading

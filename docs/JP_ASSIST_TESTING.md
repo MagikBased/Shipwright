@@ -53,7 +53,7 @@ with `JPASSIST_SMOKE_TIMEOUT` when needed.
 To run the same suite specifically through the packaged `.o2r` plugin, use:
 
 ```bash
-cmake --build build-cmake --target jpassist_plugin_package soh
+cmake --build build-cmake --target jpassist_plugin_install soh
 ./jp-assist/games/ocarina-of-time/tools/run_plugin_smoke_suite.sh
 ```
 
