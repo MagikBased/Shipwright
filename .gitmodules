@@ -1,7 +1,7 @@
 [submodule "libultraship"]
 	path = libultraship
 	url = https://github.com/MagikBased/libultraship.git
-	branch = port-maintenance
+	branch = mod/code-mod-binary-loading
 [submodule "torch"]
 	path = torch
 	url = https://github.com/HarbourMasters/Torch.git
