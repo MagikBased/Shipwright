@@ -3,7 +3,7 @@
 #include <string>
 
 #include "JPAssistOverlayLayout.h"
-#include "mods/study_mod_api.h"
+#include "study_mod/study_mod_api.h"
 
 namespace JPAssistPlugin {
 

@@ -381,6 +381,8 @@ endif()
 add_subdirectory(libultraship ${CMAKE_BINARY_DIR}/libultraship SYSTEM)
 quiet_target(libultraship "${WARNING_OVERRIDE}")
 target_compile_definitions(libultraship PUBLIC INCLUDE_MPQ_SUPPORT)
+add_subdirectory(packages/study-mod-sdk)
+add_subdirectory(packages/study-core)
 add_subdirectory(soh)
 
 option(JPASSIST_BUILD_PLUGIN_PACKAGE "Build the JP Assist .o2r plugin package" ON)

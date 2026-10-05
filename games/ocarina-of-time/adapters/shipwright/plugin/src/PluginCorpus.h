@@ -5,7 +5,7 @@
 #include <unordered_map>
 #include <vector>
 
-#include "mods/study_mod_api.h"
+#include "study_mod/study_mod_api.h"
 
 namespace JPAssistPlugin {
 

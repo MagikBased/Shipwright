@@ -1,4 +1,4 @@
-#include "mods/study_mod_api.h"
+#include "study_mod/study_mod_api.h"
 #include "PluginRuntime.h"
 
 #include <cstddef>

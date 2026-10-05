@@ -39,3 +39,8 @@ SDK/core package, while actual host integration remains in Shipwright.
 
 During the transition, compatibility loaders may accept the original flat
 catalog directory. New content must use the module contract.
+
+Milestones 1, 2, and 4 are now implemented in the transitional checkout. The
+plugin links `packages/study-core`, includes the public ABI from
+`packages/study-mod-sdk`, and no longer compiles portable state from the
+Shipwright enhancement directory.

@@ -2,7 +2,6 @@ set(JPASSIST_PLUGIN_STAGE "${CMAKE_CURRENT_BINARY_DIR}/stage")
 set(JPASSIST_PLUGIN_OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/jp-assist.o2r")
 
 find_package(nlohmann_json CONFIG REQUIRED)
-find_package(CURL QUIET)
 include(FetchContent)
 FetchContent_GetProperties(dr_libs)
 
@@ -31,22 +30,18 @@ add_library(jpassist_plugin_binary MODULE
     src/PluginProgress.cpp
     src/PluginSync.cpp
     src/PluginRuntime.cpp
-    "${PROJECT_SOURCE_DIR}/soh/soh/Enhancements/JPAssist/StudySession.cpp"
-    "${PROJECT_SOURCE_DIR}/soh/soh/Enhancements/JPAssist/LearningSyncStore.cpp"
-    "${PROJECT_SOURCE_DIR}/soh/soh/Enhancements/JPAssist/LearningSyncClient.cpp"
 )
 target_include_directories(jpassist_plugin_binary PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}/src"
-    "${PROJECT_SOURCE_DIR}/soh/include"
-    "${PROJECT_SOURCE_DIR}/soh/soh/Enhancements/JPAssist"
     "${dr_libs_SOURCE_DIR}"
 )
 target_compile_features(jpassist_plugin_binary PRIVATE cxx_std_20)
-target_link_libraries(jpassist_plugin_binary PRIVATE ${CMAKE_DL_LIBS} nlohmann_json::nlohmann_json)
-if(CURL_FOUND)
-    target_compile_definitions(jpassist_plugin_binary PRIVATE JPASSIST_HAS_CURL=1)
-    target_link_libraries(jpassist_plugin_binary PRIVATE CURL::libcurl)
-endif()
+target_link_libraries(jpassist_plugin_binary PRIVATE
+    ${CMAKE_DL_LIBS}
+    jp_assist_study_core
+    nlohmann_json::nlohmann_json
+    study_mod_sdk
+)
 set_target_properties(jpassist_plugin_binary PROPERTIES
     PREFIX ""
     OUTPUT_NAME "jp-assist"

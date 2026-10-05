@@ -27,9 +27,6 @@ add_executable(jpassist_tests
     test_study_token.cpp
     ${CMAKE_SOURCE_DIR}/soh/soh/Enhancements/JPAssist/MessageParser.cpp
     ${CMAKE_SOURCE_DIR}/soh/soh/Enhancements/JPAssist/JPAssistHost.cpp
-    ${CMAKE_SOURCE_DIR}/soh/soh/Enhancements/JPAssist/StudySession.cpp
-    ${CMAKE_SOURCE_DIR}/soh/soh/Enhancements/JPAssist/LearningSyncStore.cpp
-    ${CMAKE_SOURCE_DIR}/soh/soh/Enhancements/JPAssist/LearningSyncClient.cpp
     ${CMAKE_SOURCE_DIR}/soh/soh/Enhancements/JPAssist/TestScenarioParser.cpp
 )
 
@@ -39,9 +36,10 @@ target_include_directories(jpassist_tests PRIVATE
     ${CMAKE_SOURCE_DIR}/soh/src
     ${CMAKE_SOURCE_DIR}/libultraship/include
     ${CMAKE_SOURCE_DIR}/soh/soh/Enhancements/JPAssist
+    ${CMAKE_SOURCE_DIR}/packages/study-core/include/jp_assist
 )
 target_compile_definitions(jpassist_tests PRIVATE F3DEX_GBI_2)
-target_link_libraries(jpassist_tests PRIVATE GTest::gtest_main)
+target_link_libraries(jpassist_tests PRIVATE GTest::gtest_main jp_assist_study_core)
 
 include(GoogleTest)
 gtest_discover_tests(jpassist_tests)
@@ -63,7 +61,9 @@ if(ENABLE_SCRIPTING AND TARGET jpassist_plugin_package)
         JPASSIST_PLUGIN_ARCHIVE_PATH="${CMAKE_BINARY_DIR}/games/ocarina-of-time/adapters/shipwright/plugin/jp-assist.o2r"
         JPASSIST_TCC_RUNTIME_DIR="$<TARGET_FILE_DIR:libtcc1>"
     )
-    target_link_libraries(jpassist_plugin_tests PRIVATE libultraship GTest::gtest_main)
+    target_link_libraries(jpassist_plugin_tests PRIVATE
+        libultraship GTest::gtest_main study_mod_sdk
+    )
     if(UNIX AND NOT APPLE)
         target_link_options(jpassist_plugin_tests PRIVATE -Wl,--export-dynamic)
     endif()
