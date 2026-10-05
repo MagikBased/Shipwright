@@ -3,10 +3,10 @@
 #include <algorithm>
 #include <cstdint>
 
-#include "soh/Enhancements/JPAssist/JPAssistNativeHighlight.h"
 #include "soh/Enhancements/JPAssist/NativePageTracker.h"
 #include "soh/Enhancements/game-interactor/GameInteractor.h"
 #include "soh/ShipInit.hpp"
+#include "mods/study_mod_game_bridge.h"
 #include "global.h"
 #include "variables.h"
 
@@ -48,8 +48,8 @@ bool IsDialogueActive() {
 }
 
 StudyModRect GetTextboxBounds() {
-    JPAssistNativeTextboxBounds nativeBounds{};
-    if (!JPAssist_GetNativeTextboxBounds(&nativeBounds)) {
+    StudyModNativeTextboxBounds nativeBounds{};
+    if (!StudyModHost_GetNativeTextboxBounds(&nativeBounds)) {
         return {};
     }
     return {
@@ -58,7 +58,7 @@ StudyModRect GetTextboxBounds() {
         320.0f,
         static_cast<float>(nativeBounds.height),
         320.0f,
-        static_cast<float>(nativeBounds.logicalScreenHeight),
+        static_cast<float>(nativeBounds.logical_screen_height),
     };
 }
 
@@ -181,7 +181,7 @@ void OnDialogMessage() {
 
     const bool decodedPageReady = IsDecodedPageReady(message);
     int pageIndex = sPageTracker.GetPageIndex();
-    if (decodedPageReady && sPageTracker.Observe(JPAssist_GetNativeTextBoxNumber(), pageIndex)) {
+    if (decodedPageReady && sPageTracker.Observe(StudyModHost_GetNativeTextBoxNumber(), pageIndex)) {
         StudyModApi::DispatchDialogue(
             MakeDialogueEvent(STUDY_MOD_DIALOGUE_PAGE_CHANGED, message, pageIndex, true));
     }

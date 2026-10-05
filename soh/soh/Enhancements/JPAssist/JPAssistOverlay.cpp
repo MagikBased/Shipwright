@@ -1,6 +1,6 @@
 #include "JPAssistOverlay.h"
 #include "JPAssistOverlayLayout.h"
-#include "JPAssistNativeHighlight.h"
+#include "mods/study_mod_game_bridge.h"
 
 #include <algorithm>
 #include <cctype>
@@ -109,10 +109,10 @@ class JPAssistOverlayWindow final : public Ship::GuiWindow {
         }
 
         ImGuiViewport* viewport = ImGui::GetMainViewport();
-        JPAssistNativeTextboxBounds nativeBounds = {};
-        const bool hasNativeBounds = JPAssist_GetNativeTextboxBounds(&nativeBounds) &&
-                                     nativeBounds.logicalScreenHeight > 0 && nativeBounds.height > 0;
-        const float nativeHeight = static_cast<float>(nativeBounds.logicalScreenHeight);
+        StudyModNativeTextboxBounds nativeBounds = {};
+        const bool hasNativeBounds = StudyModHost_GetNativeTextboxBounds(&nativeBounds) &&
+                                     nativeBounds.logical_screen_height > 0 && nativeBounds.height > 0;
+        const float nativeHeight = static_cast<float>(nativeBounds.logical_screen_height);
         const float nativeTop = hasNativeBounds ? static_cast<float>(nativeBounds.y) / nativeHeight : 0.0f;
         const float nativeBottom = hasNativeBounds
                                        ? static_cast<float>(nativeBounds.y + nativeBounds.height) / nativeHeight

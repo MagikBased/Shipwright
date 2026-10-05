@@ -15,19 +15,19 @@
 #include "soh/SaveManager.h"
 #include "soh/ResourceManagerHelpers.h"
 #include "soh/Enhancements/savestate_serialize.h"
-#include "soh/Enhancements/JPAssist/JPAssistNativeHighlight.h"
 #include "mods/study_mod_host_bridge.h"
+#include "mods/study_mod_game_bridge.h"
 
 // #region SOH [NTSC] - Allows custom messages to work on japanese
 static bool sDisplayNextMessageAsEnglish = false;
 static u8 sLastLanguage = LANGUAGE_ENG;
 static u16 sTextBoxNum = 0;
 
-uint16_t JPAssist_GetNativeTextBoxNumber(void) {
+uint16_t StudyModHost_GetNativeTextBoxNumber(void) {
     return sTextBoxNum;
 }
 
-bool JPAssist_GetNativeTextboxBounds(JPAssistNativeTextboxBounds* bounds) {
+bool StudyModHost_GetNativeTextboxBounds(StudyModNativeTextboxBounds* bounds) {
     if (bounds == NULL || sTextBoxNum == 0) {
         return false;
     }
@@ -37,7 +37,7 @@ bool JPAssist_GetNativeTextboxBounds(JPAssistNativeTextboxBounds* bounds) {
     // study card does not drift while a textbox opens or closes.
     bounds->y = R_TEXTBOX_Y_TARGET;
     bounds->height = 64;
-    bounds->logicalScreenHeight = SCREEN_HEIGHT;
+    bounds->logical_screen_height = SCREEN_HEIGHT;
     return true;
 }
 // #endregion
@@ -1026,16 +1026,17 @@ static void Message_DrawJPAssistGlyphGlow(PlayState* play, Gfx** gfxP, s16 x, s1
     *gfxP = gfx;
 }
 
-static void Message_DrawJPAssistNativeHighlight(PlayState* play, Gfx** gfxP) {
+static void Message_DrawStudyModNativeHighlight(PlayState* play, Gfx** gfxP) {
     MessageContext* msgCtx = &play->msgCtx;
-    JPAssistNativeHighlight highlight;
+    uint32_t highlightStart;
+    uint32_t highlightLength;
     u32 normalizedIndex = 0;
     s16 glyphSize = (s16)(16.0f * (R_TEXT_CHAR_SCALE / 100.0f));
     s16 x = R_TEXT_INIT_XPOS;
     s16 y = R_TEXT_INIT_YPOS;
     u16 i;
 
-    if (!StudyModHost_QueryNativeHighlight(msgCtx->textId, &highlight.start, &highlight.length)) {
+    if (!StudyModHost_QueryNativeHighlight(msgCtx->textId, &highlightStart, &highlightLength)) {
         return;
     }
 
@@ -1103,11 +1104,11 @@ static void Message_DrawJPAssistNativeHighlight(PlayState* play, Gfx** gfxP) {
                 break;
             default:
                 x += Message_GetJpnGlyphLeftAdjustment(character);
-                if (normalizedIndex >= highlight.start && normalizedIndex < highlight.start + highlight.length) {
+                if (normalizedIndex >= highlightStart && normalizedIndex < highlightStart + highlightLength) {
                     Message_DrawJPAssistGlyphGlow(play, gfxP, x, y, glyphSize);
                 }
                 x += Message_GetJpnGlyphAdvance(character);
-                normalizedIndex += JPAssist_GetNormalizedGlyphLength(character);
+                normalizedIndex += StudyModHost_GetNormalizedGlyphLength(character);
                 break;
         }
     }
@@ -1137,7 +1138,7 @@ void Message_DrawTextJPN(PlayState* play, Gfx** gfxP) {
 
     // Draw behind the native glyph pass. This uses the already-decoded page
     // and never calls Message_DecodeJPN or mutates dialogue progression.
-    Message_DrawJPAssistNativeHighlight(play, &gfx);
+    Message_DrawStudyModNativeHighlight(play, &gfx);
 
     for (i = 0; i < msgCtx->textDrawPos; i++) {
         character = msgCtx->msgBufDecodedWide[i];
