@@ -2,10 +2,9 @@
 
 ## Goal
 
-Package JP Assist as a drop-in `.o2r` mod while preserving the existing
-source-integrated build until the public host API can support every feature.
-The host API must remain useful to other games and must not expose private
-Shipwright C++ object layouts.
+Package JP Assist as a drop-in `.o2r` mod backed by the smallest reusable
+public study-mod host API. The host API must remain useful to other games and
+must not expose private Shipwright C++ object layouts.
 
 ## Architecture
 
@@ -62,9 +61,8 @@ account event or participate in study-card state.
   saved/known/encounter persistence, pronunciation lookup/decoding/playback,
   durable account-event queuing and pairing/upload, and an initial
   primitive-rendered study card. A runtime-ready diagnostic performs a clean,
-  automatic handoff so the source manager and plugin never consume the same
-  input, overlay, or highlight request. The source implementation remains only
-  as a guarded fallback during final cutover.
+  automatic ownership boundary so no source-integrated runtime consumes the
+  same input, overlay, or highlight request.
 - [x] Build and load a precompiled binary from a real `.o2r` plugin. The
   integration test negotiates every mandatory capability, dispatches events,
   verifies selective input consumption and highlighting, mixes a submitted
@@ -80,10 +78,14 @@ account event or participate in study-card state.
 - [x] Verify the plugin path with native tests and the automated game smoke
   suite. The isolated runner passed all six gameplay scenarios through the
   packaged `.o2r` runtime.
-- [x] Make a successfully initialized plugin the default runtime, with
-  automatic fallback when it is absent, incompatible, or unloaded.
-- [ ] Remove the guarded source fallback and separate the reusable host changes
-  into an upstream-ready patch series.
+- [x] Make a successfully initialized plugin the sole JP Assist runtime. When
+  it is absent, incompatible, or unloaded, Shipwright reports that the plugin
+  is unavailable and does not activate a duplicate built-in implementation.
+- [x] Remove the guarded source fallback. Shipwright now retains only the
+  generic host bridge plus thin settings, migration, history, and Test Lab
+  companion code. The reusable ABI/bridge, native renderer hook, code-mod
+  loader fix, and JP Assist package are isolated by subsystem for upstream
+  review.
 
 ## Compatibility policy
 
@@ -128,8 +130,9 @@ smart placement, per-location persisted geometry, drag/resize with axis locking
 and snapping, independent column scrolling, native control glyphs (including
 glyph markers embedded in English dialogue), and compact furigana/word/
 definition presentation. A successful plugin initialization publishes a
-runtime-ready diagnostic and automatically makes the source-integrated manager
-stand down; failure or unload returns ownership to the source fallback.
+runtime-ready diagnostic. Failure or unload removes the callbacks cleanly and
+leaves the menu in an explicit `plugin not loaded` state; it never activates a
+second built-in study runtime.
 
 The packaged-plugin integration test injects a small legal corpus and WAV
 fixture and exercises open, navigation, definition toggling, selective input
@@ -141,6 +144,8 @@ through the actual `.o2r` binary.
 For a gameplay-level verification, `run_plugin_smoke_suite.sh` temporarily
 installs the built package, enables the plugin handoff settings, delegates to
 the existing six-scenario automated suite, and restores the prior config and
-installed package through a shell trap. This has passed end-to-end. The final
-slice is now the default-runtime/source-removal cutover and organizing the host
-ABI plus loader fixes for upstream review.
+installed package through a shell trap. This has passed end-to-end after the
+source runtime was removed. The resulting Shipwright changes are limited to
+the reusable ABI/adapter, the native highlight and textbox-bound hooks, the
+code-mod loader reliability fix, and the thin JP Assist companion surfaces
+described above.

@@ -134,6 +134,14 @@ source_group("include" FILES ${Header_Files__include})
 # soh (root)
 file(GLOB_RECURSE soh__ RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "soh/*.c" "soh/*.cpp" "soh/*.h" "soh/*.hpp")
 
+# JP Assist's feature runtime ships in jp-assist.o2r. Keep its portable
+# implementation sources available to the plugin and native tests without
+# linking a dormant second copy into Shipwright itself. The remaining files in
+# this directory are the thin host companion (settings/history/Test Lab) and
+# shared corpus/test support it uses.
+list(FILTER soh__ EXCLUDE REGEX
+    "soh/Enhancements/JPAssist/(JPAssistAudio|JPAssistOverlay|LearningSyncClient|LearningSyncRuntime|LearningSyncStore|StudySession)\\.cpp$")
+
 # Add specific files that don't match the pattern
 list(APPEND soh__ ${CMAKE_CURRENT_SOURCE_DIR}/soh/Enhancements/speechsynthesizer/DarwinSpeechSynthesizer.mm)
 

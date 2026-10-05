@@ -46,11 +46,6 @@ static inline uint32_t JPAssist_GetNormalizedGlyphLength(uint16_t character) {
     }
 }
 
-// C-compatible render bridge. The native message renderer asks only for the
-// selected normalized-text span; it remains independent of corpus and study
-// state implementation details.
-bool JPAssist_GetNativeHighlight(uint16_t textId, JPAssistNativeHighlight* highlight);
-
 // SoH adapter state used to align a corpus page with the textbox currently
 // decoded by the native message engine. The value is 1-based; zero means no
 // page has been decoded yet.

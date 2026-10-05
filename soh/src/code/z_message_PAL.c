@@ -1036,12 +1036,7 @@ static void Message_DrawJPAssistNativeHighlight(PlayState* play, Gfx** gfxP) {
     u16 i;
 
     if (!StudyModHost_QueryNativeHighlight(msgCtx->textId, &highlight.start, &highlight.length)) {
-        // Compatibility path while JP Assist's feature core is moved into its
-        // .o2r module. Once that migration is complete, all providers use the
-        // host API and this source-integrated fallback can be removed.
-        if (!JPAssist_GetNativeHighlight(msgCtx->textId, &highlight)) {
-            return;
-        }
+        return;
     }
 
     for (i = 0; i < msgCtx->textDrawPos; i++) {
