@@ -12,8 +12,4 @@ bool JPAssistAudio_LoadManifest(const std::string& explicitPath = "");
 bool JPAssistAudio_HasWord(const std::string& wordId);
 bool JPAssistAudio_PlayWord(const std::string& wordId);
 
-// Called by Ship's audio producer thread immediately before submitting a
-// 32 kHz stereo S16 batch to the selected backend.
-void JPAssistAudio_Mix(int16_t* samples, size_t frameCount);
-
 } // namespace JPAssist

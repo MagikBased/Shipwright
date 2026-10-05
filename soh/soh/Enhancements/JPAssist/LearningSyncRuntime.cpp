@@ -5,8 +5,8 @@
 #include <sstream>
 
 #include <libultraship/bridge/consolevariablebridge.h>
-#include <ship/Context.h>
 
+#include "JPAssistHost.h"
 #include "StudyRepository.h"
 #include "soh/cvar_prefixes.h"
 
@@ -47,7 +47,7 @@ void LearningSync_Initialize() {
         return;
     }
     sClient = std::make_unique<LearningSyncClient>(
-        Ship::Context::GetPathRelativeToAppDirectory("jp_assist_sync.json"),
+        JPAssistHost_GetWritableFile("jp_assist_sync.json"),
         LearningSync_CreateDefaultHttpTransport(), LearningClientIdentity{ "Ship of Harkinian", kGameId, kAdapterId });
     sClient->Start();
     LearningSync_Configure();

@@ -1,12 +1,14 @@
 #include "JPAssistManager.h"
 
 #include <algorithm>
+#include <filesystem>
 #include <spdlog/spdlog.h>
 
 #include "DialogueRepository.h"
 #include "DialoguePresentation.h"
 #include "JPAssistHistory.h"
 #include "JPAssistAudio.h"
+#include "ShipwrightJPAssistHost.h"
 #include "JPAssistNativeHighlight.h"
 #include "JPAssistOverlay.h"
 #include "JPAssistTestLab.h"
@@ -15,10 +17,11 @@
 #include "NativePageTracker.h"
 #include "StudyPersistence.h"
 #include "StudyRepository.h"
-#include "StudySelectionMemory.h"
+#include "StudySession.h"
 
 #include "soh/Enhancements/game-interactor/GameInteractor.h"
 #include "soh/ShipInit.hpp"
+#include "soh/ModApi/StudyModApiInternal.h"
 #include "functions.h"
 #include "macros.h"
 #include "variables.h"
@@ -53,33 +56,53 @@ extern std::shared_ptr<SohMenu> mSohMenu;
 
 namespace {
 
-// Dialogue tracking, reset whenever a new message opens.
-uint16_t sTrackedTextId = 0xFFFF;
 uint8_t sLastMsgMode = MSGMODE_NONE;
-int sCurrentPageIndex = 0;
 JPAssist::NativePageTracker sNativePageTracker;
-
-// Study Mode selection is an occurrence index within the current corpus page.
-bool sStudyModeActive = false;
-bool sDefinitionVisible = true;
-int sSelectedTokenIndex = 0;
-JPAssist::StudySelectionMemory sStudySelectionMemory;
-uint64_t sStudyEnterCount = 0;
-uint64_t sStudyNavigationCount = 0;
-uint64_t sStudyScrollCount = 0;
-uint64_t sSaveToggleCount = 0;
-uint64_t sKnownMarkCount = 0;
-uint64_t sDefinitionToggleCount = 0;
-uint64_t sAudioPlayCount = 0;
-bool sFrozenChoiceValid = false;
-uint8_t sFrozenChoiceIndex = 0;
-uint16_t sFrozenChoiceTextId = 0xFFFF;
-int sFrozenChoicePageIndex = -1;
+JPAssist::StudySession sStudySession;
 uint16_t sQueuedTestButtons = 0;
 int8_t sQueuedTestStickY = 0;
 bool sQueuedTestHasStickY = false;
 
 bool sRomCompatibilityChecked = false;
+
+bool PluginRuntimeEnabled() {
+    return StudyModApi::HasRegisteredMod("jp-assist") &&
+           CVarGetInteger(CVAR_ENHANCEMENT("StudyMods.jp-assist.Diagnostics.RuntimeEnabled"), 0) != 0;
+}
+
+void MirrorPluginSettings() {
+    CVarSetInteger(CVAR_ENHANCEMENT("StudyMods.jp-assist.Enabled"),
+                   CVarGetInteger(CVAR_ENHANCEMENT("JPAssist.Enabled"), 1));
+    CVarSetFloat(CVAR_ENHANCEMENT("StudyMods.jp-assist.CardScale"),
+                 CVarGetFloat(CVAR_ENHANCEMENT("JPAssist.CardScale"), 1.0f));
+    CVarSetFloat(CVAR_ENHANCEMENT("StudyMods.jp-assist.CardOpacity"),
+                 CVarGetFloat(CVAR_ENHANCEMENT("JPAssist.CardOpacity"), 0.92f));
+    CVarSetInteger(CVAR_ENHANCEMENT("StudyMods.jp-assist.AccountSyncEnabled"),
+                   CVarGetInteger(CVAR_ENHANCEMENT("JPAssist.AccountSync.Enabled"), 0));
+    CVarSetString(CVAR_ENHANCEMENT("StudyMods.jp-assist.AccountSyncEndpoint"),
+                  CVarGetString(CVAR_ENHANCEMENT("JPAssist.AccountSync.Endpoint"), "http://127.0.0.1:8766"));
+}
+
+void MigrateLegacyPluginFiles() {
+    const std::filesystem::path destinationRoot =
+        Ship::Context::GetPathRelativeToAppDirectory("mods/jp-assist");
+    std::error_code error;
+    std::filesystem::create_directories(destinationRoot, error);
+    for (const char* fileName : { "jp_assist_progress.json", "jp_assist_sync.json" }) {
+        const std::filesystem::path source = Ship::Context::GetPathRelativeToAppDirectory(fileName);
+        const std::filesystem::path destination = destinationRoot / fileName;
+        if (!std::filesystem::exists(source) || std::filesystem::exists(destination)) {
+            continue;
+        }
+        error.clear();
+        std::filesystem::copy_file(source, destination, std::filesystem::copy_options::none, error);
+        if (error) {
+            SPDLOG_WARN("[JPAssist] Could not migrate {} to plugin storage: {}", fileName, error.message());
+        } else {
+            SPDLOG_INFO("[JPAssist] Migrated {} to plugin storage", fileName);
+        }
+    }
+}
 
 std::shared_ptr<Ship::GameOverlay> GetOverlay() {
     return Ship::Context::GetRawInstance()->GetWindow()->GetGui()->GetGameOverlay();
@@ -127,41 +150,31 @@ void CheckRomCompatibilityOnce() {
 }
 
 const JPAssist::StudyPage* CurrentStudyPage() {
-    return JPAssist::StudyRepository_FindPage(sTrackedTextId, sCurrentPageIndex);
+    return JPAssist::StudyRepository_FindPage(sStudySession.TextId(), sStudySession.PageIndex());
 }
 
-void RememberCurrentSelection() {
-    const JPAssist::StudyPage* page = CurrentStudyPage();
-    if (page != nullptr) {
-        sStudySelectionMemory.Remember(sTrackedTextId, sCurrentPageIndex, sSelectedTokenIndex,
-                                       static_cast<int>(page->tokens.size()));
-    }
+void RetargetStudySession(uint16_t textId, int pageIndex) {
+    const JPAssist::StudyPage* page = JPAssist::StudyRepository_FindPage(textId, pageIndex);
+    sStudySession.RetargetDialogue(textId, pageIndex, page == nullptr ? 0 : static_cast<int>(page->tokens.size()),
+                                   page != nullptr && page->isChoice);
 }
 
-void RestoreCurrentSelection() {
-    const JPAssist::StudyPage* page = CurrentStudyPage();
-    sSelectedTokenIndex = page == nullptr
-                              ? 0
-                              : sStudySelectionMemory.Restore(sTrackedTextId, sCurrentPageIndex,
-                                                              static_cast<int>(page->tokens.size()));
+void FinishStudyModeExit() {
+    JPAssist::JPAssistOverlay_Hide();
+    JPAssist::StudyPersistence_Save();
+    SPDLOG_INFO("[JPAssist] Study Mode exited");
 }
 
 void ExitStudyMode() {
-    if (!sStudyModeActive) {
+    if (!sStudySession.Exit()) {
         return;
     }
-    RememberCurrentSelection();
-    sStudyModeActive = false;
-    sDefinitionVisible = true;
-    sFrozenChoiceValid = false;
-    JPAssist::JPAssistOverlay_Hide();
     // Flush encounter counts accumulated while navigating (design doc
     // section 9). Saved-word toggles (C-Right) already save immediately
     // since that's an explicit, infrequent action - batching the
     // once-per-navigation encounter counter here instead avoids a disk
     // write on every single D-pad press.
-    JPAssist::StudyPersistence_Save();
-    SPDLOG_INFO("[JPAssist] Study Mode exited");
+    FinishStudyModeExit();
 }
 
 // Dialogue callbacks stop entirely once the native textbox disappears. Keep
@@ -174,19 +187,19 @@ void ClearDialogueRuntimeState() {
     // inactive. The render-side overlay is intentionally independent and a
     // prior interrupted frame may otherwise have left it visible.
     JPAssist::JPAssistOverlay_Hide();
-    sTrackedTextId = 0xFFFF;
+    sStudySession.ClearDialogue();
     sLastMsgMode = MSGMODE_NONE;
-    sCurrentPageIndex = 0;
     sNativePageTracker.Reset();
-    sFrozenChoiceValid = false;
-    sFrozenChoiceTextId = 0xFFFF;
-    sFrozenChoicePageIndex = -1;
     sQueuedTestButtons = 0;
     sQueuedTestStickY = 0;
     sQueuedTestHasStickY = false;
 }
 
 void MaintainDialogueRuntimeState() {
+    if (PluginRuntimeEnabled()) {
+        ClearDialogueRuntimeState();
+        return;
+    }
     const bool enabled = CVarGetInteger(CVAR_ENHANCEMENT("JPAssist.Enabled"), 1) != 0;
     // Message_Update returns before OnDialogMessage when msgLength is zero,
     // even if a forced reset left msgMode carrying its previous value.
@@ -210,7 +223,8 @@ void RecordTokenEncounter(int index) {
     const auto& tokens = page->tokens;
     index = std::min(index, static_cast<int>(tokens.size()) - 1);
     JPAssist::StudyPersistence_RecordEncounter(tokens[index].Id());
-    JPAssist::LearningSync_RecordWordEvent("word_encountered", tokens[index], sTrackedTextId, sCurrentPageIndex);
+    JPAssist::LearningSync_RecordWordEvent("word_encountered", tokens[index], sStudySession.TextId(),
+                                           sStudySession.PageIndex());
 }
 
 // Redraws the card for the currently selected token every frame Study Mode
@@ -227,11 +241,12 @@ void DrawStudyCard() {
         return;
     }
     const auto& tokens = page->tokens;
-    int index = std::min(sSelectedTokenIndex, static_cast<int>(tokens.size()) - 1);
+    int index = std::min(sStudySession.SelectedTokenIndex(), static_cast<int>(tokens.size()) - 1);
 
     JPAssist::JPAssistOverlay_ShowStudy(
         *page, index, JPAssist::JPAssistAudio_HasWord(tokens[index].Id()),
-        JPAssist::StudyPersistence_IsKnown(tokens[index].Id(), tokens[index].senseId), sDefinitionVisible);
+        JPAssist::StudyPersistence_IsKnown(tokens[index].Id(), tokens[index].senseId),
+        sStudySession.IsDefinitionVisible());
 }
 
 // Handles Study Mode's own input and, while active, consumes the buttons
@@ -247,132 +262,97 @@ void HandleStudyModeInput(PlayState* play, MessageContext* msgCtx, Input* input)
     const bool rPressed = CHECK_BTN_ALL(input->press.button, BTN_R);
     const bool definitionPressed = CHECK_BTN_ALL(input->press.button, BTN_L) ||
                                    CHECK_BTN_ALL(input->press.button, BTN_Z);
+    JPAssist::StudyCommand commands = JPAssist::StudyCommand::None;
+    if (rPressed) {
+        commands = commands | (sStudySession.IsActive() ? JPAssist::StudyCommand::Close
+                                                        : JPAssist::StudyCommand::OpenWithDefinition);
+    }
+    if (definitionPressed) {
+        commands = commands | (sStudySession.IsActive() ? JPAssist::StudyCommand::ToggleDefinition
+                                                        : JPAssist::StudyCommand::OpenRecallFirst);
+    }
+    if (CHECK_BTN_ALL(input->press.button, BTN_DRIGHT)) commands = commands | JPAssist::StudyCommand::NextWord;
+    if (CHECK_BTN_ALL(input->press.button, BTN_DLEFT)) commands = commands | JPAssist::StudyCommand::PreviousWord;
+    if (CHECK_BTN_ALL(input->press.button, BTN_DUP)) commands = commands | JPAssist::StudyCommand::ScrollUp;
+    if (CHECK_BTN_ALL(input->press.button, BTN_DDOWN)) commands = commands | JPAssist::StudyCommand::ScrollDown;
+    if (CHECK_BTN_ALL(input->press.button, BTN_CRIGHT)) commands = commands | JPAssist::StudyCommand::ToggleSaved;
+    if (CHECK_BTN_ALL(input->press.button, BTN_CLEFT)) commands = commands | JPAssist::StudyCommand::MarkKnown;
+    if (CHECK_BTN_ALL(input->press.button, BTN_CDOWN)) commands = commands | JPAssist::StudyCommand::PlayAudio;
 
-    if (!sStudyModeActive) {
-        // Study Mode is available whenever Japanese token data exists. On
-        // choice pages the highlighted answer is captured below and frozen
-        // while the study panel owns the D-pad/analog focus.
-        const JPAssist::StudyPage* page = CurrentStudyPage();
-        if ((rPressed || definitionPressed) && page != nullptr && !page->tokens.empty()) {
-            sStudyModeActive = true;
-            // R is the direct Study Mode path. L/Z is the recall-first path:
-            // show the word and context, but require another L/Z press before
-            // exposing its definition.
-            sDefinitionVisible = rPressed;
-            sStudyEnterCount++;
-            RestoreCurrentSelection();
-            if (page->isChoice) {
-                sFrozenChoiceValid = true;
-                sFrozenChoiceIndex = msgCtx->choiceIndex;
-                sFrozenChoiceTextId = sTrackedTextId;
-                sFrozenChoicePageIndex = sCurrentPageIndex;
-                input->rel.stick_y = 0;
-                input->press.button &= ~(BTN_DUP | BTN_DDOWN);
-                input->cur.button &= ~(BTN_DUP | BTN_DDOWN);
-            }
-            RecordTokenEncounter(sSelectedTokenIndex);
-            JPAssist::LearningSync_RecordDialogueEvent("study_mode_opened", sTrackedTextId, sCurrentPageIndex);
-            constexpr uint16_t entryButtons = BTN_R | BTN_L | BTN_Z;
-            input->press.button &= ~entryButtons;
-            input->cur.button &= ~entryButtons;
-            DrawStudyCard();
-            SPDLOG_INFO("[JPAssist] Study Mode entered with definition {}",
-                        sDefinitionVisible ? "visible" : "hidden");
+    const JPAssist::StudySessionResult result = sStudySession.HandleCommands(commands, msgCtx->choiceIndex);
+    if (result.consumeEntryCommands) {
+        constexpr uint16_t entryButtons = BTN_R | BTN_L | BTN_Z;
+        input->press.button &= ~entryButtons;
+        input->cur.button &= ~entryButtons;
+    }
+    if (result.entered) {
+        if (result.freezeChoice) {
+            msgCtx->choiceIndex = result.frozenChoiceIndex;
+            input->rel.stick_y = 0;
+            input->press.button &= ~(BTN_DUP | BTN_DDOWN);
+            input->cur.button &= ~(BTN_DUP | BTN_DDOWN);
         }
+        RecordTokenEncounter(sStudySession.SelectedTokenIndex());
+        JPAssist::LearningSync_RecordDialogueEvent("study_mode_opened", sStudySession.TextId(),
+                                                   sStudySession.PageIndex());
+        DrawStudyCard();
+        SPDLOG_INFO("[JPAssist] Study Mode entered with definition {}",
+                    sStudySession.IsDefinitionVisible() ? "visible" : "hidden");
         return;
     }
-
-    if (rPressed) {
-        ExitStudyMode();
+    if (result.exited) {
+        FinishStudyModeExit();
         input->press.button &= ~BTN_R;
         input->cur.button &= ~BTN_R;
         return;
     }
+    if (!sStudySession.IsActive()) {
+        return;
+    }
 
-    if (definitionPressed) {
-        sDefinitionVisible = !sDefinitionVisible;
-        sDefinitionToggleCount++;
-        SPDLOG_INFO("[JPAssist] Definition {}", sDefinitionVisible ? "revealed" : "hidden");
+    if (result.definitionToggled) {
+        SPDLOG_INFO("[JPAssist] Definition {}", sStudySession.IsDefinitionVisible() ? "revealed" : "hidden");
+    }
+    if (result.freezeChoice) {
+        // Message_HandleChoiceSelection runs later in Message_Update. Restore
+        // the captured selection and neutralize its vertical controls.
+        msgCtx->choiceIndex = result.frozenChoiceIndex;
+        input->rel.stick_y = 0;
     }
 
     const JPAssist::StudyPage* page = CurrentStudyPage();
-    if (page != nullptr && page->isChoice) {
-        if (!sFrozenChoiceValid || sFrozenChoiceTextId != sTrackedTextId ||
-            sFrozenChoicePageIndex != sCurrentPageIndex) {
-            sFrozenChoiceValid = true;
-            sFrozenChoiceIndex = msgCtx->choiceIndex;
-            sFrozenChoiceTextId = sTrackedTextId;
-            sFrozenChoicePageIndex = sCurrentPageIndex;
-        }
-        // Message_HandleChoiceSelection runs later in Message_Update and
-        // reads rel.stick_y plus D-up/down. Neutralize both, and restore the
-        // captured index defensively in case another hook changed it.
-        msgCtx->choiceIndex = sFrozenChoiceIndex;
-        input->rel.stick_y = 0;
-    }
     if (page != nullptr && !page->tokens.empty()) {
         const auto& tokens = page->tokens;
-        int previousIndex = sSelectedTokenIndex;
-        if (CHECK_BTN_ALL(input->press.button, BTN_DRIGHT)) {
-            sSelectedTokenIndex = std::min(sSelectedTokenIndex + 1, static_cast<int>(tokens.size()) - 1);
-        } else if (CHECK_BTN_ALL(input->press.button, BTN_DLEFT)) {
-            sSelectedTokenIndex = std::max(sSelectedTokenIndex - 1, 0);
+        const int index = std::min(sStudySession.SelectedTokenIndex(), static_cast<int>(tokens.size()) - 1);
+        if (result.selectionChanged) {
+            RecordTokenEncounter(index);
         }
-        if (sSelectedTokenIndex != previousIndex) {
-            sStudyNavigationCount++;
-            RememberCurrentSelection();
-            RecordTokenEncounter(sSelectedTokenIndex);
+        if (result.scrollPixels != 0.0f) {
+            JPAssist::JPAssistOverlay_ScrollStudy(result.scrollPixels);
         }
-
-        if (CHECK_BTN_ALL(input->press.button, BTN_DUP)) {
-            sStudyScrollCount++;
-            JPAssist::JPAssistOverlay_ScrollStudy(-80.0f);
-        } else if (CHECK_BTN_ALL(input->press.button, BTN_DDOWN)) {
-            sStudyScrollCount++;
-            JPAssist::JPAssistOverlay_ScrollStudy(80.0f);
-        }
-
-        // "C-Right: add or remove the word from the study list" (design
-        // doc 4.3). Saved immediately, unlike encounter counts, since it's
-        // an explicit and infrequent action rather than something that
-        // fires on every navigation press.
-        if (CHECK_BTN_ALL(input->press.button, BTN_CRIGHT)) {
-            sSaveToggleCount++;
-            int index = std::min(sSelectedTokenIndex, static_cast<int>(tokens.size()) - 1);
+        if (result.toggleSaved) {
             const std::string tokenId = tokens[index].Id();
             JPAssist::StudyPersistence_ToggleSaved(tokenId);
             JPAssist::StudyPersistence_Save();
             const bool saved = JPAssist::StudyPersistence_IsSaved(tokenId);
             JPAssist::LearningSync_RecordWordEvent(saved ? "word_saved" : "word_unsaved", tokens[index],
-                                                   sTrackedTextId, sCurrentPageIndex);
-            SPDLOG_INFO("[JPAssist] Token {} {}", tokenId,
-                        saved ? "saved" : "unsaved");
+                                                   sStudySession.TextId(), sStudySession.PageIndex());
+            SPDLOG_INFO("[JPAssist] Token {} {}", tokenId, saved ? "saved" : "unsaved");
         }
-
-        // C-Left records an explicit, sense-specific knowledge claim. Keep
-        // it one-way in-game to make rapid marking predictable; corrections
-        // and reversals remain available from the account vocabulary page.
-        if (CHECK_BTN_ALL(input->press.button, BTN_CLEFT)) {
-            const int index = std::min(sSelectedTokenIndex, static_cast<int>(tokens.size()) - 1);
+        if (result.markKnown) {
             const std::string tokenId = tokens[index].Id();
             if (!JPAssist::StudyPersistence_IsKnown(tokenId, tokens[index].senseId)) {
                 JPAssist::StudyPersistence_MarkKnown(tokenId, tokens[index].senseId);
                 JPAssist::StudyPersistence_Save();
-                JPAssist::LearningSync_RecordWordEvent("word_known", tokens[index], sTrackedTextId,
-                                                       sCurrentPageIndex);
-                sKnownMarkCount++;
+                JPAssist::LearningSync_RecordWordEvent("word_known", tokens[index], sStudySession.TextId(),
+                                                       sStudySession.PageIndex());
+                sStudySession.RecordKnownMarked();
                 SPDLOG_INFO("[JPAssist] Token {} sense {} marked known", tokenId, tokens[index].senseId);
             }
         }
-
-        // L/Z now own definition reveal. Preserve optional pronunciation on
-        // the otherwise-unused C-Down button.
-        if (CHECK_BTN_ALL(input->press.button, BTN_CDOWN)) {
-            const int index = std::min(sSelectedTokenIndex, static_cast<int>(tokens.size()) - 1);
-            if (JPAssist::JPAssistAudio_PlayWord(tokens[index].Id())) {
-                sAudioPlayCount++;
-                SPDLOG_INFO("[JPAssist] Playing pronunciation for {}", tokens[index].Id());
-            }
+        if (result.playAudio && JPAssist::JPAssistAudio_PlayWord(tokens[index].Id())) {
+            sStudySession.RecordAudioPlayed();
+            SPDLOG_INFO("[JPAssist] Playing pronunciation for {}", tokens[index].Id());
         }
     }
 
@@ -430,7 +410,7 @@ void OnDialogMessage() {
     // stop reacting to input - bailing out before any of the tracking
     // below runs means msgMode/textId state isn't even observed, so
     // there's nothing left to clean up if the player re-enables mid-message.
-    if (!CVarGetInteger(CVAR_ENHANCEMENT("JPAssist.Enabled"), 1)) {
+    if (!CVarGetInteger(CVAR_ENHANCEMENT("JPAssist.Enabled"), 1) || PluginRuntimeEnabled()) {
         ClearDialogueRuntimeState();
         return;
     }
@@ -442,7 +422,7 @@ void OnDialogMessage() {
 
     uint8_t msgMode = msgCtx->msgMode;
 
-    if (msgCtx->textId != sTrackedTextId) {
+    if (msgCtx->textId != sStudySession.TextId()) {
         // Covers both a genuinely new conversation AND a TEXTID control-code
         // jump mid-message (soh/include/message_data_fmt.h CTRL_TEXTID) -
         // the latter doesn't reliably pass through MSGMODE_TEXT_START, so
@@ -450,23 +430,18 @@ void OnDialogMessage() {
         // mode that can precede it) is what actually catches it. Found by
         // hitting exactly this gap live: the page counter kept climbing
         // across an id change that a mode-only check had missed.
-        if (sStudyModeActive) {
-            RememberCurrentSelection();
-        }
-        sTrackedTextId = msgCtx->textId;
-        sCurrentPageIndex = 0;
+        const bool studyWasActive = sStudySession.IsActive();
+        RetargetStudySession(msgCtx->textId, 0);
         sNativePageTracker.Reset();
         // A TEXTID jump is part of the active conversation, so preserve an
         // open Study card and retarget it to the new message's first page.
         // A genuinely separate conversation has already passed through the
         // closing state below, which exits Study Mode.
         GetOverlay()->ClearNotifications();
-        if (sStudyModeActive) {
-            RestoreCurrentSelection();
-            sFrozenChoiceValid = false;
+        if (studyWasActive) {
             const JPAssist::StudyPage* page = CurrentStudyPage();
             if (page != nullptr && !page->tokens.empty()) {
-                RecordTokenEncounter(0);
+                RecordTokenEncounter(sStudySession.SelectedTokenIndex());
                 DrawStudyCard();
             } else {
                 ExitStudyMode();
@@ -474,8 +449,8 @@ void OnDialogMessage() {
         } else {
             JPAssist::JPAssistOverlay_Hide();
         }
-        RecordHistoryForOpenedMessage(sTrackedTextId);
-        SPDLOG_INFO("[JPAssist] Dialogue opened: textId {:#x}", sTrackedTextId);
+        RecordHistoryForOpenedMessage(sStudySession.TextId());
+        SPDLOG_INFO("[JPAssist] Dialogue opened: textId {:#x}", sStudySession.TextId());
     }
 
     // The native decoder owns an authoritative 1-based textbox number. Use
@@ -484,25 +459,23 @@ void OnDialogMessage() {
     // TEXT_CONTINUING, while TEXTID jumps and language re-decodes can produce
     // transitions that look like page turns but are not. Zero means the new
     // message has not decoded its first page yet and is intentionally ignored.
-    int observedPageIndex = sCurrentPageIndex;
+    int observedPageIndex = sStudySession.PageIndex();
     const bool decodedPageReady = msgMode != MSGMODE_NONE && msgMode != MSGMODE_TEXT_START &&
                                   msgMode != MSGMODE_TEXT_BOX_GROWING && msgMode != MSGMODE_TEXT_STARTING &&
                                   msgMode != MSGMODE_TEXT_NEXT_MSG && msgMode != MSGMODE_TEXT_CONTINUING;
     if (decodedPageReady &&
         sNativePageTracker.Observe(JPAssist_GetNativeTextBoxNumber(), observedPageIndex)) {
-        if (sStudyModeActive) {
-            RememberCurrentSelection();
-        }
-        sCurrentPageIndex = observedPageIndex;
-        SPDLOG_INFO("[JPAssist] Page changed: textId {:#x}, now page {}", sTrackedTextId, sCurrentPageIndex);
-        if (sStudyModeActive) {
-            RestoreCurrentSelection();
-            RecordTokenEncounter(sSelectedTokenIndex);
+        const bool studyWasActive = sStudySession.IsActive();
+        RetargetStudySession(sStudySession.TextId(), observedPageIndex);
+        SPDLOG_INFO("[JPAssist] Page changed: textId {:#x}, now page {}", sStudySession.TextId(),
+                    sStudySession.PageIndex());
+        if (studyWasActive) {
+            RecordTokenEncounter(sStudySession.SelectedTokenIndex());
         }
     }
 
     if (msgMode == MSGMODE_TEXT_CLOSING && sLastMsgMode != MSGMODE_TEXT_CLOSING) {
-        SPDLOG_INFO("[JPAssist] Dialogue closed: textId {:#x}", sTrackedTextId);
+        SPDLOG_INFO("[JPAssist] Dialogue closed: textId {:#x}", sStudySession.TextId());
         ClearDialogueRuntimeState();
         GetOverlay()->ClearNotifications();
         return;
@@ -542,18 +515,22 @@ void RegisterJPAssistMenu() {
 
     SohGui::mSohMenu->AddWidget(path, "Enable JP Assist", WIDGET_CVAR_CHECKBOX)
         .CVar(CVAR_ENHANCEMENT("JPAssist.Enabled"))
+        .Callback([](WidgetInfo&) { MirrorPluginSettings(); })
         .Options(UIWidgets::CheckboxOptions().DefaultValue(true).Tooltip(
             "Master toggle for the R/L/Z Study Mode language-learning tools. "
             "Disabling this leaves the game exactly as if the mod weren't installed."));
     SohGui::mSohMenu->AddWidget(path, "Study card scale: %.2f", WIDGET_CVAR_SLIDER_FLOAT)
         .CVar(CVAR_ENHANCEMENT("JPAssist.CardScale"))
+        .Callback([](WidgetInfo&) { MirrorPluginSettings(); })
         .Options(UIWidgets::FloatSliderOptions().Min(0.70f).Max(1.50f).Step(0.05f).DefaultValue(1.0f).Format("%.2f"));
     SohGui::mSohMenu->AddWidget(path, "Study card opacity: %.2f", WIDGET_CVAR_SLIDER_FLOAT)
         .CVar(CVAR_ENHANCEMENT("JPAssist.CardOpacity"))
+        .Callback([](WidgetInfo&) { MirrorPluginSettings(); })
         .Options(UIWidgets::FloatSliderOptions().Min(0.40f).Max(1.0f).Step(0.05f).DefaultValue(0.92f).Format("%.2f"));
     SohGui::mSohMenu->AddWidget(path, "Reset study card layouts", WIDGET_BUTTON)
         .Callback([](WidgetInfo&) {
             CVarClearBlock(CVAR_ENHANCEMENT("JPAssist.Layout."));
+            CVarClearBlock(CVAR_ENHANCEMENT("StudyMods.jp-assist.Layout."));
             Ship::Context::GetRawInstance()->GetWindow()->GetGui()->SaveConsoleVariablesNextFrame();
         })
         .Options(UIWidgets::ButtonOptions().Tooltip(
@@ -573,7 +550,10 @@ void RegisterJPAssistMenu() {
     SohGui::mSohMenu->AddWidget(path, "Learning account (optional)", WIDGET_SEPARATOR_TEXT);
     SohGui::mSohMenu->AddWidget(path, "Sync learning progress", WIDGET_CVAR_CHECKBOX)
         .CVar(CVAR_ENHANCEMENT("JPAssist.AccountSync.Enabled"))
-        .Callback([](WidgetInfo&) { JPAssist::LearningSync_Configure(); })
+        .Callback([](WidgetInfo&) {
+            MirrorPluginSettings();
+            JPAssist::LearningSync_Configure();
+        })
         .Options(UIWidgets::CheckboxOptions().DefaultValue(false).Tooltip(
             "Synchronize content-neutral word IDs, encounter counts, and saved state. Dialogue text stays local."));
     SohGui::mSohMenu->AddWidget(path, "Service URL", WIDGET_CUSTOM).CustomFunction([](WidgetInfo& info) {
@@ -586,20 +566,64 @@ void RegisterJPAssistMenu() {
                     .DefaultValue("http://127.0.0.1:8766")
                     .Size(ImVec2(ImGui::GetContentRegionAvail().x, 0))
                     .LabelPosition(UIWidgets::LabelPositions::None))) {
+            MirrorPluginSettings();
             JPAssist::LearningSync_Configure();
         }
     });
     SohGui::mSohMenu->AddWidget(path, "Connect learning account", WIDGET_BUTTON)
         .PreFunc([](WidgetInfo& info) {
+            if (PluginRuntimeEnabled()) {
+                const bool enabled = CVarGetInteger(CVAR_ENHANCEMENT("JPAssist.AccountSync.Enabled"), 0) != 0;
+                const bool transport = CVarGetInteger(
+                                           CVAR_ENHANCEMENT(
+                                               "StudyMods.jp-assist.AccountTransportAvailable"),
+                                           0) != 0;
+                const bool connected = CVarGetInteger(
+                                           CVAR_ENHANCEMENT("StudyMods.jp-assist.AccountConnected"), 0) != 0;
+                const bool pairing = CVarGetInteger(
+                                         CVAR_ENHANCEMENT("StudyMods.jp-assist.AccountPairing"), 0) != 0;
+                info.options->disabled = !enabled || !transport || connected || pairing;
+                return;
+            }
             const JPAssist::LearningSyncStatus status = JPAssist::LearningSync_GetStatus();
             info.options->disabled = !status.enabled || !status.transportAvailable || status.connected || status.pairing;
         })
-        .Callback([](WidgetInfo&) { JPAssist::LearningSync_BeginPairing(); })
+        .Callback([](WidgetInfo&) {
+            if (PluginRuntimeEnabled()) {
+                CVarSetInteger(CVAR_ENHANCEMENT("StudyMods.jp-assist.BeginPairing"), 1);
+            } else {
+                JPAssist::LearningSync_BeginPairing();
+            }
+        })
         .Options(UIWidgets::ButtonOptions().Tooltip(
             "Request a short-lived code, then approve this game from the learning website. Your password is never "
             "entered into the game."));
     SohGui::mSohMenu->AddWidget(path, "LearningAccountStatus", WIDGET_CUSTOM)
         .CustomFunction([](WidgetInfo&) {
+            if (PluginRuntimeEnabled()) {
+                const char* message = CVarGetString(
+                    CVAR_ENHANCEMENT("StudyMods.jp-assist.AccountStatusMessage"), "Not connected");
+                ImGui::TextWrapped("%s", message[0] == '\0' ? "Not connected" : message);
+                if (CVarGetInteger(CVAR_ENHANCEMENT("StudyMods.jp-assist.AccountPairing"), 0) != 0) {
+                    const char* code = CVarGetString(
+                        CVAR_ENHANCEMENT("StudyMods.jp-assist.AccountUserCode"), "");
+                    const char* address = CVarGetString(
+                        CVAR_ENHANCEMENT("StudyMods.jp-assist.AccountVerificationUrl"), "");
+                    ImGui::Text("Code: %s", code);
+                    ImGui::TextWrapped("Open: %s", address);
+                    if (UIWidgets::Button("Copy address and code##JPAssistPluginPairing",
+                                          UIWidgets::ButtonOptions().Color(THEME_COLOR))) {
+                        const std::string clipboard = std::string(address) + "\n" + code;
+                        ImGui::SetClipboardText(clipboard.c_str());
+                    }
+                }
+                const int pending = CVarGetInteger(
+                    CVAR_ENHANCEMENT("StudyMods.jp-assist.AccountPendingEvents"), 0);
+                if (pending != 0) {
+                    ImGui::Text("Waiting to sync: %d events", pending);
+                }
+                return;
+            }
             const JPAssist::LearningSyncStatus status = JPAssist::LearningSync_GetStatus();
             ImGui::TextWrapped("%s", status.message.empty() ? "Not connected" : status.message.c_str());
             if (status.pairing) {
@@ -618,10 +642,24 @@ void RegisterJPAssistMenu() {
         .HideInSearch(true);
     SohGui::mSohMenu->AddWidget(path, "Disconnect learning account", WIDGET_BUTTON)
         .PreFunc([](WidgetInfo& info) {
+            if (PluginRuntimeEnabled()) {
+                const bool connected = CVarGetInteger(
+                                           CVAR_ENHANCEMENT("StudyMods.jp-assist.AccountConnected"), 0) != 0;
+                const bool pairing = CVarGetInteger(
+                                         CVAR_ENHANCEMENT("StudyMods.jp-assist.AccountPairing"), 0) != 0;
+                info.options->disabled = !connected && !pairing;
+                return;
+            }
             const JPAssist::LearningSyncStatus status = JPAssist::LearningSync_GetStatus();
             info.options->disabled = !status.connected && !status.pairing;
         })
-        .Callback([](WidgetInfo&) { JPAssist::LearningSync_Disconnect(); });
+        .Callback([](WidgetInfo&) {
+            if (PluginRuntimeEnabled()) {
+                CVarSetInteger(CVAR_ENHANCEMENT("StudyMods.jp-assist.Disconnect"), 1);
+            } else {
+                JPAssist::LearningSync_Disconnect();
+            }
+        });
 }
 
 // Console companion to the searchable GUI history browser. Keeping this
@@ -646,10 +684,13 @@ int32_t JPAssistHistoryCommand(std::shared_ptr<Ship::Console> console, std::vect
 }
 
 void RegisterJPAssist() {
+    JPAssist::ShipwrightJPAssistHost_Install();
     JPAssist::StudyRepository_LoadCorpus();
     JPAssist::JPAssistAudio_LoadManifest();
     JPAssist::StudyPersistence_Load();
     JPAssist::LearningSync_Initialize();
+    MigrateLegacyPluginFiles();
+    MirrorPluginSettings();
     JPAssist::JPAssistOverlay_Register();
     JPAssist::JPAssistHistory_Register();
     JPAssist::JPAssistTestLab_Register();
@@ -680,7 +721,8 @@ static RegisterShipInitFunc initFunc(RegisterJPAssist);
 } // namespace
 
 extern "C" bool JPAssist_GetNativeHighlight(uint16_t textId, JPAssistNativeHighlight* highlight) {
-    if (highlight == nullptr || !sStudyModeActive || textId != sTrackedTextId) {
+    if (PluginRuntimeEnabled() || highlight == nullptr || !sStudySession.IsActive() ||
+        textId != sStudySession.TextId()) {
         return false;
     }
 
@@ -689,7 +731,7 @@ extern "C" bool JPAssist_GetNativeHighlight(uint16_t textId, JPAssistNativeHighl
         return false;
     }
 
-    const int index = std::clamp(sSelectedTokenIndex, 0, static_cast<int>(page->tokens.size()) - 1);
+    const int index = std::clamp(sStudySession.SelectedTokenIndex(), 0, static_cast<int>(page->tokens.size()) - 1);
     const JPAssist::StudyToken& token = page->tokens[index];
     highlight->start = token.start;
     highlight->length = token.length;
@@ -700,30 +742,61 @@ namespace JPAssist {
 
 RuntimeStatus JPAssist_GetRuntimeStatus() {
     RuntimeStatus status;
-    status.textId = sTrackedTextId;
-    status.pageIndex = sCurrentPageIndex;
+    if (PluginRuntimeEnabled()) {
+        const auto diagnostic = [](const char* field, int fallback = 0) {
+            return CVarGetInteger((std::string(CVAR_ENHANCEMENT("StudyMods.jp-assist.Diagnostics.")) + field).c_str(),
+                                  fallback);
+        };
+        status.textId = static_cast<uint16_t>(diagnostic("TextId", 0xFFFF));
+        status.pageIndex = diagnostic("PageIndex");
+        status.requestedLanguage = LANGUAGE_JPN;
+        status.studyModeActive = diagnostic("Active") != 0;
+        status.definitionVisible = diagnostic("DefinitionVisible", 1) != 0;
+        status.choiceSelectionFrozen = diagnostic("ChoiceFrozen") != 0;
+        status.choiceIndex = static_cast<uint8_t>(std::clamp(diagnostic("ChoiceIndex"), 0, 255));
+        status.selectedTokenIndex = diagnostic("SelectedIndex");
+        status.currentPageTokenCount = diagnostic("TokenCount");
+        status.currentPageIsChoice = diagnostic("IsChoice") != 0;
+        status.selectedTokenSaved = diagnostic("Saved") != 0;
+        status.selectedTokenKnown = diagnostic("Known") != 0;
+        status.selectedTokenAudioAvailable = diagnostic("AudioAvailable") != 0;
+        status.studyEnterCount = diagnostic("EnterCount");
+        status.studyNavigationCount = diagnostic("NavigationCount");
+        status.studyScrollCount = diagnostic("ScrollCount");
+        status.saveToggleCount = diagnostic("SaveCount");
+        status.knownMarkCount = diagnostic("KnownCount");
+        status.definitionToggleCount = diagnostic("DefinitionCount");
+        status.audioPlayCount = diagnostic("AudioCount");
+        status.displayMode = DialogueStudy::DialogueDisplayMode::JapaneseOnly;
+        status.dialogueSurface = DialogueStudy::DialogueSurface::Hidden;
+        return status;
+    }
+    status.textId = sStudySession.TextId();
+    status.pageIndex = sStudySession.PageIndex();
     status.requestedLanguage = LANGUAGE_JPN;
     status.alternateLanguageVisible = false;
-    status.studyModeActive = sStudyModeActive;
-    status.definitionVisible = sDefinitionVisible;
-    status.choiceSelectionFrozen = sStudyModeActive && sFrozenChoiceValid;
-    status.selectedTokenIndex = sSelectedTokenIndex;
+    status.studyModeActive = sStudySession.IsActive();
+    status.definitionVisible = sStudySession.IsDefinitionVisible();
+    status.choiceSelectionFrozen = sStudySession.IsChoiceFrozen();
+    status.selectedTokenIndex = sStudySession.SelectedTokenIndex();
     status.displayMode = DialogueStudy::DialogueDisplayMode::JapaneseOnly;
     status.dialogueSurface = DialogueStudy::DialogueSurface::Hidden;
     status.displayModeFallback = false;
     status.languageToggleCount = 0;
-    status.studyEnterCount = sStudyEnterCount;
-    status.studyNavigationCount = sStudyNavigationCount;
-    status.studyScrollCount = sStudyScrollCount;
-    status.saveToggleCount = sSaveToggleCount;
-    status.knownMarkCount = sKnownMarkCount;
-    status.definitionToggleCount = sDefinitionToggleCount;
-    status.audioPlayCount = sAudioPlayCount;
+    const StudySessionCounters& counters = sStudySession.Counters();
+    status.studyEnterCount = counters.enter;
+    status.studyNavigationCount = counters.navigation;
+    status.studyScrollCount = counters.scroll;
+    status.saveToggleCount = counters.saveToggle;
+    status.knownMarkCount = counters.knownMark;
+    status.definitionToggleCount = counters.definitionToggle;
+    status.audioPlayCount = counters.audioPlay;
     if (const StudyPage* page = CurrentStudyPage(); page != nullptr) {
         status.currentPageTokenCount = static_cast<int>(page->tokens.size());
         status.currentPageIsChoice = page->isChoice;
         if (!page->tokens.empty()) {
-            const int index = std::clamp(sSelectedTokenIndex, 0, static_cast<int>(page->tokens.size()) - 1);
+            const int index =
+                std::clamp(sStudySession.SelectedTokenIndex(), 0, static_cast<int>(page->tokens.size()) - 1);
             status.selectedTokenSaved = StudyPersistence_IsSaved(page->tokens[index].Id());
             status.selectedTokenKnown =
                 StudyPersistence_IsKnown(page->tokens[index].Id(), page->tokens[index].senseId);
@@ -737,6 +810,10 @@ RuntimeStatus JPAssist_GetRuntimeStatus() {
 }
 
 void JPAssist_QueueTestInput(uint16_t buttons, int8_t stickY, bool hasStickY) {
+    if (PluginRuntimeEnabled()) {
+        StudyModApi::QueueNativeInputForTesting(buttons, stickY, hasStickY);
+        return;
+    }
     sQueuedTestButtons |= buttons;
     if (hasStickY) {
         sQueuedTestStickY = stickY;

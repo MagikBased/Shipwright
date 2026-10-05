@@ -21,7 +21,7 @@
 #include <spdlog/sinks/rotating_file_sink.h>
 
 #include "Enhancements/gameconsole.h"
-#include "Enhancements/JPAssist/JPAssistAudio.h"
+#include "ModApi/StudyModApiInternal.h"
 #ifdef _WIN32
 #include <Windows.h>
 #else
@@ -1051,7 +1051,7 @@ void OTRAudio_Thread() {
                                            num_audio_samples);
         }
 
-        JPAssist::JPAssistAudio_Mix(audio_buffer, total_frames);
+        StudyModApi::MixAudio(audio_buffer, total_frames);
 
         AudioPlayer_Play(reinterpret_cast<u8*>(audio_buffer), total_samples * sizeof(int16_t));
     };

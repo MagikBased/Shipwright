@@ -8,7 +8,7 @@
 #include <nlohmann/json.hpp>
 #include <spdlog/spdlog.h>
 
-#include <ship/Context.h>
+#include "JPAssistHost.h"
 
 namespace JPAssist {
 
@@ -23,13 +23,6 @@ uint16_t ParseTextId(const std::string& value) {
     return static_cast<uint16_t>(std::stoul(value, nullptr, 0));
 }
 
-std::string ResolveCorpusPath(const std::string& explicitPath) {
-    if (!explicitPath.empty()) {
-        return explicitPath;
-    }
-    return Ship::Context::LocateFileAcrossAppDirs("jp_assist/runtime_data.json");
-}
-
 } // namespace
 
 bool StudyRepository_LoadCorpus(const std::string& explicitPath) {
@@ -37,18 +30,27 @@ bool StudyRepository_LoadCorpus(const std::string& explicitPath) {
     sCorpusVersion.clear();
     sLoadError.clear();
     sCorpusLoaded = false;
-
-    const std::string path = ResolveCorpusPath(explicitPath);
-    if (!std::filesystem::exists(path)) {
-        sLoadError = "Corpus not found at " + path;
-        SPDLOG_WARN("[JPAssist] {}", sLoadError);
-        return false;
-    }
+    std::string sourceLabel = explicitPath.empty() ? "host data jp_assist/runtime_data.json" : explicitPath;
 
     try {
-        std::ifstream file(path);
         nlohmann::json root;
-        file >> root;
+        if (explicitPath.empty()) {
+            std::string contents;
+            if (!JPAssistHost_ReadDataFile("jp_assist/runtime_data.json", contents)) {
+                sLoadError = "Corpus not found in host data: jp_assist/runtime_data.json";
+                SPDLOG_WARN("[JPAssist] {}", sLoadError);
+                return false;
+            }
+            root = nlohmann::json::parse(contents);
+        } else {
+            if (!std::filesystem::exists(explicitPath)) {
+                sLoadError = "Corpus not found at " + explicitPath;
+                SPDLOG_WARN("[JPAssist] {}", sLoadError);
+                return false;
+            }
+            std::ifstream file(explicitPath);
+            file >> root;
+        }
 
         if (root.contains("metadata")) {
             sCorpusVersion = root["metadata"].value("corpusVersion", "unknown");
@@ -93,12 +95,13 @@ bool StudyRepository_LoadCorpus(const std::string& explicitPath) {
             sLoadError = "Corpus contained no usable messages";
             return false;
         }
-        SPDLOG_INFO("[JPAssist] Loaded corpus {} with {} messages from {}", sCorpusVersion, sPagesByTextId.size(), path);
+        SPDLOG_INFO("[JPAssist] Loaded corpus {} with {} messages from {}", sCorpusVersion, sPagesByTextId.size(),
+                    sourceLabel);
         return true;
     } catch (const std::exception& exception) {
         sLoadError = exception.what();
         sPagesByTextId.clear();
-        SPDLOG_ERROR("[JPAssist] Failed to load corpus from {}: {}", path, sLoadError);
+        SPDLOG_ERROR("[JPAssist] Failed to load corpus from {}: {}", sourceLabel, sLoadError);
         return false;
     }
 }

@@ -6,8 +6,8 @@
 
 // Study progress, stored separately from OoT save files (design doc section
 // 9: "Store JP Assist state separately from OoT save files"). Backed by
-// jp_assist_progress.json under Ship::Context::GetPathRelativeToAppDirectory,
-// the same directory shipofharkinian.json/Save/presets already live in.
+// jp_assist_progress.json under the writable directory supplied by the active
+// host adapter (Shipwright places it beside its normal configuration files).
 
 namespace JPAssist {
 

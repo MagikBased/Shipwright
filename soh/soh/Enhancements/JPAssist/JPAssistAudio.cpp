@@ -12,7 +12,8 @@
 #include <nlohmann/json.hpp>
 #include <spdlog/spdlog.h>
 
-#include <ship/Context.h>
+#include "JPAssistHost.h"
+#include "mods/study_mod_api.h"
 
 namespace JPAssist {
 namespace {
@@ -23,15 +24,13 @@ constexpr size_t kMaximumDecodedFrames = kOutputRate * 30;
 std::mutex sAudioMutex;
 std::unordered_map<std::string, std::filesystem::path> sWordAudioPaths;
 std::unordered_map<std::string, std::shared_ptr<const std::vector<int16_t>>> sDecodedClips;
-std::shared_ptr<const std::vector<int16_t>> sActiveClip;
-size_t sActiveSample = 0;
 std::string sLoadError;
 
 std::string ResolveManifestPath(const std::string& explicitPath) {
     if (!explicitPath.empty()) {
         return explicitPath;
     }
-    return Ship::Context::LocateFileAcrossAppDirs("jp_assist/audio_manifest.json");
+    return JPAssistHost_LocateDataFile("jp_assist/audio_manifest.json");
 }
 
 bool IsWithin(const std::filesystem::path& root, const std::filesystem::path& candidate) {
@@ -74,8 +73,6 @@ bool JPAssistAudio_LoadManifest(const std::string& explicitPath) {
     std::lock_guard<std::mutex> lock(sAudioMutex);
     sWordAudioPaths.clear();
     sDecodedClips.clear();
-    sActiveClip.reset();
-    sActiveSample = 0;
     sLoadError.clear();
 
     const std::filesystem::path manifestPath = ResolveManifestPath(explicitPath);
@@ -120,6 +117,7 @@ bool JPAssistAudio_HasWord(const std::string& wordId) {
 
 bool JPAssistAudio_PlayWord(const std::string& wordId) {
     std::filesystem::path audioPath;
+    std::shared_ptr<const std::vector<int16_t>> clip;
     {
         std::lock_guard<std::mutex> lock(sAudioMutex);
         const auto path = sWordAudioPaths.find(wordId);
@@ -128,48 +126,29 @@ bool JPAssistAudio_PlayWord(const std::string& wordId) {
         }
         const auto cached = sDecodedClips.find(wordId);
         if (cached != sDecodedClips.end()) {
-            sActiveClip = cached->second;
-            sActiveSample = 0;
-            return true;
+            clip = cached->second;
+        } else {
+            audioPath = path->second;
         }
-        audioPath = path->second;
     }
 
-    // Do file I/O and resampling without holding the mixer mutex. Otherwise
-    // the real-time audio producer can stall while a clip is decoded.
-    auto decoded = DecodeClip(audioPath);
-    if (decoded == nullptr || decoded->empty()) {
+    if (clip == nullptr) {
+        // Do file I/O and resampling without holding the cache mutex.
+        auto decoded = DecodeClip(audioPath);
+        if (decoded == nullptr || decoded->empty()) {
+            return false;
+        }
+        std::lock_guard<std::mutex> lock(sAudioMutex);
+        clip = sDecodedClips.emplace(wordId, std::move(decoded)).first->second;
+    }
+
+    const StudyModHostApi* api = StudyMod_GetHostApi(STUDY_MOD_HOST_ABI_VERSION_1, STUDY_MOD_HOST_ABI_VERSION_1);
+    if (api == nullptr || (api->capabilities & STUDY_MOD_CAP_AUDIO_PLAYBACK) == 0 || api->play_audio == nullptr) {
         return false;
     }
-
-    std::lock_guard<std::mutex> lock(sAudioMutex);
-    const auto cached = sDecodedClips.emplace(wordId, std::move(decoded)).first;
-    // Re-pressing the Study Mode pronunciation binding restarts the selected
-    // clip immediately.
-    sActiveClip = cached->second;
-    sActiveSample = 0;
-    return true;
-}
-
-void JPAssistAudio_Mix(int16_t* samples, size_t frameCount) {
-    if (samples == nullptr || frameCount == 0) {
-        return;
-    }
-    std::lock_guard<std::mutex> lock(sAudioMutex);
-    if (sActiveClip == nullptr) {
-        return;
-    }
-    const size_t requestedSamples = frameCount * 2;
-    const size_t remaining = sActiveClip->size() - std::min(sActiveSample, sActiveClip->size());
-    const size_t mixedSamples = std::min(requestedSamples, remaining);
-    for (size_t i = 0; i < mixedSamples; ++i) {
-        samples[i] = JPAssistAudio_MixSample(samples[i], (*sActiveClip)[sActiveSample + i]);
-    }
-    sActiveSample += mixedSamples;
-    if (sActiveSample >= sActiveClip->size()) {
-        sActiveClip.reset();
-        sActiveSample = 0;
-    }
+    const StudyModAudioClip request{ sizeof(StudyModAudioClip), STUDY_MOD_AUDIO_PCM_S16, clip->data(),
+                                     clip->size() / 2, kOutputRate, 2 };
+    return api->play_audio("jp-assist", &request) != 0;
 }
 
 } // namespace JPAssist

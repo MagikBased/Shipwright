@@ -186,6 +186,14 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMake")
 # Enable MPQ and OTR support
 set(INCLUDE_MPQ_SUPPORT ON)
 
+# JP Assist is migrating to a drop-in .o2r code mod. Desktop builds need LUS's
+# script loader to discover and initialize that package; source-integrated
+# builds can opt out explicitly while the migration remains in progress.
+option(JPASSIST_ENABLE_PLUGIN_LOADER "Enable the .o2r code-mod loader required by JP Assist" ON)
+if(JPASSIST_ENABLE_PLUGIN_LOADER AND NOT CMAKE_SYSTEM_NAME MATCHES "NintendoSwitch|CafeOS|iOS")
+    set(ENABLE_SCRIPTING ON CACHE BOOL "Enable TCC-based C mod compilation and scripting system" FORCE)
+endif()
+
 ################################################################################
 # Set CONTROLLERBUTTONS_T
 ################################################################################
@@ -200,6 +208,11 @@ target_compile_definitions(libultraship PUBLIC INCLUDE_MPQ_SUPPORT)
 add_subdirectory(ZAPDTR/ZAPD ${CMAKE_BINARY_DIR}/ZAPD)
 add_subdirectory(OTRExporter)
 add_subdirectory(soh)
+
+option(JPASSIST_BUILD_PLUGIN_PACKAGE "Build the JP Assist .o2r plugin package" ON)
+if(JPASSIST_BUILD_PLUGIN_PACKAGE AND ENABLE_SCRIPTING)
+    add_subdirectory(mods/jp_assist_plugin)
+endif()
 
 option(JPASSIST_BUILD_TESTS "Build engine-independent JP Assist unit tests" OFF)
 if(JPASSIST_BUILD_TESTS)

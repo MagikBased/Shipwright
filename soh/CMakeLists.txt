@@ -229,6 +229,9 @@ set(ALL_FILES
 # Target
 ################################################################################
 add_executable(${PROJECT_NAME} ${ALL_FILES})
+if(WIN32)
+    target_compile_definitions(${PROJECT_NAME} PRIVATE STUDY_MOD_HOST_EXPORTS)
+endif()
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
 use_props(${PROJECT_NAME} "${CMAKE_CONFIGURATION_TYPES}" "${DEFAULT_CXX_PROPS}")
@@ -752,6 +755,25 @@ if(USE_ASAN)
     endif()
 endif()
 
+
+if(ENABLE_SCRIPTING)
+    # TinyCC needs its runtime support archive when it emits a code-mod shared
+    # library. Keep both runtime pieces beside the game so the same lookup
+    # works in the build tree and in a portable installation.
+    add_custom_command(TARGET soh POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            $<TARGET_FILE:libtcc> $<TARGET_FILE_DIR:soh>
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            $<TARGET_FILE:libtcc1> $<TARGET_FILE_DIR:soh>
+        VERBATIM
+    )
+    install(TARGETS libtcc
+        RUNTIME DESTINATION .
+        LIBRARY DESTINATION .
+        COMPONENT ship
+    )
+    install(FILES $<TARGET_FILE:libtcc1> DESTINATION . COMPONENT ship)
+endif()
 
 if(NOT CMAKE_SYSTEM_NAME MATCHES "Darwin|NintendoSwitch|CafeOS")
 INSTALL(TARGETS soh DESTINATION . COMPONENT ship)

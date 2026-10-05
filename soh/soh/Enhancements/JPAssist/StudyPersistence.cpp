@@ -10,8 +10,7 @@
 #include <nlohmann/json.hpp>
 #include <spdlog/spdlog.h>
 
-#include <ship/Context.h>
-
+#include "JPAssistHost.h"
 #include "StudyRepository.h"
 
 namespace JPAssist {
@@ -29,7 +28,7 @@ std::vector<HistoryEntry> sHistory; // oldest first; trimmed to kMaxHistoryEntri
 bool sLoaded = false;
 
 std::string ProgressFilePath() {
-    return Ship::Context::GetPathRelativeToAppDirectory("jp_assist_progress.json");
+    return JPAssistHost_GetWritableFile("jp_assist_progress.json");
 }
 
 } // namespace

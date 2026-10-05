@@ -49,6 +49,20 @@ session because Shipwright initializes its normal SDL/OpenGL window. Override
 the executable directory with `JPASSIST_APP_DIR` and the 120-second timeout
 with `JPASSIST_SMOKE_TIMEOUT` when needed.
 
+To run the same suite specifically through the packaged `.o2r` plugin, use:
+
+```bash
+cmake --build build-cmake --target jpassist_plugin_package soh
+./scripts/jp_assist/run_plugin_smoke_suite.sh
+```
+
+The plugin wrapper temporarily copies `jp-assist.o2r` into the application
+mods directory and ensures the master feature setting is enabled. The package
+automatically takes runtime ownership after successful initialization. A trap
+restores the original config and any pre-existing package after success,
+failure, interruption, or timeout. Override the package path with
+`JPASSIST_PLUGIN_PACKAGE` when testing a separately built artifact.
+
 ## Console commands
 
 ```text

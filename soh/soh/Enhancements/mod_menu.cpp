@@ -5,6 +5,10 @@
 #include <vector>
 
 #include <ship/utils/StringHelper.h>
+#ifdef ENABLE_SCRIPTING
+#include <ship/scripting/ScriptLoader.h>
+#endif
+#include <spdlog/spdlog.h>
 
 #include "mod_menu.h"
 #include "soh/OTRGlobals.h"
@@ -212,6 +216,9 @@ void UpdateModFiles(bool init = false, bool reset = false) {
     bool changed = false;
     std::string modsPath = Ship::Context::LocateFileAcrossAppDirs("mods", appShortName);
     std::map<std::string, std::string> tempMods;
+#ifdef ENABLE_SCRIPTING
+    std::vector<std::shared_ptr<Ship::Archive>> newlyMountedArchives;
+#endif
     if (modsPath.length() > 0 && std::filesystem::exists(modsPath)) {
         std::vector<std::filesystem::path> enabledFiles;
         if (std::filesystem::is_directory(modsPath)) {
@@ -243,7 +250,12 @@ void UpdateModFiles(bool init = false, bool reset = false) {
                 std::vector<std::string> enabledTemp(enabledModFiles);
                 for (std::string mod : enabledTemp) {
                     if (filePaths.contains(mod)) {
-                        GetArchiveManager()->AddArchive(filePaths.at(mod).generic_string());
+                        auto archive = GetArchiveManager()->AddArchive(filePaths.at(mod).generic_string());
+#ifdef ENABLE_SCRIPTING
+                        if (archive != nullptr) {
+                            newlyMountedArchives.push_back(std::move(archive));
+                        }
+#endif
                     } else {
                         enabledModFiles.erase(std::find(enabledModFiles.begin(), enabledModFiles.end(), mod));
                         changed = true;
@@ -255,6 +267,30 @@ void UpdateModFiles(bool init = false, bool reset = false) {
             SetEnabledModsCVarValue();
         }
     }
+
+#ifdef ENABLE_SCRIPTING
+    // Asset and code mods share the same .o2r mount path. Compile only after
+    // mounting has finished so build.gen and its source files are readable,
+    // then initialize the complete startup batch once dependency ordering can
+    // be resolved. A malformed optional mod is reported without preventing
+    // Shipwright itself from starting.
+    if (!newlyMountedArchives.empty()) {
+        try {
+            Ship::Context* context = Ship::Context::GetRawInstance();
+            const std::vector<std::string> libraryPaths = { Ship::Context::GetAppBundlePath() };
+            if (!context->InitScriptLoader({}, 1, "-g -Wl", {}, libraryPaths, {})) {
+                SPDLOG_ERROR("Failed to initialize the .o2r code-mod loader");
+            } else {
+                for (const auto& archive : newlyMountedArchives) {
+                    context->GetScriptLoader()->Compile(archive);
+                }
+                context->GetScriptLoader()->LoadAll();
+            }
+        } catch (const std::exception& exception) {
+            SPDLOG_ERROR("Failed to load an .o2r code mod: {}", exception.what());
+        }
+    }
+#endif
 }
 
 extern "C" void gfx_texture_cache_clear();

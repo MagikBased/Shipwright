@@ -425,7 +425,9 @@ tags
 # Local Ship of Harkinian runtime files
 /*.appimage
 /*.AppImage
-/mods/
+/mods/*
+!/mods/jp_assist_plugin/
+!/mods/jp_assist_plugin/**
 shipofharkinian.ini
 shipofharkinian.json
 
